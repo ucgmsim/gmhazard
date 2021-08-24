@@ -1,0 +1,12 @@
+*.h5
+*.pyc
+*.swp
+
+auth0_config.json
+
+**/cache/*
+**/logs/*
+**/.idea/*
+**/*.egg-info/*
+**/build/*
+**/dist/*

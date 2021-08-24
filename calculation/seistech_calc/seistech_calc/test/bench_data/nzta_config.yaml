@@ -1,0 +1,22 @@
+type: "nzta"
+ensembles:
+  v18p6sim:
+    components: False
+    station_names:
+      - "MS25"
+      - "275A"
+      - "ASHS"
+      - "CCH5"
+      - "291A"
+      - "283A"
+      - "WTES"
+      - "GA02"
+      - "012A"
+      - "0104250"
+      - "237A"
+      - "CCCC"
+  v19p11emp_small:
+    components: True
+    station_names:
+      - "WTES"
+      - "CCCC"

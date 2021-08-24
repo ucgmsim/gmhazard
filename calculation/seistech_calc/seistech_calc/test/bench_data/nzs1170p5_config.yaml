@@ -1,0 +1,44 @@
+type: "nzs1170p5"
+ensembles:
+  v18p6sim:
+    components: False
+    z_factor_radius:
+      - 0
+      - 2
+    ims:
+      - "PGA"
+      - "pSA_0.1"
+      - "pSA_0.5"
+      - "pSA_1.0"
+      - "pSA_2.0"
+      - "pSA_3.0"
+      - "pSA_5.0"
+    station_names:
+      - "MS25"
+      - "275A"
+      - "ASHS"
+      - "CCH5"
+      - "291A"
+      - "283A"
+      - "WTES"
+      - "GA02"
+      - "012A"
+      - "0104250"
+      - "237A"
+      - "CCCC"
+  v19p11emp_small:
+    components: True
+    z_factor_radius:
+      - 0
+      - 2
+    ims:
+      - "PGA"
+      - "pSA_0.1"
+      - "pSA_0.5"
+      - "pSA_1.0"
+      - "pSA_2.0"
+      - "pSA_3.0"
+      - "pSA_5.0"
+    station_names:
+      - "WTES"
+      - "CCCC"

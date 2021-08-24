@@ -1,0 +1,30 @@
+n_procs: 7
+type: "uhs"
+ensembles:
+  v18p6sim:
+    components: False
+    exceedance_levels:
+      - 0.013862943611198907    # 50%, 50 years
+      - 0.002107210313156526    # 10%, 50 years
+      - 0.0004040541463503893   # 2%, 50 years
+    station_names:
+      - "MS25"
+      - "275A"
+      - "ASHS"
+      - "CCH5"
+      - "291A"
+      - "283A"
+      - "WTES"
+      - "GA02"
+      - "012A"
+      - "0104250"
+      - "237A"
+      - "CCCC"
+  v19p11emp_small:
+    components: True
+    exceedance_levels:
+      - 0.013862943611198907    # 50%
+      - 0.002107210313156526    # 10%
+      - 0.0004040541463503893   # 2%
+    station_names:
+      - "CCCC"

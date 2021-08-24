@@ -1,0 +1,33 @@
+combinations:
+  v18p6sim:
+    ims:
+      - "PGA"
+      - "pSA_0.1"
+      - "pSA_0.2"
+      - "pSA_0.5"
+      - "pSA_1.0"
+      - "pSA_2.0"
+      - "pSA_3.0"
+      - "pSA_5.0"
+    excd_prob:
+      - {percentage: 50, years: 50}
+      - {percentage: 10, years: 50}
+      - {percentage: 2, years: 50}
+      - {percentage: 0.5, years: 50}
+    n_procs: 3
+  v18p6emp:
+    ims:
+      - "PGA"
+      - "pSA_0.1"
+      - "pSA_0.2"
+      - "pSA_0.5"
+      - "pSA_1.0"
+      - "pSA_2.0"
+      - "pSA_3.0"
+      - "pSA_5.0"
+    excd_prob:
+      - {percentage: 50, years: 50}
+      - {percentage: 10, years: 50}
+      - {percentage: 2, years: 50}
+      - {percentage: 0.5, years: 50}
+    n_procs: 3

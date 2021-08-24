@@ -1,0 +1,44 @@
+general:
+  ensemble_id: "v20p5emp"
+  station: "CCCC"
+  im: "PGA"
+hazard:
+  calc_percentiles: 1
+disagg:
+  exceedance: 0.013862943619741008
+gms:
+  cs_param_bounds:
+    mag_low: 4.6
+    mag_high: 8.1
+    rrup_low: 6.977
+    rrup_high: 182.9
+    vs30_low: 90.04
+    vs30_high: 270.1
+    sf_low: 0.3
+    sf_high: 3
+  gm_dataset_ids:
+    - "nga_west_2"
+  im_level: 0.05
+  n_gms: 10
+  n_replica: 1
+  IM_weights:
+    pSA_0.01: 1
+  IMs:
+    - "pSA_0.01"
+  IM_j: "PGA"
+gms_default:
+  user_vs30: "180.1"
+gms_datasets:
+  - "cybershake_v20p4"
+  - "nga_west_2"
+nzs1170p5:
+  exceedances: 0.013862943619741008
+nzta:
+  soil_class: "D"
+site:
+  lat: -43.5
+  lon: 172.5
+site_found: "2200460"
+user_vs30: 100
+uhs:
+  return_period: 72

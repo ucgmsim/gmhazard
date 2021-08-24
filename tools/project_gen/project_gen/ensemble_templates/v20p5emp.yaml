@@ -1,0 +1,698 @@
+datasets:
+  AI:
+    CB_12:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/CB_12_ACTIVE_SHALLOW_ds.db
+          - $DB_PATH$/CB_12_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/CB_12_ACTIVE_SHALLOW_flt.db
+          - $DB_PATH$/CB_12_SUBDUCTION_INTERFACE_flt.db
+          - $DB_PATH$/CB_12_VOLCANIC_flt.db
+          model: CB_12
+          tect-type:
+          - active_shallow
+          - subduction_interface
+          - subduction_slab
+          - volcanic
+      weight: 1.0
+  CAV:
+    CB_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/CB_10_ACTIVE_SHALLOW_ds.db
+          - $DB_PATH$/CB_10_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/CB_10_ACTIVE_SHALLOW_flt.db
+          - $DB_PATH$/CB_10_SUBDUCTION_INTERFACE_flt.db
+          - $DB_PATH$/CB_10_VOLCANIC_flt.db
+          model: CB_10
+          tect-type:
+          - active_shallow
+          - subduction_interface
+          - subduction_slab
+          - volcanic
+      weight: 1.0
+  Ds575:
+    AS_16:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/AS_16_ACTIVE_SHALLOW_ds.db
+          - $DB_PATH$/AS_16_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/AS_16_ACTIVE_SHALLOW_flt.db
+          - $DB_PATH$/AS_16_SUBDUCTION_INTERFACE_flt.db
+          - $DB_PATH$/AS_16_VOLCANIC_flt.db
+          model: AS_16
+          tect-type:
+          - active_shallow
+          - subduction_interface
+          - subduction_slab
+          - volcanic
+      weight: 1.0
+  Ds595:
+    AS_16:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/AS_16_ACTIVE_SHALLOW_ds.db
+          - $DB_PATH$/AS_16_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/AS_16_ACTIVE_SHALLOW_flt.db
+          - $DB_PATH$/AS_16_SUBDUCTION_INTERFACE_flt.db
+          - $DB_PATH$/AS_16_VOLCANIC_flt.db
+          model: AS_16
+          tect-type:
+          - active_shallow
+          - subduction_interface
+          - subduction_slab
+          - volcanic
+      weight: 1.0
+  PGA:
+    ASK_14_BC_16_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/ASK_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/ASK_14_ACTIVE_SHALLOW_flt.db
+          model: ASK_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_INTERFACE_flt.db
+          model: BC_16
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.125025
+    ASK_14_ZA_06_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/ASK_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/ASK_14_ACTIVE_SHALLOW_flt.db
+          model: ASK_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_INTERFACE_flt.db
+          model: ZA_06
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.041675
+    BSSA_14_BC_16_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/BSSA_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/BSSA_14_ACTIVE_SHALLOW_flt.db
+          model: BSSA_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_INTERFACE_flt.db
+          model: BC_16
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.125025
+    BSSA_14_ZA_06_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/BSSA_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/BSSA_14_ACTIVE_SHALLOW_flt.db
+          model: BSSA_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_INTERFACE_flt.db
+          model: ZA_06
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.041675
+    Br_10_BC_16_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/Br_10_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/Br_10_ACTIVE_SHALLOW_flt.db
+          model: Br_10
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_INTERFACE_flt.db
+          model: BC_16
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.375
+    Br_10_ZA_06_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/Br_10_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/Br_10_ACTIVE_SHALLOW_flt.db
+          model: Br_10
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_INTERFACE_flt.db
+          model: ZA_06
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.125
+    CB_14_BC_16_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/CB_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/CB_14_ACTIVE_SHALLOW_flt.db
+          model: CB_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_INTERFACE_flt.db
+          model: BC_16
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.125025
+    CB_14_ZA_06_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/CB_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/CB_14_ACTIVE_SHALLOW_flt.db
+          model: CB_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_INTERFACE_flt.db
+          model: ZA_06
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.041675
+  PGV:
+    ASK_14_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/ASK_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/ASK_14_ACTIVE_SHALLOW_flt.db
+          model: ASK_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/Br_10_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/Br_10_SUBDUCTION_INTERFACE_flt.db
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+          - volcanic
+      weight: 0.1667
+    BSSA_14_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/BSSA_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/BSSA_14_ACTIVE_SHALLOW_flt.db
+          model: BSSA_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/Br_10_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/Br_10_SUBDUCTION_INTERFACE_flt.db
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+          - volcanic
+      weight: 0.1667
+    Br_10_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/Br_10_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/Br_10_ACTIVE_SHALLOW_flt.db
+          model: Br_10
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/Br_10_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/Br_10_SUBDUCTION_INTERFACE_flt.db
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+          - volcanic
+      weight: 0.5
+    CB_14_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/CB_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/CB_14_ACTIVE_SHALLOW_flt.db
+          model: CB_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/Br_10_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/Br_10_SUBDUCTION_INTERFACE_flt.db
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+          - volcanic
+      weight: 0.1667
+  pSA:
+    ASK_14_BC_16_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/ASK_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/ASK_14_ACTIVE_SHALLOW_flt.db
+          model: ASK_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_INTERFACE_flt.db
+          model: BC_16
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.125025
+    ASK_14_ZA_06_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/ASK_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/ASK_14_ACTIVE_SHALLOW_flt.db
+          model: ASK_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_INTERFACE_flt.db
+          model: ZA_06
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.041675
+    BSSA_14_BC_16_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/BSSA_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/BSSA_14_ACTIVE_SHALLOW_flt.db
+          model: BSSA_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_INTERFACE_flt.db
+          model: BC_16
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.125025
+    BSSA_14_ZA_06_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/BSSA_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/BSSA_14_ACTIVE_SHALLOW_flt.db
+          model: BSSA_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_INTERFACE_flt.db
+          model: ZA_06
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.041675
+    Br_10_BC_16_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/Br_10_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/Br_10_ACTIVE_SHALLOW_flt.db
+          model: Br_10
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_INTERFACE_flt.db
+          model: BC_16
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.375
+    Br_10_ZA_06_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/Br_10_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/Br_10_ACTIVE_SHALLOW_flt.db
+          model: Br_10
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_INTERFACE_flt.db
+          model: ZA_06
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.125
+    CB_14_BC_16_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/CB_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/CB_14_ACTIVE_SHALLOW_flt.db
+          model: CB_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/BCH_16_SUBDUCTION_INTERFACE_flt.db
+          model: BC_16
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type:
+          - volcanic
+      weight: 0.125025
+    CB_14_ZA_06_Br_10:
+      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf_type: custom_ds_erf
+      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf_type: flt_nhm
+      leaves:
+        leaf0:
+          ds_imdbs:
+          - $DB_PATH$/CB_14_ACTIVE_SHALLOW_ds.db
+          flt_imdbs:
+          - $DB_PATH$/CB_14_ACTIVE_SHALLOW_flt.db
+          model: CB_14
+          tect-type:
+          - active_shallow
+        leaf1:
+          ds_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_SLAB_ds.db
+          flt_imdbs:
+          - $DB_PATH$/ZA_06_SUBDUCTION_INTERFACE_flt.db
+          model: ZA_06
+          tect-type:
+          - subduction_interface
+          - subduction_slab
+        leaf2:
+          ds_imdbs: []
+          flt_imdbs:
+          - $DB_PATH$/Br_10_VOLCANIC_flt.db
+          model: Br_10
+          tect-type: 
+          - volcanic
+      weight: 0.041675
+name: empirical_flt_v19p11
+stations: "$DB_PATH$/$PROJECT_ID$.ll"
+vs30: "$DB_PATH$/$PROJECT_ID$.vs30"
+z: "$DB_PATH$/$PROJECT_ID$.z"
+ds_ssdb: "$DB_PATH$/ds_site_source.db"
+flt_ssdb: "$DB_PATH$/flt_site_source.db"

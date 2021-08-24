@@ -1,0 +1,49 @@
+type: "hazard"
+ensembles:
+  v18p6sim:
+    components: False
+    ims:
+      - "PGA"
+      - "pSA_2.0"
+      - "pSA_5.0"
+    station_names:
+      - "MS25"
+      - "275A"
+      - "ASHS"
+      - "CCH5"
+      - "291A"
+      - "283A"
+      - "WTES"
+      - "GA02"
+      - "012A"
+      - "0104250"
+      - "237A"
+      - "CCCC"
+  v19p11emp:
+    components: True
+    ims:
+      - "pSA_5.0"
+    station_names:
+      - "CCCC"
+  v20p4emp:
+    components: True
+    exceedance: 0.0004
+    ims:
+      - "AI"
+      - "CAV"
+      - "Ds595"
+      - "Ds575"
+      - "PGV"
+    station_names:
+      - "TEPS"
+  v20p11sim:
+    components: False
+    exceedance: 0.002107210313156526    # 10%, 50 years
+    ims:
+      - "AI"
+      - "CAV"
+      - "Ds595"
+      - "Ds575"
+      - "PGV"
+    station_names:
+      - "WTES"

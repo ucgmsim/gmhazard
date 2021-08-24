@@ -1,0 +1,9 @@
+id: "chch_hospital_pert"
+locations:
+  Christchurch_Hospital:
+    name: "Christchurch Hospital"
+    lat: -43.533509967644505
+    lon: 172.62713091302967
+    vs30: [216]
+package_type: "pga_psa"
+n_perturbations: 20

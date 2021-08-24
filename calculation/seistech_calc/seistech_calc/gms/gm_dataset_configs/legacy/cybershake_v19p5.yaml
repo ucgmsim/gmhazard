@@ -1,0 +1,11 @@
+name: "Cybershake v19.5 simulations"
+type: "simulations"
+
+simulations_imdb:
+  - "/mnt/mantle_data/seistech/simulations/19p5/cs19p5_flt_new.h5"
+simulations_dir:
+  - "/maui/nesi/nobackup/nesi00213/RunFolder/Cybershake/v19p5_2nd"
+
+vs30_params_csv_ffp: "/maui/nesi/project/nesi00213/StationInfo/non_uniform_whole_nz_with_real_stations-hh400_v20p3_land.vs30"
+site_source_db_ffp: "/mnt/mantle_data/seistech/site_source/19p9/flt_site_source.db"
+sources_dir: "/maui/nesi/nobackup/nesi00213/RunFolder/Cybershake/v19p5_2nd/Data/Sources"

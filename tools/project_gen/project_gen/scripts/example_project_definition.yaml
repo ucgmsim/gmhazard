@@ -1,0 +1,104 @@
+commit_hash: 538a67f25b019b2c178c6337e0422fd3cf8f8eb0
+ensemble_ffp: "/mnt/mantle_data/seistech/projects/v21p1p1/gnzl/v20p8emp_gnzl.yaml"
+project_name: "Generic New Zealand Locations"
+project_id: "gnzl"
+project_parameters:
+  locations:
+    Arthurs_Pass:
+      name: "Arthurs Pass"
+      vs30: [200, 300, 760]
+    Auckland:
+      name: "Auckland"
+      vs30: [200, 300, 760]
+    Blenheim:
+      name: "Blenheim"
+      vs30: [200, 300, 760]
+    Christchurch:
+      name: "Christchurch"
+      vs30: [200, 300, 760]
+  ims: [ "PGA",
+         "pSA_0.01",
+         "pSA_0.02",
+         "pSA_0.03",
+         "pSA_0.04",
+         "pSA_0.05",
+         "pSA_0.075",
+         "pSA_0.1",
+         "pSA_0.12",
+         "pSA_0.15",
+         "pSA_0.17",
+         "pSA_0.2",
+         "pSA_0.25",
+         "pSA_0.3",
+         "pSA_0.4",
+         "pSA_0.5",
+         "pSA_0.6",
+         "pSA_0.7",
+         "pSA_0.75",
+         "pSA_0.8",
+         "pSA_0.9",
+         "pSA_1.0",
+         "pSA_1.25",
+         "pSA_1.5",
+         "pSA_2.0",
+         "pSA_2.5",
+         "pSA_3.0",
+         "pSA_4.0",
+         "pSA_5.0",
+         "pSA_6.0",
+         "pSA_7.5",
+         "pSA_10.0",
+      ]
+  disagg_return_periods: [ 25, 475, 2475 ]
+  uhs_return_periods: [ 25, 72, 475, 2475, 4975 ]
+  gms:
+    pSA_0p3_0p01:
+        IM_j: pSA_0.3
+        exceedance: 0.01
+        im_j: null
+        IMs: null
+        n_gms: 10
+        dataset_id: nga_west_2
+        n_replica: 10
+    pSA_0p3_0p002:
+      IM_j: pSA_0.3
+      exceedance: 0.002
+      im_j: null
+      IMs: null
+      n_gms: 10
+      dataset_id: nga_west_2
+      n_replica: 10
+    pSA_0p3_0p0004:
+      IM_j: pSA_0.3
+      exceedance: 0.0004
+      im_j: null
+      IMs: null
+      n_gms: 10
+      dataset_id: nga_west_2
+      n_replica: 10
+
+    pSA_3p0_0p01:
+        IM_j: pSA_3.0
+        exceedance: 0.01
+        im_j: null
+        IMs: null
+        n_gms: 10
+        dataset_id: nga_west_2
+        n_replica: 10
+    pSA_3p0_0p002:
+      IM_j: pSA_3.0
+      exceedance: 0.002
+      im_j: null
+      IMs: null
+      n_gms: 10
+      dataset_id: nga_west_2
+      n_replica: 10
+    pSA_3p0_0p0004:
+      IM_j: pSA_3.0
+      exceedance: 0.0004
+      im_j: null
+      IMs: null
+      n_gms: 10
+      dataset_id: nga_west_2
+      n_replica: 10
+

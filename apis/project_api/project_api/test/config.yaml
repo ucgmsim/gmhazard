@@ -1,0 +1,12 @@
+general:
+  project_id: "test_project"
+  station_id: "Arthurs_Pass_200_2p4_4p8"
+hazard:
+  im: "PGA"
+disagg:
+  im: "PGA"
+  rp: 25
+uhs:
+  rp: 25
+gms:
+  gms_id: "pSA_0p3_0p0004_PGA_pSA"

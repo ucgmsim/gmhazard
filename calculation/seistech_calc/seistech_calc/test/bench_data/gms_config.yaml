@@ -1,0 +1,15 @@
+type: "gms"
+ensembles:
+  v20p5emp:
+    components: False
+    gms_parameters:
+      pSA_0p3_0p01_PGA_pSA:
+        IMj: pSA_0.3
+        exceedance: 0.01
+        im_j: null
+        IMs: null
+        n_gms: 10
+        dataset_id: nga_west_2
+        n_replica: 10
+    station_names:
+      - "CCCC"
