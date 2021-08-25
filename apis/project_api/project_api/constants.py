@@ -30,8 +30,10 @@ PROJECT_UHS_DOWNLOAD_ENDPOINT = "/api/project/uhs/download"
 PROJECT_GMS_RUNS_ENDPOINT = "/api/project/gms/runs/get"
 PROJECT_GMS_ENDPOINT = "/api/project/gms/get"
 PROJECT_GMS_DOWNLOAD_ENDPOINT = "/api/project/gms/download"
-PROJECT_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT = "/api/project/gms/default_causal_params/get"
+PROJECT_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT = (
+    "/api/project/gms/default_causal_params/get"
+)
 
-
-
-
+# Scenario endpoints
+PROJECT_SCENARIO_ENDPOINT = "/api/project/scenario/get"
+PROJECT_SCENARIO_DOWNLOAD_ENDPOINT = "/api/project/scenario/download"

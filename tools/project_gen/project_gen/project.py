@@ -1,6 +1,6 @@
-"""Script for setting up a projects directory from scratch"""
 import subprocess
 import traceback
+import os
 from typing import Dict, List, Union
 from pathlib import Path
 
@@ -19,7 +19,7 @@ FAULT_ERF_FILENAME = "NZ_FLTmodel_2010.txt"
 FLT_SITE_SOURCE_DB_FILENAME = "flt_site_source.db"
 DS_SITE_SOURCE_DB_FILENAME = "ds_site_source.db"
 
-ERF_DIR = Path("/mnt/mantle_data/seistech/sources/18p6")
+ERF_DIR = Path(os.getenv("ERF_DIR"))
 
 
 def create_project(
@@ -29,6 +29,7 @@ def create_project(
     n_procs: int = 6,
     new_project: bool = True,
     use_mp: bool = True,
+    erf_dir: Path = None,
 ):
     """
     Creates a new project, generates the required DBs,
@@ -59,6 +60,7 @@ def create_project(
         used for PSHA result generation, otherwise celery
         will be used.
     """
+    erf_dir = ERF_DIR if erf_dir is None else erf_dir
 
     try:
         projects_base_dir, scripts_dir = (
@@ -79,7 +81,7 @@ def create_project(
             setup_project(projects_base_dir, project_id)
 
             if "im_components" not in project_params:
-                project_params["im_components"] = ["RotD50", "Larger"]
+                project_params["im_components"] = ["RotD50"]
 
             # Write the config
             project_config = write_project_config(project_dir, project_params)
@@ -103,7 +105,7 @@ def create_project(
                 vs30_ffp,
                 model_config_ffp,
                 scripts_dir,
-                ERF_DIR,
+                erf_dir,
                 n_procs,
                 z_ffp=z_ffp,
                 n_perturbations=n_perturbations,
@@ -116,7 +118,7 @@ def create_project(
             project_id,
             dbs_dir,
             scripts_dir,
-            ERF_DIR,
+            erf_dir,
             n_perturbations=n_perturbations,
         )
 
@@ -327,7 +329,7 @@ def generate_dbs(
         if n_perturbations > 1:
             print(f"Generating perturbation {i}")
             erf_file = str(
-                erf_dir / "nhm_perturbations" / f"NZ_FLTmodel_2010_v18p6_pert{i:02}.txt"
+                erf_dir / "nhm_perturbations_20" / f"NZ_FLTmodel_2010_pert{i:02}.txt"
             )
         else:
             erf_file = str(erf_dir / FAULT_ERF_FILENAME)
@@ -370,7 +372,7 @@ def create_ensemble_config(
         erf_ffps = [
             str(erf_ffp)
             for erf_ffp in sorted(
-                erf_dir.glob("nhm_perturbations/NZ_FLTmodel_2010_v18p6_pert*.txt")
+                erf_dir.glob("nhm_perturbations_20/NZ_FLTmodel_2010_pert*.txt")
             )
         ]
     else:

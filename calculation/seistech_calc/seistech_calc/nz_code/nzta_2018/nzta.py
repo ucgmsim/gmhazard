@@ -6,9 +6,9 @@ import pandas as pd
 import numpy as np
 
 import sha_calc as sha
-import seistech_calc.site as site
-import seistech_calc.gm_data as gm_data
-import seistech_calc.constants as const
+from seistech_calc import site
+from seistech_calc import gm_data
+from seistech_calc import constants as const
 from seistech_calc.im import IMComponent
 from .NZTAResult import NZTAResult
 from qcore import geo

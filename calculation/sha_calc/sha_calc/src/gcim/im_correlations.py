@@ -9,7 +9,11 @@ def get_im_correlations(IMi: str, IMj: str):
     if IMi == IMj:
         return 1.0
 
-    models = [bradley_correlations_2011, baker_correlations_2008, bradley_correlations_2015]
+    models = [
+        bradley_correlations_2011,
+        baker_correlations_2008,
+        bradley_correlations_2015,
+    ]
     for cur_model in models:
         cur_result = cur_model(IMi, IMj)
         if cur_result is not None:

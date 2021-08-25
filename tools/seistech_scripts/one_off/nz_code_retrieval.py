@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 import sha_calc as sha
-import seistech_calc as si
+import seistech_calc as sc
 
 DEFAULT_RETURN_PERIODS = np.array([20, 25, 50, 100, 250, 500, 1000, 2000, 2500])
 DEFAULT_EXCEEDANCE_VALUES = 1 / DEFAULT_RETURN_PERIODS
@@ -65,7 +65,7 @@ def main(
     data_df = pd.read_csv(input_data_ffp)
 
     # Need an ensemble
-    ens = si.gm_data.Ensemble("v20p5emp")
+    ens = sc.gm_data.Ensemble("v20p5emp")
 
     if nz_code_type == "NZS1170.5":
         with mp.Pool(n_procs) as pool:
@@ -142,7 +142,7 @@ def main(
 
 
 def _process_nzta_station(
-    ens: si.gm_data.Ensemble,
+    ens: sc.gm_data.Ensemble,
     lat: float,
     lon: float,
     vs30: float,
@@ -156,9 +156,9 @@ def _process_nzta_station(
     if np.isnan(vs30):
         return np.full(len(DEFAULT_EXCEEDANCE_VALUES), np.nan), np.nan
 
-    site_info = si.site.SiteInfo(f"site_{ix}", lat, lon, vs30)
+    site_info = sc.site.SiteInfo(f"site_{ix}", lat, lon, vs30)
 
-    result = si.nz_code.nzta_2018.run_ensemble_nzta(
+    result = sc.nz_code.nzta_2018.run_ensemble_nzta(
         ens, site_info, exceedance_values=DEFAULT_EXCEEDANCE_VALUES
     )
     return (
@@ -168,7 +168,7 @@ def _process_nzta_station(
 
 
 def _process_nzs1170p5_station(
-    ens: si.gm_data.Ensemble,
+    ens: sc.gm_data.Ensemble,
     lat: float,
     lon: float,
     vs30: float,
@@ -178,7 +178,7 @@ def _process_nzs1170p5_station(
 ):
     print(f"Processing location {ix + 1}/{n_locs}")
     # Get the periods
-    sa_periods = [0 if im == "PGA" else si.utils.get_period_from_pSA(im) for im in ims]
+    sa_periods = [0 if im == "PGA" else sc.utils.get_period_from_pSA(im) for im in ims]
 
     # Set result to nan if no vs30 values are available
     if np.isnan(vs30):
@@ -190,11 +190,11 @@ def _process_nzs1170p5_station(
             np.full(len(sa_periods), np.nan),
         )
 
-    site_info = si.site.SiteInfo(f"site_{ix}", lat, lon, vs30)
+    site_info = sc.site.SiteInfo(f"site_{ix}", lat, lon, vs30)
 
-    distance = si.nz_code.nzs1170p5.get_distance_from_site_info(ens, site_info)
-    z_factor = float(si.nz_code.nzs1170p5.ll2z((site_info.lon, site_info.lat)))
-    soil_class = si.nz_code.nzs1170p5.get_soil_class(site_info.vs30)
+    distance = sc.nz_code.nzs1170p5.get_distance_from_site_info(ens, site_info)
+    z_factor = float(sc.nz_code.nzs1170p5.ll2z((site_info.lon, site_info.lat)))
+    soil_class = sc.nz_code.nzs1170p5.get_soil_class(site_info.vs30)
 
     results, R_values, N_values, Ch_values = [], [], [], []
     for cur_exceedance in DEFAULT_EXCEEDANCE_VALUES:

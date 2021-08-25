@@ -6,18 +6,19 @@ import numpy as np
 from werkzeug.contrib.cache import BaseCache
 from flask_cors import cross_origin
 
-import seistech_calc as si
+import seistech_calc as sc
 import seistech_utils as su
-from ..server import app, requires_auth, DOWNLOAD_URL_SECRET_KEY, DOWNLOAD_URL_VALID_FOR
-from .. import constants as const
+from core_api import server
+from core_api import utils
+from core_api import constants as const
 
 
 class UHSCachedData:
     def __init__(
         self,
-        ensemble: si.gm_data.Ensemble,
-        site_info: si.site.SiteInfo,
-        uhs_results: List[si.uhs.UHSResult],
+        ensemble: sc.gm_data.Ensemble,
+        site_info: sc.site.SiteInfo,
+        uhs_results: List[sc.uhs.UHSResult],
     ):
         self.ensemble = ensemble
         self.site_info = site_info
@@ -27,10 +28,10 @@ class UHSCachedData:
         return iter((self.ensemble, self.site_info, self.uhs_results))
 
 
-@app.route(const.ENSEMBLE_UHS_ENDPOINT, methods=["GET"])
+@server.app.route(const.ENSEMBLE_UHS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
-@requires_auth
-@su.api.endpoint_exception_handling(app)
+@server.requires_auth
+@su.api.endpoint_exception_handling(server.app)
 def get_ensemble_uhs():
     """Retrieves the ensemble UHS for the
     specified station (name)
@@ -39,16 +40,22 @@ def get_ensemble_uhs():
     ensemble_id, station, exceedances (as a comma separated string)
     Optional parameters: calc_percentiles
     """
-    app.logger.info(f"Received request at {const.ENSEMBLE_UHS_ENDPOINT}")
+    server.app.logger.info(f"Received request at {const.ENSEMBLE_UHS_ENDPOINT}")
     cache = flask.current_app.extensions["cache"]
 
     (ensemble_id, station, exceedances), optional_kwargs = su.api.get_check_keys(
         flask.request.args,
         ("ensemble_id", "station", "exceedances"),
-        (("calc_percentiles", int), ("vs30", float), ("im_component", si.im.IMComponent, si.im.IMComponent.RotD50)),
+        (
+            ("calc_percentiles", int),
+            ("vs30", float),
+            ("im_component", sc.im.IMComponent, sc.im.IMComponent.RotD50),
+        ),
     )
 
-    app.logger.debug(f"Request parameters {ensemble_id}, {station}, {exceedances}")
+    server.app.logger.debug(
+        f"Request parameters {ensemble_id}, {station}, {exceedances}"
+    )
 
     calc_percentiles = optional_kwargs.get("calc_percentiles")
     calc_percentiles = False if calc_percentiles is None else bool(calc_percentiles)
@@ -78,15 +85,15 @@ def get_ensemble_uhs():
                     "calc_percentiles": calc_percentiles,
                     "im_component": str(im_component),
                 },
-                DOWNLOAD_URL_SECRET_KEY,
-                DOWNLOAD_URL_VALID_FOR,
+                server.DOWNLOAD_URL_SECRET_KEY,
+                server.DOWNLOAD_URL_VALID_FOR,
             ),
         )
     )
 
 
-@app.route(const.ENSEMBLE_UHS_DOWNLOAD_ENDPOINT, methods=["GET"])
-@su.api.endpoint_exception_handling(app)
+@server.app.route(const.ENSEMBLE_UHS_DOWNLOAD_ENDPOINT, methods=["GET"])
+@su.api.endpoint_exception_handling(server.app)
 def download_ensemble_uhs():
     """
     Handles downloading of the UHS raw data
@@ -94,55 +101,36 @@ def download_ensemble_uhs():
     Computes UHS & NZ code UHS, saves in a temp dir, zips the files
     and returns them to the user
     """
-    app.logger.info(f"Received request at {const.ENSEMBLE_UHS_DOWNLOAD_ENDPOINT}")
+    server.app.logger.info(
+        f"Received request at {const.ENSEMBLE_UHS_DOWNLOAD_ENDPOINT}"
+    )
     cache = flask.current_app.extensions["cache"]
 
     (uhs_token, nzs1170p5_token), _ = su.api.get_check_keys(
         flask.request.args, ("uhs_token", "nzs1170p5_hazard_token")
     )
-    uhs_payload = su.api.utils.get_token_payload(uhs_token, DOWNLOAD_URL_SECRET_KEY)
-    ensemble_id, station, user_vs30, exceedances_str, calc_percentiles = (
+    uhs_payload = su.api.utils.get_token_payload(
+        uhs_token, server.DOWNLOAD_URL_SECRET_KEY
+    )
+    ensemble_id, station, user_vs30, exceedances_str, calc_percentiles, im_component = (
         uhs_payload["ensemble_id"],
         uhs_payload["station"],
         uhs_payload["user_vs30"],
         uhs_payload["exceedances"],
         uhs_payload["calc_percentiles"],
+        sc.im.IMComponent(uhs_payload["im_component"]),
     )
 
     nzs1170p5_payload = su.api.utils.get_token_payload(
-        nzs1170p5_token, DOWNLOAD_URL_SECRET_KEY
+        nzs1170p5_token, server.DOWNLOAD_URL_SECRET_KEY
     )
     assert (
         ensemble_id == nzs1170p5_payload["ensemble_id"]
         and station == nzs1170p5_payload["station"]
         and exceedances_str == nzs1170p5_payload["exceedances"]
     )
-    exceedances = np.asarray(list(map(float, exceedances_str.split(","))))
 
-    # Get the NZS1170p5 UHS data from the cache
-    opt_args = {
-        cur_key: cur_type(nzs1170p5_payload[cur_key])
-        for cur_key, cur_type in const.NZ_CODE_OPT_ARGS
-        if cur_key in nzs1170p5_payload.keys()
-    }
-    nzs1170p5_cache_key = su.api.get_cache_key(
-        "nzs1170p5_uhs",
-        ensemble_id=ensemble_id,
-        station=station,
-        **{
-            f"exceedance_{ix}": str(exceedance)
-            for ix, exceedance in enumerate(exceedances)
-        },
-        **{cur_key: str(cur_val) for cur_key, cur_val in opt_args.items()},
-    )
-    cache_data = cache.get(nzs1170p5_cache_key)
-    if cache_data is not None:
-        _, _, nzs1170p5_uhs = cache_data
-    else:
-        raise Exception(
-            f"No cache data for NZS1170.5 UHS found for key {nzs1170p5_cache_key}"
-        )
-
+    # Get the UHS data (either compute or from cache)
     ensemble, site_info, uhs_results = _get_uhs(
         ensemble_id,
         station,
@@ -150,6 +138,17 @@ def download_ensemble_uhs():
         cache,
         calc_percentiles=calc_percentiles,
         user_vs30=user_vs30,
+        im_component=im_component,
+    )
+
+    # Get the NZS1170p5 UHS data from the cache
+    opt_args = {
+        cur_key: cur_type(nzs1170p5_payload[cur_key])
+        for cur_key, cur_type in const.NZ_CODE_OPT_ARGS
+        if cur_key in nzs1170p5_payload.keys()
+    }
+    _, __, nzs1170p5_uhs = utils.get_nzs1170p5_uhs(
+        ensemble_id, station, exceedances_str, opt_args, cache, user_vs30=user_vs30
     )
 
     with tempfile.TemporaryDirectory() as tmp_dir:
@@ -171,8 +170,8 @@ def _get_uhs(
     cache: BaseCache,
     calc_percentiles: bool = False,
     user_vs30: float = None,
-    im_component: si.im.IMComponent = si.im.IMComponent.RotD50,
-) -> Tuple[si.gm_data.Ensemble, si.site.SiteInfo, List[si.uhs.EnsembleUHSResult],]:
+    im_component: sc.im.IMComponent = sc.im.IMComponent.RotD50,
+) -> Tuple[sc.gm_data.Ensemble, sc.site.SiteInfo, List[sc.uhs.EnsembleUHSResult],]:
     git_version = su.api.get_repo_version()
     exceedances = np.asarray(list(map(float, exceedances.split(","))))
 
@@ -192,15 +191,15 @@ def _get_uhs(
     cached_data = cache.get(cache_key)
 
     if cached_data is None:
-        app.logger.debug(f"No cached result for {cache_key}, computing UHS")
+        server.app.logger.debug(f"No cached result for {cache_key}, computing UHS")
 
-        app.logger.debug(f"Loading ensemble and retrieving site information")
-        ensemble = si.gm_data.Ensemble(ensemble_id)
-        site_info = si.site.get_site_from_name(ensemble, station, user_vs30=user_vs30)
+        server.app.logger.debug(f"Loading ensemble and retrieving site information")
+        ensemble = sc.gm_data.Ensemble(ensemble_id)
+        site_info = sc.site.get_site_from_name(ensemble, station, user_vs30=user_vs30)
 
-        app.logger.debug(f"Computing UHS - version {git_version}")
+        server.app.logger.debug(f"Computing UHS - version {git_version}")
 
-        uhs_results = si.uhs.run_ensemble_uhs(
+        uhs_results = sc.uhs.run_ensemble_uhs(
             ensemble,
             site_info,
             np.asarray(exceedances),
@@ -211,7 +210,7 @@ def _get_uhs(
 
         cache.set(cache_key, UHSCachedData(ensemble, site_info, uhs_results))
     else:
-        app.logger.debug(f"Using cached result with key {cache_key}")
+        server.app.logger.debug(f"Using cached result with key {cache_key}")
         ensemble, site_info, uhs_results = cached_data
 
     return ensemble, site_info, uhs_results

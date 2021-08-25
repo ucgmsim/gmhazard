@@ -7,11 +7,10 @@ import pandas as pd
 import numpy as np
 
 import sha_calc as sha_calc
-import seistech_calc.site as site
-import seistech_calc.utils as utils
-import seistech_calc.gm_data as gm_data
-import seistech_calc.site_source as site_source
-import seistech_calc.constants as const
+from seistech_calc import site
+from seistech_calc import gm_data
+from seistech_calc import site_source
+from seistech_calc import constants as const
 from seistech_calc.im import IM, IMType, IMComponent
 from .NZS1170p5Result import NZS1170p5Result
 from .nzs_zfactor_2016 import ll2z

@@ -13,6 +13,7 @@ from scipy import stats
 
 from . import shared
 
+
 def compute_weighted_sigma(im_df: pd.DataFrame, alpha: pd.Series) -> pd.Series:
     """Computes the weighted sigma_lnIMi|Rup,IMj from equation 10 in [1],
     which for the simulation based GM selection process is rupture

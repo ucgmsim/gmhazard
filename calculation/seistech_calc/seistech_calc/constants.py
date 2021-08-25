@@ -1,4 +1,5 @@
 from enum import Enum
+
 from qcore.constants import ExtendedStrEnum
 
 

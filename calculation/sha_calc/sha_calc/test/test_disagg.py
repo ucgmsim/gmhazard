@@ -99,9 +99,9 @@ def test_mean_diff_branches():
 )
 def test_epsilon_para(mu: float, sigma: float, gm_prob: float, expected: float):
     """Tests the epsilon calculation for a parametric distribution,
-     i.e. lognormally distributed IM values, in terms of
-     the normal distribution parameters (mean and std)
-     """
+    i.e. lognormally distributed IM values, in terms of
+    the normal distribution parameters (mean and std)
+    """
     params_df = pd.DataFrame(
         index=["test_rupture"],
         data=np.asarray([mu, sigma]).reshape(1, 2),

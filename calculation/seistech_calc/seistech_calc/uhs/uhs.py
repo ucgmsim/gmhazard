@@ -4,12 +4,12 @@ from typing import Union, List, Iterable, Dict
 import numpy as np
 import pandas as pd
 
-import seistech_calc.site as site
-import seistech_calc.shared as shared
-import seistech_calc.hazard as hazard
-import seistech_calc.gm_data as gm_data
-import seistech_calc.exceptions as exceptions
-import seistech_calc.nz_code.nzs1170p5 as nzs1170p5
+from seistech_calc import site
+from seistech_calc import shared
+from seistech_calc import hazard
+from seistech_calc import gm_data
+from seistech_calc import exceptions
+from seistech_calc.nz_code import nzs1170p5
 from seistech_calc.im import IM, IMType, IMComponent
 from .UHSResult import UHSResult, EnsembleUHSResult, BranchUHSResult
 
@@ -246,7 +246,7 @@ def run_nzs1170p5_uhs(
         if opt_nzs1170p5_args.get("im_component") is None:
             im_component = IMComponent.Larger
         else:
-            im_component = IMComponent[opt_nzs1170p5_args.get("im_component")]
+            im_component = opt_nzs1170p5_args.get("im_component")
             del opt_nzs1170p5_args["im_component"]
 
     pSA_periods = DEFAULT_PSA_PERIODS if pSA_periods is None else pSA_periods

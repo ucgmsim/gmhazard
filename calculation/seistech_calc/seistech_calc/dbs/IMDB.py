@@ -8,8 +8,8 @@ import tables
 import numpy as np
 import pandas as pd
 
-import seistech_calc.utils as utils
-import seistech_calc.constants as const
+from seistech_calc import utils
+from seistech_calc import constants as const
 from seistech_calc.im import IM
 from .BaseDB import BaseDB, check_open
 from qcore.simulation_structure import get_fault_from_realisation

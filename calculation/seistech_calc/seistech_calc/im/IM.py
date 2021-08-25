@@ -1,4 +1,4 @@
-from enum import Enum, auto
+from enum import Enum
 from typing import Optional, List
 
 
@@ -60,16 +60,22 @@ class IM:
             raise ValueError("Creation of pSA IM does not have a specified period")
 
     @classmethod
-    def from_str(cls, im_string: str):
+    def from_str(cls, im_string: str, im_component: Optional[str] = None):
         """Converts a given string to an IM object"""
         period = None
         if im_string.startswith("pSA") and "_" in im_string:
             im_string, period = im_string.split("_")
             period = float(period.replace("p", "."))
-        return cls(IMType[im_string], period)
+
+        return (
+            cls(IMType[im_string], period)
+            if im_component is None
+            else cls(IMType[im_string], period, IMComponent(im_component))
+        )
 
     def __str__(self):
-        """Overrides the string method by just returning the name instead of the object"""
+        """Overrides the string method by just
+        returning the name instead of the object"""
         if self.period:
             return f"{self.im_type}_{self.period}"
         else:
@@ -79,7 +85,11 @@ class IM:
         return hash((self.im_type, self.period, self.component))
 
     def __eq__(self, other):
-        return (self.im_type, self.period, self.component) == (other.im_type, other.period, other.component,)
+        return (self.im_type, self.period, self.component) == (
+            other.im_type,
+            other.period,
+            other.component,
+        )
 
     def __ne__(self, other):
         return not self.__eq__(other)

@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-import sha_calc as sha_calc
+from sha_calc.src import gcim
 
 DEFAULT_PERIODS = np.logspace(np.log(0.01000001), np.log(10.0), base=np.e)
 DEFAULT_PERIODS[-1] = 10.0
@@ -25,7 +25,7 @@ def main(
     # Generate the plots
     for cur_im in ims:
         cur_corr = [
-            sha_calc.get_im_correlations(cur_im, cur_pSA_im) for cur_pSA_im in pSA_ims
+            gcim.get_im_correlations(cur_im, cur_pSA_im) for cur_pSA_im in pSA_ims
         ]
 
         plt.figure()
@@ -39,7 +39,7 @@ def main(
 
     # Generate the csv
     im_correlations = [
-        [sha_calc.get_im_correlations(cur_im_i, cur_im_j) for cur_im_i in ims]
+        [gcim.get_im_correlations(cur_im_i, cur_im_j) for cur_im_i in ims]
         for cur_im_j in ims
     ]
     im_correlations_df = pd.DataFrame(data=im_correlations, columns=ims, index=ims)

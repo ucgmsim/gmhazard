@@ -1,5 +1,5 @@
 name: "NGA West 2"
 type: "historical"
 
-empirical_IM_csv_ffp: "/mnt/mantle_data/seistech/hist_gms/nga_west_2/nga_west_2_geo_ims.csv"
-empirical_GMs_dir: "/mnt/mantle_data/seistech/hist_gms/nga_west_2/waveforms"
+empirical_IM_csv_ffp: "$PATH$/nga_west_2_geo_ims.csv"
+empirical_GMs_dir: "$PATH$/waveforms"

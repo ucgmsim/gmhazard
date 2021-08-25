@@ -10,7 +10,7 @@ import threading
 from mpi4py import MPI
 import pandas as pd
 
-import seistech_calc as si
+import seistech_calc as sc
 import common
 
 comm = MPI.COMM_WORLD
@@ -49,19 +49,19 @@ def calculate_ds(
     wait_time = 0.0
     nhm_data, rupture_df = None, None
     if is_master:
-        nhm_data = si.utils.ds_nhm_to_rup_df(background_sources_ffp)
+        nhm_data = sc.utils.ds_nhm_to_rup_df(background_sources_ffp)
         rupture_df = pd.DataFrame(nhm_data["rupture_name"])
         imdb_dict, stations_calculated = common.open_imdbs(
             model_dict_ffp,
             output_dir,
-            si.constants.SourceType.distributed,
+            sc.constants.SourceType.distributed,
             suffix=suffix,
         )
     nhm_data = comm.bcast(nhm_data, root=master)
     rupture_df = comm.bcast(rupture_df, root=master)
     imdb_dict_copy = comm.bcast({key: None for key in imdb_dict.keys()}, root=master)
 
-    with si.dbs.SiteSourceDB(site_source_db_ffp) as distance_store:
+    with sc.dbs.SiteSourceDB(site_source_db_ffp) as distance_store:
         fault_df = None
         if is_master:
             # For DS, master is getting all of the work and then distributing it to slaves. Hence why size is 1.
@@ -185,7 +185,7 @@ def parse_args():
         help="Which pSA periods to calculate for",
     )
     parser.add_argument(
-        "--im", default=common.IM_TYPE_LIST, nargs="+", help="Which IMs to calculate", type=si.im.IMType,
+        "--im", default=common.IM_TYPE_LIST, nargs="+", help="Which IMs to calculate", type=sc.im.IMType,
     )
     parser.add_argument(
         "--model-dict",

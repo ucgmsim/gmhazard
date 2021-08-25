@@ -15,7 +15,7 @@ import pandas as pd
 from qcore import formats
 from qcore import geo
 
-import seistech_calc as si
+import seistech_calc as sc
 import common
 
 MAX_RJB = max(common.DIST)
@@ -40,14 +40,14 @@ def calculate_distances(background_file, ll_file, ssddb_path):
     :param ssddb_path: Output file path
     :return: None
     """
-    background_data = si.utils.read_ds_nhm(background_file)
+    background_data = sc.utils.read_ds_nhm(background_file)
     site_df = formats.load_station_file(ll_file)
     n_stations = len(site_df)
 
     fault_df = None
     if is_master:
         fault_list = [
-            si.utils.create_ds_fault_name(row.source_lat, row.source_lon, row.source_depth)
+            sc.utils.create_ds_fault_name(row.source_lat, row.source_lon, row.source_depth)
             for __, row in background_data.iterrows()
         ]
         fault_df = pd.DataFrame(fault_list, columns=["fault_name"])
@@ -55,8 +55,8 @@ def calculate_distances(background_file, ll_file, ssddb_path):
 
     work = site_df[rank::size]
 
-    with si.dbs.SiteSourceDB(
-        ssddb_path, si.constants.SourceType.distributed.value, writeable=True
+    with sc.dbs.SiteSourceDB(
+        ssddb_path, sc.constants.SourceType.distributed.value, writeable=True
     ) as distance_store:
         for site_index, site in work.iterrows():
             distance_df = pd.DataFrame()

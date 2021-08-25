@@ -7,19 +7,19 @@ similarly to imdb_event_map_runner
 import os
 import argparse
 
-import seistech_calc as si
+import seistech_calc as sc
 import shared
 
 
-def get_imdb(ens: si.gm_data.Ensemble, rupture_id: str):
+def get_imdb(ens: sc.gm_data.Ensemble, rupture_id: str):
     """Gets the relevant imdb for the given rupture in the
     specifed ensemble
     """
     branch = ens.branches[list(ens.branches.keys())[0]]
 
     for imdb_ffp in branch.fault_imdbs:
-        with si.dbs.IMDB.get_imdb(imdb_ffp) as db:
-            if rupture_id in si.rupture.rupture_name_to_id(
+        with sc.dbs.IMDB.get_imdb(imdb_ffp) as db:
+            if rupture_id in sc.rupture.rupture_name_to_id(
                 db.rupture_names(), branch.flt_erf_ffp
             ):
                 return imdb_ffp
@@ -33,8 +33,8 @@ def main(
     n_procs: int = 8,
     lat_max_filter: float = None,
 ):
-    ens_1 = si.gm_data.Ensemble(ensemble_id_1)
-    ens_2 = si.gm_data.Ensemble(ensemble_id_2)
+    ens_1 = sc.gm_data.Ensemble(ensemble_id_1)
+    ens_2 = sc.gm_data.Ensemble(ensemble_id_2)
 
     # Only support ensembles with a single branch
     if len(ens_1.branches) > 1 or len(ens_2.branches) > 1:
@@ -42,10 +42,10 @@ def main(
 
     # Get all ruptures & IMs that are in both ensembles
     flt_ruptures_1 = ens_1.rupture_df.loc[
-        ens_1.rupture_df.rupture_type == si.SourceType.fault.value
+        ens_1.rupture_df.rupture_type == sc.SourceType.fault.value
     ].index.values.astype(str)
     flt_ruptures_2 = ens_2.rupture_df.loc[
-        ens_2.rupture_df.rupture_type == si.SourceType.fault.value
+        ens_2.rupture_df.rupture_type == sc.SourceType.fault.value
     ].index.values.astype(str)
     flt_ruptures = set(flt_ruptures_1) & set(flt_ruptures_2)
     ims = set(ens_1.ims) & set(ens_2.ims)

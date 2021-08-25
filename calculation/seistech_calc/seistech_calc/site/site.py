@@ -2,7 +2,7 @@ from typing import Union
 
 import numpy as np
 
-import seistech_calc.gm_data as gm_data
+from seistech_calc import gm_data
 from .SiteInfo import SiteInfo
 from qcore.geo import closest_location
 

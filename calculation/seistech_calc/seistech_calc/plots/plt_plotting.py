@@ -1,4 +1,5 @@
 from typing import Optional, List, Tuple, Dict, Union
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -271,7 +272,7 @@ def plot_hazard(
             color="black",
             linestyle="dotted",
             marker="^",
-            label="NZS1170.5 Code",
+            label="NZS1170.5",
         )
 
     if nzta_hazard is not None:
@@ -282,7 +283,7 @@ def plot_hazard(
             linestyle="dotted",
             marker="s",
             markerfacecolor="none",
-            label="NZTA Code",
+            label="NZTA",
         )
 
     _hazard_plot(im, im_values, title, save_file=save_file)
@@ -322,7 +323,7 @@ def plot_hazard_totals(
             color="black",
             linestyle="dotted",
             marker="^",
-            label="NZS1170.5 Code",
+            label="NZS1170.5",
         )
 
     if nzta_hazard is not None:
@@ -333,7 +334,7 @@ def plot_hazard_totals(
             linestyle="dotted",
             marker="s",
             markerfacecolor="none",
-            label="NZTA Code",
+            label="NZTA",
         )
 
     # Plot the ensemble total last (to ensure its on top)
@@ -387,10 +388,10 @@ def _hazard_plot(im: IM, im_values: np.ndarray, title: str, save_file: str = Non
 
 def plot_uhs(
     uhs_df: pd.DataFrame,
-    nz_code_uhs: pd.DataFrame = None,
+    nzs1170p5_uhs: pd.DataFrame = None,
     station_name: str = None,
     legend_rp: bool = True,
-    save_file: str = None,
+    save_file: Path = None,
 ):
     """Plots the different uniform hazard spectra, also saves the
     plot if a save file is specified
@@ -401,8 +402,8 @@ def plot_uhs(
         The SA IM values to plot for the different
         SA periods & exceedance probabilities
         format: index = SA periods, columns = exceedance probabilities
-    nz_code_uhs: pd.DataFrame
-        The NZ code SA IM values to plot for the different
+    nzs1170p5_uhs: pd.DataFrame
+        The NZS1170.5 SA IM values to plot for the different
         SA periods & exceedance probabilities
         format: index = SA periods, columns = exceedance probabilities
     station_name: str, optional
@@ -410,7 +411,7 @@ def plot_uhs(
     legend_rp: bool, optional
         If set then the legend labels the lines in terms of
         return period instead of exceedance rate
-    save_file: str, optional
+    save_file: Path, optional
     """
 
     def get_legend_label(rp: Union[str, int]):
@@ -427,14 +428,14 @@ def plot_uhs(
                 label=get_legend_label(col),
             )
 
-    if nz_code_uhs is not None:
-        for col_ix, col in enumerate(nz_code_uhs.columns.values):
+    if nzs1170p5_uhs is not None:
+        for col_ix, col in enumerate(nzs1170p5_uhs.columns.values):
             # Check that there are non-nan entries
-            if np.count_nonzero(~np.isnan(nz_code_uhs.iloc[:, col_ix].values)) > 0:
+            if np.count_nonzero(~np.isnan(nzs1170p5_uhs.iloc[:, col_ix].values)) > 0:
                 ax.plot(
-                    nz_code_uhs.index.values,
-                    nz_code_uhs.iloc[:, col_ix].values,
-                    label=f"NZS1170.5 Code - {get_legend_label(int(1 / col))}",
+                    nzs1170p5_uhs.index.values,
+                    nzs1170p5_uhs.iloc[:, col_ix].values,
+                    label=f"NZS1170.5, RP={int(1 / col)}",
                     color="k",
                 )
 
@@ -453,16 +454,38 @@ def plot_uhs(
 
 
 def plot_uhs_branches(
+    uhs_df: pd.DataFrame,
     branch_uhs_df: pd.DataFrame,
-    mean_period_values: np.ndarray,
-    mean_sa_values: np.ndarray,
     rp: int,
-    station: str = None,
-    save_ffp: str = None,
+    nzs1170p5_uhs: pd.DataFrame = None,
+    station_name: str = None,
+    save_file: Path = None,
 ):
-    """Plots the branches UHS and ensemble mean for one exceedance rate"""
+    """UHS plot for each RP with the branches and percentiles
+
+    Parameters
+    ----------
+    uhs_df: pd.DataFrame
+        The SA IM values to plot for the different
+        SA periods & exceedance probabilities
+        format: index = SA periods, columns = exceedance probabilities
+    branch_uhs_df: pd.DataFrame
+        The SA IM values to plot for the different
+        SA periods & branch's exceedance probabilities
+        format: index = SA periods, columns = exceedance probabilities
+    rp: int
+        Return period
+    nzs1170p5_uhs: pd.DataFrame
+        The NZS1170.5 SA IM values to plot for the different
+        SA periods & exceedance probabilities
+        format: index = SA periods, columns = exceedance probabilities
+    station_name: str, optional
+        Name of the station this plot is for, used for the plot title
+    save_file: Path, optional
+    """
     plt.figure(figsize=(12, 9))
 
+    # Branches plots
     for ix, cur_col in enumerate(branch_uhs_df.columns):
         plt.plot(
             branch_uhs_df.index.values,
@@ -472,22 +495,57 @@ def plot_uhs_branches(
             label="Branches" if ix == 0 else None,
         )
 
+    # NZS1170.5 plot
+    if nzs1170p5_uhs is not None:
+        for col_ix, col in enumerate(nzs1170p5_uhs.columns.values):
+            if int(1 / col) == rp:
+                if (
+                    np.count_nonzero(~np.isnan(nzs1170p5_uhs.iloc[:, col_ix].values))
+                    > 0
+                ):
+                    plt.plot(
+                        nzs1170p5_uhs.index.values,
+                        nzs1170p5_uhs.iloc[:, col_ix].values,
+                        label="NZS1170.5",
+                        color="black",
+                    )
+
+    # Site-specific plot
     plt.plot(
-        mean_period_values,
-        mean_sa_values,
-        linewidth=2,
-        color="black",
-        label="Ensemble Mean",
+        uhs_df.index.values,
+        uhs_df.get(f"{rp}_mean").values,
+        label="Site-specific",
+        color="blue",
     )
 
-    plt.title(f"{station}, Return period - {rp}")
+    # Percentile plots
+    if f"{rp}_16th" in uhs_df and f"{rp}_84th" in uhs_df:
+        plt.plot(
+            uhs_df.index.values,
+            uhs_df.get(f"{rp}_16th").values,
+            color="black",
+            linestyle="dashed",
+            label="$16^{th}$ Percentile",
+            linewidth=1,
+            dashes=(5, 5),
+        )
+        plt.plot(
+            uhs_df.index.values,
+            uhs_df.get(f"{rp}_84th").values,
+            color="black",
+            linestyle="dashed",
+            label="$84^{th}$ Percentile",
+            linewidth=1,
+            dashes=(5, 5),
+        )
+
+    plt.title(f"{station_name}, Return period - {rp}")
     plt.xlabel("Period (s)")
     plt.ylabel("SA (g)")
+    plt.legend()
 
-    plt.legend(title="Return period")
-
-    if save_ffp is not None:
-        plt.savefig(save_ffp)
+    if save_file is not None:
+        plt.savefig(save_file)
         plt.close()
     else:
         plt.show()

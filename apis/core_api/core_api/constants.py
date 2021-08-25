@@ -1,4 +1,4 @@
-import seistech_calc as si
+import seistech_calc as sc
 
 # GM data endpoints
 ENSEMBLE_IDS_ENDPOINT = "/api/gm_data/ensemble/ids/get"
@@ -39,6 +39,10 @@ GMS_GM_DATASETS_ENDPOINT = "/api/gms/ensemble_gms/datasets"
 # Rupture endpoints
 RUPTURES_ENDPOINT = "/api/rupture/ruptures/get"
 
+# Scenario endpoints
+ENSEMBLE_SCENARIO_ENDPOINT = "/api/scenario/ensemble_scenario/get"
+ENSEMBLE_SCENARIO_DOWNLOAD_ENDPOINT = "/api/scenario/ensemble_scenario/download"
+
 # Site endpoints
 SITE_LOCATION_ENDPOINT = "/api/site/station/location/get"
 SITE_NAME_ENDPOINT = "/api/site/station/name/get"
@@ -51,8 +55,9 @@ SITE_SOURCE_DISTANCES_ENDPOINT = "/api/site_source/distances/get"
 
 
 NZ_CODE_OPT_ARGS = [
-    ("soil_class", si.NZSSoilClass),
+    ("soil_class", sc.NZSSoilClass),
     ("distance", float),
     ("z_factor", float),
     ("z_factor_radius", float),
+    ("im_component", sc.im.IMComponent),
 ]

@@ -1,6 +1,7 @@
+from pathlib import Path
 from typing import Dict, Sequence
 
-import seistech_calc as si
+import seistech_calc as sc
 from . import project
 from . import psha
 from .celery import app
@@ -30,7 +31,7 @@ def create_project_task(
 def generate_maps_task(
     ensemble_id: str, ensemble_ffp: str, station_name: str, results_dir: str
 ):
-    ensemble = si.gm_data.Ensemble(ensemble_id, config_ffp=ensemble_ffp)
+    ensemble = sc.gm_data.Ensemble(ensemble_id, config_ffp=ensemble_ffp)
     psha.generate_maps(ensemble, station_name, results_dir)
 
 
@@ -39,9 +40,19 @@ def process_station_im_task(
     ensemble_id: str,
     ensemble_ffp: str,
     station_name: str,
-    im: si.im.IM,
+    im: sc.im.IM,
     disagg_exceedances: Sequence[float],
     output_dir: str,
 ):
-    ensemble = si.gm_data.Ensemble(ensemble_id, config_ffp=ensemble_ffp)
+    ensemble = sc.gm_data.Ensemble(ensemble_id, config_ffp=ensemble_ffp)
     psha.process_station_im(ensemble, station_name, im, disagg_exceedances, output_dir)
+
+
+@app.task(name="Process station component", queue="project_gen")
+def process_station_component_task(
+    ensemble: sc.gm_data.Ensemble,
+    station_name: str,
+    im_component: sc.im.IMComponent,
+    output_dir: Path,
+):
+    psha.process_station_component(ensemble, station_name, im_component, output_dir)

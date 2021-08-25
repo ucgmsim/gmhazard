@@ -1,0 +1,8 @@
+n_procs: 7
+type: "scenarios"
+ensembles:
+  v20p5emp:
+    components: True
+    station_names:
+      - "WTES"
+      - "CCCC"

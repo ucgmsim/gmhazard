@@ -4,9 +4,15 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 
-
 import sha_calc as sha_calc
-import seistech_calc as si
+from seistech_calc.im import IM, IMType, to_im_list, to_string_list
+from seistech_calc import gm_data
+from seistech_calc import site
+from seistech_calc import constants
+from seistech_calc import hazard
+from seistech_calc import shared
+from seistech_calc import site_source
+from seistech_calc import disagg
 from .GroundMotionDataset import GMDataset, HistoricalGMDataset
 from .GMSResult import GMSResult
 from .GCIMResult import BranchUniGCIM, IMEnsembleUniGCIM
@@ -16,10 +22,10 @@ SF_LOW, SF_HIGH = 0.3, 3.0
 
 
 def run_ensemble_gms(
-    ensemble: si.gm_data.Ensemble,
-    site_info: si.site.SiteInfo,
+    ensemble: gm_data.Ensemble,
+    site_info: site.SiteInfo,
     n_gms: int,
-    IMj: si.im.IM,
+    IMj: IM,
     gm_dataset: GMDataset,
     IMs: np.ndarray = None,
     exceedance: float = None,
@@ -72,7 +78,7 @@ def run_ensemble_gms(
     if im_weights is None:
         im_weights = default_IM_weights(IMj, IMs)
     else:
-        im_weights.index = si.im.to_im_list(im_weights.index)
+        im_weights.index = to_im_list(im_weights.index)
 
     # Sanity checks
     assert np.all(
@@ -91,7 +97,7 @@ def run_ensemble_gms(
     assert all(
         [
             ensemble.get_im_ensemble(IMi.im_type).im_data_type
-            == si.constants.IMDataType.parametric
+            == constants.IMDataType.parametric
             for IMi in IMs
         ]
     ), "Currently only support GMS for fully parametric ensembles"
@@ -103,7 +109,7 @@ def run_ensemble_gms(
         )
         exceedance = None
 
-    ens_hazard = si.hazard.run_ensemble_hazard(ensemble, site_info, IMj)
+    ens_hazard = hazard.run_ensemble_hazard(ensemble, site_info, IMj)
     if im_j is not None and not (
         ens_hazard.im_values.min() < im_j < ens_hazard.im_values.max()
     ):
@@ -128,8 +134,8 @@ def run_ensemble_gms(
         im_j,
         {
             cur_branch_name: (
-                si.shared.get_IM_params(
-                    IMj, cur_branch.get_imdb_ffps(si.constants.SourceType.fault), site_info
+                shared.get_IM_params(
+                    IMj, cur_branch.get_imdb_ffps(constants.SourceType.fault), site_info
                 ),
                 cur_branch.flt_rupture_df.set_index("rupture_name").annual_rec_prob,
             )
@@ -140,7 +146,7 @@ def run_ensemble_gms(
     )
 
     # Compute the adjusted branch weights
-    IMj_adj_branch_weights, IMj_hazard_mean = si.shared.compute_adj_branch_weights(
+    IMj_adj_branch_weights, IMj_hazard_mean = shared.compute_adj_branch_weights(
         ensemble, IMj, im_j, site_info
     )
 
@@ -148,13 +154,11 @@ def run_ensemble_gms(
     P_Rup_IMj = P_Rup_IMj.multiply(IMj_adj_branch_weights, axis=1).sum(axis=1)
 
     # Compute the correlation matrix
-    rho = sha_calc.compute_correlation_matrix(
-        np.asarray(si.im.to_string_list(IMs)), str(IMj)
-    )
+    rho = sha_calc.compute_correlation_matrix(np.asarray(to_string_list(IMs)), str(IMj))
 
     # Get correlated vector
     v_vectors = sha_calc.generate_correlated_vector(
-        n_gms, np.asarray(si.im.to_string_list(IMs)), rho, n_replica=n_replica
+        n_gms, np.asarray(to_string_list(IMs)), rho, n_replica=n_replica
     )
 
     # Pre-allocate the realisation IM value array (and array for
@@ -199,28 +203,26 @@ def run_ensemble_gms(
         # Get the correlation coefficients
         corr_coeffs = pd.Series(
             data=[sha_calc.get_im_correlations(str(IMi), str(IMj)) for IMi in cur_IMs],
-            index=si.im.to_string_list(cur_IMs),
+            index=to_string_list(cur_IMs),
         )
 
         # Compute the branch hazard for each of the current set of IMi
         cur_branch_hazard = {
-            IMi: si.hazard.run_branches_hazard(ensemble, site_info, IMi)
-            for IMi in cur_IMs
+            IMi: hazard.run_branches_hazard(ensemble, site_info, IMi) for IMi in cur_IMs
         }
 
         # Get the ensemble mean hazard IM value for each IMi (in the current set)
         # corresponding to the exceedance rate for IMj=imj
         # Needed to calculate the adjusted branch weight
         cur_ens_hazard = {
-            IMi: si.hazard.run_ensemble_hazard(
+            IMi: hazard.run_ensemble_hazard(
                 ensemble, site_info, IMi, branch_hazard=cur_branch_hazard[IMi]
             )
             for IMi in cur_IMs
         }
         cur_mean_hazard_im_values = pd.Series(
             data=[
-                cur_ens_hazard[IMi].exceedance_to_im(IMj_hazard_mean)
-                for IMi in cur_IMs
+                cur_ens_hazard[IMi].exceedance_to_im(IMj_hazard_mean) for IMi in cur_IMs
             ],
             index=cur_IMs,
         )
@@ -228,14 +230,14 @@ def run_ensemble_gms(
         cur_branch_gcims, cur_adj_branch_weights = {}, {}
         for cur_branch_name, cur_branch in cur_im_ensemble.branches_dict.items():
             # Retrieve the IM parameters
-            im_df = si.shared.get_IM_values(
-                cur_branch.get_imdb_ffps(si.constants.SourceType.fault), site_info
+            im_df = shared.get_IM_values(
+                cur_branch.get_imdb_ffps(constants.SourceType.fault), site_info
             )
             sigma_cols = [f"{IMi}_sigma" for IMi in cur_IMs]
 
             # Compute lnIMi|IMj, Rup
             cur_lnIMi_IMj_Rup = sha_calc.compute_lnIMi_IMj_Rup(
-                im_df[si.im.to_string_list(cur_IMs)],
+                im_df[to_string_list(cur_IMs)],
                 im_df[sigma_cols].rename(
                     columns={
                         sig_col: str(IMi) for sig_col, IMi in zip(sigma_cols, cur_IMs)
@@ -281,7 +283,7 @@ def run_ensemble_gms(
             # the corresponding ensemble hazard mean IM value (for each IMi)
             cur_adj_branch_weights[IMi] = pd.Series(
                 data=[
-                    si.hazard.run_branch_hazard(
+                    hazard.run_branch_hazard(
                         cur_branch, site_info, IMi
                     ).im_to_exceedance(cur_mean_hazard_im_values[IMi])
                     * cur_branch.weight
@@ -358,9 +360,12 @@ def run_ensemble_gms(
     # Get the (scaled) ground motions IM values that fall
     # within the specified causal parameter bounds
     gms_im_df = gm_dataset.get_im_df(
-        site_info, np.concatenate((si.im.to_string_list(IMs), [str(IMj)])), cs_param_bounds=cs_param_bounds, sf=sf
+        site_info,
+        np.concatenate((to_string_list(IMs), [str(IMj)])),
+        cs_param_bounds=cs_param_bounds,
+        sf=sf,
     )
-    gms_im_df.columns = si.im.to_im_list(gms_im_df.columns)
+    gms_im_df.columns = to_im_list(gms_im_df.columns)
     assert (
         gms_im_df.shape[0] > 0
     ), "No GMs to select from after applying the causual parameter bounds"
@@ -371,9 +376,7 @@ def run_ensemble_gms(
     for replica_ix in range(n_replica):
         # Compute residuals between available GMs and current set of realisations
         cur_sigma_IMi_Rup_IMj = (
-            rel_sigma_lnIMi_IMj_Rup[replica_ix]
-            .loc[:, IMs]
-            .values[:, np.newaxis, :]
+            rel_sigma_lnIMi_IMj_Rup[replica_ix].loc[:, IMs].values[:, np.newaxis, :]
         )
         cur_diff = rel_IM_values[replica_ix].loc[:, IMs].values[
             :, np.newaxis, :
@@ -381,8 +384,7 @@ def run_ensemble_gms(
         cur_misfit = pd.DataFrame(
             index=rel_IM_values[replica_ix].index,
             data=np.sum(
-                im_weights.loc[IMs].values
-                * (cur_diff / cur_sigma_IMi_Rup_IMj) ** 2,
+                im_weights.loc[IMs].values * (cur_diff / cur_sigma_IMi_Rup_IMj) ** 2,
                 axis=2,
             ),
         )
@@ -429,7 +431,7 @@ def run_ensemble_gms(
     )
 
 
-def default_IM_weights(IM_j: si.im.IM, IMs: np.ndarray) -> pd.Series:
+def default_IM_weights(IM_j: IM, IMs: np.ndarray) -> pd.Series:
     """
     Returns the default IM weights based on the conditioning IM
 
@@ -454,7 +456,7 @@ def default_IM_weights(IM_j: si.im.IM, IMs: np.ndarray) -> pd.Series:
     # Use 70% (SA) / 30% (other) weighting if
     # conditioning IM is SA
     if IM_j.is_pSA():
-        pSA_mask = np.asarray([cur_im.im_type is si.im.IMType.pSA for cur_im in IMs])
+        pSA_mask = np.asarray([cur_im.im_type is IMType.pSA for cur_im in IMs])
         n_pSA_IMs = np.count_nonzero(pSA_mask)
         n_other_IMs = IMs.size - n_pSA_IMs
 
@@ -477,9 +479,9 @@ def default_IM_weights(IM_j: si.im.IM, IMs: np.ndarray) -> pd.Series:
 
 
 def default_causal_params(
-    ensemble: si.gm_data.Ensemble,
-    site_info: si.site.SiteInfo,
-    IM_j: si.im.IM,
+    ensemble: gm_data.Ensemble,
+    site_info: site.SiteInfo,
+    IM_j: IM,
     exceedance: Optional[float] = None,
     im_value: Optional[float] = None,
 ) -> CausalParamBounds:
@@ -514,7 +516,7 @@ def default_causal_params(
         (Vs30 lower bound, Vs30 upper bound)
     """
     # Calculate disagg
-    disagg_data = si.disagg.run_ensemble_disagg(
+    disagg_data = disagg.run_ensemble_disagg(
         ensemble,
         site_info,
         IM_j,
@@ -567,15 +569,15 @@ def default_causal_params(
     )
 
     # Get distances
-    fault_rrup_disagg_df = si.site_source.match_ruptures(
-        si.site_source.get_distance_df(ensemble.flt_ssddb_ffp, site_info),
+    fault_rrup_disagg_df = site_source.match_ruptures(
+        site_source.get_distance_df(ensemble.flt_ssddb_ffp, site_info),
         disagg_data.fault_disagg.contribution.copy(),
-        si.constants.SourceType.fault,
+        constants.SourceType.fault,
     )
-    ds_rrup_disagg_df = si.site_source.match_ruptures(
-        si.site_source.get_distance_df(ensemble.ds_ssddb_ffp, site_info),
+    ds_rrup_disagg_df = site_source.match_ruptures(
+        site_source.get_distance_df(ensemble.ds_ssddb_ffp, site_info),
         disagg_data.ds_disagg.contribution.copy(),
-        si.constants.SourceType.distributed,
+        constants.SourceType.distributed,
     )
     contr_df = pd.merge(
         contr_df,

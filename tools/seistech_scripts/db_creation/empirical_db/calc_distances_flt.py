@@ -7,7 +7,7 @@ from typing import List, Union, Dict
 from qcore import nhm, formats, geo
 from IM_calculation.source_site_dist import src_site_dist
 
-import seistech_calc as si
+import seistech_calc as sc
 
 POINTS_PER_KILOMETER = (
     1 / 0.1
@@ -192,7 +192,7 @@ def load_args():
 
 
 def store_site_sources_distance_data(
-    distances: np.ndarray, stations: pd.DataFrame, ssddb: si.dbs.SiteSourceDB
+    distances: np.ndarray, stations: pd.DataFrame, ssddb: sc.dbs.SiteSourceDB
 ):
     with ssddb as ssd:
         for index, station_name in enumerate(stations.index):
@@ -243,8 +243,8 @@ def main():
 
         fault_df = fault_df["fault_name"].to_frame()
 
-    ssddb = si.dbs.SiteSourceDB(
-        args.ssddb, source_type=si.constants.SourceType.fault, writeable=True
+    ssddb = sc.dbs.SiteSourceDB(
+        args.ssddb, source_type=sc.constants.SourceType.fault, writeable=True
     )
     with ssddb as ssd:
         ssd.write_site_data(stations[["lon", "lat"]])

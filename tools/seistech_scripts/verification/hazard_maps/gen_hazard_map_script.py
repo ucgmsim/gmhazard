@@ -8,7 +8,7 @@ from typing import Iterable
 
 import yaml
 
-import seistech_calc as si
+import seistech_calc as sc
 
 RunCombination = namedtuple(
     "RunCombination", "ensemble_id, im, excd_prob, excd_percentage, excd_years, n_procs"
@@ -83,7 +83,7 @@ def get_combinations(config_ffp: str):
                     RunCombination(
                         cur_ens_id,
                         im,
-                        si.hazard.get_exceedance_rate(excd_perct, excd_years),
+                        sc.hazard.get_exceedance_rate(excd_perct, excd_years),
                         excd_perct,
                         excd_years,
                         cur_ens_config["n_procs"],

@@ -5,9 +5,9 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-import seistech_calc.site as site
-import seistech_calc.gm_data as gm_data
-import seistech_calc.constants as const
+from seistech_calc import site
+from seistech_calc import gm_data
+from seistech_calc import constants as const
 from seistech_calc.im import IM
 
 
@@ -109,10 +109,8 @@ class NZS1170p5Result:
             "N": self.N.to_dict(),
         }
 
-    def save(self, base_dir: Path, uhs: bool = False):
-        data_dir = (
-            base_dir / f"{'uhs' if uhs else'hazard'}_nzs1170p5_{self.im.file_format()}"
-        )
+    def save(self, base_dir: Path, prefix: str):
+        data_dir = base_dir / self.get_save_dir(self.im, prefix)
         data_dir.mkdir(exist_ok=False, parents=False)
 
         self.site_info.save(data_dir)
@@ -135,6 +133,10 @@ class NZS1170p5Result:
             )
 
         return data_dir
+
+    @staticmethod
+    def get_save_dir(im: IM, prefix: str):
+        return f"{prefix}_nzs1170p5_{im.file_format()}"
 
     @classmethod
     def load(cls, data_dir: Path, ensemble: gm_data.Ensemble = None):

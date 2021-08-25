@@ -1,10 +1,10 @@
-import hashlib
-from typing import TYPE_CHECKING, Dict, List, Union, Sequence
+from typing import TYPE_CHECKING, Dict, Union, Sequence
 
 import numpy as np
 import pandas as pd
 
-import seistech_calc as si
+from seistech_calc import constants as const
+from seistech_calc.im import IM, IMType, IM_COMPONENT_MAPPING
 from .Branch import Branch
 
 if TYPE_CHECKING:
@@ -31,13 +31,13 @@ class IMEnsemble:
 
     def __init__(
         self,
-        ims: Union[Sequence[si.im.IMType], si.im.IMType],
+        ims: Union[Sequence[IMType], IMType],
         ensemble: "Ensemble",
         config: Dict,
         use_im_data_cache: bool = False,
     ):
 
-        self.ims = [ims] if isinstance(ims, si.im.IMType) else ims
+        self.ims = [ims] if isinstance(ims, IMType) else ims
         self._config = config
         self.ensemble = ensemble
 
@@ -56,19 +56,19 @@ class IMEnsemble:
 
         self._stations, self._rupture_df = None, None
 
-        if si.im.IMType.pSA in self.ims:
+        if IMType.pSA in self.ims:
             self.ims = set(list(self.branches[0].ims))
             for cur_branch in self.branches:
                 self.ims.intersection_update(list(cur_branch.ims))
         else:
-            self.ims = [si.im.IM(im) for im in self.ims]
+            self.ims = [IM(im) for im in self.ims]
 
         # Apply IM Components
         self.ims = np.asarray(
             [
-                si.im.IM(cur_im.im_type, period=cur_im.period, component=cur_comp)
+                IM(cur_im.im_type, period=cur_im.period, component=cur_comp)
                 for cur_im in self.ims
-                for cur_comp in si.im.IM_COMPONENT_MAPPING[cur_im.im_type]
+                for cur_comp in IM_COMPONENT_MAPPING[cur_im.im_type]
             ]
         )
 
@@ -99,18 +99,18 @@ class IMEnsemble:
     @property
     def fault_rupture_df(self):
         return self.rupture_df.loc[
-            self.rupture_df.rupture_type == si.constants.SourceType.fault.value, :
+            self.rupture_df.rupture_type == const.SourceType.fault.value, :
         ]
 
     @property
     def im_data_type(self):
         return (
-            si.constants.IMDataType.mixed
+            const.IMDataType.mixed
             if len({cur_branch.im_data_type for cur_branch in self.branches}) > 1
             else self.branches[0].im_data_type
         )
 
-    def check_im(self, im: si.im.IM):
+    def check_im(self, im: IM):
         """Checks if the specified IM type is supported by
         the ensemble, otherwise raises an exception
         """

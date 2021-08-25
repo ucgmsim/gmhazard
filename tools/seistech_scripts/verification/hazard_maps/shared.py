@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 import seistech_utils as su
-import seistech_calc as si
+import seistech_calc as sc
 
 
 def gen_event_data(
@@ -187,8 +187,8 @@ def gen_event_ratio_data(
 def _get_median_value(imdb_ffp: str, station: str, im: str, rupture: str):
     """Gets the median and std for the given
     imdb, station, IM and rupture combination"""
-    with si.dbs.IMDB.get_imdb(imdb_ffp) as db:
-        if isinstance(db, si.dbs.IMDBNonParametric):
+    with sc.dbs.IMDB.get_imdb(imdb_ffp) as db:
+        if isinstance(db, sc.dbs.IMDBNonParametric):
             im_values = db.im_data(station, im)
             if im_values is not None and rupture in np.unique(
                 im_values.index.get_level_values(0)
@@ -198,7 +198,7 @@ def _get_median_value(imdb_ffp: str, station: str, im: str, rupture: str):
             else:
                 median, sigma = 0, 0
             return median, sigma
-        elif isinstance(db, si.dbs.IMDBParametric):
+        elif isinstance(db, sc.dbs.IMDBParametric):
             im_params = db.im_data(station, im)
             if im_params is not None and rupture in im_params.index.values:
                 mu, sigma = (

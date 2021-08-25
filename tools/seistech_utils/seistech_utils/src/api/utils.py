@@ -12,7 +12,7 @@ import itsdangerous
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-import seistech_calc as si
+import seistech_calc as sc
 
 
 class MissingKeyError(Exception):
@@ -80,8 +80,8 @@ def endpoint_exception_handling(app):
 
 def add_metadata_header(
     csv_ffp: str,
-    ensemble: si.gm_data.Ensemble,
-    site_info: si.site.SiteInfo,
+    ensemble: sc.gm_data.Ensemble,
+    site_info: sc.site.SiteInfo,
     extra_metadata: str = None,
 ) -> None:
     """Adds a generic metadata header to the specified csv file
@@ -218,9 +218,9 @@ def get_repo_version():
 
 class BaseCacheData:
     """Base cache that contains common values,
-    should no be instantiated, only use as base class"""
+    should not be instantiated, only use as base class"""
 
-    def __init__(self, ensemble: si.gm_data.Ensemble, site_info: si.site.SiteInfo):
+    def __init__(self, ensemble: sc.gm_data.Ensemble, site_info: sc.site.SiteInfo):
         self.ensemble = ensemble
         self.site_info = site_info
 

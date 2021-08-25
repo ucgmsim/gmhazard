@@ -6,11 +6,11 @@ from typing import Dict, Sequence
 import flask
 import pandas as pd
 
-import seistech_calc as si
+import seistech_calc as sc
 
 
 def get_ensemble_hazard_response(
-    ensemble_hazard: si.hazard.EnsembleHazardResult, download_token: str
+    ensemble_hazard: sc.hazard.EnsembleHazardResult, download_token: str
 ):
     """ Creates the response for both core and project API"""
     return {
@@ -28,7 +28,7 @@ def get_ensemble_hazard_response(
 
 
 def get_ensemble_disagg(
-    ensemble_disagg: si.disagg.EnsembleDisaggData,
+    ensemble_disagg: sc.disagg.EnsembleDisaggData,
     metadata_df: pd.DataFrame,
     src_png_data: str,
     eps_png_data: str,
@@ -49,7 +49,7 @@ def get_ensemble_disagg(
 
 
 def get_ensemble_gms(
-    gms_result: si.gms.GMSResult,
+    gms_result: sc.gms.GMSResult,
     download_token: str,
 ):
     """ Creates the response for both the core and Project API"""
@@ -64,14 +64,20 @@ def get_ensemble_gms(
             for IMi in gms_result.IMs
         },
         "gcim_cdf_y": {
-            str(IMi): list(
-                gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.values.astype(float)
-            )
+            str(IMi): list(gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.values.astype(float))
             for IMi in gms_result.IMs
         },
         "ks_bounds": gms_result.metadata_dict["ks_bounds"],
-        "realisations": {str(key): value for key, value in gms_result.realisations.to_dict(orient="list").items()},
-        "selected_GMs": {str(key): value for key, value in gms_result.selected_gms_im_df.to_dict(orient="list").items()},
+        "realisations": {
+            str(key): value
+            for key, value in gms_result.realisations.to_dict(orient="list").items()
+        },
+        "selected_GMs": {
+            str(key): value
+            for key, value in gms_result.selected_gms_im_df.to_dict(
+                orient="list"
+            ).items()
+        },
         "selected_gms_metadata": {
             **gms_result.selected_gms_metdata_df.to_dict(orient="list"),
             **gms_result.selected_gms_im_16_84_df.to_dict(orient="list"),
@@ -81,7 +87,7 @@ def get_ensemble_gms(
     }
 
 
-def download_gms_result(gms_result: si.gms.GMSResult, app: flask.app, tmp_dir: str):
+def download_gms_result(gms_result: sc.gms.GMSResult, app: flask.app, tmp_dir: str):
     """ Create the zip for the core and project API responses"""
     missing_waveforms = gms_result.gm_dataset.get_waveforms(
         gms_result.selected_gms_ids, gms_result.site_info, tmp_dir
@@ -105,7 +111,7 @@ def download_gms_result(gms_result: si.gms.GMSResult, app: flask.app, tmp_dir: s
     return zip_ffp
 
 
-def get_default_causal_params(cs_param_bounds: si.gms.CausalParamBounds):
+def get_default_causal_params(cs_param_bounds: sc.gms.CausalParamBounds):
     """ Creates the response for both the core and Project API"""
     return {
         "mw_low": cs_param_bounds.mw_low,
@@ -119,7 +125,7 @@ def get_default_causal_params(cs_param_bounds: si.gms.CausalParamBounds):
 
 
 def get_ensemble_uhs(
-    uhs_results: Sequence[si.uhs.EnsembleUHSResult], download_token: str
+    uhs_results: Sequence[sc.uhs.EnsembleUHSResult], download_token: str
 ):
     """ Creates the response for both the core and Project API"""
     return {
@@ -129,6 +135,16 @@ def get_ensemble_uhs(
         "branch_uhs_results": None
         if uhs_results[0].branch_uhs is None
         else {result.exceedance: result.branch_uhs_dict() for result in uhs_results},
-        "uhs_df": si.uhs.EnsembleUHSResult.combine_results(uhs_results).to_dict(),
+        "uhs_df": sc.uhs.EnsembleUHSResult.combine_results(uhs_results).to_dict(),
+        "download_token": download_token,
+    }
+
+
+def get_ensemble_scenario_response(
+    ensemble_scenario: sc.scenario.EnsembleScenarioResult, download_token: str
+):
+    """ Creates the response for both core and project API"""
+    return {
+        "ensemble_scenario": ensemble_scenario.to_dict(),
         "download_token": download_token,
     }

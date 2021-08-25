@@ -1,11 +1,11 @@
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
 
-import seistech_calc.utils as utils
-import seistech_calc.rupture as rupture
-import seistech_calc.constants as const
+from seistech_calc import utils
+from seistech_calc import rupture
+from seistech_calc import constants as const
 from .Leaf import Leaf
 
 if TYPE_CHECKING:
@@ -125,14 +125,9 @@ class Branch:
         """Standardised dataframe that contains
         information for fault and ds ruptures, format:
         index = rupture id
-        columns = [rupture name, annual recurrence probability, magnitude]
+        columns = [rupture name, annual recurrence probability, magnitude, tectonic type]
         """
-        if self._rupture_df is None:
-            self._rupture_df = pd.concat(
-                [self.flt_rupture_df, self.ds_rupture_df], sort=True
-            )
-
-        return self._rupture_df
+        return pd.concat([self.flt_rupture_df, self.ds_rupture_df], sort=True)
 
     @property
     def flt_erf_name(self) -> str:

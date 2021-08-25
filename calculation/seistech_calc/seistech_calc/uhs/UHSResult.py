@@ -5,7 +5,9 @@ from typing import Dict, List, Sequence
 import numpy as np
 import pandas as pd
 
-import seistech_calc as si
+from seistech_calc.im import IMType
+from seistech_calc import gm_data
+from seistech_calc import site
 
 
 class UHSResult:
@@ -38,7 +40,7 @@ class UHSResult:
 
     def __init__(
         self,
-        site_info: si.site.SiteInfo,
+        site_info: site.SiteInfo,
         exceedance: float,
         period_values: np.ndarray,
         sa_values: np.ndarray,
@@ -85,7 +87,7 @@ class UHSResult:
 
         return (
             metadata,
-            si.site.SiteInfo.load(data_dir),
+            site.SiteInfo.load(data_dir),
             np.load(str(data_dir / cls.PERIOD_VALUES_FN), allow_pickle=True),
             np.load(str(data_dir / cls.SA_VALUES_FN), allow_pickle=True),
         )
@@ -98,8 +100,8 @@ class BranchUHSResult(UHSResult):
 
     def __init__(
         self,
-        branch: si.gm_data.Branch,
-        site_info: si.site.SiteInfo,
+        branch: gm_data.Branch,
+        site_info: site.SiteInfo,
         exceedance: float,
         period_values: np.ndarray,
         sa_values: np.ndarray,
@@ -119,12 +121,12 @@ class BranchUHSResult(UHSResult):
         self._save(data_dir, metadata={"branch_name": self.branch.name})
 
     @classmethod
-    def load(cls, data_dir: Path, ensemble: si.gm_data.Ensemble):
+    def load(cls, data_dir: Path, ensemble: gm_data.Ensemble):
         """Loads a BranchUHSResult from a specified directory"""
         metadata, site_info, period_values, sa_values = cls._load_data(data_dir)
 
         return cls(
-            ensemble.get_im_ensemble(si.im.IMType.pSA).branches_dict[metadata["branch_name"]],
+            ensemble.get_im_ensemble(IMType.pSA).branches_dict[metadata["branch_name"]],
             site_info,
             metadata["exceedance"],
             period_values,
@@ -169,9 +171,9 @@ class EnsembleUHSResult(UHSResult):
 
     def __init__(
         self,
-        ensemble: si.gm_data.Ensemble,
+        ensemble: gm_data.Ensemble,
         branch_uhs: List[BranchUHSResult],
-        site_info: si.site.SiteInfo,
+        site_info: site.SiteInfo,
         exceedance: float,
         period_values: np.ndarray,
         sa_values: np.ndarray,
@@ -233,7 +235,7 @@ class EnsembleUHSResult(UHSResult):
 
         with open(data_dir / cls.METADATA_FN, "r") as f:
             metadata = json.load(f)
-        ensemble = si.gm_data.Ensemble.load(metadata["ensemble_params"])
+        ensemble = gm_data.Ensemble.load(metadata["ensemble_params"])
 
         # Load the branches, each directory in the branch_uhs folder
         branches_ffp = data_dir / "branch_uhs"

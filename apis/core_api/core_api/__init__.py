@@ -5,6 +5,7 @@ from .api import (
     disagg,
     uhs,
     rupture,
+    scenario,
     site_source,
     gm_data,
     gms,

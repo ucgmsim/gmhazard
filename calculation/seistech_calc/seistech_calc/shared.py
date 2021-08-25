@@ -1,4 +1,3 @@
-import os
 import math
 from typing import List, Union, Iterable, Tuple, Sequence
 
@@ -6,14 +5,21 @@ import numpy as np
 import pandas as pd
 
 import sha_calc as sha_calc
-import seistech_calc as si
+from seistech_calc.im import IM, IMType, IMComponent, IM_COMPONENT_MAPPING
+from seistech_calc import site
+from seistech_calc import gm_data
+from seistech_calc import dbs
+from seistech_calc import constants
+from seistech_calc import rupture
+from seistech_calc import utils
+from seistech_calc import hazard
 
 
 def get_IM_params(
-    im: si.im.IM,
+    im: IM,
     imdb_ffps: Sequence[str],
-    site_info: si.site.SiteInfo,
-    ensemble: si.gm_data.Ensemble = None,
+    site_info: site.SiteInfo,
+    ensemble: gm_data.Ensemble = None,
 ):
     """Retrieves the IM parameters (i.e. mean and sigma) for the
     specified IM and returns it as dataframe with columns mu & sigma"""
@@ -33,8 +39,8 @@ def get_IM_params(
 
 def get_IM_values(
     imdb_ffps: Sequence[str],
-    site_info: si.site.SiteInfo,
-    ensemble: si.gm_data.Ensemble = None,
+    site_info: site.SiteInfo,
+    ensemble: gm_data.Ensemble = None,
 ) -> Union[pd.DataFrame, None]:
     """Load the IM values/parameters from the specified
     IMDBs or the IM data cache if an Ensemble that has
@@ -74,7 +80,7 @@ def get_IM_values(
                 im_dfs.append(cur_im_data)
                 continue
         # Otherwise load from IMDB
-        with si.dbs.IMDB.get_imdb(cur_imdb_ffp) as imdb:
+        with dbs.IMDB.get_imdb(cur_imdb_ffp) as imdb:
             if db_type is None:
                 db_type = imdb.imdb_type
 
@@ -82,12 +88,12 @@ def get_IM_values(
             assert imdb.imdb_type == db_type
 
             # Parametric
-            if isinstance(imdb, si.dbs.IMDBParametric):
+            if isinstance(imdb, dbs.IMDBParametric):
                 cur_im_params = imdb.im_data(site_info.station_name)
 
                 if cur_im_params is not None:
                     ims = [
-                        si.im.IM.from_str(col)
+                        IM.from_str(col)
                         for col in cur_im_params.columns.values
                         if "sigma" not in col
                     ]
@@ -95,8 +101,8 @@ def get_IM_values(
                         # TODO: Can we maybe vectorize this? Or even just support multiple IM types at once?
                         for im in ims:
                             if (
-                                im.im_type == si.im.IMType.PGA
-                                or im.im_type == si.im.IMType.PGV
+                                im.im_type == IMType.PGA
+                                or im.im_type == IMType.PGV
                                 or im.is_pSA()
                             ):
                                 cur_im_params.loc[:, [str(im), f"{im}_sigma"]] = (
@@ -120,10 +126,10 @@ def get_IM_values(
                 if site_info.user_vs30 is not None:
                     # TODO: Can we maybe vectorize this? Or even just support multiple IM types at once?
                     for im in cur_im_values.columns.values:
-                        im = si.im.IM.from_str(im)
+                        im = IM.from_str(im)
                         if (
-                            im.im_type == si.im.IMType.PGA
-                            or im.im_type == si.im.IMType.PGV
+                            im.im_type == IMType.PGA
+                            or im.im_type == IMType.PGV
                             or im.is_pSA()
                         ):
                             cur_im_values[im] = apply_vs30_mod_non_parametric(
@@ -144,12 +150,12 @@ def get_IM_values(
 
 
 def get_gm_prob(
-    branch: si.gm_data.Branch,
-    site_info: si.site.SiteInfo,
-    im: si.im.IM,
+    branch: gm_data.Branch,
+    site_info: site.SiteInfo,
+    im: IM,
     im_level: float,
-    source_type: si.constants.SourceType,
-    ensemble: si.gm_data.Ensemble = None,
+    source_type: constants.SourceType,
+    ensemble: gm_data.Ensemble = None,
 ) -> pd.Series:
     """Retrieves the ground motion exceedance probabilities
     for the specified branch
@@ -168,12 +174,12 @@ def get_gm_prob(
 
 
 def get_gm_prob_df(
-    branch: si.gm_data.Branch,
-    site_info: si.site.SiteInfo,
-    im: si.im.IM,
+    branch: gm_data.Branch,
+    site_info: site.SiteInfo,
+    im: IM,
     im_levels: np.ndarray,
-    source_type: si.constants.SourceType,
-    ensemble: si.gm_data.Ensemble = None,
+    source_type: constants.SourceType,
+    ensemble: gm_data.Ensemble = None,
 ):
     """Calculates the GM exceedance probabilities
     for the given branch & IM levels
@@ -205,7 +211,9 @@ def get_gm_prob_df(
         for every IM level.
         format: index = rupture_name, columns = IM_levels
     """
-    im_data, im_data_type = get_im_data(branch, ensemble, site_info, source_type)
+    im_data, im_data_type = get_im_data(
+        branch, ensemble, site_info, source_type, im_component=im.component
+    )
 
     # No IM data for the specified branch and source type
     if im_data is None:
@@ -213,32 +221,17 @@ def get_gm_prob_df(
 
     # Compute the ground motion probabilites and combine
     # Parametric
-    if im_data_type is si.constants.IMDataType.parametric:
+    if im_data_type is constants.IMDataType.parametric:
+        # Raise error if component not in the mapping so is not supported
+        if im.component not in IM_COMPONENT_MAPPING[im.im_type]:
+            raise ValueError(
+                f"{im}'s component {im.component} is not currently supported, only pSA and PGA IM's"
+            )
+
         # Selecting the given im from the im_data
         im_data = im_data.loc[:, [str(im), f"{im}_sigma"]].rename(
             columns={str(im): "mu", f"{im}_sigma": "sigma"}
         )
-        if im.component != si.im.IMComponent.RotD50:
-            # Raise error if component not in the mapping so is not supported
-            if im.component not in si.im.IM_COMPONENT_MAPPING[im.im_type]:
-                raise ValueError(f"{im}'s component {im.component} is not currently supported, only pSA and PGA IM's")
-
-            # Compute the ratios which are using the paper
-            # Relations between Some Horizontal-Component Ground-Motion Intensity Measures Used in Practice (Boore 2017)
-            # Sigma ratios were taken from Table 3 and the mu ratio is calculated using equation 2
-            # Sigma is dominated by the sigma of the original component and the variation
-            # in the sigma of the ratio is minimal, hence constant values where determined from a ratio vs period plot
-            mu_ratio = sha_calc.get_computed_component_ratio(
-                str(si.im.IMComponent.RotD50),
-                str(im.component),
-                # Using period of 0.01 for PGA IM
-                im.period if im.is_pSA() else 0.01,
-            )
-            sigma_ratio = 0.095 if im.component == si.im.IMComponent.Larger else 0.085
-
-            # Apply the ratios to mu and sigma
-            im_data["mu"] = im_data["mu"] + math.log(mu_ratio)
-            im_data["sigma"] = im_data["sigma"].apply(lambda sigma: math.sqrt(sigma*sigma + sigma_ratio*sigma_ratio))
 
         result_df = sha_calc.parametric_gm_excd_prob(
             im_levels,
@@ -246,10 +239,6 @@ def get_gm_prob_df(
         )
     # Non-parametric
     else:
-        if im.component != si.im.IMComponent.RotD50:
-            raise NotImplementedError(
-                "IM Components other than RotD50 are not currently supported for Non-parametric calculations"
-            )
         result_df = pd.concat(
             [
                 sha_calc.non_parametric_gm_excd_prob(im_level, im_data[str(im)])
@@ -261,31 +250,83 @@ def get_gm_prob_df(
         result_df.columns = im_levels
 
     # Convert rupture names to rupture ids
-    result_df.index = si.rupture.rupture_name_to_id(
+    result_df.index = rupture.rupture_name_to_id(
         result_df.index.values,
         branch.flt_erf_ffp
-        if source_type is si.constants.SourceType.fault
+        if source_type is constants.SourceType.fault
         else branch.ds_erf_ffp,
     )
 
     return result_df
 
 
-def get_im_data(branch, ensemble, site_info, source_type):
+def _apply_mu_im_component(value, component):
+    mu_ratio = sha_calc.get_computed_component_ratio(
+        str(IMComponent.RotD50),
+        str(component),
+        # Using period of 0.01 for PGA IM
+        0.01 if value.name.startswith("PGA") else IM.from_str(value.name).period,
+    )
+    return value + math.log(mu_ratio)
+
+
+def get_im_data(
+    branch, ensemble, site_info, source_type, im_component=IMComponent.RotD50
+):
     # Load the IM data
     im_data_type = (
         branch.ds_im_data_type
-        if source_type is si.constants.SourceType.distributed
+        if source_type is constants.SourceType.distributed
         else branch.flt_im_data_type
     )
     assert im_data_type is not None
     imdb_ffps = branch.get_imdb_ffps(source_type)
     im_data = get_IM_values(imdb_ffps, site_info, ensemble=ensemble)
+
+    # No IM data for the specified branch and source type
+    if im_data is None:
+        return None
+
+    if im_component != IMComponent.RotD50:
+        if im_data_type is constants.IMDataType.parametric:
+            # Ensure we only perform component conversion on PGA or pSA IM's
+            sa_im_data = im_data.filter(regex="PGA|pSA")
+            sigma_im_data = sa_im_data.filter(regex="sigma")
+            mu_im_data = sa_im_data[
+                sa_im_data.columns.difference(sigma_im_data.columns)
+            ]
+
+            # Compute the apply the ratios which are using the paper
+            # Relations between Some Horizontal-Component Ground-Motion Intensity Measures Used in Practice (Boore 2017)
+            # Sigma ratios were taken from Table 3 and the mu ratio is calculated using equation 2
+            # Sigma is dominated by the sigma of the original component and the variation
+            # in the sigma of the ratio is minimal, hence constant values where determined from a ratio vs period plot
+            mu_im_data = mu_im_data.apply(
+                lambda value: _apply_mu_im_component(value, im_component)
+            )
+            sigma_ratio = 0.095 if im_component == IMComponent.Larger else 0.085
+            sigma_im_data = sigma_im_data.apply(
+                lambda sigma: np.sqrt((sigma * sigma + sigma_ratio * sigma_ratio))
+            )
+
+            # Ensures we have other IM's such as PGV
+            im_data = im_data[im_data.columns.difference(sa_im_data.columns)]
+            # Join back together
+            im_data = pd.concat([im_data, mu_im_data, sigma_im_data], axis=1)
+
+        # Non-parametric
+        else:
+            raise NotImplementedError(
+                "IM Components other than RotD50 are not currently supported for Non-parametric calculations"
+            )
     return im_data, im_data_type
 
 
 def compute_adj_branch_weights(
-    ensemble: si.gm_data.Ensemble, im: si.im.IM, im_value: float, site_info: si.site.SiteInfo
+    ensemble: gm_data.Ensemble,
+    im: IM,
+    im_value: float,
+    site_info: site.SiteInfo,
 ) -> Tuple[pd.Series, float]:
     """
     Computes hazard adjusted branch weights using equations (9) and (10) from
@@ -315,10 +356,10 @@ def compute_adj_branch_weights(
     """
     # Get the hazard for branches and ensemble
     im_values = np.asarray([im_value])
-    branches_hazard = si.hazard.run_branches_hazard(
+    branches_hazard = hazard.run_branches_hazard(
         ensemble, site_info, im, im_values=im_values
     )
-    ensemble_hazard = si.hazard.run_ensemble_hazard(
+    ensemble_hazard = hazard.run_ensemble_hazard(
         ensemble, site_info, im, branch_hazard=branches_hazard, im_values=im_values
     )
     hazard_mean = ensemble_hazard.total_hazard.iloc[0]
@@ -335,7 +376,9 @@ def compute_adj_branch_weights(
     branch_weights = pd.Series(
         {
             branch.name: branch.weight
-            for name, branch in ensemble.get_im_ensemble(im.im_type).branches_dict.items()
+            for name, branch in ensemble.get_im_ensemble(
+                im.im_type
+            ).branches_dict.items()
         }
     )
 
@@ -346,7 +389,7 @@ def compute_adj_branch_weights(
 
 
 def apply_vs30_mod_non_parametric(
-    im_values: pd.DataFrame, site_info: si.site.SiteInfo, im: si.im.IM
+    im_values: pd.DataFrame, site_info: site.SiteInfo, im: IM
 ) -> pd.Series:
     """Applies the user vs30 modification for non-parametric data"""
     assert "PGA" in im_values.columns
@@ -358,7 +401,7 @@ def apply_vs30_mod_non_parametric(
 
 
 def apply_vs30_mod_parametric(
-    im_params: pd.DataFrame, site_info: si.site.SiteInfo, im: si.im.IM
+    im_params: pd.DataFrame, site_info: site.SiteInfo, im: IM
 ) -> pd.DataFrame:
     pga = np.exp(im_params["PGA"])
 
@@ -373,9 +416,15 @@ def apply_vs30_mod_parametric(
     return im_params[["mu", "sigma"]]
 
 
-def get_SA_ims(ims: Iterable[si.im.IM], component: si.im.IMComponent = si.im.IMComponent.RotD50) -> List[si.im.IM]:
+def get_SA_ims(
+    ims: Iterable[IM], component: IMComponent = IMComponent.RotD50
+) -> List[IM]:
     """Gets all SA ims from the provided list of IMs"""
-    sa_ims = [im for im in ims if im.component == component and (im.is_pSA() or im.im_type == si.im.IMType.PGA)]
+    sa_ims = [
+        im
+        for im in ims
+        if im.component == component and (im.is_pSA() or im.im_type == IMType.PGA)
+    ]
     return sorted(sa_ims, key=lambda im: 0 if im.period is None else im.period)
 
 
@@ -400,7 +449,7 @@ def compute_contr_mean(data_series: pd.Series, contribution_df: pd.DataFrame) ->
     """
     # Sanity check
     ruptures = contribution_df.index.values
-    assert np.all(si.utils.pandas_isin(ruptures, data_series.index.values))
+    assert np.all(utils.pandas_isin(ruptures, data_series.index.values))
 
     return (
         contribution_df.loc[ruptures]
@@ -432,7 +481,7 @@ def compute_contr_16_84(
     """
     # Sanity check
     ruptures = contribution_df.index.values
-    assert np.all(si.utils.pandas_isin(ruptures, data_series.index.values))
+    assert np.all(utils.pandas_isin(ruptures, data_series.index.values))
 
     df = pd.merge(
         contribution_df,
@@ -486,7 +535,7 @@ def __fs_auto(i: int, vs30: float, a1100: float = None):
         return (c10[i] + k2[i] * scon_n) * np.log(1100.0 / k1[i])
 
 
-def __get_site_amp_ratio(pga: float, db_vs30: float, user_vs30: float, im: si.im.IM):
+def __get_site_amp_ratio(pga: float, db_vs30: float, user_vs30: float, im: IM):
     """
     Calculates a PGA_1100 estimate; uses it to calculate a site amplification ratio for the difference in vs30
     between the user and the modelled vs30
@@ -532,9 +581,9 @@ def __get_site_amp_ratio(pga: float, db_vs30: float, user_vs30: float, im: si.im
 
     if im.is_pSA():
         T = np.argmin(np.abs(periods - im.period))
-    elif im.im_type == si.im.IMType.PGV:
+    elif im.im_type == IMType.PGV:
         T = 0
-    elif im.im_type == si.im.IMType.PGA:
+    elif im.im_type == IMType.PGA:
         T = 1
     else:
         return 1

@@ -1,5 +1,5 @@
 commit_hash: 538a67f25b019b2c178c6337e0422fd3cf8f8eb0
-ensemble_ffp: "/mnt/mantle_data/seistech/projects/v21p1p1/gnzl/v20p8emp_gnzl.yaml"
+ensemble_ffp: "$ENSEMBLE_PATH$/v20p8emp_gnzl.yaml"
 project_name: "Generic New Zealand Locations"
 project_id: "gnzl"
 project_parameters:

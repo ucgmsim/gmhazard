@@ -7,13 +7,13 @@ This is debugging/analysis script.
 """
 import argparse
 
-import seistech_calc as si
+import seistech_calc as sc
 import shared
 
 
 def main(args):
     if args.imdb_2_ffp is None:
-        with si.dbs.IMDB.get_imdb(args.imdb_1_ffp) as db:
+        with sc.dbs.IMDB.get_imdb(args.imdb_1_ffp) as db:
             station_df = db.sites()
 
         shared.gen_event_data(

@@ -1,4 +1,4 @@
-from typing import Union, Tuple
+from typing import Union, Tuple, Sequence, List
 
 import pandas as pd
 import numpy as np
@@ -37,6 +37,39 @@ def query_non_parametric_cdf_invs(
     return np.asarray(
         [cdf_x[np.min(np.flatnonzero(mask[ix, :]))] for ix in range(y.size)]
     )
+
+
+def query_non_parametric_multi_cdf_invs(
+    y: Sequence, cdf_x: np.ndarray, cdf_y: np.ndarray
+) -> List:
+    """Retrieve the x-values for the specified y-values given a multidimensional array of
+    non-parametric cdf along each row
+    Note: Since this is for a discrete CDF,
+    the inversion function returns the x value
+    corresponding to F(x) >= y
+
+    Parameters
+    ----------
+    y: Sequence of floats
+    cdf_x: 2d array of floats
+    cdf_y: 2d array of floats
+        The x and y values of the non-parametric cdf
+
+    Returns
+    -------
+    y: List
+        The corresponding y-values
+    """
+    x_values = []
+    for cur_y in y:
+        diff = cdf_y - cur_y
+        x_values.append(
+            [
+                cdf_x[ix, :][np.min(np.flatnonzero(diff[ix, :] > 0))]
+                for ix in range(len(cdf_x))
+            ]
+        )
+    return x_values
 
 
 def query_non_parametric_cdf(

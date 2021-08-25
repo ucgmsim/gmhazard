@@ -5,8 +5,10 @@ from typing import Dict, Tuple
 import pandas as pd
 import numpy as np
 
-import seistech_calc as si
 import sha_calc as sha_calc
+from seistech_calc.im import IM, to_im_list, to_string_list
+from seistech_calc import gm_data
+from seistech_calc import site
 from .GroundMotionDataset import GMDataset
 from .CausalParamBounds import CausalParamBounds
 from .GCIMResult import IMEnsembleUniGCIM
@@ -59,9 +61,9 @@ class GMSResult:
 
     def __init__(
         self,
-        ensemble: si.gm_data.Ensemble,
-        site_info: si.site.SiteInfo,
-        IMj: si.im.IM,
+        ensemble: gm_data.Ensemble,
+        site_info: site.SiteInfo,
+        IMj: IM,
         im_j: float,
         IMs: np.ndarray,
         selected_gms_im_df: pd.DataFrame,
@@ -163,7 +165,7 @@ class GMSResult:
         )
 
     def save(self, base_dir: Path, id: str) -> Path:
-        save_dir = base_dir / f"gms_{id}"
+        save_dir = base_dir / self.get_save_dir(id)
         save_dir.mkdir(exist_ok=False, parents=False)
 
         self.site_info.save(save_dir)
@@ -187,7 +189,7 @@ class GMSResult:
                 dict(
                     IM_j=str(self.IM_j),
                     im_j=self.im_j,
-                    IMs=si.im.to_string_list(self.IMs),
+                    IMs=to_string_list(self.IMs),
                     ensemble_params=self.ensemble.get_save_params(),
                     gm_dataset_id=self.gm_dataset.name,
                     metadata_dict=self._metadata_dict,
@@ -201,9 +203,13 @@ class GMSResult:
 
         return save_dir
 
+    @staticmethod
+    def get_save_dir(id: str):
+        return f"gms_{id}"
+
     @classmethod
     def load(cls, data_dir: Path):
-        site_info = si.site.SiteInfo.load(data_dir)
+        site_info = site.SiteInfo.load(data_dir)
         selected_gm_im_df = pd.read_csv(data_dir / cls.SELECTED_GMS_IMS_FN, index_col=0)
         realisations = pd.read_csv(data_dir / cls.REALISATIONS_FN, index_col=0)
 
@@ -220,9 +226,9 @@ class GMSResult:
 
         with open(data_dir / cls.VARIABLES_FN, "r") as f:
             variable_dict = json.load(f)
-        ensemble = si.gm_data.Ensemble.load(variable_dict["ensemble_params"])
+        ensemble = gm_data.Ensemble.load(variable_dict["ensemble_params"])
 
-        IMs = np.asarray(si.im.to_im_list(variable_dict["IMs"]))
+        IMs = np.asarray(to_im_list(variable_dict["IMs"]))
         IMi_gcims = {
             IMi: IMEnsembleUniGCIM.load(
                 data_dir / f"{IMi}", ensemble.get_im_ensemble(IMi.im_type)
@@ -233,7 +239,7 @@ class GMSResult:
         return cls(
             ensemble,
             site_info,
-            si.im.IM.from_str(variable_dict["IM_j"]),
+            IM.from_str(variable_dict["IM_j"]),
             variable_dict["im_j"],
             IMs,
             selected_gm_im_df,

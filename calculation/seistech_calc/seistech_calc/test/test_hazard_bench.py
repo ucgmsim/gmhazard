@@ -1,4 +1,5 @@
 """Hazard benchmark tests"""
+import os
 import pathlib
 
 import yaml
@@ -6,7 +7,11 @@ import pytest
 import numpy as np
 import pandas as pd
 
-import seistech_calc as si
+from seistech_calc import site
+from seistech_calc import hazard
+from seistech_calc import gm_data
+from seistech_calc import constants
+from seistech_calc.im import IM, IM_COMPONENT_MAPPING
 
 
 @pytest.fixture(scope="module")
@@ -23,10 +28,10 @@ def config():
 
 def test_hazard(config):
     def test_data(
-        im: si.im.IM,
+        im: IM,
         station_name: str,
         dataset_name: str,
-        hazard: si.hazard.EnsembleHazardResult,
+        hazard: hazard.EnsembleHazardResult,
         bench_df: pd.DataFrame,
     ):
         print(
@@ -60,28 +65,32 @@ def test_hazard(config):
     # Iterate over the ensembles to test
     for ensemble_id in ensembles.keys():
         ens_config_ffp = (
-            pathlib.Path(__file__).resolve().parent.parent
-            / "gm_data/ensemble_configs/benchmark_tests"
+            pathlib.Path(os.getenv("ENSEMBLE_CONFIG_PATH"))
+            / "benchmark_tests"
             / f"{ensemble_id}.yaml"
         )
-        ens = si.gm_data.Ensemble(ensemble_id, ens_config_ffp)
+        ens = gm_data.Ensemble(ensemble_id, ens_config_ffp)
 
         results = []
         ims = []
         for im_string in ensembles[ensemble_id]["ims"]:
-            im = si.im.IM.from_str(im_string)
-            if ens.im_ensembles[0].im_data_type == si.constants.IMDataType.parametric:
+            im = IM.from_str(im_string)
+            if ens.im_ensembles[0].im_data_type == constants.IMDataType.parametric:
                 ims.extend(
-                    [si.im.IM(im.im_type, im.period, component) for component in si.im.IM_COMPONENT_MAPPING[im.im_type]])
+                    [
+                        IM(im.im_type, im.period, component)
+                        for component in IM_COMPONENT_MAPPING[im.im_type]
+                    ]
+                )
             else:
                 ims.append(im)
 
         for im in ims:
             for station_name in ensembles[ensemble_id]["station_names"]:
-                site_info = si.site.get_site_from_name(ens, station_name)
+                site_info = site.get_site_from_name(ens, station_name)
 
                 # Test the individual dataset hazard results
-                branches_hazard = si.hazard.run_branches_hazard(ens, site_info, im)
+                branches_hazard = hazard.run_branches_hazard(ens, site_info, im)
                 for branch_name, dset_hazard in branches_hazard.items():
                     bench_data_file_sim = (
                         pathlib.Path(__file__).resolve().parent
@@ -102,7 +111,7 @@ def test_hazard(config):
                     )
 
                 # Test the weighted hazard
-                ens_hazard = si.hazard.run_ensemble_hazard(ens, site_info, im)
+                ens_hazard = hazard.run_ensemble_hazard(ens, site_info, im)
                 bench_data_file_ensemble = (
                     pathlib.Path(__file__).resolve().parent
                     / f"bench_data/hazard/{ensemble_id}"

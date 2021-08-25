@@ -5,9 +5,9 @@ import json
 import numpy as np
 import pandas as pd
 
-import seistech_calc.site as site
-import seistech_calc.exceptions as exceptions
-import seistech_calc.gm_data as gm_data
+from seistech_calc import site
+from seistech_calc import exceptions
+from seistech_calc import gm_data
 from seistech_calc.im import IM
 
 
@@ -216,7 +216,7 @@ class EnsembleHazardResult(HazardResult):
         """Saves an EnsembleHazardResult as csv & json files
         Creates a new directory in the specified base directory
         """
-        save_dir = base_dir / f"hazard_{self.im.file_format()}"
+        save_dir = base_dir / self.get_save_dir(self.im)
         save_dir.mkdir(exist_ok=False, parents=True)
 
         # Save the ensemble hazard
@@ -233,6 +233,10 @@ class EnsembleHazardResult(HazardResult):
             self.percentiles.to_csv(save_dir / self.PERCENTILES_FN)
 
         return save_dir
+
+    @staticmethod
+    def get_save_dir(im: IM):
+        return f"hazard_{im.file_format()}"
 
     @classmethod
     def load(cls, data_dir: Path):

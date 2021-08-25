@@ -5,7 +5,7 @@ import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 
-import seistech_calc as si
+import seistech_calc as sc
 
 rupture = "AlpineF2K"
 station = "CCCC"
@@ -16,11 +16,11 @@ non_para_imdb_ffp = "/nesi/nobackup/nesi00213/seistech/simulations/18p6/cs18p6_f
 para_imdb_ffp = "/nesi/nobackup/nesi00213/seistech/empiricals/18p6_new/B10_flt.db"
 
 
-with si.dbs.IMDBNonParametric(non_para_imdb_ffp) as db:
+with sc.dbs.IMDBNonParametric(non_para_imdb_ffp) as db:
     im_values_df = db.im_data(station, im)
 im_values = im_values_df[rupture].values
 
-with si.dbs.IMDBParametric(para_imdb_ffp) as db:
+with sc.dbs.IMDBParametric(para_imdb_ffp) as db:
     im_params_df = db.im_data(station, im)
 im_mu, im_sigma = im_params_df.loc[rupture]
 

@@ -1,9 +1,9 @@
 datasets:
   AI:
     CB_12:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -23,9 +23,9 @@ datasets:
       weight: 1.0
   CAV:
     CB_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -45,9 +45,9 @@ datasets:
       weight: 1.0
   Ds575:
     AS_16:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -67,9 +67,9 @@ datasets:
       weight: 1.0
   Ds595:
     AS_16:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -89,9 +89,9 @@ datasets:
       weight: 1.0
   PGA:
     ASK_14_BC_16_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -120,9 +120,9 @@ datasets:
           - volcanic
       weight: 0.125025
     ASK_14_ZA_06_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -151,9 +151,9 @@ datasets:
           - volcanic
       weight: 0.041675
     BSSA_14_BC_16_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -182,9 +182,9 @@ datasets:
           - volcanic
       weight: 0.125025
     BSSA_14_ZA_06_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -213,9 +213,9 @@ datasets:
           - volcanic
       weight: 0.041675
     Br_10_BC_16_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -244,9 +244,9 @@ datasets:
           - volcanic
       weight: 0.375
     Br_10_ZA_06_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -275,9 +275,9 @@ datasets:
           - volcanic
       weight: 0.125
     CB_14_BC_16_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -306,9 +306,9 @@ datasets:
           - volcanic
       weight: 0.125025
     CB_14_ZA_06_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -338,9 +338,9 @@ datasets:
       weight: 0.041675
   PGV:
     ASK_14_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -364,9 +364,9 @@ datasets:
           - volcanic
       weight: 0.1667
     BSSA_14_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -390,9 +390,9 @@ datasets:
           - volcanic
       weight: 0.1667
     Br_10_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -416,9 +416,9 @@ datasets:
           - volcanic
       weight: 0.5
     CB_14_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -443,9 +443,9 @@ datasets:
       weight: 0.1667
   pSA:
     ASK_14_BC_16_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -474,9 +474,9 @@ datasets:
           - volcanic
       weight: 0.125025
     ASK_14_ZA_06_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -505,9 +505,9 @@ datasets:
           - volcanic
       weight: 0.041675
     BSSA_14_BC_16_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -536,9 +536,9 @@ datasets:
           - volcanic
       weight: 0.125025
     BSSA_14_ZA_06_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -567,9 +567,9 @@ datasets:
           - volcanic
       weight: 0.041675
     Br_10_BC_16_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -598,9 +598,9 @@ datasets:
           - volcanic
       weight: 0.375
     Br_10_ZA_06_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -629,9 +629,9 @@ datasets:
           - volcanic
       weight: 0.125
     CB_14_BC_16_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:
@@ -660,9 +660,9 @@ datasets:
           - volcanic
       weight: 0.125025
     CB_14_ZA_06_Br_10:
-      ds_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_DSmodel_2015.txt
+      ds_erf: $ERF_PATH$/NZ_DSmodel_2015.txt
       ds_erf_type: custom_ds_erf
-      flt_erf: /mnt/mantle_data/seistech/sources/18p6/NZ_FLTmodel_2010.txt
+      flt_erf: $ERF_PATH$/NZ_FLTmodel_2010.txt
       flt_erf_type: flt_nhm
       leaves:
         leaf0:

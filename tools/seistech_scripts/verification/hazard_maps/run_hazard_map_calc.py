@@ -9,18 +9,18 @@ import argparse
 import numpy as np
 
 import seistech_utils as su
-import seistech_calc as si
+import seistech_calc as sc
 
 
 def main(args):
-    ensemble = si.gm_data.Ensemble(args.ensemble_id)
+    ensemble = sc.gm_data.Ensemble(args.ensemble_id)
 
     if args.nz_code:
-        hazard_map_data = si.nz_code.nzs1170p5.run_hazard_map(
+        hazard_map_data = sc.nz_code.nzs1170p5.run_hazard_map(
             ensemble, args.im, args.exceedance, n_procs=args.n_procs
         )
     else:
-        hazard_map_data = si.hazard.run_hazard_map(
+        hazard_map_data = sc.hazard.run_hazard_map(
             ensemble, args.im, args.exceedance, n_procs=args.n_procs
         )
 

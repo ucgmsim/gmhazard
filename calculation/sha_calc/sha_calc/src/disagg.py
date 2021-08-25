@@ -15,7 +15,10 @@ def disagg_equal(gm_prob: pd.Series, gm_prob_delta: pd.Series, rec_prop: pd.Seri
     excd_disagg = disagg_exceedance(gm_prob, rec_prop, excd_prob)
     excd_disagg_delta = disagg_exceedance(gm_prob_delta, rec_prop, excd_prob_delta)
 
-    return (1/excd_prob_diff) * (excd_disagg * excd_prob - excd_disagg_delta * excd_prob_delta)
+    return (1 / excd_prob_diff) * (
+        excd_disagg * excd_prob - excd_disagg_delta * excd_prob_delta
+    )
+
 
 def disagg_exceedance(
     gm_prob: pd.Series, rec_prob: pd.Series, excd_prob: float = None

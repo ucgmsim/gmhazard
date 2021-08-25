@@ -1,4 +1,3 @@
-"""TODO: Replace % to either .format or f-strings"""
 import math
 from io import BytesIO
 from shutil import copyfile, rmtree
@@ -69,7 +68,7 @@ def plot_site_vs30(
     p.points(station_ll_ffp, shape="s", size=0.2, line_thickness="2p", line="black")
 
     p.points(
-        "{} {}\n".format(site_lon, site_lat),
+        f"{site_lon} {site_lat}\n",
         is_file=False,
         shape="c",
         fill="black",
@@ -78,7 +77,7 @@ def plot_site_vs30(
         line_thickness="1p",
     )
     p.points(
-        "{} {}\n".format(station_lon, station_lat),
+        f"{station_lon} {station_lat}\n",
         is_file=False,
         shape="c",
         size=0.2,
@@ -108,7 +107,7 @@ def plot_site_vs30(
     p.text(
         min_lon,
         min_lat,
-        "Site Vs30: {} {}".format(site_vs30, "m/s" * (site_vs30 is not None)),
+        f"Site Vs30: {site_vs30} {'m/s' * (site_vs30 is not None)}",
         size="20p",
         align="LB",
         dx=0.2,
@@ -118,7 +117,7 @@ def plot_site_vs30(
     p.text(
         min_lon,
         min_lat,
-        "Closest Site Vs30: {} m/s".format(station_vs30),
+        f"Closest Site Vs30: {station_vs30} m/s",
         size="20p",
         align="LB",
         dx=0.2,
@@ -128,9 +127,7 @@ def plot_site_vs30(
     p.text(
         min_lon,
         min_lat,
-        "Distance: {:.2f} km".format(
-            geo.ll_dist(station_lon, station_lat, site_lon, site_lat)
-        ),
+        f"Distance: {geo.ll_dist(station_lon, station_lat, site_lon, site_lat):.2f} km",
         size="20p",
         align="LB",
         dx=0.2,
@@ -247,7 +244,7 @@ def plot_context(
         p.beachballs("\n".join(b6), scale=0.2, colour="red")
 
     p.points(
-        "{} {}\n".format(lon, lat),
+        f"{lon} {lat}\n",
         is_file=False,
         shape="c",
         fill="black",

@@ -8,15 +8,15 @@ import yaml
 import numpy as np
 import pandas as pd
 
-import seistech_calc as si
+import seistech_calc as sc
 from . import utils
 
 
 def write_hazard_download_data(
-    ensemble_hazard: si.hazard.EnsembleHazardResult,
-    nzs1170p5_hazard: si.nz_code.nzs1170p5.NZS1170p5Result,
+    ensemble_hazard: sc.hazard.EnsembleHazardResult,
+    nzs1170p5_hazard: sc.nz_code.nzs1170p5.NZS1170p5Result,
     out_dir: str,
-    nzta_hazard: si.nz_code.nzta_2018.NZTAResult = None,
+    nzta_hazard: sc.nz_code.nzta_2018.NZTAResult = None,
     prefix: str = None,
 ):
     prefix = "" if prefix is None else f"{prefix}_"
@@ -84,7 +84,11 @@ def write_hazard_download_data(
             nzta_ffp, index_label="exceedance", header=True, mode="a", index=True
         )
 
-        nzta_metadata = {"NZTA_metadata": {"soil_class": nzta_hazard.soil_class.value,}}
+        nzta_metadata = {
+            "NZTA_metadata": {
+                "soil_class": nzta_hazard.soil_class.value,
+            }
+        }
 
     # Metadata
     metadata = {
@@ -122,7 +126,7 @@ def write_hazard_download_data(
     hazard_plot_ffp = (
         Path(out_dir) / f"{prefix}{ensemble_hazard.im.file_format()}_hazard.png"
     )
-    si.plots.plt_hazard(
+    sc.plots.plt_hazard(
         ensemble_hazard.as_dataframe(),
         "Hazard",
         ensemble_hazard.im,
@@ -135,7 +139,7 @@ def write_hazard_download_data(
         Path(out_dir)
         / f"{prefix}{ensemble_hazard.im.file_format()}_hazard_branches.png"
     )
-    si.plots.plt_hazard_totals(
+    sc.plots.plt_hazard_totals(
         ensemble_hazard.as_dataframe(),
         {
             key: cur_branch_hazard.as_dataframe()
@@ -161,10 +165,10 @@ def write_hazard_download_data(
 
 
 def create_hazard_download_zip(
-    ensemble_hazard: si.hazard.EnsembleHazardResult,
-    nzs1170p5_hazard: si.nz_code.nzs1170p5.NZS1170p5Result,
+    ensemble_hazard: sc.hazard.EnsembleHazardResult,
+    nzs1170p5_hazard: sc.nz_code.nzs1170p5.NZS1170p5Result,
     tmp_dir: str,
-    nzta_hazard: si.nz_code.nzta_2018.NZTAResult = None,
+    nzta_hazard: sc.nz_code.nzta_2018.NZTAResult = None,
     prefix: str = None,
 ):
     ffps = write_hazard_download_data(
@@ -187,7 +191,7 @@ def create_hazard_download_zip(
 
 
 def write_disagg_download_data(
-    disagg_data: si.disagg.EnsembleDisaggData,
+    disagg_data: sc.disagg.EnsembleDisaggData,
     metadata_df: pd.DataFrame,
     out_dir: str,
     src_plot_data: bytes = None,
@@ -272,7 +276,7 @@ def write_disagg_download_data(
 
 
 def create_disagg_download_zip(
-    ensemble_disagg: si.disagg.EnsembleDisaggData,
+    ensemble_disagg: sc.disagg.EnsembleDisaggData,
     metadata_df: pd.DataFrame,
     data_dir: str,
     src_plot_data: bytes = None,
@@ -303,8 +307,8 @@ def create_disagg_download_zip(
 
 
 def write_uhs_download_data(
-    uhs_results: Sequence[si.uhs.EnsembleUHSResult],
-    nzs1170p5_results: Sequence[si.nz_code.nzs1170p5.NZS1170p5Result],
+    uhs_results: Sequence[sc.uhs.EnsembleUHSResult],
+    nzs1170p5_results: Sequence[sc.nz_code.nzs1170p5.NZS1170p5Result],
     out_dir: str,
     prefix: str = None,
 ):
@@ -313,29 +317,42 @@ def write_uhs_download_data(
 
     # UHS
     uhs_ffp = Path(out_dir) / f"{prefix}uhs.csv"
-    uhs_df = si.uhs.EnsembleUHSResult.combine_results(uhs_results)
+    uhs_df = sc.uhs.EnsembleUHSResult.combine_results(uhs_results)
     uhs_df.to_csv(uhs_ffp, index_label="pSA_periods")
+
+    # NZS1170.5 - UHS
+    nzs1170p5_uhs_ffp = Path(out_dir) / f"{prefix}nzs1170p5_uhs.csv"
+    nzs1170p5_df = sc.nz_code.nzs1170p5.NZS1170p5Result.combine_results(
+        nzs1170p5_results
+    )
+    nzs1170p5_df.to_csv(nzs1170p5_uhs_ffp, index_label="pSA_periods")
 
     # Branches - Each RP
     branches_uhs_ffps = []
+    uhs_branches_plot_ffps = []
     if uhs_results[0].branch_uhs is not None:
         for result in uhs_results:
             branches_uhs_ffp = (
                 Path(out_dir)
                 / f"{prefix}{int(1 / result.branch_uhs[0].exceedance)}_branches_uhs.csv"
             )
-            branches_uhs_df = si.uhs.BranchUHSResult.combine_results(result.branch_uhs)
-            branches_uhs_df.to_csv(
-                str(branches_uhs_ffp), index_label="sa_periods", mode="a"
+            uhs_branches_plot_ffp = (
+                Path(out_dir)
+                / f"branches_uhs_plot_rp_{int(1 / result.branch_uhs[0].exceedance)}.png"
             )
-            branches_uhs_ffps.append(str(branches_uhs_ffp))
-
-    # NZS1170p5 - UHS
-    nzs1170p5_uhs_ffp = Path(out_dir) / f"{prefix}nz_code_uhs.csv"
-    nzs1170p5_df = si.nz_code.nzs1170p5.NZS1170p5Result.combine_results(
-        nzs1170p5_results
-    )
-    nzs1170p5_df.to_csv(str(nzs1170p5_uhs_ffp), index_label="pSA_periods")
+            branches_uhs_df = sc.uhs.BranchUHSResult.combine_results(result.branch_uhs)
+            branches_uhs_df.to_csv(branches_uhs_ffp, index_label="sa_periods", mode="a")
+            branches_uhs_ffps.append(branches_uhs_ffp)
+            # Creating UHS branches plots
+            sc.plots.plt_uhs_branches(
+                uhs_df,
+                branches_uhs_df,
+                int(1 / result.branch_uhs[0].exceedance),
+                nzs1170p5_uhs=nzs1170p5_df,
+                station_name=uhs_results[0].site_info.station_name,
+                save_file=uhs_branches_plot_ffp,
+            )
+            uhs_branches_plot_ffps.append(uhs_branches_plot_ffp)
 
     # Metadata
     meta_data_ffp = Path(out_dir) / f"{prefix}uhs_metadata.yaml"
@@ -366,19 +383,26 @@ def write_uhs_download_data(
 
     # Create UHS plot
     uhs_plot_ffp = Path(out_dir) / f"{prefix}uhs.png"
-    si.plots.plt_uhs(
+    sc.plots.plt_uhs(
         uhs_df,
-        nz_code_uhs=nzs1170p5_df,
+        nzs1170p5_uhs=nzs1170p5_df,
         station_name=uhs_results[0].site_info.station_name,
-        save_file=str(uhs_plot_ffp),
+        save_file=uhs_plot_ffp,
     )
 
-    return (uhs_ffp, nzs1170p5_uhs_ffp, meta_data_ffp, uhs_plot_ffp, *branches_uhs_ffps)
+    return (
+        uhs_ffp,
+        nzs1170p5_uhs_ffp,
+        meta_data_ffp,
+        uhs_plot_ffp,
+        *branches_uhs_ffps,
+        *uhs_branches_plot_ffps,
+    )
 
 
 def create_uhs_download_zip(
-    uhs_results: Sequence[si.uhs.EnsembleUHSResult],
-    nzs1170p5_results: Sequence[si.nz_code.nzs1170p5.NZS1170p5Result],
+    uhs_results: Sequence[sc.uhs.EnsembleUHSResult],
+    nzs1170p5_results: Sequence[sc.nz_code.nzs1170p5.NZS1170p5Result],
     tmp_dir: str,
     prefix: str = None,
 ):
@@ -393,8 +417,176 @@ def create_uhs_download_zip(
     return zip_ffp
 
 
+def write_scenario_download_data(
+    ensemble_scenario: sc.scenario.EnsembleScenarioResult,
+    out_dir: str,
+    prefix: str = None,
+):
+    """Writes the scenario data into 6 different files
+    1 for the main scenario data which stores the 16th, 50th and 84th percentiles as well as the mu data
+    4 for the different tectonic types which stores all the scenarios related to that tectonic type and holds
+    each models data for that given scenario
+    1 for the scenario metadata
+    All files are appended to an ffps list to be zipped together
+
+    Parameters
+    ----------
+    ensemble_scenario: EnsembleScenarioResult
+        ensemble scenario to grab results from
+    out_dir: str
+        The output directory to write the 6 files to
+    prefix: str
+        The prefix for all the filenames (generally project_id or ensemble_id)
+
+    Returns
+    -------
+    List[Path]"""
+    prefix = "" if prefix is None else f"{prefix}_"
+    ensemble, site_info = ensemble_scenario.ensemble, ensemble_scenario.site_info
+    branch_scenarios = ensemble_scenario.branch_scenarios
+
+    ffps = []
+
+    # Ensemble scenario
+    ens_scenario_ffp = Path(out_dir) / f"{prefix}scenarios.csv"
+
+    # Combining mu and percentiles dataframes
+    mu = ensemble_scenario.mu_data.add_suffix("_mu")
+    mu_percentiles_dataframe = mu.join(ensemble_scenario.percentiles)
+    mu_percentiles_dataframe = mu_percentiles_dataframe.reindex(
+        sorted(mu_percentiles_dataframe.columns), axis=1
+    )
+    mu_percentiles_dataframe.to_csv(ens_scenario_ffp, index_label="scenarios", mode="a")
+    ffps.append(ens_scenario_ffp)
+
+    # Keeps track of the ffps that have been added to the models_df and the models
+    model_tec_type_ffps = []
+    models = []
+    # Starting dataframe for the model data from the branches
+    all_models_im_rupture_df = pd.DataFrame()
+
+    # Tech Type Files
+    rup_tec_df = pd.DataFrame(
+        data=branch_scenarios[0].branch.flt_rupture_df["tectonic_type"].values,
+        index=branch_scenarios[0].branch.flt_rupture_df["rupture_name"],
+    )
+
+    # Ensemble Scenario Branches
+    for branch_scenario in branch_scenarios:
+        for leaf in branch_scenario.branch.leafs:
+            if (
+                len(leaf.flt_imdb_ffps) != 0
+                and leaf.flt_imdb_ffps[0] not in model_tec_type_ffps
+            ):
+                # Naming the columns to the model for the branches given im / rupture data
+                model_im_rupture_df = branch_scenario.mu_data.add_suffix(
+                    f"_{leaf.model}"
+                )
+                # If empty create the first dataframe
+                if all_models_im_rupture_df.empty:
+                    # Grabs ruptures that relate to the given tectonic type on the leaf
+                    all_models_im_rupture_df = model_im_rupture_df.loc[
+                        model_im_rupture_df.index.intersection(
+                            rup_tec_df[rup_tec_df[0] == leaf.tec_type].index
+                        ),
+                        :,
+                    ]
+                # If same model has already come across append additional rows
+                elif leaf.model in models:
+                    # Grabs ruptures that relate to the given tectonic type on the leaf and appends to the all_models df
+                    all_models_im_rupture_df = all_models_im_rupture_df.append(
+                        model_im_rupture_df.loc[
+                            model_im_rupture_df.index.intersection(
+                                rup_tec_df[rup_tec_df[0] == leaf.tec_type].index
+                            ),
+                            :,
+                        ]
+                    )
+                else:
+                    # Merge the dataframes on an outer so that each scenario's rows only have values for the models
+                    # that correspond to their given tectonic type
+                    all_models_im_rupture_df = all_models_im_rupture_df.join(
+                        model_im_rupture_df.loc[
+                            model_im_rupture_df.index.intersection(
+                                rup_tec_df[rup_tec_df[0] == leaf.tec_type].index
+                            ),
+                            :,
+                        ],
+                        how="outer",
+                    )
+                models.append(leaf.model)
+                model_tec_type_ffps.append(leaf.flt_imdb_ffps[0])
+
+    # Creating each tectonic type csv from the all_models_im_rupture_df
+    for tec_type in [
+        "ACTIVE_SHALLOW",
+        "VOLCANIC",
+        "SUBDUCTION_INTERFACE",
+        "SUBDUCTION_SLAB",
+    ]:
+        # Filtering the all_models_im_rupture_df by the scenarios that match the given tectonic type
+        # Sorting the dataframes so order is paired by IM then Model not Model then IM
+        tec_type_df = all_models_im_rupture_df.loc[
+            all_models_im_rupture_df.index.intersection(
+                rup_tec_df[rup_tec_df[0] == tec_type].index
+            ),
+            :,
+        ].dropna(axis=1)
+        tec_type_df = tec_type_df.reindex(sorted(tec_type_df.columns), axis=1)
+
+        # Writing to csv and saving the ffp
+        if not tec_type_df.empty:
+            tec_type_ffp = (
+                Path(out_dir) / f"{prefix}{tec_type.lower()}_scenario_models.csv"
+            )
+            tec_type_df.to_csv(tec_type_ffp, index_label="scenarios", mode="a")
+            ffps.append(tec_type_ffp)
+
+    # Metadata
+    metadata = {
+        "ensemble_id": ensemble.name,
+        "station": site_info.station_name,
+        "lon": float(site_info.lon),
+        "lat": float(site_info.lat),
+        "vs30": float(site_info.vs30),
+        "user_vs30": float(site_info.user_vs30) if site_info.user_vs30 else None,
+        "ims": sc.im.to_string_list(ensemble_scenario.ims),
+        "im_component": str(ensemble_scenario.ims[0].component),
+        "git_version_hash": utils.get_repo_version(),
+    }
+    meta_data_ffp = Path(out_dir) / f"{prefix}scenario_metadata.yaml"
+    with open(meta_data_ffp, "w") as f:
+        yaml.safe_dump(metadata, f)
+
+    ffps.append(meta_data_ffp)
+
+    return ffps
+
+
+def create_scenario_download_zip(
+    ensemble_scenario: sc.scenario.EnsembleScenarioResult,
+    tmp_dir: str,
+    prefix: str = None,
+):
+    ffps = write_scenario_download_data(
+        ensemble_scenario,
+        out_dir=tmp_dir,
+        prefix=prefix,
+    )
+
+    # Create zip file
+    logging.debug("Creating zip file")
+    zip_ffp = Path(tmp_dir) / f"{prefix}scenario.zip"
+    with zipfile.ZipFile(zip_ffp, mode="w") as cur_zip:
+        for cur_ffp in ffps:
+            if cur_ffp is not None:
+                cur_zip.write(cur_ffp, cur_ffp.name)
+
+    return zip_ffp
+
+
 def get_available_im_dict(
-    ims: Sequence[si.im.IM], components: Sequence[si.im.IMComponent] = None
+    ims: Sequence[sc.im.IM], components: Sequence[sc.im.IMComponent] = None
 ):
     im_dict = {}
     for im in ims:
@@ -408,7 +600,7 @@ def get_available_im_dict(
                 "periods": [im.period] if im.is_pSA() else None,
                 "components": [str(component) for component in components]
                 if components is not None
-                and (im.is_pSA() or im.im_type == si.im.IMType.PGA)
+                and (im.is_pSA() or im.im_type == sc.im.IMType.PGA)
                 else [str(im.component)],
             }
     return im_dict

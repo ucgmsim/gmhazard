@@ -6,7 +6,7 @@ then this script should be modified to support this.
 import os
 import argparse
 
-import seistech_calc as si
+import seistech_calc as sc
 import shared
 
 
@@ -14,7 +14,7 @@ def main(
     imdb_ffp: str, output_dir: str, n_procs: int = 4, lat_max_filter: float = None
 ):
     # Get the stations
-    with si.dbs.IMDB.get_imdb(imdb_ffp) as db:
+    with sc.dbs.IMDB.get_imdb(imdb_ffp) as db:
         station_df = db.sites()
         rupture_names = db.rupture_names()
         ims = db.ims

@@ -1,8 +1,8 @@
 import h5py
 import numpy as np
 
-import seistech_calc.utils as utils
-import seistech_calc.constants as const
+from seistech_calc import utils
+from seistech_calc import constants as const
 from .BaseDB import BaseDB, check_open
 
 

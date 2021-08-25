@@ -35,7 +35,9 @@ def non_parametric_gm_excd_prob(im_level: float, im_values: pd.Series):
     return greater_count / rupture_count
 
 
-def parametric_gm_excd_prob(im_levels: Union[float, np.ndarray], im_params: pd.DataFrame):
+def parametric_gm_excd_prob(
+    im_levels: Union[float, np.ndarray], im_params: pd.DataFrame
+):
     """
     Calculates the ground motion exceedance probability for each rupture
     for the specified IM levels, from a parametric distribution

@@ -6,15 +6,15 @@ from typing import List
 import yaml
 import numpy as np
 
-import seistech_calc as si
+import seistech_calc as sc
 from . import utils
 
 
 def process_station_gms_config_comb(
-    ensemble: si.gm_data.Ensemble,
+    ensemble: sc.gm_data.Ensemble,
     station_name: str,
     gms_id: str,
-    IMj: si.im.IM,
+    IMj: sc.im.IM,
     IMs: np.ndarray,
     n_gms: int,
     output_dir: Path,
@@ -24,24 +24,31 @@ def process_station_gms_config_comb(
 ):
     """Processes to a single station and GMS-config"""
     # Get the site
-    site_info = si.site.get_site_from_name(ensemble, station_name)
+    if (output_dir / sc.gms.GMSResult.get_save_dir(gms_id)).exists():
+        print(
+            f"Skipping GMS computation for station {station_name} and "
+            f"id {gms_id} as it already exists"
+        )
+        return
+    print(f"Computing GMS for station {station_name} and id {gms_id}")
 
-    # Create the current output directory (if required)
+    # Get site and create the current output directory (if required)
+    site_info = sc.site.get_site_from_name(ensemble, station_name)
     output_dir.mkdir(exist_ok=True, parents=False)
 
     # Retrieve the default causal filter parameters
-    cs_param_bounds = si.gms.default_causal_params(
+    cs_param_bounds = sc.gms.default_causal_params(
         ensemble, site_info, IMj, exceedance=exceedance, im_value=im_j
     )
 
     # Get the GM dataset
-    gm_dataset = si.gms.GMDataset.get_GMDataset(gm_dataset_id)
+    gm_dataset = sc.gms.GMDataset.get_GMDataset(gm_dataset_id)
 
     # Can only use IMs that are supported by the GM dataset
     IMs = IMs[np.isin(IMs, gm_dataset.ims)]
 
     # Run the GM selection
-    gms_result = si.gms.run_ensemble_gms(
+    sc.gms.run_ensemble_gms(
         ensemble,
         site_info,
         n_gms,
@@ -51,13 +58,10 @@ def process_station_gms_config_comb(
         cs_param_bounds=cs_param_bounds,
         im_j=im_j,
         exceedance=exceedance,
-    )
-
-    # Save
-    save_dir = gms_result.save(output_dir, gms_id)
+    ).save(output_dir, gms_id)
 
 
-def _get_gms_ims(IMj: str, im_strings: List[str], ensemble: si.gm_data.Ensemble):
+def _get_gms_ims(IMj: str, im_strings: List[str], ensemble: sc.gm_data.Ensemble):
     """
     Generates a list of IMs that does not contain IMj.
     Allows for a shortcut "pSA" to be set to generate all pSA IM's that are available for the given Ensemble.
@@ -71,19 +75,21 @@ def _get_gms_ims(IMj: str, im_strings: List[str], ensemble: si.gm_data.Ensemble)
     ensemble: Ensemble
         The ensemble to grab pSA periods from if "pSA" is specified in the config
     """
-    IMj = si.im.IM.from_str(IMj)
+    IMj = sc.im.IM.from_str(IMj)
     ims = []
     for im_string in im_strings:
         if im_string == "pSA":
             ims.extend(
                 [
-                    si.im.IM(si.im.IMType.pSA, period=cur_im.period)
+                    sc.im.IM(sc.im.IMType.pSA, period=cur_im.period)
                     for cur_im in ensemble.ims
-                    if cur_im.period != IMj.period and cur_im.is_pSA() and cur_im.component is si.im.IMComponent.RotD50
+                    if cur_im.period != IMj.period
+                    and cur_im.is_pSA()
+                    and cur_im.component is sc.im.IMComponent.RotD50
                 ]
             )
         else:
-            im = si.im.IM.from_str(im_string)
+            im = sc.im.IM.from_str(im_string)
             if im != IMj:
                 ims.append(im)
     return np.asarray(ims)
@@ -98,12 +104,18 @@ def gen_gms_project_data(project_dir: Path, n_procs: int = 1):
 
     # Load the project parameters
     project_params = project_dict["project_parameters"]
+
+    if "gms" not in project_params.keys():
+        print("No GMS parameters specified. Skipping GMS!")
+        return
+
+    # Load GMS parameters
     gms_params = project_params["gms"]
     gms_ids = list(gms_params.keys())
 
     # Load the ensemble
     ensemble_ffp = project_dict["ensemble_ffp"]
-    ensemble = si.gm_data.Ensemble(
+    ensemble = sc.gm_data.Ensemble(
         project_name, config_ffp=ensemble_ffp, use_im_data_cache=True
     )
 
@@ -123,8 +135,10 @@ def gen_gms_project_data(project_dir: Path, n_procs: int = 1):
                     ensemble,
                     cur_station,
                     cur_id,
-                    si.im.IM.from_str(gms_params[cur_id]["IMj"]),
-                    _get_gms_ims(gms_params[cur_id]["IMj"], gms_params[cur_id]["IMs"], ensemble),
+                    sc.im.IM.from_str(gms_params[cur_id]["IMj"]),
+                    _get_gms_ims(
+                        gms_params[cur_id]["IMj"], gms_params[cur_id]["IMs"], ensemble
+                    ),
                     gms_params[cur_id]["n_gms"],
                     results_dir / cur_station,
                     gms_params[cur_id]["dataset_id"],

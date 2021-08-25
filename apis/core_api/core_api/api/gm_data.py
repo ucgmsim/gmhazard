@@ -1,7 +1,7 @@
 import flask
 from flask_cors import cross_origin
 
-import seistech_calc as si
+import seistech_calc as sc
 import seistech_utils as su
 from ..server import app, requires_auth
 from .. import constants as const
@@ -16,7 +16,7 @@ def get_ensemble_ids():
     app.logger.info(f"Received request at {const.ENSEMBLE_IDS_ENDPOINT}")
 
     app.logger.debug(f"Retrieving available ensemble ids")
-    ensemble_dict = si.gm_data.ensemble_dict
+    ensemble_dict = sc.gm_data.ensemble_dict
 
     return flask.jsonify({"ensemble_ids": list(ensemble_dict.keys())})
 
@@ -39,7 +39,7 @@ def get_ensemble_ims():
     app.logger.debug(f"Request parameters {ensemble_id}")
 
     app.logger.debug(f"Loading ensemble and retrieving available IMs")
-    ensemble = si.gm_data.Ensemble(ensemble_id)
+    ensemble = sc.gm_data.Ensemble(ensemble_id)
 
     return flask.jsonify(
         {"ensemble_id": ensemble_id, "ims": su.api.get_available_im_dict(ensemble.ims)}

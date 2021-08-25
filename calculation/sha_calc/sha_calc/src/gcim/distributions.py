@@ -72,9 +72,7 @@ class Uni_lnIMi_IMj_Rup(UniIMiDist, CondIMjDist):
     def combine(uni_lnIMi_IMj_Rup: Dict[str, "Uni_lnIMi_IMj_Rup"]):
         IMs = np.asarray(list(uni_lnIMi_IMj_Rup.keys()))
         mu_df = pd.concat([uni_lnIMi_IMj_Rup[IMi].mu for IMi in IMs], axis=1)
-        sigma_df = pd.concat(
-            [uni_lnIMi_IMj_Rup[IMi].sigma for IMi in IMs], axis=1
-        )
+        sigma_df = pd.concat([uni_lnIMi_IMj_Rup[IMi].sigma for IMi in IMs], axis=1)
         mu_df.columns, sigma_df.columns = IMs, IMs
 
         return mu_df, sigma_df
@@ -158,4 +156,6 @@ class Uni_lnIMi_IMj(UniIMiDist, CondIMjDist):
         self.sigma = sigma
 
     def compatible(self, other: "Uni_lnIMi_IMj"):
-        return self.IMi == other.IMi and self.IMj == other.IMj and self.im_j == other.im_j
+        return (
+            self.IMi == other.IMi and self.IMj == other.IMj and self.im_j == other.im_j
+        )

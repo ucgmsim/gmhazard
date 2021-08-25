@@ -5,14 +5,16 @@ from typing import Tuple, ClassVar
 
 import pandas as pd
 
-import seistech_calc as si
+from seistech_calc.im import IM
+from seistech_calc import gm_data
+from seistech_calc import site
 
 
 @dataclass
 class CausalParamBounds:
-    ensemble: si.gm_data.Ensemble
-    site_info: si.site.SiteInfo
-    IM_j: si.im.IM
+    ensemble: gm_data.Ensemble
+    site_info: site.SiteInfo
+    IM_j: IM
     mw_bounds: Tuple[float, float]
     rrup_bounds: Tuple[float, float]
     vs30_bounds: Tuple[float, float]
@@ -93,9 +95,9 @@ class CausalParamBounds:
             attributs_dict = json.load(f)
 
         return CausalParamBounds(
-            si.gm_data.Ensemble.load(attributs_dict["ensemble_params"]),
-            si.site.SiteInfo.load(data_dir),
-            si.im.IM.from_str(attributs_dict["IM_j"]),
+            gm_data.Ensemble.load(attributs_dict["ensemble_params"]),
+            site.SiteInfo.load(data_dir),
+            IM.from_str(attributs_dict["IM_j"]),
             attributs_dict["mw_bounds"],
             attributs_dict["rrup_bounds"],
             attributs_dict["vs30_bounds"],

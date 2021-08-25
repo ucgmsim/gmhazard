@@ -7,7 +7,7 @@ MISSING_PARAM_MSG = "Request is missing parameter: {}"
 def send_test_request(
     endpoint, parameters=None, method="GET", json=None, url_extension="", api="CORE"
 ):
-    """ Send a request to the core api with a
+    """Send a request to the core api with a
     given endpoint and parameters, returns the response"""
     url = f'{os.environ[api + "_API_BASE_TEST"]}{endpoint}{url_extension}'
     header = {"Authorization": "Bearer " + os.environ[api + "_API_TOKEN"]}

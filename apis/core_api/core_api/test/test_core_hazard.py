@@ -6,7 +6,8 @@ from core_api import constants
 def test_get_ensemble_hazard(config):
     """ Tests the successful get request of a ensemble hazard"""
     response = tu.send_test_request(
-        constants.ENSEMBLE_HAZARD_ENDPOINT, {**config["general"], **config["hazard"]},
+        constants.ENSEMBLE_HAZARD_ENDPOINT,
+        {**config["general"], **config["hazard"]},
     )
     check_list = [
         ("ensemble_id", str),
@@ -56,10 +57,12 @@ def test_get_ensemble_hazard_missingparam(config):
 def test_get_ensemble_hazard_download(config):
     """ Tests the successful get request of a ensemble hazard download"""
     response_hazard = tu.send_test_request(
-        constants.ENSEMBLE_HAZARD_ENDPOINT, config["general"],
+        constants.ENSEMBLE_HAZARD_ENDPOINT,
+        {**config["general"], **config["hazard"]},
     )
     response_nzs1170p5 = tu.send_test_request(
-        constants.NZS1170p5_HAZARD_ENDPOINT, config["general"],
+        constants.NZS1170p5_HAZARD_ENDPOINT,
+        config["general"],
     )
     response = tu.send_test_request(
         constants.ENSEMBLE_HAZARD_DOWNLOAD_ENDPOINT,
@@ -86,7 +89,8 @@ def test_get_ensemble_hazard_user_vs30(config):
     """Tests the successful get request of a ensemble hazard with a
     different set of vs30 and ensure the result is different to the db vs30 calculations"""
     response_db = tu.send_test_request(
-        constants.ENSEMBLE_HAZARD_ENDPOINT, {**config["general"], **config["hazard"]},
+        constants.ENSEMBLE_HAZARD_ENDPOINT,
+        {**config["general"], **config["hazard"]},
     )
     response_user = tu.send_test_request(
         constants.ENSEMBLE_HAZARD_ENDPOINT,

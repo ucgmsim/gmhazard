@@ -64,7 +64,11 @@ def parse_args():
         "out-dir", help="Output directory for the new NHM files", type=Path
     )
     parser.add_argument(
-        "n-rels", help="Number of realisations to generate", default=20, nargs="?"
+        "n-rels",
+        help="Number of realisations to generate",
+        type=int,
+        default=20,
+        nargs="?",
     )
     args = parser.parse_args()
     nhm_ffp = getattr(args, "nhm-ffp")

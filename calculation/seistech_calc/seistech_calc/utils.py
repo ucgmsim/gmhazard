@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 import seistech_calc.constants as const
-import seistech_calc.im as IM
+from seistech_calc.im import IM, IMType
 from qcore import nhm
 
 
@@ -112,7 +112,7 @@ def pandas_isin(array_1: np.ndarray, array_2: np.ndarray) -> np.ndarray:
     return pd.Index(pd.unique(array_2)).get_indexer(array_1) >= 0
 
 
-def get_min_max_values_for_im(im: IM.IM):
+def get_min_max_values_for_im(im: IM):
     """Get minimum and maximum for the given im. Values for velocity are
     given on cm/s, acceleration on cm/s^2 and Ds on s
     """
@@ -128,22 +128,22 @@ def get_min_max_values_for_im(im: IM.IM):
             return 0.0005, 4.0
         elif 5.0 < im.period <= 10.0:
             return 0.0005, 3.0
-    if im.im_type is IM.IMType.PGA:
+    if im.im_type is IMType.PGA:
         return 0.0001, 10.0
-    elif im.im_type is IM.IMType.PGV:
+    elif im.im_type is IMType.PGV:
         return 1.0, 400.0
-    elif im.im_type is IM.IMType.CAV:
+    elif im.im_type is IMType.CAV:
         return 0.0001 * 980, 20.0 * 980.0
-    elif im.im_type is IM.IMType.AI:
+    elif im.im_type is IMType.AI:
         return 0.01, 1000.0
-    elif im.im_type is IM.IMType.Ds575 or im.im_type is IM.IMType.Ds595:
+    elif im.im_type is IMType.Ds575 or im.im_type is IMType.Ds595:
         return 1.0, 400.0
     else:
         print("Unknown IM, cannot generate a range of IM values. Exiting the program")
         exit(1)
 
 
-def get_im_values(im: IM.IM, n_values: int = 100):
+def get_im_values(im: IM, n_values: int = 100):
     """
     Create an range of values for a given IM according to their min, max
     as defined by get_min_max_values
@@ -414,7 +414,7 @@ def create_parametric_db_name(
     return f"{model_name}_{source_type.value}{suffix}.db"
 
 
-def to_mu_sigma(df: pd.DataFrame, im: IM.IM):
+def to_mu_sigma(df: pd.DataFrame, im: IM):
     return df.loc[:, [str(im), f"{im}_sigma"]].rename(
         columns={str(im): "mu", f"{im}_sigma": "sigma"}
     )

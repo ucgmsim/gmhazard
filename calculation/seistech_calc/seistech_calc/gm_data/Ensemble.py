@@ -7,7 +7,9 @@ import yaml
 import numpy as np
 import pandas as pd
 
-import seistech_calc as si
+from seistech_calc import rupture
+from seistech_calc import constants as const
+from seistech_calc.im import IM, IMType
 from qcore.formats import load_station_file
 from .IMEnsemble import IMEnsemble
 
@@ -17,12 +19,12 @@ if TYPE_CHECKING:
 
 def load_data():
     data = {}
-    ensemble_config_path = os.getenv("ENSEMBLE_CONFIG_PATH")
+    ENSEMBLE_CONFIG_PATH = os.getenv("ENSEMBLE_CONFIG_PATH")
 
-    if ensemble_config_path is None:
+    if ENSEMBLE_CONFIG_PATH is None:
         return data
 
-    cfgs = glob(os.path.join(ensemble_config_path, "*.yaml"))
+    cfgs = glob(os.path.join(ENSEMBLE_CONFIG_PATH, "*.yaml"))
 
     for i, c in enumerate(cfgs):
         u_name = os.path.basename(c)[:-5]
@@ -87,8 +89,8 @@ class Ensemble:
 
         # Load the IMEnsembles
         self.im_ensembles_dict = {
-            si.im.IMType[im_string]: IMEnsemble(
-                si.im.IMType[im_string],
+            IMType[im_string]: IMEnsemble(
+                IMType[im_string],
                 self,
                 self._config["datasets"][im_string],
                 use_im_data_cache=use_im_data_cache,
@@ -185,28 +187,28 @@ class Ensemble:
     @property
     def fault_rupture_df(self):
         return self.rupture_df.loc[
-            self.rupture_df.rupture_type == si.constants.SourceType.fault.value, :
+            self.rupture_df.rupture_type == const.SourceType.fault.value, :
         ]
 
-    def load_erf(self, erf_path: str, erf_type: si.constants.ERFFileType):
+    def load_erf(self, erf_path: str, erf_type: const.ERFFileType):
         """This function should only be used by Branches, for
         the ensemble erf, use the rupture_df property!!
         """
         if erf_path in self._branch_rupture_dfs.keys():
             return self._branch_rupture_dfs[erf_path]
         else:
-            rupture_df = si.rupture.rupture_df_from_erf(erf_path, erf_type)
+            rupture_df = rupture.rupture_df_from_erf(erf_path, erf_type)
             rupture_df["rupture_type"] = (
-                "flt" if erf_type == si.constants.ERFFileType.flt_nhm else "ds"
+                "flt" if erf_type == const.ERFFileType.flt_nhm else "ds"
             )
 
             self._branch_rupture_dfs[erf_path] = rupture_df
             return rupture_df
 
-    def get_im_ensemble(self, im: si.im.IMType) -> IMEnsemble:
+    def get_im_ensemble(self, im: IMType) -> IMEnsemble:
         return self.im_ensembles_dict[im]
 
-    def check_im(self, im: si.im.IM):
+    def check_im(self, im: IM):
         """Checks if the specified IM type is supported by
         the ensemble, otherwise raises an exception
         """

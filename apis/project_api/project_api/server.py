@@ -48,8 +48,7 @@ def handle_auth_error(ex):
 
 # Format error response and append status code
 def get_token_auth_header():
-    """Obtains the Access Token from the Authorization Header
-    """
+    """Obtains the Access Token from the Authorization Header"""
     auth = flask.request.headers.get("Authorization", None)
     if not auth:
         raise AuthError(
@@ -110,3 +109,11 @@ def requires_auth(f):
         return f(*args, **kwargs)
 
     return decorated
+
+
+# Add the endpoints
+from project_api.api import disagg
+from project_api.api import gms
+from project_api.api import hazard
+from project_api.api import project
+from project_api.api import uhs

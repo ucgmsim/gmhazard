@@ -1,8 +1,11 @@
-from typing import TYPE_CHECKING, Sequence, List
+from pathlib import Path
+from typing import TYPE_CHECKING, List
 
 import numpy as np
 
-import seistech_calc as si
+from seistech_calc import dbs
+from seistech_calc import constants as const
+from seistech_calc.im import IM, IMType
 
 if TYPE_CHECKING:
     from .Branch import Branch
@@ -27,6 +30,10 @@ class Leaf:
     ds_imdb_ffps: list of IMDBs
         The fault and distributed seismicity
         IMDBs that make up this leaf
+    model: str
+        The model used for the leaf
+    tec_type: str
+        The tectonic type of the model for the leaf
     id: str
     stations: list of strings
         Available stations of the Leaf, defined as:
@@ -51,6 +58,14 @@ class Leaf:
         self.flt_imdb_ffps = flt_imdb_ffps
         self.ds_imdb_ffps = ds_imdb_ffps
 
+        # Grabs the model and tec_type from the ffps available in the leaf
+        path = (
+            Path(flt_imdb_ffps[0]) if len(flt_imdb_ffps) != 0 else Path(ds_imdb_ffps[0])
+        )
+        split_fp = path.stem.split("_")
+        self.model = "_".join(split_fp[:2])
+        self.tec_type = "_".join(split_fp[2:-1])
+
         self._flt_stations, self._ds_stations, self._ims = None, None, None
         self._flt_im_data_type, self._ds_im_data_type = None, None
 
@@ -62,7 +77,7 @@ class Leaf:
         """Get available IMs and stations of the leaf"""
         self._flt_stations, self._ds_stations = [], []
         for cur_imdb_ffp in self.flt_imdb_ffps + self.ds_imdb_ffps:
-            with si.dbs.IMDB.get_imdb(cur_imdb_ffp) as cur_imdb:
+            with dbs.IMDB.get_imdb(cur_imdb_ffp) as cur_imdb:
                 # Stations
                 if cur_imdb_ffp in self.flt_imdb_ffps:
                     self._flt_stations.append(
@@ -77,29 +92,29 @@ class Leaf:
                 if self._ims is None:
                     self._ims = set(
                         [
-                            si.im.IM.from_str(im_string)
+                            IM.from_str(im_string)
                             for im_string in cur_imdb.ims
-                            if si.im.IMType.has_value(im_string)
+                            if IMType.has_value(im_string)
                         ]
                     )
                 else:
                     self._ims.intersection_update(
                         [
-                            si.im.IM.from_str(im_string)
+                            IM.from_str(im_string)
                             for im_string in cur_imdb.ims
-                            if si.im.IMType.has_value(im_string)
+                            if IMType.has_value(im_string)
                         ]
                     )
 
                 # IM data type
-                if cur_imdb.source_type is si.constants.SourceType.fault:
+                if cur_imdb.source_type is const.SourceType.fault:
                     if self._flt_im_data_type is None:
                         self._flt_im_data_type = cur_imdb.imdb_type
                     assert self._flt_im_data_type is cur_imdb.imdb_type, (
                         "IM data types have to match across IMDBs of "
                         "the same source type"
                     )
-                if cur_imdb.source_type is si.constants.SourceType.distributed:
+                if cur_imdb.source_type is const.SourceType.distributed:
                     if self._ds_im_data_type is None:
                         self._ds_im_data_type = cur_imdb.imdb_type
                     assert self._ds_im_data_type is cur_imdb.imdb_type, (

@@ -1,4 +1,5 @@
 """NZTA benchmark tests"""
+import os
 import pathlib
 
 import yaml
@@ -6,7 +7,11 @@ import pytest
 import numpy as np
 import pandas as pd
 
-import seistech_calc as si
+from seistech_calc import site
+from seistech_calc import nz_code
+from seistech_calc import gm_data
+from seistech_calc import constants
+from seistech_calc.im import IMType, IM_COMPONENT_MAPPING, IMComponent
 
 
 @pytest.fixture(scope="module")
@@ -25,7 +30,7 @@ def test_nzta_hazard(config):
     def test_data(
         station_name: str,
         ensemble_id: str,
-        nzta_result: si.nz_code.nzta_2018.NZTAResult,
+        nzta_result: nz_code.nzta_2018.NZTAResult,
         bench_df: pd.DataFrame,
     ):
         print(f"Running - ensemble - {ensemble_id}, station name - {station_name}")
@@ -60,21 +65,21 @@ def test_nzta_hazard(config):
     results = []
     for ensemble_id in ensembles.keys():
         ens_config_ffp = (
-            pathlib.Path(__file__).resolve().parent.parent
-            / "gm_data/ensemble_configs/benchmark_tests"
+            pathlib.Path(os.getenv("ENSEMBLE_CONFIG_PATH"))
+            / "benchmark_tests"
             / f"{ensemble_id}.yaml"
         )
 
-        ens = si.gm_data.Ensemble(ensemble_id, ens_config_ffp)
+        ens = gm_data.Ensemble(ensemble_id, ens_config_ffp)
         components = (
-            si.im.IM_COMPONENT_MAPPING[si.im.IMType.PGA]
-            if ens.im_ensembles[0].im_data_type == si.constants.IMDataType.parametric
-            else [si.im.IMComponent.Larger]
+            IM_COMPONENT_MAPPING[IMType.PGA]
+            if ens.im_ensembles[0].im_data_type == constants.IMDataType.parametric
+            else [IMComponent.Larger]
         )
         for component in components:
             for station_name in ensembles[ensemble_id]["station_names"]:
-                site_info = si.site.get_site_from_name(ens, station_name)
-                nzta_result = si.nz_code.nzta_2018.run_ensemble_nzta(
+                site_info = site.get_site_from_name(ens, station_name)
+                nzta_result = nz_code.nzta_2018.run_ensemble_nzta(
                     ens, site_info, im_component=component
                 )
 

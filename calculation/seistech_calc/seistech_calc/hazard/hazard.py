@@ -7,13 +7,13 @@ import pandas as pd
 from scipy.interpolate.interpolate import interp1d
 
 import sha_calc as sha_calc
-import seistech_calc.site as site
-import seistech_calc.utils as utils
-import seistech_calc.shared as shared
-import seistech_calc.gm_data as gm_data
-import seistech_calc.site_source as site_source
-import seistech_calc.constants as const
-from seistech_calc.im import IM, IMComponent
+from seistech_calc import site
+from seistech_calc import utils
+from seistech_calc import shared
+from seistech_calc import gm_data
+from seistech_calc import site_source
+from seistech_calc import constants as const
+from seistech_calc.im import IM
 from .HazardResult import BranchHazardResult, EnsembleHazardResult
 
 
@@ -101,15 +101,9 @@ def run_ensemble_hazard(
 
         # Inverse CDF lookup
         cdf_x, cdf_y = excd_values, np.cumsum(weights, axis=1)
-        x_values = []
-        for cur_y in [0.16, 0.84]:
-            diff = cdf_y - cur_y
-            x_values.append(
-                [
-                    cdf_x[ix, :][np.min(np.flatnonzero(diff[ix, :] > 0))]
-                    for ix in range(len(im_values))
-                ]
-            )
+        x_values = sha_calc.shared.query_non_parametric_multi_cdf_invs(
+            [0.16, 0.84], cdf_x, cdf_y
+        )
         x_values = np.stack(x_values, axis=1)
         percentiles = pd.DataFrame(
             data=x_values, columns=["16th", "84th"], index=fault_hazard.index.values
@@ -541,7 +535,11 @@ def vs30_update(site_info: site.SiteInfo, hazard_result: BranchHazardResult):
 
         # Run the empirical model for using the db and user specified vs30
         flt_im_db, _ = emp_factory.compute_gmm(
-            cur_flt_fault, cur_flt_site_db, classdef.GMM.CB_14, str(im), period=im.period
+            cur_flt_fault,
+            cur_flt_site_db,
+            classdef.GMM.CB_14,
+            str(im),
+            period=im.period,
         )
         flt_im_user, _ = emp_factory.compute_gmm(
             cur_flt_fault,
@@ -555,7 +553,11 @@ def vs30_update(site_info: site.SiteInfo, hazard_result: BranchHazardResult):
             cur_ds_fault, cur_ds_site_db, classdef.GMM.CB_14, str(im), period=im.period
         )
         ds_im_user, _ = emp_factory.compute_gmm(
-            cur_ds_fault, cur_ds_site_user, classdef.GMM.CB_14, str(im), period=im.period
+            cur_ds_fault,
+            cur_ds_site_user,
+            classdef.GMM.CB_14,
+            str(im),
+            period=im.period,
         )
 
         # Compute the vs30 ratio

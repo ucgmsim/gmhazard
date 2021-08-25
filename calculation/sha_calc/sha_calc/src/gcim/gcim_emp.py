@@ -8,7 +8,6 @@ from scipy import stats
 
 import sha_calc.src.disagg as disagg
 import sha_calc.src.ground_motion as gm
-
 from . import distributions as dist
 from . import im_correlations
 
@@ -113,7 +112,10 @@ def comb_lnIMi_IMj(lnIMi_IMj: Dict[str, dist.Uni_lnIMi_IMj], weights: pd.Series)
 
     # Compute the IM values for +/- sigma
     z = np.linspace(-3, 3, 1000)
-    cdf_x = pd.Series(data=np.exp(mu_IMi_IMj + sigma_IMi_IMj * z), name="cdf_x",)
+    cdf_x = pd.Series(
+        data=np.exp(mu_IMi_IMj + sigma_IMi_IMj * z),
+        name="cdf_x",
+    )
     cdf_y = pd.Series(data=np.zeros(cdf_x.shape[0]), name="cdf_y")
     for cur_name, cur_lnIMi_IMj in lnIMi_IMj.items():
         cdf_y += (

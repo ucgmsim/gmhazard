@@ -8,7 +8,7 @@ import argparse
 
 from mpi4py import MPI
 
-import seistech_calc as si
+import seistech_calc as sc
 import common
 
 comm = MPI.COMM_WORLD
@@ -36,13 +36,13 @@ def calculate_flt(
     keep_sigma=False,
     suffix=None,
 ):
-    nhm_data = si.utils.flt_nhm_to_rup_df(nhm_ffp)
+    nhm_data = sc.utils.flt_nhm_to_rup_df(nhm_ffp)
 
     imdb_dict, __ = common.open_imdbs(
-        tect_type_model_dict_ffp, output_dir, si.constants.SourceType.fault, suffix=suffix
+        tect_type_model_dict_ffp, output_dir, sc.constants.SourceType.fault, suffix=suffix
     )
 
-    with si.dbs.SiteSourceDB(site_source_db_ffp) as distance_store:
+    with sc.dbs.SiteSourceDB(site_source_db_ffp) as distance_store:
         fault_df, n_stations, site_df, work = common.get_work(
             distance_store, vs30_ffp, z_ffp, rank, size
         )
@@ -106,7 +106,7 @@ def parse_args():
         help="Which pSA periods to calculate for",
     )
     parser.add_argument(
-        "--im", default=common.IM_TYPE_LIST, nargs="+", help="Which IMs to calculate", type=si.im.IMType,
+        "--im", default=common.IM_TYPE_LIST, nargs="+", help="Which IMs to calculate", type=sc.im.IMType,
     )
     parser.add_argument(
         "--model-dict",

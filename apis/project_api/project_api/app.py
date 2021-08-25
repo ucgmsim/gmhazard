@@ -1,15 +1,22 @@
-import os
+import argparse
+from pathlib import Path
 
 import yaml
 
-from project_api import app
+from project_api.server import app
 
 if __name__ == "__main__":
-    with open(
-        os.path.join(os.path.dirname(os.path.realpath(__file__)), "api_config.yaml")
-    ) as f:
+    with open(Path(__file__).resolve().parent / "api_config.yaml") as f:
         config = yaml.safe_load(f)
 
-    app.run(
-        threaded=False, host="0.0.0.0", processes=config["n_procs"], port=config["port"]
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--port",
+        type=int,
+        help="Port number (default: port number from the config file.",
+        default=config["port"],
     )
+    args = parser.parse_args()
+
+    app.run(threaded=False, host="0.0.0.0", processes=config["n_procs"], port=args.port)

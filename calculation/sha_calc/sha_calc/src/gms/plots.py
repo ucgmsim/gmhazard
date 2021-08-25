@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
 import sha_calc.src.gcim.distributions as dist
 from . import shared
+
 
 def plot_IMi_GMS(
     gcim: dist.Uni_lnIMi_IMj,
@@ -119,5 +119,7 @@ def gen_GMS_plots(
             realisations[IMi],
             str(output_dir / file_name),
             alpha=alpha,
-            sel_gms_IM_values=None if sel_gms_IM_values is None else sel_gms_IM_values[IMi]
+            sel_gms_IM_values=None
+            if sel_gms_IM_values is None
+            else sel_gms_IM_values[IMi],
         )

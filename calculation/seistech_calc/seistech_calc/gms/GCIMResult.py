@@ -5,7 +5,8 @@ from typing import Dict
 import pandas as pd
 
 import sha_calc as sha_calc
-import seistech_calc as si
+from seistech_calc.im import IM
+from seistech_calc import gm_data
 
 
 class BranchUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):
@@ -37,10 +38,10 @@ class BranchUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):
 
     def __init__(
         self,
-        IMi: si.im.IM,
-        IMj: si.im.IM,
+        IMi: IM,
+        IMj: IM,
         im_j: float,
-        branch: si.gm_data.Branch,
+        branch: gm_data.Branch,
         lnIMi_IMj_Rup: sha_calc.Uni_lnIMi_IMj_Rup,
         lnIMi_IMj: sha_calc.Uni_lnIMi_IMj,
     ):
@@ -72,13 +73,13 @@ class BranchUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):
         self.lnIMi_IMj.cdf.to_csv(save_dir / self.LNIMI_IMJ_CDF_FN)
 
     @classmethod
-    def load(cls, data_dir: Path, branch: si.gm_data.Branch):
+    def load(cls, data_dir: Path, branch: gm_data.Branch):
         with open(data_dir / f"{cls.VARIABLES_FN}", "r") as f:
             variables_dict = json.load(f)
         assert branch.name == variables_dict["branch_name"]
 
-        IMi = si.im.IM.from_str(variables_dict["IMi"])
-        IMj, im_j = si.im.IM.from_str(variables_dict["IMj"]), variables_dict["im_j"]
+        IMi = IM.from_str(variables_dict["IMi"])
+        IMj, im_j = IM.from_str(variables_dict["IMj"]), variables_dict["im_j"]
 
         lnIMi_IMj_Rup = sha_calc.Uni_lnIMi_IMj_Rup(
             pd.read_csv(data_dir / cls.LNIMI_IMJ_RUP_MU_FN, index_col=0).squeeze(),
@@ -124,9 +125,9 @@ class IMEnsembleUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):
 
     def __init__(
         self,
-        im_ensemble: si.gm_data.IMEnsemble,
-        IMi: si.im.IM,
-        IMj: si.im.IM,
+        im_ensemble: gm_data.IMEnsemble,
+        IMi: IM,
+        IMj: IM,
         im_j: float,
         ln_IMi_IMj: sha_calc.Uni_lnIMi_IMj,
         branch_uni_gcims: Dict[str, BranchUniGCIM],
@@ -152,12 +153,12 @@ class IMEnsembleUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):
             branch_gcim.save(save_dir)
 
     @classmethod
-    def load(cls, data_dir: Path, im_ensemble: si.gm_data.IMEnsemble):
+    def load(cls, data_dir: Path, im_ensemble: gm_data.IMEnsemble):
         with open(data_dir / cls.VARIABLES_FN, "r") as f:
             variables_dict = json.load(f)
 
-        IMi = si.im.IM.from_str(variables_dict["IMi"])
-        IMj, im_j = si.im.IM.from_str(variables_dict["IMj"]), variables_dict["im_j"]
+        IMi = IM.from_str(variables_dict["IMi"])
+        IMj, im_j = IM.from_str(variables_dict["IMj"]), variables_dict["im_j"]
 
         sha_calc.Uni_lnIMi_IMj(
             pd.read_csv(data_dir / cls.LNIMI_IMJ_CDF_FN, index_col=0).squeeze(),

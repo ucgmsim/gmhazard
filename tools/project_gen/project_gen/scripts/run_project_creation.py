@@ -1,5 +1,9 @@
 """Script for manually creating a new project (and its data & results)
-For re-computing the results of an existing project, use
+
+It is possible to resume calculations (of the results not dbs) of a broken run,
+however no checks for completeness are performed (so the calculations
+being processed at the time of failure will be incomplete and its
+up to the user to clean these up)
 """
 import argparse
 from pathlib import Path
@@ -14,6 +18,7 @@ def main(
     projects_base_dir: Path,
     scripts_dir: Path,
     n_procs: int = 6,
+    erf_dir: Path = None,
 ):
     with open(project_params_ffp, "r") as f:
         project_params = yaml.safe_load(f)
@@ -24,6 +29,7 @@ def main(
         scripts_dir,
         n_procs=n_procs,
         new_project=True,
+        erf_dir=erf_dir,
     )
 
 
@@ -54,6 +60,9 @@ if __name__ == "__main__":
         help="Number of processes to use - minimum is 2",
         default=2,
     )
+    parser.add_argument(
+        "--erf_dir", type=Path, help="Path to the ERF directory", default=None
+    )
 
     args = parser.parse_args()
 
@@ -65,4 +74,5 @@ if __name__ == "__main__":
         args.projects_base_dir,
         args.scripts_dir,
         n_procs=args.n_procs,
+        erf_dir=args.erf_dir,
     )

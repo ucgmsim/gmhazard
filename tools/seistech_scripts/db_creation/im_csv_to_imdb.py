@@ -33,7 +33,7 @@ import ray
 import numpy as np
 import pandas as pd
 
-import seistech_calc as si
+import seistech_calc as sc
 from qcore.formats import load_station_file
 
 
@@ -116,7 +116,7 @@ class DataCollector:
             # Get the stations indices into the station list
             # Same as np.flatnonzero(np.isin(stations, df.index.values)) but much faster
             station_ind = np.flatnonzero(
-                si.utils.pandas_isin(self._stations, df.index.values)
+                sc.utils.pandas_isin(self._stations, df.index.values)
             )
 
             # Read the csv files
@@ -265,7 +265,7 @@ class StationProcessor:
             )
             df.sort_index(inplace=True)
             sim_indices = np.flatnonzero(
-                si.utils.pandas_isin(self._simulations.values, df.index.values)
+                sc.utils.pandas_isin(self._simulations.values, df.index.values)
             )
             df.index = sim_indices
             return df
@@ -302,8 +302,8 @@ class WriterProcess:
         self._simulations = simulations
 
         # Create and open db
-        self._imdb = si.dbs.IMDBNonParametric(
-            self._imdb_file, writeable=True, source_type=si.SourceType.fault
+        self._imdb = sc.dbs.IMDBNonParametric(
+            self._imdb_file, writeable=True, source_type=sc.SourceType.fault
         )
         self._imdb.open()
 
@@ -485,7 +485,7 @@ def run(
 
     if rupture_lookup:
         print("Adding data for rupture based lookup")
-        si.dbs.IMDB.add_rupture_lookup(output_file, n_procs=n_procs)
+        sc.dbs.IMDB.add_rupture_lookup(output_file, n_procs=n_procs)
 
     ray.shutdown()
 

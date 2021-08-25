@@ -10,20 +10,20 @@ import numpy as np
 
 import sha_calc.src.ground_motion as gm
 import sha_calc.src.hazard as haz
-import seistech_calc as si
+import seistech_calc as sc
 
 
 exceedance = 0.00010025083647088573
 
-ens = si.gm_data.Ensemble("v19p5sim")
+ens = sc.gm_data.Ensemble("v19p5sim")
 
 output_folder = "/home/cbs51/code/data/200218_uhs_115"
 
-with si.dbs.IMDBNonParametric("/home/cbs51/code/data/200108_v18p6_full_imdb/imdb_full.h5") as db:
+with sc.dbs.IMDBNonParametric("/home/cbs51/code/data/200108_v18p6_full_imdb/imdb_full.h5") as db:
     im_df = db.im_data("CCCC")
 
 # Get SA periods that are in all the datasets
-sa_ims, sa_periods = si.shared.get_SA_periods(im_df.columns.values)
+sa_ims, sa_periods = sc.shared.get_SA_periods(im_df.columns.values)
 sa_ims, sa_periods = np.asarray(sa_ims), np.asarray(sa_periods)
 
 # Sort
@@ -33,7 +33,7 @@ sa_periods = sa_periods[sort_ind]
 
 sa_values = []
 for im, period in zip(sa_ims, sa_periods):
-    im_levels = si.utils.get_im_values(im, n_values=50)
+    im_levels = sc.utils.get_im_values(im, n_values=50)
 
     # Loop over the IM values
     im_series = []
@@ -43,11 +43,11 @@ for im, period in zip(sa_ims, sa_periods):
     cur_df = pd.concat(im_series, axis=1, join="inner")
     cur_df.columns = im_levels
 
-    cur_df.index = si.rupture.rupture_name_to_id(cur_df.index.values, ens._config["datasets"]["sim"]["flt_erf"])
+    cur_df.index = sc.rupture.rupture_name_to_id(cur_df.index.values, ens._config["datasets"]["sim"]["flt_erf"])
 
     cur_hazard = haz.hazard_curve(cur_df, ens.rupture_df["annual_rec_prob"])
 
-    sa_values.append(si.hazard.exceedance_to_im(exceedance, cur_hazard.index.values, cur_hazard.values))
+    sa_values.append(sc.hazard.exceedance_to_im(exceedance, cur_hazard.index.values, cur_hazard.values))
 
 m_size = 3.0
 

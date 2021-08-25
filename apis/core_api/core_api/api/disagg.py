@@ -8,18 +8,18 @@ import pandas as pd
 from flask_cors import cross_origin
 from werkzeug.contrib.cache import BaseCache
 
-import seistech_calc as si
+import seistech_calc as sc
 import seistech_utils as su
-from ..server import app, requires_auth, DOWNLOAD_URL_VALID_FOR, DOWNLOAD_URL_SECRET_KEY
-from .. import constants as const
+from core_api import server
+from core_api import constants as const
 
 
 class DisaggCachedData:
     def __init__(
         self,
-        ensemble: si.gm_data.Ensemble,
-        site_info: si.site.SiteInfo,
-        disagg_data: si.disagg.EnsembleDisaggData,
+        ensemble: sc.gm_data.Ensemble,
+        site_info: sc.site.SiteInfo,
+        disagg_data: sc.disagg.EnsembleDisaggData,
         merged_df: pd.DataFrame,
         src_plot_data: bytes,
         eps_plot_data: bytes,
@@ -45,10 +45,10 @@ class DisaggCachedData:
         )
 
 
-@app.route(const.ENSEMBLE_DISAGG_ENDPOINT, methods=["GET"])
+@server.app.route(const.ENSEMBLE_DISAGG_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
-@requires_auth
-@su.api.endpoint_exception_handling(app=app)
+@server.requires_auth
+@su.api.endpoint_exception_handling(server.app)
 def get_ensemble_disagg():
     """Retrieves the contribution of each rupture for the
     specified exceedance.
@@ -56,26 +56,34 @@ def get_ensemble_disagg():
     Valid request has to contain the following
     URL parameters: ensemble_id, station, im, exceedance
     """
-    app.logger.info(f"Received request at {const.ENSEMBLE_DISAGG_ENDPOINT}")
+    server.app.logger.info(f"Received request at {const.ENSEMBLE_DISAGG_ENDPOINT}")
     cache = flask.current_app.extensions["cache"]
 
     (
-        (ensemble_id, station, im, exceedance,),
+        (
+            ensemble_id,
+            station,
+            im,
+            exceedance,
+        ),
         optional_params_dict,
     ) = su.api.get_check_keys(
         flask.request.args,
-        ("ensemble_id", "station", ("im", si.im.IM.from_str), "exceedance"),
+        ("ensemble_id", "station", "im", "exceedance"),
         (
             ("gmt_plot", bool, False),
             ("vs30", float),
-            ("im_component", si.im.IMComponent, si.im.IMComponent.RotD50),
+            ("im_component", str, "RotD50"),
         ),
     )
+
     gmt_plots = optional_params_dict["gmt_plot"]
     user_vs30 = optional_params_dict.get("vs30")
-    im.component = optional_params_dict.get("im_component")
+    im = sc.im.IM.from_str(im, im_component=optional_params_dict.get("im_component"))
 
-    app.logger.debug(f"Request parameters {ensemble_id}, {station}, {im}, {exceedance}")
+    server.app.logger.debug(
+        f"Request parameters {ensemble_id}, {station}, {im}, {im.component}, {exceedance}"
+    )
 
     # Compute or retrieve from cache
     (
@@ -116,28 +124,34 @@ def get_ensemble_disagg():
                     "gmt_plots": gmt_plots,
                     "user_vs30": user_vs30,
                 },
-                DOWNLOAD_URL_SECRET_KEY,
-                DOWNLOAD_URL_VALID_FOR,
+                server.DOWNLOAD_URL_SECRET_KEY,
+                server.DOWNLOAD_URL_VALID_FOR,
             ),
         )
     )
 
 
-@app.route(f"{const.ENSEMBLE_DISAGG_DOWNLOAD_ENDPOINT}", methods=["Get"])
-@su.api.endpoint_exception_handling(app)
+@server.app.route(f"{const.ENSEMBLE_DISAGG_DOWNLOAD_ENDPOINT}", methods=["Get"])
+@su.api.endpoint_exception_handling(server.app)
 def download_ens_disagg():
     """Handles downloading of disagg contribution data"""
-    app.logger.info(f"Received request at {const.ENSEMBLE_DISAGG_DOWNLOAD_ENDPOINT}")
+    server.app.logger.info(
+        f"Received request at {const.ENSEMBLE_DISAGG_DOWNLOAD_ENDPOINT}"
+    )
     cache = flask.current_app.extensions["cache"]
 
     # Retrieve parameters from the token
     disagg_token, *_ = su.api.get_check_keys(flask.request.args, ("disagg_token",))
-    disagg_payload = su.api.get_token_payload(disagg_token[0], DOWNLOAD_URL_SECRET_KEY)
+    disagg_payload = su.api.get_token_payload(
+        disagg_token[0], server.DOWNLOAD_URL_SECRET_KEY
+    )
     ensemble_id, station, user_vs30, im, exceedance, gmt_plots = (
         disagg_payload["ensemble_id"],
         disagg_payload["station"],
         disagg_payload["user_vs30"],
-        si.im.IM.from_str(disagg_payload["im"]),
+        sc.im.IM.from_str(
+            disagg_payload["im"], im_component=disagg_payload["im_component"]
+        ),
         disagg_payload["exceedance"],
         disagg_payload["gmt_plots"],
     )
@@ -175,23 +189,28 @@ def download_ens_disagg():
         )
 
 
-@app.route(const.ENSEMBLE_FULL_DISAGG_ENDPOINT, methods=["GET"])
+@server.app.route(const.ENSEMBLE_FULL_DISAGG_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
-@requires_auth
-@su.api.endpoint_exception_handling(app)
+@server.requires_auth
+@su.api.endpoint_exception_handling(server.app)
 def get_full_disagg():
     """
     Valid request has to contain the following
     URL parameters: ensemble_id, station, im, exceedance
     """
-    app.logger.info(f"Received request at {const.ENSEMBLE_FULL_DISAGG_ENDPOINT}")
+    server.app.logger.info(f"Received request at {const.ENSEMBLE_FULL_DISAGG_ENDPOINT}")
 
     (
-        (ensemble_id, station, im, exceedance,),
+        (
+            ensemble_id,
+            station,
+            im,
+            exceedance,
+        ),
         optional_values_dict,
     ) = su.api.get_check_keys(
         flask.request.args,
-        ("ensemble_id", "station", ("im", si.im.IM.from_str), "exceedance"),
+        ("ensemble_id", "station", "im", "exceedance"),
         (
             ("mag_min", float),
             ("mag_n_bins", float),
@@ -199,29 +218,29 @@ def get_full_disagg():
             ("rrup_min", float),
             ("rrup_n_bins", float),
             ("rrup_bin_size", float),
-            ("im_component", si.im.IMComponent, si.im.IMComponent.RotD50),
+            ("im_component", str, "RotD50"),
         ),
     )
 
-    app.logger.debug(
+    user_vs30 = optional_values_dict.get("vs30")
+    im = sc.im.IM.from_str(im, im_component=optional_values_dict.get("im_component"))
+
+    server.app.logger.debug(
         f"Request parameters {ensemble_id}, {station}, {im}, {exceedance}, "
         f"optional parameters {optional_values_dict}"
     )
 
-    user_vs30 = optional_values_dict.get("vs30")
-    im.component = optional_values_dict.get("im_component")
+    server.app.logger.debug(f"Loading ensemble and retrieving site information")
+    ensemble = sc.gm_data.Ensemble(ensemble_id)
+    site = sc.site.get_site_from_name(ensemble, station, user_vs30=user_vs30)
 
-    app.logger.debug(f"Loading ensemble and retrieving site information")
-    ensemble = si.gm_data.Ensemble(ensemble_id)
-    site = si.site.get_site_from_name(ensemble, station, user_vs30=user_vs30)
-
-    app.logger.debug(f"Computing disagg")
-    disagg_data = si.disagg.run_ensemble_disagg(
+    server.app.logger.debug(f"Computing disagg")
+    disagg_data = sc.disagg.run_ensemble_disagg(
         ensemble, site, im, exceedance=float(exceedance), calc_mean_values=True
     )
 
-    app.logger.debug("Computing disagg gridding")
-    disagg_grid_data = si.disagg.run_disagg_gridding(
+    server.app.logger.debug("Computing disagg gridding")
+    disagg_grid_data = sc.disagg.run_disagg_gridding(
         disagg_data, **optional_values_dict
     )
 
@@ -231,15 +250,15 @@ def get_full_disagg():
 def _get_disagg(
     ensemble_id: str,
     station: str,
-    im: si.im.IM,
+    im: sc.im.IM,
     exceedance: str,
     cache: BaseCache,
     gmt_plots: bool = False,
     user_vs30: float = None,
 ) -> Tuple[
-    si.gm_data.Ensemble,
-    si.site.SiteInfo,
-    si.disagg.EnsembleDisaggData,
+    sc.gm_data.Ensemble,
+    sc.site.SiteInfo,
+    sc.disagg.EnsembleDisaggData,
     pd.DataFrame,
     Union[None, bytes],
     Union[None, bytes],
@@ -261,19 +280,23 @@ def _get_disagg(
 
     src_plot_data, eps_plot_data = None, None
     if cached_data is None:
-        app.logger.debug(f"No cached result for {cache_key}, computing disagg")
-        app.logger.debug(f"Loading ensemble and retrieving site information")
-        ensemble = si.gm_data.Ensemble(ensemble_id)
-        site_info = si.site.get_site_from_name(ensemble, station, user_vs30=user_vs30)
+        server.app.logger.debug(f"No cached result for {cache_key}, computing disagg")
+        server.app.logger.debug(f"Loading ensemble and retrieving site information")
+        ensemble = sc.gm_data.Ensemble(ensemble_id)
+        site_info = sc.site.get_site_from_name(ensemble, station, user_vs30=user_vs30)
 
-        app.logger.debug(f"Computing disagg - version {su.api.get_repo_version()}")
-        disagg_data = si.disagg.run_ensemble_disagg(
+        server.app.logger.debug(
+            f"Computing disagg - version {su.api.get_repo_version()}"
+        )
+        disagg_data = sc.disagg.run_ensemble_disagg(
             ensemble, site_info, im, exceedance=float(exceedance), calc_mean_values=True
         )
 
         # Also include annual rec prob, magnitude and rrup (for disagg table)
-        ruptures_df = ensemble.rupture_df.loc[disagg_data.fault_disagg.index.values]
-        flt_dist_df = si.site_source.get_distance_df(ensemble.flt_ssddb_ffp, site_info)
+        ruptures_df = ensemble.get_im_ensemble(im.im_type).rupture_df.loc[
+            disagg_data.fault_disagg.index.values
+        ]
+        flt_dist_df = sc.site_source.get_distance_df(ensemble.flt_ssddb_ffp, site_info)
         merged_df = pd.merge(
             ruptures_df,
             flt_dist_df,
@@ -287,15 +310,15 @@ def _get_disagg(
 
         # Additional plots if requested
         if gmt_plots:
-            disagg_grid_data = si.disagg.run_disagg_gridding(disagg_data)
+            disagg_grid_data = sc.disagg.run_disagg_gridding(disagg_data)
 
             with tempfile.TemporaryDirectory() as tmp_dir:
-                si.plots.gmt_disagg(
+                sc.plots.gmt_disagg(
                     str(Path(tmp_dir) / "disagg_src"),
                     disagg_grid_data.to_dict(),
                     bin_type="src",
                 )
-                si.plots.gmt_disagg(
+                sc.plots.gmt_disagg(
                     str(Path(tmp_dir) / "disagg_eps"),
                     disagg_grid_data.to_dict(),
                     bin_type="eps",
@@ -310,7 +333,9 @@ def _get_disagg(
                     eps_plot_data = f.read()
 
         if not cache.has(cache_key):
-            app.logger.debug(f"Adding disagg result to cache using key - {cache_key}")
+            server.app.logger.debug(
+                f"Adding disagg result to cache using key - {cache_key}"
+            )
             cache.set(
                 cache_key,
                 DisaggCachedData(
@@ -324,7 +349,7 @@ def _get_disagg(
             )
 
     else:
-        app.logger.debug(f"Using cached result with key {cache_key}")
+        server.app.logger.debug(f"Using cached result with key {cache_key}")
         (
             ensemble,
             site_info,

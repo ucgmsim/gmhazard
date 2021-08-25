@@ -3,14 +3,14 @@ from typing import Union, Optional, Dict
 import pandas as pd
 import numpy as np
 
-import sha_calc
-import seistech_calc.site as site
-import seistech_calc.utils as utils
-import seistech_calc.shared as shared
-import seistech_calc.hazard as hazard
-import seistech_calc.gm_data as gm_data
-import seistech_calc.site_source as site_source
-import seistech_calc.constants as const
+import sha_calc as sha_calc
+from seistech_calc import site
+from seistech_calc import utils
+from seistech_calc import shared
+from seistech_calc import hazard
+from seistech_calc import gm_data
+from seistech_calc import site_source
+from seistech_calc import constants as const
 from seistech_calc.im import IM
 from .DisaggData import BranchDisaggData, EnsembleDisaggData, DisaggGridData
 
@@ -69,6 +69,7 @@ def run_ensemble_disagg(
             for column in ["contribution", "epsilon"]
         }
     )
+    del branches_dict
 
     # Fault disagg branches mean
     adj_branch_weights, _ = shared.compute_adj_branch_weights(
@@ -88,11 +89,12 @@ def run_ensemble_disagg(
         # Compute mean magnitude
         full_disagg = pd.concat([fault_disagg_mean, ds_disagg_mean])
         mag_mean = shared.compute_contr_mean(
-            ensemble.rupture_df.magnitude, full_disagg.contribution.to_frame(),
+            im_ensemble.rupture_df.magnitude,
+            full_disagg.contribution.to_frame(),
         ).values[0]
 
         mag_16th, mag_84th = shared.compute_contr_16_84(
-            ensemble.rupture_df.magnitude, full_disagg.contribution.to_frame()
+            im_ensemble.rupture_df.magnitude, full_disagg.contribution.to_frame()
         )
 
         # Epsilon mean, ignore entries with epsilon np.inf
@@ -118,7 +120,8 @@ def run_ensemble_disagg(
         rrup_disagg_df = pd.concat([fault_rrup_disagg_df.rrup, ds_rrup_disagg_df.rrup])
         mask = ~rrup_disagg_df.isna()
         rrup_mean = shared.compute_contr_mean(
-            rrup_disagg_df.loc[mask], full_disagg.contribution.loc[mask].to_frame(),
+            rrup_disagg_df.loc[mask],
+            full_disagg.contribution.loc[mask].to_frame(),
         ).values[0]
 
         rrup_16th, rrup_84th = shared.compute_contr_16_84(
@@ -153,6 +156,7 @@ def run_ensemble_disagg(
         im,
         im_value,
         ensemble,
+        im_ensemble,
         exceedance=exceedance,
         mean_values=mean_values,
     )
@@ -327,10 +331,11 @@ def run_disagg_gridding(
         if isinstance(disagg_data, EnsembleDisaggData)
         else disagg_data.im_ensemble.ensemble
     )
+    im_ensemble = disagg_data.im_ensemble
 
     # Get rupture details for the flt ruptures
     flt_ruptures = pd.merge(
-        ensemble.rupture_df,
+        im_ensemble.rupture_df,
         disagg_data.fault_disagg,
         left_index=True,
         right_index=True,
@@ -343,7 +348,10 @@ def run_disagg_gridding(
 
     # Get rupture details for the ds ruptures
     ds_ruptures = pd.merge(
-        ensemble.rupture_df, disagg_data.ds_disagg, left_index=True, right_index=True,
+        im_ensemble.rupture_df,
+        disagg_data.ds_disagg,
+        left_index=True,
+        right_index=True,
     )
 
     ds_ruptures["loc_name"] = np.asarray(

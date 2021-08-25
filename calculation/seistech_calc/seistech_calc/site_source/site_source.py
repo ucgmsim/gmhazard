@@ -3,10 +3,10 @@ from typing import Union
 import numpy as np
 import pandas as pd
 
+from seistech_calc import dbs
+from seistech_calc import site
+from seistech_calc import constants as const
 
-import seistech_calc.dbs as dbs
-import seistech_calc.site as site
-import seistech_calc.constants as const
 
 def get_distance_df(
     site_source_db_ffp: str, site_info: site.SiteInfo
@@ -29,7 +29,9 @@ def get_distance_df(
         return db.station_data(site_info.station_name)
 
 
-def rupture_id_to_loc_name(rupture_ids: np.ndarray, src_type: const.SourceType) -> pd.Series:
+def rupture_id_to_loc_name(
+    rupture_ids: np.ndarray, src_type: const.SourceType
+) -> pd.Series:
     """Converts rupture ids to location names,
     for DS the location name is just the lon/lat part of the rupture id and
     for fault it is that fault name
@@ -57,6 +59,7 @@ def rupture_id_to_loc_name(rupture_ids: np.ndarray, src_type: const.SourceType) 
         )[:, 0]
 
     return pd.Series(index=rupture_ids, data=loc_names)
+
 
 def match_ruptures(
     distance_df: pd.DataFrame,

@@ -12,13 +12,23 @@ from qcore.timeseries import BBSeis
 from qcore import simulation_structure as ss
 
 import sha_calc as sha
-import seistech_calc as si
+from seistech_calc.im import IM, IMType
+from seistech_calc import gm_data
+from seistech_calc import site
+from seistech_calc import constants
+from seistech_calc import dbs
+from seistech_calc import shared
 from .CausalParamBounds import CausalParamBounds
 
 
 def load_gm_dataset_configs():
     data = {}
-    cfgs = glob(os.path.join(os.path.dirname(__file__), "gm_dataset_configs", "*.yaml"))
+    GM_DATASET_CONFIG_PATH = os.getenv("GM_DATASET_CONFIG_PATH")
+
+    if GM_DATASET_CONFIG_PATH is None:
+        return data
+
+    cfgs = glob(os.path.join(GM_DATASET_CONFIG_PATH, "*.yaml"))
 
     for i, c in enumerate(cfgs):
         u_name = os.path.basename(c)[:-5]
@@ -49,7 +59,7 @@ class GMDataset:
         raise NotImplementedError()
 
     def get_waveforms(
-        self, gms: Sequence[Any], site_info: si.site.SiteInfo, output_dir: str
+        self, gms: Sequence[Any], site_info: site.SiteInfo, output_dir: str
     ) -> List:
         """Retrieves and saves the waveforms as text
         files in the specified output directory
@@ -66,7 +76,7 @@ class GMDataset:
 
     def get_im_df(
         self,
-        site_info: si.site.SiteInfo,
+        site_info: site.SiteInfo,
         IMs: np.ndarray,
         filter_params: CausalParamBounds = None,
         sf: pd.Series = None,
@@ -101,7 +111,7 @@ class GMDataset:
         raise NotImplementedError
 
     def get_metadata_df(
-        self, site_info: si.site.SiteInfo, selected_gms: Sequence[Any] = None
+        self, site_info: site.SiteInfo, selected_gms: Sequence[Any] = None
     ) -> pd.DataFrame:
         """
         Gets the metadata dataframe
@@ -161,11 +171,11 @@ class GMDataset:
     def get_GMDataset(name: str) -> "GMDataset":
         """Creates an GMDataset instance for the specified GMDataset ID"""
         config = GMDataset.gms_sources[name]
-        gms_type = si.constants.GMSourceType(config["type"])
+        gms_type = constants.GMSourceType(config["type"])
 
         return (
             SimulationGMDataset(name)
-            if gms_type is si.constants.GMSourceType.simulations
+            if gms_type is constants.GMSourceType.simulations
             else HistoricalGMDataset(name)
         )
 
@@ -187,9 +197,9 @@ class HistoricalGMDataset(GMDataset):
     def ims(self):
         # Get all IMs from the dataframe columns that are supported by seistech
         return [
-            si.im.IM.from_str(cur_col)
+            IM.from_str(cur_col)
             for cur_col in self._im_df.columns
-            if si.im.IMType.has_value(cur_col)
+            if IMType.has_value(cur_col)
         ]
 
     @property
@@ -197,7 +207,7 @@ class HistoricalGMDataset(GMDataset):
         return self._im_df.index.values
 
     def get_waveforms(
-        self, gms: List[Any], site_info: si.site.SiteInfo, output_dir: str
+        self, gms: List[Any], site_info: site.SiteInfo, output_dir: str
     ) -> List:
         """See GMDataset method for parameter specifications"""
         no_waveforms = []
@@ -227,7 +237,7 @@ class HistoricalGMDataset(GMDataset):
 
     def get_im_df(
         self,
-        site_info: si.site.SiteInfo,
+        site_info: site.SiteInfo,
         IMs: np.ndarray,
         cs_param_bounds: CausalParamBounds = None,
         sf: pd.Series = None,
@@ -256,7 +266,7 @@ class HistoricalGMDataset(GMDataset):
 
     def compute_scaling_factor(
         self,
-        IMj: si.im.IM,
+        IMj: IM,
         im_j: float,
         gm_ids: np.ndarray = None,
     ) -> Tuple[pd.DataFrame, pd.Series]:
@@ -313,7 +323,7 @@ class HistoricalGMDataset(GMDataset):
         return scaled_im_df
 
     def get_metadata_df(
-        self, site_info: si.site.SiteInfo, selected_gms: List[Any] = None
+        self, site_info: site.SiteInfo, selected_gms: List[Any] = None
     ) -> pd.DataFrame:
         """See GMDataset method for parameter specifications"""
         meta_df = pd.read_csv(self.empirical_IM_csv_ffp, index_col=0).loc[
@@ -368,13 +378,13 @@ class SimulationGMDataset(GMDataset):
         if self._ims is None:
             # Using a leaf here is a bit of a hack, however loading IM values will
             # get an overhaul in the near future, so this will be updated as well then
-            with si.dbs.IMDBNonParametric(self.imdb_ffp) as imdb:
-                self._ims = [si.im.IM.from_str(im) for im in imdb.ims if si.im.IMType.has_value(im)]
+            with dbs.IMDBNonParametric(self.imdb_ffp) as imdb:
+                self._ims = [IM.from_str(im) for im in imdb.ims if IMType.has_value(im)]
 
         return self._ims
 
     def get_waveforms(
-        self, gms: List[str], site_info: si.site.SiteInfo, output_dir: str
+        self, gms: List[str], site_info: site.SiteInfo, output_dir: str
     ) -> List:
         """See GMDataset method for parameter specifications"""
         no_waveforms = []
@@ -394,7 +404,7 @@ class SimulationGMDataset(GMDataset):
 
     def get_im_df(
         self,
-        site_info: si.site.SiteInfo,
+        site_info: site.SiteInfo,
         IMs: np.ndarray,
         cs_param_bounds: CausalParamBounds = None,
         **kwargs,
@@ -402,8 +412,8 @@ class SimulationGMDataset(GMDataset):
         """See GMDataset method for parameter specifications"""
         # Using a leaf here is a bit of a hack, however loading IM values will
         # get an overhaul in the near future, so this will be updated as well then
-        leaf = si.gm_data.Leaf(None, self.imdb_ffp, si.constants.SourceType.fault)
-        im_df = si.shared.get_IM_values([leaf], site_info).reset_index(0)
+        leaf = gm_data.Leaf(None, self.imdb_ffp, constants.SourceType.fault)
+        im_df = shared.get_IM_values([leaf], site_info).reset_index(0)
 
         if cs_param_bounds is not None:
             # Add source metadata
@@ -429,12 +439,14 @@ class SimulationGMDataset(GMDataset):
 
         return im_df.loc[:, IMs]
 
-    def _get_site_source_df(self, site_info: si.site.SiteInfo):
-        with si.dbs.SiteSourceDB(self.site_source_db_ffp, si.constants.SourceType.fault) as ssdb:
+    def _get_site_source_df(self, site_info: site.SiteInfo):
+        with dbs.SiteSourceDB(
+            self.site_source_db_ffp, constants.SourceType.fault
+        ) as ssdb:
             return ssdb.station_data(site_info.station_name)
 
     def get_metadata_df(
-        self, site_info: si.site.SiteInfo, gm_ids: List[Any] = None
+        self, site_info: site.SiteInfo, gm_ids: List[Any] = None
     ) -> pd.DataFrame:
         """See GMDataset method for parameter specifications"""
         vs30_df = pd.read_csv(

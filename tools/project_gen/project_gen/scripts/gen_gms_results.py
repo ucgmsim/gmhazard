@@ -15,7 +15,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "project_dir", type=str, help="Project directory for which to run GM selection"
     )
-    parser.add_argument("--n_procs", type=int, default=1, help="Number of processes to use")
+    parser.add_argument(
+        "--n_procs", type=int, default=1, help="Number of processes to use"
+    )
 
     args = parser.parse_args()
 

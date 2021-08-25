@@ -4,9 +4,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-import seistech_calc.site as site
-import seistech_calc.gm_data as gm_data
-import seistech_calc.constants as const
+from seistech_calc import site
+from seistech_calc import gm_data
+from seistech_calc import constants as const
 
 
 class NZTAResult:
@@ -74,7 +74,7 @@ class NZTAResult:
         }
 
     def save(self, base_dir: Path):
-        data_dir = base_dir / "hazard_nzta"
+        data_dir = base_dir / self.get_save_dir()
         data_dir.mkdir(exist_ok=False, parents=False)
 
         self.site_info.save(data_dir)
@@ -91,6 +91,10 @@ class NZTAResult:
                 },
                 f,
             )
+
+    @staticmethod
+    def get_save_dir():
+        return "hazard_nzta"
 
     @classmethod
     def load(cls, data_dir: Path):

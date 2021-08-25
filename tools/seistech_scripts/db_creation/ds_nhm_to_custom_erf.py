@@ -6,7 +6,7 @@ import os
 
 import pandas as pd
 
-import seistech_calc as si
+import seistech_calc as sc
 
 ANNUAL_REC_PROB = "annual_rec_prob"
 RUP_NAME = "rupture_name"
@@ -29,8 +29,8 @@ def main():
     parser.add_argument("output_ffp", type=str, help="Output file path")
     args = parser.parse_args()
 
-    nhm_df = si.utils.read_ds_nhm(args.ds_nhm_ffp)
-    rupture_df = si.utils.calculate_rupture_rates(nhm_df)
+    nhm_df = sc.utils.read_ds_nhm(args.ds_nhm_ffp)
+    rupture_df = sc.utils.calculate_rupture_rates(nhm_df)
     write_ds_erf(args.output_ffp, rupture_df)
 
 

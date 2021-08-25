@@ -6,8 +6,8 @@ from typing import List, Tuple, Optional, Dict
 import numpy as np
 import pandas as pd
 
-import seistech_calc.site as site
-import seistech_calc.gm_data as gm_data
+from seistech_calc import site
+from seistech_calc import gm_data
 from seistech_calc.im import IM
 
 
@@ -195,7 +195,7 @@ class BranchDisaggData(DisaggData):
 
 class EnsembleDisaggData(DisaggData):
     """Exactly the same as DataDisagg, except that it
-    also uses stores the ensemble the result belongs to.
+    also uses stores the IM ensemble the result belongs to.
     """
 
     def __init__(
@@ -206,6 +206,7 @@ class EnsembleDisaggData(DisaggData):
         im: IM,
         im_value: float,
         ensemble: gm_data.Ensemble,
+        im_ensemble: gm_data.IMEnsemble,
         exceedance: Optional[float] = None,
         mean_values: Optional[pd.Series] = None,
     ):
@@ -219,15 +220,15 @@ class EnsembleDisaggData(DisaggData):
             mean_values=mean_values,
         )
         self.ensemble = ensemble
+        self.im_ensemble = im_ensemble
 
     def save(self, base_dir: Path):
         """Saves an EnsembleDisaggData as csv & json files
         Creates a new directory in the specified base directory
         """
-        name_tag = (
-            int(1 / self.exceedance) if self.exceedance is not None else self.im_value
+        save_dir = base_dir / self.get_save_dir(
+            self.im, exceedance=self.exceedance, im_value=self.im_value
         )
-        save_dir = base_dir / f"disagg_{self.im.file_format()}_{name_tag}"
         save_dir.mkdir(exist_ok=False, parents=False)
 
         self._save(
@@ -236,19 +237,30 @@ class EnsembleDisaggData(DisaggData):
 
         return save_dir
 
+    @staticmethod
+    def get_save_dir(im: IM, exceedance: float = None, im_value: float = None):
+        assert (
+            exceedance is not None or im_value is not None
+        ), "Either exceedance or im_value has to have a value"
+        return f"disagg_{im.file_format()}_{int(1 / exceedance) if exceedance is not None else str(im_value).replace('.', 'p')}"
+
     @classmethod
     def load(cls, data_dir: Path):
         metadata, site_info, fault_disagg, ds_disagg, mean_values = cls._load_data(
             data_dir
         )
 
+        im = IM.from_str(metadata["im"])
+        ensemble = gm_data.Ensemble.load(metadata["ensemble_params"])
+
         return cls(
             fault_disagg,
             ds_disagg,
             site_info,
-            IM.from_str(metadata["im"]),
+            im,
             metadata["im_value"],
-            gm_data.Ensemble.load(metadata["ensemble_params"]),
+            ensemble,
+            ensemble.get_im_ensemble(im.im_type),
             exceedance=metadata["exceedance"],
             mean_values=mean_values,
         )
