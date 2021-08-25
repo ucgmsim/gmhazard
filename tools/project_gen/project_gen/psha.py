@@ -268,6 +268,7 @@ def process_station_im(
     site_info = sc.site.get_site_from_name(ensemble, station_name)
 
     # Compute & write hazard if needed
+    ens_hazard = None
     if (output_dir / sc.hazard.EnsembleHazardResult.get_save_dir(im)).exists():
         print(
             f"Skipping hazard computation for station {site_info.station_name} - "
