@@ -22,6 +22,7 @@ def run_ensemble_disagg(
     exceedance: Optional[float] = None,
     im_value: Optional[float] = None,
     calc_mean_values: Optional[bool] = False,
+    hazard_result: Optional[hazard.EnsembleHazardResult] = None,
 ) -> EnsembleDisaggData:
     """Computes the ensemble disagg, combining the different
     branches as per equations (9) and (10) from
@@ -50,7 +51,9 @@ def run_ensemble_disagg(
     im_ensemble = ensemble.get_im_ensemble(im.im_type)
 
     # Get the IM value of interest
-    im_value = _get_im_value_and_checks(ensemble, site_info, im, exceedance, im_value)
+    im_value = _get_im_value_and_checks(
+        ensemble, site_info, im, exceedance, im_value, hazard_result=hazard_result
+    )
 
     # Compute disagg for each branch
     branches_dict = run_branches_disagg(im_ensemble, site_info, im, None, im_value)
@@ -89,8 +92,7 @@ def run_ensemble_disagg(
         # Compute mean magnitude
         full_disagg = pd.concat([fault_disagg_mean, ds_disagg_mean])
         mag_mean = shared.compute_contr_mean(
-            im_ensemble.rupture_df.magnitude,
-            full_disagg.contribution.to_frame(),
+            im_ensemble.rupture_df.magnitude, full_disagg.contribution.to_frame(),
         ).values[0]
 
         mag_16th, mag_84th = shared.compute_contr_16_84(
@@ -120,8 +122,7 @@ def run_ensemble_disagg(
         rrup_disagg_df = pd.concat([fault_rrup_disagg_df.rrup, ds_rrup_disagg_df.rrup])
         mask = ~rrup_disagg_df.isna()
         rrup_mean = shared.compute_contr_mean(
-            rrup_disagg_df.loc[mask],
-            full_disagg.contribution.loc[mask].to_frame(),
+            rrup_disagg_df.loc[mask], full_disagg.contribution.loc[mask].to_frame(),
         ).values[0]
 
         rrup_16th, rrup_84th = shared.compute_contr_16_84(

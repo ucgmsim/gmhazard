@@ -277,9 +277,10 @@ def process_station_im(
         print(
             f"Computing hazard for station {site_info.station_name} - IM {im} - Component {im.component}"
         )
-        sc.hazard.run_ensemble_hazard(
+        ens_hazard = sc.hazard.run_ensemble_hazard(
             ensemble, site_info, im, calc_percentiles=True
-        ).save(output_dir)
+        )
+        ens_hazard.save(output_dir)
 
     # Compute & write NZS1170.5 if needed
     if (
@@ -327,7 +328,12 @@ def process_station_im(
             )
             try:
                 cur_disagg_data = sc.disagg.run_ensemble_disagg(
-                    ensemble, site_info, im, exceedance=cur_excd, calc_mean_values=True
+                    ensemble,
+                    site_info,
+                    im,
+                    exceedance=cur_excd,
+                    calc_mean_values=True,
+                    hazard_result=ens_hazard,
                 )
             except sc.exceptions.ExceedanceOutOfRangeError as ex:
                 print(

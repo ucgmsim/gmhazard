@@ -18,7 +18,7 @@ EMPIRICAL_VERSION = "v20p5emp"
 FLT_SITE_SOURCE_DB_FILENAME = "flt_site_source.db"
 DS_SITE_SOURCE_DB_FILENAME = "ds_site_source.db"
 
-DEFAULT_ERF_DIR = Path(os.getenv("ERF_DIR"))
+ERF_DIR = Path(os.getenv("ERF_DIR")) if "ERF_DIR" in os.environ else None
 
 FLT_ERF_MAPPING = {
     "NHM": "NZ_FLTmodel_2010",
@@ -64,7 +64,7 @@ def create_project(
         used for PSHA result generation, otherwise celery
         will be used.
     """
-    erf_dir = DEFAULT_ERF_DIR if erf_dir is None else erf_dir
+    erf_dir = ERF_DIR if erf_dir is None else erf_dir
 
     try:
         projects_base_dir, scripts_dir = (
