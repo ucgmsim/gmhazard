@@ -19,6 +19,7 @@ def main(
     scripts_dir: Path,
     n_procs: int = 6,
     erf_dir: Path = None,
+    flt_erf_version: str = "NHM",
 ):
     with open(project_params_ffp, "r") as f:
         project_params = yaml.safe_load(f)
@@ -30,6 +31,7 @@ def main(
         n_procs=n_procs,
         new_project=True,
         erf_dir=erf_dir,
+        flt_erf_version=flt_erf_version,
     )
 
 
@@ -63,7 +65,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--erf_dir", type=Path, help="Path to the ERF directory", default=None
     )
-
+    parser.add_argument(
+        "--flt_erf_version",
+        type=str,
+        choices=["NHM", "CFM"],
+        help="The ERF version to use",
+        default="NHM",
+    )
     args = parser.parse_args()
 
     if args.n_procs < 2:
@@ -75,4 +83,5 @@ if __name__ == "__main__":
         args.scripts_dir,
         n_procs=args.n_procs,
         erf_dir=args.erf_dir,
+        flt_erf_version=args.flt_erf_version,
     )

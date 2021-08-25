@@ -12,8 +12,6 @@ import seistech_calc as sc
 from . import tasks
 from . import utils
 
-VS30_GRID_FFP = os.getenv("VS30_GRID_FFP")
-
 
 def gen_psha_project_data(project_dir: Path, n_procs: int = 1, use_mp: bool = True):
     """Computes the PSHA project data for the specified project directory"""
@@ -207,9 +205,7 @@ def generate_maps(
     if not (output_dir / "context_map_plot.png").exists():
         print(f"Generating context maps for station {site_info.station_name}")
         sc.plots.gmt_context(
-            site_info.lon,
-            site_info.lat,
-            str(output_dir / "context_map_plot"),
+            site_info.lon, site_info.lat, str(output_dir / "context_map_plot"),
         )
     else:
         print("Skipping context map generation as it already exists")
@@ -224,7 +220,6 @@ def generate_maps(
             site_info.lat,
             site_info.vs30,
             ensemble.station_ffp,
-            VS30_GRID_FFP,
         )
     else:
         print("Skipping vs30 map generation as it already exists")
@@ -243,9 +238,7 @@ def process_station_component(
 
     # Compute and Write Scenario
     sc.scenario.run_ensemble_scenario(
-        ensemble,
-        site_info,
-        im_component=im_component,
+        ensemble, site_info, im_component=im_component,
     ).save(output_dir)
 
 
@@ -290,7 +283,7 @@ def process_station_im(
 
     # Compute & write NZS1170.5 if needed
     if (
-        output_dir / sc.nz_code.nzs1170p5.NZS1170p5Result.get_save_dir(im, "uhs")
+        output_dir / sc.nz_code.nzs1170p5.NZS1170p5Result.get_save_dir(im, "hazard")
     ).exists():
         print(
             f"Skipping NZS1170.5 computation for station {site_info.station_name} - "
