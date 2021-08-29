@@ -1,12 +1,13 @@
 import os
 import hashlib
 from glob import glob
-from typing import Dict, TYPE_CHECKING
+from typing import Dict, TYPE_CHECKING, Sequence
 
 import yaml
 import numpy as np
 import pandas as pd
 
+from seistech_calc import utils
 from seistech_calc import rupture
 from seistech_calc import constants as const
 from seistech_calc.im import IM, IMType
@@ -133,6 +134,14 @@ class Ensemble:
 
         self._stations, self._rupture_df = None, None
 
+        # Create the rupture_id lookup
+        # Needed as rupture_ids are very long and
+        # therefore use a significant amount of memory for
+        # ensembles with a large number of branches
+        # rupture_id = "-41.8_172.0_10.0--6.8_ACTIVE_SHALLOW_NZ_DSmodel_2015"
+        # rupture_id_ix = 0 (an integer)
+        self._rupture_id_ix_lookup = None
+
         # IM data cache to reduce number of IMDB reads required
         # Note: This cache is purely in memory and exists per
         # Ensemble instance
@@ -169,39 +178,94 @@ class Ensemble:
     def __load_rupture_df(self):
         for im_ensemble in self.im_ensembles:
             if self._rupture_df is None:
-                self._rupture_df = im_ensemble.rupture_df
+                self._rupture_df = im_ensemble.rupture_df_id
             else:
                 # Append and drop duplicates
-                self._rupture_df = self._rupture_df.append(im_ensemble.rupture_df)
+                self._rupture_df = self._rupture_df.append(im_ensemble.rupture_df_id)
                 self._rupture_df = self._rupture_df.loc[
                     ~self._rupture_df.index.duplicated()
                 ]
 
     @property
-    def rupture_df(self) -> pd.DataFrame:
+    def rupture_df_id_ix(self) -> pd.DataFrame:
         if self._rupture_df is None:
             self.__load_rupture_df()
         return self._rupture_df
 
     @property
-    def fault_rupture_df(self):
-        return self.rupture_df.loc[
-            self.rupture_df.rupture_type == const.SourceType.fault.value, :
-        ]
+    def rupture_df_id(self) -> pd.DataFrame:
+        if self._rupture_df is None:
+            self.__load_rupture_df()
 
-    def load_erf(self, erf_path: str, erf_type: const.ERFFileType):
+        return self._rupture_df.set_index(
+            rupture.rupture_id_ix_to_rupture_id(self, self._rupture_df.index.values)
+        )
+
+    @property
+    def fault_rupture_df(self):
+        return self.rupture_df_id.loc[
+               self.rupture_df_id.rupture_type == const.SourceType.fault.value, :
+               ]
+
+    def get_rupture_id_indices(self, rupture_ids: np.ndarray):
+        """Gets the rupture_id_ix values for the given rupture_ids"""
+
+        # Add ids if needed
+        missing_ids = (
+            rupture_ids[
+                ~utils.pandas_isin(rupture_ids, self._rupture_id_ix_lookup.index.values)
+            ]
+            if self._rupture_id_ix_lookup is not None
+            else rupture_ids
+        )
+        if missing_ids.size > 0:
+            last_rupture_id_ix = (
+                -1
+                if self._rupture_id_ix_lookup is None
+                else self._rupture_id_ix_lookup.values.max()
+            )
+
+            self._rupture_id_ix_lookup = pd.concat(
+                (
+                    self._rupture_id_ix_lookup,
+                    pd.Series(
+                        index=missing_ids,
+                        data=np.arange(
+                            last_rupture_id_ix + 1,
+                            last_rupture_id_ix + missing_ids.shape[0] + 1,
+                        ),
+                    ),
+                )
+            )
+
+        # Sanity check
+        assert (
+            self._rupture_id_ix_lookup.index.unique().size
+            == self._rupture_id_ix_lookup.size
+        )
+
+        return self._rupture_id_ix_lookup[rupture_ids].values
+
+    def get_rupture_ids(self, rupture_id_ind: np.ndarray):
+        """Convert rupture id indices to rupture ids"""
+        return self._rupture_id_ix_lookup.iloc[rupture_id_ind].index.values.astype(str)
+
+    def load_erf(self, erf_ffp: str, erf_type: const.ERFFileType):
         """This function should only be used by Branches, for
         the ensemble erf, use the rupture_df property!!
         """
-        if erf_path in self._branch_rupture_dfs.keys():
-            return self._branch_rupture_dfs[erf_path]
+        if erf_ffp in self._branch_rupture_dfs.keys():
+            return self._branch_rupture_dfs[erf_ffp]
         else:
-            rupture_df = rupture.rupture_df_from_erf(erf_path, erf_type)
+            rupture_df = rupture.rupture_df_from_erf(erf_ffp, erf_type)
             rupture_df["rupture_type"] = (
                 "flt" if erf_type == const.ERFFileType.flt_nhm else "ds"
             )
 
-            self._branch_rupture_dfs[erf_path] = rupture_df
+            # Convert to rupture id ix
+            rupture_df.index = self.get_rupture_id_indices(rupture_df.index.values)
+
+            self._branch_rupture_dfs[erf_ffp] = rupture_df
             return rupture_df
 
     def get_im_ensemble(self, im_type: IMType) -> IMEnsemble:

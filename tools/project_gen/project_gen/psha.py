@@ -79,34 +79,43 @@ def gen_psha_project_data(project_dir: Path, n_procs: int = 1, use_mp: bool = Tr
         (cur_station, cur_im) for cur_station in station_ids for cur_im in ims
     ]
 
+    for cur_station, cur_im in station_im_comb:
+        process_station_im(
+                    ensemble,
+                    cur_station,
+                    cur_im,
+                    disagg_exceedances,
+                    str(results_dir / cur_station / str(cur_im.component)),
+                )
+
     # Run the hazard and disagg calculation
-    if use_mp:
-        with mp.Pool(processes=n_procs) as p:
-            p.starmap(
-                process_station_im,
-                [
-                    (
-                        ensemble,
-                        cur_station,
-                        cur_im,
-                        disagg_exceedances,
-                        str(results_dir / cur_station / str(cur_im.component)),
-                    )
-                    for cur_station, cur_im in station_im_comb
-                ],
-            )
-    else:
-        celery.group(
-            tasks.process_station_im_task.s(
-                project_id,
-                ensemble_ffp,
-                cur_station,
-                cur_im,
-                disagg_exceedances,
-                str(results_dir / cur_station / str(cur_im.component)),
-            )
-            for cur_station, cur_im in station_im_comb
-        )
+    # if use_mp:
+    #     with mp.Pool(processes=n_procs) as p:
+    #         p.starmap(
+    #             process_station_im,
+    #             [
+    #                 (
+    #                     ensemble,
+    #                     cur_station,
+    #                     cur_im,
+    #                     disagg_exceedances,
+    #                     str(results_dir / cur_station / str(cur_im.component)),
+    #                 )
+    #                 for cur_station, cur_im in station_im_comb
+    #             ],
+    #         )
+    # else:
+    #     celery.group(
+    #         tasks.process_station_im_task.s(
+    #             project_id,
+    #             ensemble_ffp,
+    #             cur_station,
+    #             cur_im,
+    #             disagg_exceedances,
+    #             str(results_dir / cur_station / str(cur_im.component)),
+    #         )
+    #         for cur_station, cur_im in station_im_comb
+    #     )
 
     if len(uhs_exceedances) > 0:
         for cur_station in station_ids:
@@ -350,8 +359,8 @@ def process_station_im(
 
                 # Additional info for the table
                 # Annual rec prob, magnitude and rrup (for disagg table)
-                ruptures_df = ensemble.rupture_df.loc[
-                    cur_disagg_data.fault_disagg.index.values
+                ruptures_df = ensemble.rupture_df_id.loc[
+                    cur_disagg_data.fault_disagg_id.index.values
                 ]
                 flt_dist_df = sc.site_source.get_distance_df(
                     ensemble.flt_ssddb_ffp, site_info

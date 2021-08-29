@@ -293,8 +293,8 @@ def _get_disagg(
         )
 
         # Also include annual rec prob, magnitude and rrup (for disagg table)
-        ruptures_df = ensemble.get_im_ensemble(im.im_type).rupture_df.loc[
-            disagg_data.fault_disagg.index.values
+        ruptures_df = ensemble.get_im_ensemble(im.im_type).rupture_df_id.loc[
+            disagg_data.fault_disagg_id.index.values
         ]
         flt_dist_df = sc.site_source.get_distance_df(ensemble.flt_ssddb_ffp, site_info)
         merged_df = pd.merge(

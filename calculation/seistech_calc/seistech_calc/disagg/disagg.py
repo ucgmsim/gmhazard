@@ -60,14 +60,14 @@ def run_ensemble_disagg(
 
     fault_disagg_df = pd.DataFrame(
         {
-            (branch_name, column): disagg_result.fault_disagg[column]
+            (branch_name, column): disagg_result.fault_disagg_id_ix[column]
             for branch_name, disagg_result in branches_dict.items()
             for column in ["contribution", "epsilon"]
         }
     )
     ds_disagg_df = pd.DataFrame(
         {
-            (branch_name, column): disagg_result.ds_disagg[column]
+            (branch_name, column): disagg_result.ds_disagg_id_ix[column]
             for branch_name, disagg_result in branches_dict.items()
             for column in ["contribution", "epsilon"]
         }
@@ -92,11 +92,11 @@ def run_ensemble_disagg(
         # Compute mean magnitude
         full_disagg = pd.concat([fault_disagg_mean, ds_disagg_mean])
         mag_mean = shared.compute_contr_mean(
-            im_ensemble.rupture_df.magnitude, full_disagg.contribution.to_frame(),
+            im_ensemble.rupture_df_id.magnitude, full_disagg.contribution.to_frame(),
         ).values[0]
 
         mag_16th, mag_84th = shared.compute_contr_16_84(
-            im_ensemble.rupture_df.magnitude, full_disagg.contribution.to_frame()
+            im_ensemble.rupture_df_id.magnitude, full_disagg.contribution.to_frame()
         )
 
         # Epsilon mean, ignore entries with epsilon np.inf
@@ -253,7 +253,7 @@ def run_branch_disagg(
     )
 
     # Get the recurrence probabilities
-    rec_prob_df = branch.rupture_df["annual_rec_prob"]
+    rec_prob_df = branch.rupture_df_id_ix["annual_rec_prob"]
 
     # Compute the branch hazard for the specified IM value
     excd_prob = sha_calc.hazard_single(
@@ -336,21 +336,27 @@ def run_disagg_gridding(
 
     # Get rupture details for the flt ruptures
     flt_ruptures = pd.merge(
-        im_ensemble.rupture_df,
-        disagg_data.fault_disagg,
+        im_ensemble.rupture_df_id,
+        disagg_data.fault_disagg_id,
         left_index=True,
         right_index=True,
     )
-    # Get the distances
+
+    # Add distance data
     dist_df = site_source.get_distance_df(ensemble.flt_ssddb_ffp, disagg_data.site_info)
+    if dist_df is None:
+        raise Exception(
+            f"No distance data available for station {disagg_data.site_info.station_name}, "
+            f"can't perform gridding without distance data!"
+        )
     flt_ruptures = site_source.match_ruptures(
         dist_df, flt_ruptures.copy(), const.SourceType.fault
     )
 
     # Get rupture details for the ds ruptures
     ds_ruptures = pd.merge(
-        im_ensemble.rupture_df,
-        disagg_data.ds_disagg,
+        im_ensemble.rupture_df_id,
+        disagg_data.ds_disagg_id,
         left_index=True,
         right_index=True,
     )
@@ -360,15 +366,13 @@ def run_disagg_gridding(
     )[:, 0]
     ds_ruptures["rupture_id"] = ds_ruptures.index.values
 
-    # Get the distances
+    # Add distance data
     dist_df = site_source.get_distance_df(ensemble.ds_ssddb_ffp, disagg_data.site_info)
-
     if dist_df is None:
         raise Exception(
             f"No distance data available for station {disagg_data.site_info.station_name}, "
             f"can't perform gridding without distance data!"
         )
-
     ds_ruptures = site_source.match_ruptures(
         dist_df, ds_ruptures.copy(), const.SourceType.distributed
     )
@@ -501,23 +505,30 @@ def _compute_epsilon(
     pd.Series
         Epsilon for each rupture
     """
-    im_data, im_data_type = shared.get_im_data(branch, ensemble, site_info, source_type)
+    im_data, im_data_type = shared.get_im_data(
+        branch,
+        ensemble,
+        site_info,
+        source_type,
+        im_component=im.component,
+        as_rupture_id_ix=True,
+    )
 
     if im_data_type is const.IMDataType.parametric:
         # Convert rupture name to rupture id
-        im_data.index = branch.rupture_name_to_id(
-            im_data.index.values.astype(str), source_type
-        )
+        # im_data.index = branch.rupture_name_to_id(
+        #     im_data.index.values.astype(str), source_type
+        # )
 
         epsilon = sha_calc.epsilon_para(utils.to_mu_sigma(im_data, im), gm_prob_df)
     else:
         # Convert rupture name to rupture id
-        im_data.index = im_data.index.set_levels(
-            branch.rupture_name_to_id(
-                im_data.index.levels[0].values.astype(str), source_type
-            ),
-            level=0,
-        )
+        # im_data.index = im_data.index.set_levels(
+        #     branch.rupture_name_to_id(
+        #         im_data.index.levels[0].values.astype(str), source_type
+        #     ),
+        #     level=0,
+        # )
 
         epsilon = sha_calc.epsilon_non_para(im_data[str(im)], gm_prob_df)
 

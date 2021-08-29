@@ -196,7 +196,7 @@ def run_branch_hazard(
     )
     if fault_gm_prob_df is not None:
         fault_hazard = sha_calc.hazard_curve(
-            fault_gm_prob_df, branch.rupture_df["annual_rec_prob"]
+            fault_gm_prob_df, branch.rupture_df_id["annual_rec_prob"]
         )
     else:
         fault_hazard = pd.Series(data=np.zeros(im_values.shape), index=im_values)
@@ -212,7 +212,7 @@ def run_branch_hazard(
     )
     if ds_gm_prob_df is not None:
         ds_hazard = sha_calc.hazard_curve(
-            ds_gm_prob_df, branch.rupture_df["annual_rec_prob"]
+            ds_gm_prob_df, branch.rupture_df_id["annual_rec_prob"]
         )
     else:
         ds_hazard = pd.Series(data=np.zeros(im_values.shape), index=im_values)
@@ -420,7 +420,7 @@ def vs30_update(site_info: site.SiteInfo, hazard_result: BranchHazardResult):
     im_values = hazard_result.im_values
 
     # Get the recurrance & gm prob dfs
-    rec_prob = branch.rupture_df["annual_rec_prob"]
+    rec_prob = branch.rupture_df_id["annual_rec_prob"]
     flt_gm_prob_df = shared.get_gm_prob_df(
         branch, site_info, im, im_values, const.SourceType.fault, ensemble=ensemble
     )
@@ -462,10 +462,10 @@ def vs30_update(site_info: site.SiteInfo, hazard_result: BranchHazardResult):
     flt_ruptures = flt_disagg.index.values
     ds_ruptures = ds_disagg.index.values
     flt_mag_mean_df = shared.compute_contr_mean(
-        im_ensemble.rupture_df.magnitude.loc[flt_ruptures], full_disagg.loc[flt_ruptures]
+        im_ensemble.rupture_df_id.magnitude.loc[flt_ruptures], full_disagg.loc[flt_ruptures]
     )
     ds_mag_mean_df = shared.compute_contr_mean(
-        im_ensemble.rupture_df.magnitude.loc[ds_ruptures], full_disagg.loc[ds_ruptures]
+        im_ensemble.rupture_df_id.magnitude.loc[ds_ruptures], full_disagg.loc[ds_ruptures]
     )
 
     # Create a distance dataframe for the ruptures of interest

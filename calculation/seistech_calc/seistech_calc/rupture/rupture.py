@@ -1,9 +1,15 @@
+from typing import TYPE_CHECKING
+
 import pandas as pd
 import numpy as np
 
-import seistech_calc.utils as utils
-import seistech_calc.constants as const
+
+from seistech_calc import utils
+from seistech_calc import constants as const
 from qcore.nhm import load_nhm
+
+if TYPE_CHECKING:
+    from seistech_calc import gm_data
 
 RUPTURE_FAULT_DF_COLUMNS = [
     "rupture_name",
@@ -74,3 +80,29 @@ def rupture_name_to_id(rupture_names: np.ndarray, erf_ffp: str):
     numpy array of strings
     """
     return np.char.add(rupture_names.astype(str), f"_{utils.get_erf_name(erf_ffp)}")
+
+
+def rupture_id_to_ix(
+    ensemble: "gm_data.Ensemble",
+    rupture_ids: np.ndarray,
+):
+    """Converts the rupture_id values to rupture_id_ix values
+    Note: Should only be used for DS at this stage
+    """
+    return ensemble.get_rupture_id_indices(rupture_ids)
+
+
+def rupture_name_to_id_ix(
+    ensemble: "gm_data.Ensemble",
+    erf_ffp: str,
+    rupture_names: np.ndarray,
+):
+    """Convertes the rupture names to rupture_id_ix values"""
+    return rupture_id_to_ix(
+        ensemble, rupture_name_to_id(rupture_names, erf_ffp)
+    )
+
+
+def rupture_id_ix_to_rupture_id(ensemble: "gm_data.Ensemble", rupture_id_ind: np.ndarray):
+    """Converts rupture id ix to rupture ids"""
+    return ensemble.get_rupture_ids(rupture_id_ind)

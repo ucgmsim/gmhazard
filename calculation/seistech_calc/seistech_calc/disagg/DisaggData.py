@@ -8,6 +8,7 @@ import pandas as pd
 
 from seistech_calc import site
 from seistech_calc import gm_data
+from seistech_calc import rupture
 from seistech_calc.im import IM
 
 
@@ -58,8 +59,8 @@ class DisaggData:
         exceedance: Optional[float] = None,
         mean_values: Optional[pd.Series] = None,
     ):
-        self.fault_disagg = fault_disagg.sort_values("contribution", ascending=False)
-        self.ds_disagg = ds_disagg.sort_values("contribution", ascending=False)
+        self._fault_disagg = fault_disagg.sort_values("contribution", ascending=False)
+        self._ds_disagg = ds_disagg.sort_values("contribution", ascending=False)
 
         self.site_info = site_info
         self.im = im
@@ -67,21 +68,38 @@ class DisaggData:
         self.exceedance = exceedance
         self.mean_values = mean_values
 
+
+    @property
+    def fault_disagg_id_ix(self):
+        return self._fault_disagg
+
+    @property
+    def ds_disagg_id_ix(self):
+        return self._ds_disagg
+
+    @property
+    def fault_disagg_id(self):
+        raise NotImplementedError()
+
+    @property
+    def ds_disagg_id(self):
+        raise NotImplementedError()
+
     @property
     def total_contributions(self) -> pd.Series:
-        return self.fault_disagg.contribution.append(
-            pd.Series({"distributed_seismicity": self.ds_disagg.contribution.sum()})
+        return self.fault_disagg_id.contribution.append(
+            pd.Series({"distributed_seismicity": self.ds_disagg_id.contribution.sum()})
         ).sort_values(ascending=False)
 
     @property
     def total_contributions_df(self) -> pd.DataFrame:
         df = (
-            self.fault_disagg[["contribution", "epsilon"]]
+            self.fault_disagg_id[["contribution", "epsilon"]]
             .append(
                 pd.DataFrame.from_dict(
                     {
                         "distributed_seismicity": {
-                            "contribution": self.ds_disagg.contribution.sum(),
+                            "contribution": self.ds_disagg_id.contribution.sum(),
                             "epsilon": np.nan,
                         }
                     },
@@ -96,7 +114,7 @@ class DisaggData:
 
     @property
     def contribution_df(self) -> pd.DataFrame:
-        return pd.concat((self.fault_disagg.contribution, self.ds_disagg.contribution))
+        return pd.concat((self.fault_disagg_id.contribution, self.ds_disagg_id.contribution))
 
     def to_dict(self, total_only: bool = False):
         data = {
@@ -110,8 +128,8 @@ class DisaggData:
         }
 
         if not total_only:
-            data["fault_disagg"] = self.fault_disagg.to_dict()
-            data["ds_disagg"] = self.ds_disagg.to_dict()
+            data["fault_disagg"] = self.fault_disagg_id.to_dict()
+            data["ds_disagg"] = self.ds_disagg_id.to_dict()
 
         return data
 
@@ -122,8 +140,8 @@ class DisaggData:
         raise NotImplementedError()
 
     def _save(self, data_dir: Path, metadata: Dict = None):
-        self.fault_disagg.to_csv(data_dir / self.FAULT_DISAGG_FN)
-        self.ds_disagg.to_csv(data_dir / self.DS_DISAGG_FN)
+        self.fault_disagg_id.to_csv(data_dir / self.FAULT_DISAGG_FN)
+        self.ds_disagg_id.to_csv(data_dir / self.DS_DISAGG_FN)
         self.site_info.save(data_dir)
 
         # Save the metadata
@@ -192,6 +210,24 @@ class BranchDisaggData(DisaggData):
     def load(cls, dir: Path):
         raise NotImplementedError()
 
+    @property
+    def fault_disagg_id(self):
+        return self._fault_disagg.set_index(
+            rupture.rupture_id_ix_to_rupture_id(
+                self.im_ensemble.ensemble, self._fault_disagg.index.values
+            ),
+            inplace=False,
+        )
+
+    @property
+    def ds_disagg_id(self):
+        return self._ds_disagg.set_index(
+            rupture.rupture_id_ix_to_rupture_id(
+                self.im_ensemble.ensemble, self._ds_disagg.index.values
+            ),
+            inplace=False,
+        )
+
 
 class EnsembleDisaggData(DisaggData):
     """Exactly the same as DataDisagg, except that it
@@ -221,6 +257,24 @@ class EnsembleDisaggData(DisaggData):
         )
         self.ensemble = ensemble
         self.im_ensemble = im_ensemble
+
+    @property
+    def fault_disagg_id(self):
+        return self._fault_disagg.set_index(
+            rupture.rupture_id_ix_to_rupture_id(
+                self.im_ensemble.ensemble, self._fault_disagg.index.values
+            ),
+            inplace=False,
+        )
+
+    @property
+    def ds_disagg_id(self):
+        return self._ds_disagg.set_index(
+            rupture.rupture_id_ix_to_rupture_id(
+                self.im_ensemble.ensemble, self._ds_disagg.index.values
+            ),
+            inplace=False,
+        )
 
     def save(self, base_dir: Path):
         """Saves an EnsembleDisaggData as csv & json files
