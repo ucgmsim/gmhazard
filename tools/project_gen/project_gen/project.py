@@ -21,8 +21,8 @@ DS_SITE_SOURCE_DB_FILENAME = "ds_site_source.db"
 ERF_DIR = Path(os.getenv("ERF_DIR")) if "ERF_DIR" in os.environ else None
 
 FLT_ERF_MAPPING = {
-    "NHM": "NZ_FLTmodel_2010",
-    "CFM": "CFM_v0_9_Akatore_mod"
+    "NHM_v21p8p1": "NZ_FLTmodel_2010",
+    "CFM_v21p8p1": "CFM_v0_9_Akatore_mod_21p8p1.txt"
 }
 
 def create_project(

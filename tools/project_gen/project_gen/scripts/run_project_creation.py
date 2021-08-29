@@ -68,9 +68,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--flt_erf_version",
         type=str,
-        choices=["NHM", "CFM"],
+        choices=list(pg.FLT_ERF_MAPPING.keys()),
         help="The ERF version to use",
-        default="NHM",
+        default="NHM_v21p8p1",
     )
     args = parser.parse_args()
 
