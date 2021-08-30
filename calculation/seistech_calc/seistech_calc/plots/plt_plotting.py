@@ -6,17 +6,8 @@ import pandas as pd
 from matplotlib import pyplot as plt, cm as cm, colors as ml_colors
 
 from seistech_calc.im import IM
-from ..utils import (
-    calculate_gms_spectra,
-    calculate_gms_im_distribution,
-    calculate_gms_disagg_distribution,
-    calc_gms_causal_params,
-)
-from ..constants import (
-    GMSIMDistributionsLabel,
-    GMSDisaggDistributionsLabel,
-    GMSCausalParamPlotsLabel,
-)
+from .. import utils
+from .. import constants as const
 
 
 def plot_disagg_src_type(
@@ -566,7 +557,7 @@ def plot_gms_im_distribution(
     gms_result_dict: Dict,
     save_file: Path = None,
 ):
-    plots_data = calculate_gms_im_distribution(gms_result_dict)
+    plots_data = utils.calculate_gms_im_distribution(gms_result_dict)
 
     plt.figure(figsize=(16, 9))
 
@@ -574,7 +565,7 @@ def plot_gms_im_distribution(
         if im.startswith("pSA"):
             label = f"Pseudo spectral acceleration, pSA({im.split('_')[1]}) (g)"
         else:
-            label = GMSIMDistributionsLabel[im].value
+            label = const.GMSIMDistributionsLabel[im].value
 
         return label
 
@@ -613,7 +604,9 @@ def plot_gms_im_distribution(
         plt.legend()
 
         if save_file is not None:
-            plt.savefig(save_file / f"gms_im_distribution_{im.replace('.', 'p')}.png")
+            plt.savefig(
+                save_file / f"gms_im_distribution_{im.replace('.', 'p')}_plot.png"
+            )
             plt.clf()
         else:
             plt.show()
@@ -666,13 +659,16 @@ def plot_gms_causal_param(
     metadata,
     save_file: Path = None,
 ):
-    range_x, range_y = calc_gms_causal_params(gms_result_data, metadata)
+    range_x, range_y = utils.calc_gms_causal_params(gms_result_data, metadata)
 
     plt.figure(figsize=(16, 9))
     bounds_y_range = [0, 1]
 
     plt.plot(
-        range_x, range_y, color="black", label=GMSCausalParamPlotsLabel[metadata].value
+        range_x,
+        range_y,
+        color="black",
+        label=const.GMSCausalParamPlotsLabel[metadata].value,
     )
 
     if bounds.get(metadata):
@@ -701,8 +697,8 @@ def plot_gms_causal_param(
             label="Site-Specific $V_{s30}$",
         )
 
-    plt.title(f"{GMSCausalParamPlotsLabel[metadata].value} distribution")
-    plt.xlabel(f"{GMSCausalParamPlotsLabel[metadata].value}")
+    plt.title(f"{const.GMSCausalParamPlotsLabel[metadata].value} distribution")
+    plt.xlabel(f"{const.GMSCausalParamPlotsLabel[metadata].value}")
     plt.ylabel("Cumulative Probability, CDF")
     plt.ylim(ymin=0)
     plt.legend()
@@ -726,7 +722,7 @@ def plot_gms_spectra(
         lower_percen_values,
         realisations_y_coords,
         selected_gms_y_coords,
-    ) = calculate_gms_spectra(gms_result_dict, num_gms)
+    ) = utils.calculate_gms_spectra(gms_result_dict, num_gms)
 
     fig, ax = plt.subplots(figsize=(20, 9))
 
@@ -795,7 +791,7 @@ def plot_gms_disagg_distribution(
     metadata: str,
     save_file: Path = None,
 ):
-    range_x, range_y = calculate_gms_disagg_distribution(gms_metadata[metadata])
+    range_x, range_y = utils.calculate_gms_disagg_distribution(gms_metadata[metadata])
     bounds_y_range = [0, 1]
 
     plt.figure(figsize=(16, 9))
@@ -804,7 +800,7 @@ def plot_gms_disagg_distribution(
         range_x,
         range_y,
         color="black",
-        label=GMSDisaggDistributionsLabel[metadata].value,
+        label=const.GMSDisaggDistributionsLabel[metadata].value,
     )
     plt.plot(
         distribution, contribution, label="Disaggregation distribution", color="red"
@@ -826,10 +822,10 @@ def plot_gms_disagg_distribution(
 
     if metadata == "rrup":
         plt.xscale("log")
-    plt.xlabel(GMSDisaggDistributionsLabel[metadata].value)
+    plt.xlabel(const.GMSDisaggDistributionsLabel[metadata].value)
     plt.ylabel("Cumulative Probability, CDF")
     plt.ylim(ymin=0)
-    plt.title(f"{GMSDisaggDistributionsLabel[metadata].value} distribution")
+    plt.title(f"{const.GMSDisaggDistributionsLabel[metadata].value} distribution")
     plt.legend()
 
     if save_file is not None:

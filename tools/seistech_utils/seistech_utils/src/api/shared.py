@@ -12,11 +12,7 @@ import pandas as pd
 
 import seistech_calc as sc
 from . import utils
-from .shared_responses import (
-    get_default_causal_params,
-    get_causal_params_bounds,
-    get_ensemble_gms,
-)
+from . import shared_responses as sr
 
 
 def write_hazard_download_data(
@@ -439,11 +435,11 @@ def write_gms_download_data(
         )
 
     # GMS Plots
-    gms_result_data = get_ensemble_gms(gms_result)
+    gms_result_data = sr.get_ensemble_gms(gms_result)
     if cs_param_bounds is not None:
-        default_causal_params = get_default_causal_params(cs_param_bounds)
+        default_causal_params = sr.get_default_causal_params(cs_param_bounds)
         # For Cuasal Params Plot
-        causal_params_bounds = get_causal_params_bounds(cs_param_bounds)
+        causal_params_bounds = sr.get_causal_params_bounds(cs_param_bounds)
 
         # Mw Rrup plot under Causal Params
         sc.plots.plt_gms_mw_rrup(
