@@ -54,7 +54,7 @@ def get_ensemble_gms():
     return flask.jsonify(
         su.api.get_ensemble_gms(
             gms_result,
-            su.api.get_download_token(
+            download_token=su.api.get_download_token(
                 dict(project_id=project_id, station_id=station_id, gms_id=gms_id),
                 server.DOWNLOAD_URL_SECRET_KEY,
                 server.DOWNLOAD_URL_VALID_FOR,
@@ -80,7 +80,9 @@ def download_gms_results(token):
     gms_result, cs_param_bounds = utils.load_gms_data(results_dir, gms_id)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        zip_ffp = su.api.download_gms_result(gms_result, server.app, tmp_dir)
+        zip_ffp = su.api.create_gms_download_zip(
+            gms_result, server.app, tmp_dir, cs_param_bounds=cs_param_bounds
+        )
         return flask.send_file(
             zip_ffp, as_attachment=True, attachment_filename=os.path.basename(zip_ffp)
         )

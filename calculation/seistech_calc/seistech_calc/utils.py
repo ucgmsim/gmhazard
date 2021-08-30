@@ -1,6 +1,7 @@
 import os
 import math
 import warnings
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -8,6 +9,7 @@ import pandas as pd
 import seistech_calc.constants as const
 from seistech_calc.im import IM, IMType
 from qcore import nhm
+from qcore import im as qcoreim
 
 
 def calculate_rupture_rates(
@@ -418,3 +420,169 @@ def to_mu_sigma(df: pd.DataFrame, im: IM):
     return df.loc[:, [str(im), f"{im}_sigma"]].rename(
         columns={str(im): "mu", f"{im}_sigma": "sigma"}
     )
+
+
+def calculate_gms_spectra(gms_data: Dict, num_gms: int):
+    cdf_x = gms_data.get("gcim_cdf_x")
+    cdf_y = gms_data.get("gcim_cdf_y")
+    realisations = gms_data.get("realisations")
+    selected_gms = gms_data.get("selected_GMs")
+    im_j = gms_data.get("im_j")
+    periods = gms_data.get("IMs")[:]
+    im_type = gms_data.get("IM_j")
+
+    if im_type.startswith("pSA"):
+        periods.append(im_type)
+
+    local_periods = {}
+
+    for im in qcoreim.order_ims(periods):
+        if im.startswith("pSA"):
+            local_periods[im] = im.split("_")[1]
+
+    # x-axis data
+    periods_list = list(local_periods.values())
+
+    sorted_cdf_x, sorted_cdf_y, sorted_realisations, sorted_selected_gms = (
+        {},
+        {},
+        {},
+        {},
+    )
+
+    for im, period in local_periods.items():
+        if im != im_type:
+            sorted_cdf_x[im] = cdf_x[im]
+            sorted_cdf_y[im] = cdf_y[im]
+            sorted_realisations[im] = realisations[im]
+        else:
+            sorted_cdf_x[im] = period
+            sorted_cdf_y[im] = im_j
+            sorted_realisations[im] = im_j
+        sorted_selected_gms[im] = selected_gms[im]
+
+    # GCIM calculations
+    median_index_dict, lower_percen_index_dict, upper_percen_index_dict = {}, {}, {}
+
+    for im, values in sorted_cdf_y.items():
+        if im != im_type:
+            found_median = next(filter(lambda x: x >= 0.5, values), None)
+            median_index_dict[im] = values.index(found_median)
+
+            found_lower_percen = next(filter(lambda x: x >= 0.16, values), None)
+            lower_percen_index_dict[im] = values.index(found_lower_percen)
+
+            upper_lower_percen = next(filter(lambda x: x >= 0.84, values), None)
+            upper_percen_index_dict[im] = values.index(upper_lower_percen)
+        else:
+            median_index_dict[im] = im_j
+            lower_percen_index_dict[im] = im_j
+            upper_percen_index_dict[im] = im_j
+
+    median_values, lower_percen_values, upper_percen_values = [], [], []
+
+    for im, values in sorted_cdf_x.items():
+        if im != im_type:
+            median_values.append(values[median_index_dict[im]])
+            lower_percen_values.append(values[lower_percen_index_dict[im]])
+            upper_percen_values.append(values[upper_percen_index_dict[im]])
+        else:
+            median_values.append(im_j)
+            lower_percen_values.append(im_j)
+            upper_percen_values.append(im_j)
+
+    # Realisations calculation
+    realisations_y_coords = []
+    for i in range(0, num_gms):
+        temp_coords = []
+        for im in sorted_realisations.keys():
+            if im != im_type:
+                temp_coords.append(sorted_realisations[im][i])
+            else:
+                temp_coords.append(sorted_realisations[im])
+        realisations_y_coords.append(temp_coords)
+
+    # Selected GMs calculation
+    selected_gms_y_coords = []
+    for i in range(0, num_gms):
+        temp_coords = []
+        for im in sorted_selected_gms.keys():
+            temp_coords.append(sorted_selected_gms[im][i])
+        selected_gms_y_coords.append(temp_coords)
+
+    return (
+        periods_list,
+        upper_percen_values,
+        median_values,
+        lower_percen_values,
+        realisations_y_coords,
+        selected_gms_y_coords,
+    )
+
+
+def calculate_gms_im_distribution(gms_data: Dict):
+    ims = qcoreim.order_ims(gms_data.get("IMs")[:])
+    outputs = {}
+
+    for im in ims:
+        cdf_x = gms_data.get("gcim_cdf_x")[im]
+        cdf_y = gms_data.get("gcim_cdf_y")[im]
+        realisations = gms_data.get("realisations")[im][:]
+        selected_gms = gms_data.get("selected_GMs")[im][:]
+        ks_bounds = gms_data.get("ks_bounds")
+
+        # GCIM + ks bounds
+        upper_bounds = list(map(lambda x: x + ks_bounds, cdf_y))
+        y_limit_at_one = next(filter(lambda x: x > 1, upper_bounds), None)
+        y_limit_at_one_index = upper_bounds.index(y_limit_at_one)
+        # GCIM - ks bounds
+        lower_bounds = list(map(lambda x: x - ks_bounds, cdf_y))
+        y_limit_at_zero = next(filter(lambda x: x >= 0, lower_bounds), None)
+        y_limit_at_zero_index = lower_bounds.index(y_limit_at_zero)
+
+        # sort then duplicate every element
+        realisations.sort()
+        selected_gms.sort()
+        new_realisations = [val for val in realisations for _ in (0, 1)]
+        new_selected_gms = [val for val in selected_gms for _ in (0, 1)]
+
+        range_y = np.linspace(0, 1, len(realisations) + 1)
+        new_range_y = [val for val in range_y for _ in range(2)]
+
+        outputs[im] = {
+            "cdf_x": cdf_x,
+            "cdf_y": cdf_y,
+            "upper_slice_cdf_x": cdf_x[0:y_limit_at_one_index],
+            "upper_slice_cdf_y": upper_bounds[0:y_limit_at_one_index],
+            "lower_slice_cdf_x": cdf_x[y_limit_at_zero_index:],
+            "lower_slice_cdf_y": lower_bounds[y_limit_at_zero_index:],
+            "realisations": new_realisations,
+            "selected_gms": new_selected_gms,
+            "y_range": new_range_y[1:-1],
+        }
+
+    return outputs
+
+
+def calculate_gms_disagg_distribution(selected_gms_metadata: List):
+    copied_selected_gms_metadata = selected_gms_metadata[:]
+    copied_selected_gms_metadata.sort()
+    range_x = [val for val in copied_selected_gms_metadata for _ in (0, 1)]
+
+    range_y = np.linspace(0, 1, len(copied_selected_gms_metadata) + 1)
+    new_range_y = [val for val in range_y for _ in range(2)]
+
+    return range_x, new_range_y[1:-1]
+
+
+def calc_gms_causal_params(gms_data: Dict, metadata: str):
+    copied_selected_gms_metadata = gms_data.get("selected_gms_metadata").get(metadata)[
+        :
+    ]
+    copied_selected_gms_metadata.sort()
+    range_x = [val for val in copied_selected_gms_metadata for _ in (0, 1)]
+
+    range_y = np.linspace(0, 1, len(copied_selected_gms_metadata) + 1)
+    new_range_y = [val for val in range_y for _ in range(2)]
+
+    return range_x, new_range_y[1:-1]

@@ -1,9 +1,6 @@
 """Contains functions that are used by both the coreAPI and projectAPI for responses"""
-import os
-import zipfile
-from typing import Dict, Sequence
+from typing import Sequence
 
-import flask
 import pandas as pd
 
 import seistech_calc as sc
@@ -12,7 +9,7 @@ import seistech_calc as sc
 def get_ensemble_hazard_response(
     ensemble_hazard: sc.hazard.EnsembleHazardResult, download_token: str
 ):
-    """ Creates the response for both core and project API"""
+    """Creates the response for both core and project API"""
     return {
         "ensemble_id": ensemble_hazard.ensemble.name,
         "station": ensemble_hazard.site.station_name,
@@ -34,7 +31,7 @@ def get_ensemble_disagg(
     eps_png_data: str,
     download_token: str,
 ):
-    """ Creates the response for both core and project API"""
+    """Creates the response for both core and project API"""
     return {
         "ensemble_id": ensemble_disagg.ensemble.name,
         "station": ensemble_disagg.site_info.station_name,
@@ -50,9 +47,9 @@ def get_ensemble_disagg(
 
 def get_ensemble_gms(
     gms_result: sc.gms.GMSResult,
-    download_token: str,
+    download_token: str = None,
 ):
-    """ Creates the response for both the core and Project API"""
+    """Creates the response for both the core and Project API"""
     return {
         "IMs": [str(im) for im in list(gms_result.IMs)],
         "IM_j": str(gms_result.IM_j),
@@ -87,32 +84,8 @@ def get_ensemble_gms(
     }
 
 
-def download_gms_result(gms_result: sc.gms.GMSResult, app: flask.app, tmp_dir: str):
-    """ Create the zip for the core and project API responses"""
-    missing_waveforms = gms_result.gm_dataset.get_waveforms(
-        gms_result.selected_gms_ids, gms_result.site_info, tmp_dir
-    )
-    if len(missing_waveforms) > 0:
-        app.logger.info(
-            f"Failed to find waveforms for simulations: {missing_waveforms}"
-        )
-
-    zip_ffp = os.path.join(
-        tmp_dir,
-        f"{gms_result.ensemble.name}_{gms_result.IM_j.file_format()}_{gms_result.gm_dataset.name}_waveforms.zip",
-    )
-    with zipfile.ZipFile(zip_ffp, mode="w") as cur_zip:
-        for cur_file in os.listdir(tmp_dir):
-            if cur_file != os.path.basename(zip_ffp):
-                cur_zip.write(
-                    os.path.join(tmp_dir, cur_file),
-                    arcname=os.path.basename(cur_file),
-                )
-    return zip_ffp
-
-
 def get_default_causal_params(cs_param_bounds: sc.gms.CausalParamBounds):
-    """ Creates the response for both the core and Project API"""
+    """Creates the response for both the core and Project API"""
     return {
         "mw_low": cs_param_bounds.mw_low,
         "mw_high": cs_param_bounds.mw_high,
@@ -120,14 +93,34 @@ def get_default_causal_params(cs_param_bounds: sc.gms.CausalParamBounds):
         "rrup_high": cs_param_bounds.rrup_high,
         "vs30_low": cs_param_bounds.vs30_low,
         "vs30_high": cs_param_bounds.vs30_high,
-        "contribution_df": cs_param_bounds.contr_df.to_dict("list"),
+        "contribution_df": cs_param_bounds.contr_df.to_dict("list")
+        if cs_param_bounds.contr_df is not None
+        else None,
+    }
+
+
+def get_causal_params_bounds(cs_param_bounds: sc.gms.CausalParamBounds):
+    return {
+        "mag": {
+            "min": cs_param_bounds.mw_low,
+            "max": cs_param_bounds.mw_high,
+        },
+        "rrup": {
+            "min": cs_param_bounds.rrup_low,
+            "max": cs_param_bounds.rrup_high,
+        },
+        "vs30": {
+            "min": cs_param_bounds.vs30_low,
+            "max": cs_param_bounds.vs30_high,
+            "vs30": cs_param_bounds.site_info.db_vs30,
+        },
     }
 
 
 def get_ensemble_uhs(
     uhs_results: Sequence[sc.uhs.EnsembleUHSResult], download_token: str
 ):
-    """ Creates the response for both the core and Project API"""
+    """Creates the response for both the core and Project API"""
     return {
         "ensemble_id": uhs_results[0].ensemble.name,
         "station": uhs_results[0].site_info.station_name,
@@ -143,7 +136,7 @@ def get_ensemble_uhs(
 def get_ensemble_scenario_response(
     ensemble_scenario: sc.scenario.EnsembleScenarioResult, download_token: str
 ):
-    """ Creates the response for both core and project API"""
+    """Creates the response for both core and project API"""
     return {
         "ensemble_scenario": ensemble_scenario.to_dict(),
         "download_token": download_token,

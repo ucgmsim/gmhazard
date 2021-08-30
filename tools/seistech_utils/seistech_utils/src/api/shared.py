@@ -1,15 +1,22 @@
 """Contains functions that are used by both the coreAPi and projectAPI"""
 import logging
 import zipfile
+import os
 from pathlib import Path
 from typing import Sequence
 
 import yaml
+import flask
 import numpy as np
 import pandas as pd
 
 import seistech_calc as sc
 from . import utils
+from .shared_responses import (
+    get_default_causal_params,
+    get_causal_params_bounds,
+    get_ensemble_gms,
+)
 
 
 def write_hazard_download_data(
@@ -414,6 +421,139 @@ def create_uhs_download_zip(
         for cur_ffp in ffps:
             cur_zip.write(cur_ffp, Path(cur_ffp).name)
 
+    return zip_ffp
+
+
+def write_gms_download_data(
+    gms_result: sc.gms.GMSResult,
+    app: flask.app,
+    out_dir: str,
+    cs_param_bounds: sc.gms.CausalParamBounds = None,
+):
+    missing_waveforms = gms_result.gm_dataset.get_waveforms(
+        gms_result.selected_gms_ids, gms_result.site_info, out_dir
+    )
+    if len(missing_waveforms) > 0:
+        app.logger.info(
+            f"Failed to find waveforms for simulations: {missing_waveforms}"
+        )
+
+    # GMS Plots
+    gms_result_data = get_ensemble_gms(gms_result)
+    if cs_param_bounds is not None:
+        default_causal_params = get_default_causal_params(cs_param_bounds)
+        # For Cuasal Params Plot
+        causal_params_bounds = get_causal_params_bounds(cs_param_bounds)
+
+        # Mw Rrup plot under Causal Params
+        sc.plots.plt_gms_mw_rrup(
+            gms_result_data["selected_gms_metadata"],
+            default_causal_params["rrup_low"],
+            default_causal_params["rrup_high"],
+            default_causal_params["mw_low"],
+            default_causal_params["mw_high"],
+            Path(out_dir) / "gms_mw_rrup_plot.png",
+        )
+        # Spectra plots
+        sc.plots.plt_gms_spectra(
+            gms_result_data,
+            len(list(gms_result_data["realisations"].values())[0]),
+            Path(out_dir) / "gms_spectra_plot.png",
+        )
+        # IM distribution plots
+        sc.plots.plt_gms_im_distribution(gms_result_data, Path(out_dir))
+        # Disagg Distribution plots (Mw Distribution or Rrup distribution)
+        contribution_df_data = default_causal_params["contribution_df"]
+        if contribution_df_data is not None:
+            sorted_rrup, rrup_cdf = utils.calc_cdf(
+                contribution_df_data["contribution"][:], contribution_df_data["rrup"][:]
+            )
+            sorted_mag, mag_cdf = utils.calc_cdf(
+                contribution_df_data["contribution"][:],
+                contribution_df_data["magnitude"][:],
+            )
+            sorted_contribution_df = {
+                "magnitude": sorted_mag.tolist(),
+                "mag_contribution": mag_cdf.tolist(),
+                "rrup": sorted_rrup.tolist(),
+                "rrup_contribution": rrup_cdf.tolist(),
+            }
+
+            sc.plots.plt_gms_disagg_distribution(
+                sorted_contribution_df["mag_contribution"],
+                sorted_contribution_df["magnitude"],
+                gms_result_data["selected_gms_metadata"],
+                causal_params_bounds,
+                "mag",
+                Path(out_dir) / "gms_mag_disagg_distribution_plot.png",
+            )
+
+            sc.plots.plt_gms_disagg_distribution(
+                sorted_contribution_df["rrup_contribution"],
+                sorted_contribution_df["rrup"],
+                gms_result_data["selected_gms_metadata"],
+                causal_params_bounds,
+                "rrup",
+                Path(out_dir) / "gms_rrup_disagg_distribution_plot.png",
+            )
+        # Causal Params plots
+        # vs30 first
+        sc.plots.plt_gms_causal_param(
+            gms_result_data,
+            causal_params_bounds,
+            "vs30",
+            Path(out_dir) / "gms_vs30_causal_param_plot.png",
+        )
+
+        sc.plots.plt_gms_causal_param(
+            gms_result_data,
+            causal_params_bounds,
+            "sf",
+            Path(out_dir) / "gms_sf_causal_param_plot.png",
+        )
+
+        # Available GM Plots
+        sc.plots.plt_gms_available_gm(
+            gms_result.gm_dataset.get_metadata_df(gms_result.site_info).to_dict(
+                orient="list"
+            ),
+            default_causal_params["rrup_low"],
+            default_causal_params["rrup_high"],
+            default_causal_params["mw_low"],
+            default_causal_params["mw_high"],
+            gms_result.gm_dataset.get_n_gms_in_bounds(
+                gms_result.gm_dataset.get_metadata_df(gms_result.site_info),
+                cs_param_bounds,
+            ),
+            Path(out_dir) / "gms_available_gm_plot.png",
+        )
+
+    return os.listdir(out_dir)
+
+
+def create_gms_download_zip(
+    gms_result: sc.gms.GMSResult,
+    app: flask.app,
+    tmp_dir: str,
+    cs_param_bounds: sc.gms.CausalParamBounds = None,
+):
+
+    ffps = write_gms_download_data(
+        gms_result, app, tmp_dir, cs_param_bounds=cs_param_bounds
+    )
+
+    zip_ffp = os.path.join(
+        tmp_dir,
+        f"{gms_result.ensemble.name}_{gms_result.IM_j.file_format()}_{gms_result.gm_dataset.name}_waveforms.zip",
+    )
+
+    with zipfile.ZipFile(zip_ffp, mode="w") as cur_zip:
+        for cur_file in ffps:
+            if cur_file != os.path.basename(zip_ffp):
+                cur_zip.write(
+                    os.path.join(tmp_dir, cur_file),
+                    arcname=os.path.basename(cur_file),
+                )
     return zip_ffp
 
 

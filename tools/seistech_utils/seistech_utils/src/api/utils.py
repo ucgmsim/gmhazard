@@ -9,6 +9,7 @@ from functools import wraps
 import git
 import flask
 import itsdangerous
+import numpy as np
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
@@ -289,3 +290,21 @@ def post_err_on_slack(
         )
     except SlackApiError as e:
         app.logger.error(f"Slack WebClient failed with: {e.response.get('error')}")
+
+
+def calc_cdf(weights, x_values):
+    """Sorting two corresponding arrays in ascending order of
+    element in x_values(Mw or Rrup)
+    Parameters
+    ----------
+    weights: array
+        contribution_df: contribution
+    x_values: array
+        For rrup or magnitude
+    """
+    sort_ind = np.argsort(np.array(x_values))
+
+    x_values = np.array(x_values)[sort_ind]
+    weights = np.array(weights)[sort_ind]
+
+    return x_values, np.cumsum(weights)

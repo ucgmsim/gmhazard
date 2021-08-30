@@ -6,6 +6,17 @@ import pandas as pd
 from matplotlib import pyplot as plt, cm as cm, colors as ml_colors
 
 from seistech_calc.im import IM
+from ..utils import (
+    calculate_gms_spectra,
+    calculate_gms_im_distribution,
+    calculate_gms_disagg_distribution,
+    calc_gms_causal_params,
+)
+from ..constants import (
+    GMSIMDistributionsLabel,
+    GMSDisaggDistributionsLabel,
+    GMSCausalParamPlotsLabel,
+)
 
 
 def plot_disagg_src_type(
@@ -542,6 +553,325 @@ def plot_uhs_branches(
     plt.title(f"{station_name}, Return period - {rp}")
     plt.xlabel("Period (s)")
     plt.ylabel("SA (g)")
+    plt.legend()
+
+    if save_file is not None:
+        plt.savefig(save_file)
+        plt.close()
+    else:
+        plt.show()
+
+
+def plot_gms_im_distribution(
+    gms_result_dict: Dict,
+    save_file: Path = None,
+):
+    plots_data = calculate_gms_im_distribution(gms_result_dict)
+
+    plt.figure(figsize=(16, 9))
+
+    def label_maker(im: str):
+        if im.startswith("pSA"):
+            label = f"Pseudo spectral acceleration, pSA({im.split('_')[1]}) (g)"
+        else:
+            label = GMSIMDistributionsLabel[im].value
+
+        return label
+
+    for im, data in plots_data.items():
+        plt.plot(data.get("cdf_x"), data.get("cdf_y"), color="red", label="GCIM")
+        plt.plot(
+            data.get("upper_slice_cdf_x"),
+            data.get("upper_slice_cdf_y"),
+            color="red",
+            linestyle="dashdot",
+        )
+        plt.plot(
+            data.get("lower_slice_cdf_x"),
+            data.get("lower_slice_cdf_y"),
+            color="red",
+            label="KS bounds, \u03B1 = 0.1",
+            linestyle="dashdot",
+        )
+        plt.plot(
+            data.get("realisations"),
+            data.get("y_range"),
+            color="blue",
+            label="Realisations",
+        )
+        plt.plot(
+            data.get("selected_gms"),
+            data.get("y_range"),
+            color="black",
+            label="Selected Ground Motions",
+        )
+        # plt.xscale("log")
+        plt.ylim(0, 1)
+        plt.xlabel(label_maker(im))
+        plt.ylabel("Cumulative Probability, CDF")
+        plt.title(f"{im}")
+        plt.legend()
+
+        if save_file is not None:
+            plt.savefig(save_file / f"gms_im_distribution_{im.replace('.', 'p')}.png")
+            plt.clf()
+        else:
+            plt.show()
+
+
+def plot_gms_mw_rrup(
+    metadata: Dict,
+    rrup_low,
+    rrup_high,
+    mw_low,
+    mw_high,
+    save_file: Path = None,
+):
+    """GMS's Mw Rrup plots"""
+    plt.figure(figsize=(16, 9))
+
+    plt.scatter(
+        metadata.get("rrup"),
+        metadata.get("mag"),
+        label="Selected GMs, $N_{gm}$=" + f"{len(metadata.get('rrup'))}",
+        marker="s",
+        edgecolors="black",
+        facecolors="none",
+    )
+    plt.plot(
+        [rrup_low, rrup_high, rrup_high, rrup_low, rrup_low],
+        [mw_low, mw_low, mw_high, mw_high, mw_low],
+        color="red",
+        linestyle="dashed",
+        label="Bounds",
+        linewidth=1,
+        dashes=(5, 5),
+    )
+    plt.xscale("log")
+    plt.xlabel("Rupture distance, $R_{rup}$(km)")
+    plt.ylabel("Magnitude, $M_{w}$")
+    plt.title("Magnitude and Rupture distance ($M_{w}$-$R_{rup}$) distribution")
+    plt.legend()
+
+    if save_file is not None:
+        plt.savefig(save_file)
+        plt.close()
+    else:
+        plt.show()
+
+
+def plot_gms_causal_param(
+    gms_result_data,
+    bounds,
+    metadata,
+    save_file: Path = None,
+):
+    range_x, range_y = calc_gms_causal_params(gms_result_data, metadata)
+
+    plt.figure(figsize=(16, 9))
+    bounds_y_range = [0, 1]
+
+    plt.plot(
+        range_x, range_y, color="black", label=GMSCausalParamPlotsLabel[metadata].value
+    )
+
+    if bounds.get(metadata):
+        plt.plot(
+            [bounds.get(metadata).get("min"), bounds.get(metadata).get("min")],
+            bounds_y_range,
+            color="red",
+            linestyle="dotted",
+            label="Lower and upper bound limits",
+        )
+        plt.plot(
+            [bounds.get(metadata).get("max"), bounds.get(metadata).get("max")],
+            bounds_y_range,
+            color="red",
+            linestyle="dotted",
+        )
+
+    if metadata == "sf":
+        plt.plot([1, 1], bounds_y_range, color="red", label="Reference point")
+
+    if metadata == "vs30":
+        plt.plot(
+            [bounds.get(metadata).get("vs30"), bounds.get(metadata).get("vs30")],
+            bounds_y_range,
+            color="red",
+            label="Site-Specific $V_{s30}$",
+        )
+
+    plt.title(f"{GMSCausalParamPlotsLabel[metadata].value} distribution")
+    plt.xlabel(f"{GMSCausalParamPlotsLabel[metadata].value}")
+    plt.ylabel("Cumulative Probability, CDF")
+    plt.ylim(ymin=0)
+    plt.legend()
+
+    if save_file is not None:
+        plt.savefig(save_file)
+        plt.close()
+    else:
+        plt.show()
+
+
+def plot_gms_spectra(
+    gms_result_dict: Dict,
+    num_gms: int,
+    save_file: Path = None,
+):
+    (
+        periods_list,
+        upper_percen_values,
+        median_values,
+        lower_percen_values,
+        realisations_y_coords,
+        selected_gms_y_coords,
+    ) = calculate_gms_spectra(gms_result_dict, num_gms)
+
+    fig, ax = plt.subplots(figsize=(20, 9))
+
+    ax.plot(
+        periods_list,
+        lower_percen_values,
+        color="red",
+        linestyle="dashdot",
+        label="GCIM - $84^{th}$ Percentile",
+        linewidth=1,
+    )
+    ax.plot(
+        periods_list,
+        median_values,
+        color="red",
+        linestyle="solid",
+        label="GCIM - Median",
+        linewidth=1,
+    )
+    ax.plot(
+        periods_list,
+        upper_percen_values,
+        color="red",
+        linestyle="dashdot",
+        label="GCIM - $16^{th}$ Percentile",
+        linewidth=1,
+    )
+
+    for i in range(0, num_gms):
+        ax.plot(
+            periods_list,
+            selected_gms_y_coords[i],
+            color="black",
+            linestyle="solid",
+            label="Selected Ground Motions" if i == 0 else None,
+            linewidth=1,
+        )
+        ax.plot(
+            periods_list,
+            realisations_y_coords[i],
+            color="blue",
+            linestyle="solid",
+            label="Realisations" if i == 0 else None,
+            linewidth=1,
+        )
+    # TODO: Investigate log scale issue
+    # plt.xscale("log")
+    plt.yscale("log")
+    plt.xlabel("Period, T (s)")
+    plt.ylabel("Spectral acceleration, SA (g)")
+    plt.title("Pseudo acceleration response spectra")
+    plt.legend()
+
+    if save_file is not None:
+        plt.savefig(save_file)
+        plt.close()
+    else:
+        plt.show()
+
+
+def plot_gms_disagg_distribution(
+    contribution: List,
+    distribution: List,
+    gms_metadata: List,
+    bounds: Dict,
+    metadata: str,
+    save_file: Path = None,
+):
+    range_x, range_y = calculate_gms_disagg_distribution(gms_metadata[metadata])
+    bounds_y_range = [0, 1]
+
+    plt.figure(figsize=(16, 9))
+
+    plt.plot(
+        range_x,
+        range_y,
+        color="black",
+        label=GMSDisaggDistributionsLabel[metadata].value,
+    )
+    plt.plot(
+        distribution, contribution, label="Disaggregation distribution", color="red"
+    )
+
+    plt.plot(
+        [bounds[metadata]["min"], bounds[metadata]["min"]],
+        bounds_y_range,
+        color="red",
+        linestyle="dotted",
+        label="Lower and upper bound limits",
+    )
+    plt.plot(
+        [bounds[metadata]["max"], bounds[metadata]["max"]],
+        bounds_y_range,
+        color="red",
+        linestyle="dotted",
+    )
+
+    if metadata == "rrup":
+        plt.xscale("log")
+    plt.xlabel(GMSDisaggDistributionsLabel[metadata].value)
+    plt.ylabel("Cumulative Probability, CDF")
+    plt.ylim(ymin=0)
+    plt.title(f"{GMSDisaggDistributionsLabel[metadata].value} distribution")
+    plt.legend()
+
+    if save_file is not None:
+        plt.savefig(save_file)
+        plt.close()
+    else:
+        plt.show()
+
+
+def plot_gms_available_gm(
+    metadata: Dict,
+    rrup_low,
+    rrup_high,
+    mw_low,
+    mw_high,
+    num_in_bounds,
+    save_file: Path = None,
+):
+    """GMS's Available GM plots"""
+    plt.figure(figsize=(16, 9))
+
+    plt.scatter(
+        metadata.get("rrup"),
+        metadata.get("mag"),
+        label=f"Dataset GMs (for the datapoints), N={len(metadata.get('rrup'))}\nCausal params bounding box (for the bounding box), N={num_in_bounds}",
+        marker="s",
+        edgecolors="black",
+        facecolors="none",
+    )
+    plt.plot(
+        [rrup_low, rrup_high, rrup_high, rrup_low, rrup_low],
+        [mw_low, mw_low, mw_high, mw_high, mw_low],
+        color="red",
+        linestyle="dashed",
+        label="Bounds",
+        linewidth=1,
+        dashes=(5, 5),
+    )
+    plt.xscale("log")
+    plt.xlabel("Rupture distance, $R_{rup}$(km)")
+    plt.ylabel("Magnitude, $M_{w}$")
+    plt.title("Available Ground Motions")
     plt.legend()
 
     if save_file is not None:
