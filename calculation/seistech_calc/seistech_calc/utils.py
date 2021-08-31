@@ -637,7 +637,7 @@ def calculate_gms_disagg_distribution(selected_gms_metadata: List):
     """
     copied_selected_gms_metadata = selected_gms_metadata[:]
     copied_selected_gms_metadata.sort()
-    range_x = [val for val in copied_selected_gms_metadata for _ in (0, 1)]
+    range_x = [val for val in copied_selected_gms_metadata for _ in range(2)]
 
     range_y = np.linspace(0, 1, len(copied_selected_gms_metadata) + 1)
     new_range_y = [val for val in range_y for _ in range(2)]
@@ -655,7 +655,7 @@ def calc_gms_causal_params(gms_data: Dict, metadata: str):
     """
     copied_selected_gms_metadata = gms_data["selected_gms_metadata"][metadata][:]
     copied_selected_gms_metadata.sort()
-    range_x = [val for val in copied_selected_gms_metadata for _ in (0, 1)]
+    range_x = [val for val in copied_selected_gms_metadata for _ in range(2)]
 
     range_y = np.linspace(0, 1, len(copied_selected_gms_metadata) + 1)
     new_range_y = [val for val in range_y for _ in range(2)]
