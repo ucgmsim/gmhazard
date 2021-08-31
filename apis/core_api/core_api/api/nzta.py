@@ -1,10 +1,10 @@
 import flask
 from flask_cors import cross_origin
-from werkzeug.contrib.cache import BaseCache
 
 import seistech_calc as sc
 import seistech_utils as su
 from core_api import server
+from core_api import utils
 from core_api import constants as const
 
 
@@ -55,7 +55,7 @@ def get_nzta_hazard():
     )
     im_component = optional_kwargs.get("im_component")
 
-    ensemble, site_info, nzta_hazard = get_nzta_result(
+    ensemble, site_info, nzta_hazard = utils.get_nzta_result(
         ensemble_id, station, soil_class, cache, im_component=im_component
     )
     return flask.jsonify(
