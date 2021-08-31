@@ -438,16 +438,16 @@ def write_gms_download_data(
     gms_result_data = sr.get_ensemble_gms(gms_result)
     if cs_param_bounds is not None:
         default_causal_params = sr.get_default_causal_params(cs_param_bounds)
-        # For Cuasal Params Plot
+        # Bounds with min/max values
         causal_params_bounds = sr.get_causal_params_bounds(cs_param_bounds)
 
-        # Mw Rrup plot under Causal Params
+        # Mw and Rrup distribution plot
         sc.plots.plt_gms_mw_rrup(
             gms_result_data["selected_gms_metadata"],
             default_causal_params,
             Path(out_dir) / "gms_mw_rrup_plot.png",
         )
-        # Spectra plots
+        # Pseudo acceleration response spectra plot
         sc.plots.plt_gms_spectra(
             gms_result_data,
             len(list(gms_result_data["realisations"].values())[0]),
@@ -489,8 +489,7 @@ def write_gms_download_data(
                 "rrup",
                 Path(out_dir) / "gms_rrup_disagg_distribution_plot.png",
             )
-        # Causal Params plots
-        # vs30 first
+        # Causal Parameters plots
         sc.plots.plt_gms_causal_param(
             gms_result_data,
             causal_params_bounds,
@@ -505,7 +504,7 @@ def write_gms_download_data(
             Path(out_dir) / "gms_sf_causal_param_plot.png",
         )
 
-        # Available GM Plots
+        # Available Ground Motions plot
         sc.plots.plt_gms_available_gm(
             gms_result.gm_dataset.get_metadata_df(gms_result.site_info).to_dict(
                 orient="list"
