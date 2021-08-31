@@ -233,11 +233,27 @@ def plot_hazard(
     title: str,
     im: IM,
     save_file: str = None,
-    nz_code_hazard: pd.Series = None,
+    nzs1170p5_hazard: pd.Series = None,
     nzta_hazard: pd.Series = None,
 ):
-    """Plots the hazard curves, also saves the plot
-    if a save file is specified
+    """Plots the hazard curves for the specified data
+
+    Parameters
+    ----------
+    hazard_df: pd.DataFrame
+        Hazard data to plot
+        format: index = IM Values, columns = [fault, ds, total, 16th, 84th]
+    title: str
+        Title of the plot
+    im: IM
+    save_file: str, optional
+        Save the plot if specified
+    nzs1170p5_hazard: pd.Series, optional
+        The corresponding NZS1170.5 hazard data
+        format: index = exceedance values, values = IM values
+    nzta_hazard: pd.Series
+        The corresponding NZTA hazard data
+        format: index = exceedance values, values = IM values
     """
     fig, ax = plt.subplots(figsize=(12, 9))
 
@@ -267,10 +283,10 @@ def plot_hazard(
             label="$84^{th}$ Percentile",
         )
 
-    if nz_code_hazard is not None:
+    if nzs1170p5_hazard is not None:
         ax.plot(
-            nz_code_hazard.values,
-            nz_code_hazard.index.values,
+            nzs1170p5_hazard.values,
+            nzs1170p5_hazard.index.values,
             color="black",
             linestyle="dotted",
             marker="^",
@@ -297,11 +313,36 @@ def plot_hazard_totals(
     title: str,
     im: IM,
     save_file: str = None,
-    nz_code_hazard: pd.Series = None,
+    nzs1170p5_hazard: pd.Series = None,
     nzta_hazard: pd.Series = None,
 ):
     """Similar to plot_hazard, except that it plots
     the ensemble total and the total for each branch
+
+    Parameters
+    ----------
+    hazard_df: pd.DataFrame
+        Hazard data to plot
+        format: index = IM Values, columns = [fault, ds, total, 16th, 84th]
+    branch_hazard: dict, optional
+        If the main hazard (i.e. hazard_df) is ensemble hazard, then this
+        option can be used to also plot all the branches hazard in the same
+        plot. If one just wants to plot the hazard for a single branch, then
+        this should parameter should be None, and the dataframe passed in using
+        the hazard_df parameter
+        The keys of the dictionary are expected to be the branches names, and the
+        values pd.Dataframe of format: index = IM values, columns = [fault, ds, total]
+    title: str
+        Title of the plot
+    im: IM
+    save_file: str, optional
+        Save the plot if specified
+    nzs1170p5_hazard: pd.Series, optional
+        The corresponding NZS1170.5 hazard data
+        format: index = exceedance values, values = IM values
+    nzta_hazard: pd.Series
+        The corresponding NZTA hazard data
+        format: index = exceedance values, values = IM values
     """
     fig, ax = plt.subplots(figsize=(12, 9))
 
@@ -318,10 +359,10 @@ def plot_hazard_totals(
             label=label,
         )
 
-    if nz_code_hazard is not None:
+    if nzs1170p5_hazard is not None:
         ax.plot(
-            nz_code_hazard.values,
-            nz_code_hazard.index.values,
+            nzs1170p5_hazard.values,
+            nzs1170p5_hazard.index.values,
             color="black",
             linestyle="dotted",
             marker="^",
@@ -554,20 +595,27 @@ def plot_uhs_branches(
 
 
 def plot_gms_im_distribution(
-    gms_result_dict: Dict,
+    gms_result_data: Dict,
     save_file: Path = None,
 ):
-    plots_data = utils.calculate_gms_im_distribution(gms_result_dict)
+    """GMS IM distribution plot for each IM
+
+    Parameters
+    ----------
+    gms_result_data: Dict,
+        Readable GMS result
+    save_file: Path, optional
+    """
+    plots_data = utils.calculate_gms_im_distribution(gms_result_data)
 
     plt.figure(figsize=(16, 9))
 
     def label_maker(im: str):
-        if im.startswith("pSA"):
-            label = f"Pseudo spectral acceleration, pSA({im.split('_')[1]}) (g)"
-        else:
-            label = const.GMSIMDistributionsLabel[im].value
-
-        return label
+        return (
+            f"Pseudo spectral acceleration, pSA({im.split('_')[1]}) (g)"
+            if im.startswith("pSA")
+            else const.GMSIMDistributionsLabel[im].value
+        )
 
     for im, data in plots_data.items():
         plt.plot(data.get("cdf_x"), data.get("cdf_y"), color="red", label="GCIM")
@@ -596,7 +644,7 @@ def plot_gms_im_distribution(
             color="black",
             label="Selected Ground Motions",
         )
-        # plt.xscale("log")
+
         plt.ylim(0, 1)
         plt.xlabel(label_maker(im))
         plt.ylabel("Cumulative Probability, CDF")
@@ -614,13 +662,17 @@ def plot_gms_im_distribution(
 
 def plot_gms_mw_rrup(
     metadata: Dict,
-    rrup_low,
-    rrup_high,
-    mw_low,
-    mw_high,
+    bounds: Dict,
     save_file: Path = None,
 ):
-    """GMS's Mw Rrup plots"""
+    """GMS Magnitude and Rupture distance distribution plot
+
+    Parameters
+    ----------
+    metadata: Dict
+    bounds: Dict
+    save_file: Path, optional
+    """
     plt.figure(figsize=(16, 9))
 
     plt.scatter(
@@ -631,15 +683,29 @@ def plot_gms_mw_rrup(
         edgecolors="black",
         facecolors="none",
     )
+    # Boundary box plot
     plt.plot(
-        [rrup_low, rrup_high, rrup_high, rrup_low, rrup_low],
-        [mw_low, mw_low, mw_high, mw_high, mw_low],
+        [
+            bounds["rrup_low"],
+            bounds["rrup_high"],
+            bounds["rrup_high"],
+            bounds["rrup_low"],
+            bounds["rrup_low"],
+        ],
+        [
+            bounds["mw_low"],
+            bounds["mw_low"],
+            bounds["mw_high"],
+            bounds["mw_high"],
+            bounds["mw_low"],
+        ],
         color="red",
         linestyle="dashed",
         label="Bounds",
         linewidth=1,
         dashes=(5, 5),
     )
+
     plt.xscale("log")
     plt.xlabel("Rupture distance, $R_{rup}$(km)")
     plt.ylabel("Magnitude, $M_{w}$")
@@ -654,11 +720,21 @@ def plot_gms_mw_rrup(
 
 
 def plot_gms_causal_param(
-    gms_result_data,
-    bounds,
-    metadata,
+    gms_result_data: Dict,
+    bounds: Dict,
+    metadata: str,
     save_file: Path = None,
 ):
+    """GMS Causal Parameter's plot
+     (Vs30, Scale Factor)
+
+    Parameters
+    ----------
+    gms_result_data: Dict
+    bounds: Dict
+    metadata: str
+    save_file: Path, optional
+    """
     range_x, range_y = utils.calc_gms_causal_params(gms_result_data, metadata)
 
     plt.figure(figsize=(16, 9))
@@ -711,10 +787,19 @@ def plot_gms_causal_param(
 
 
 def plot_gms_spectra(
-    gms_result_dict: Dict,
+    gms_result_data: Dict,
     num_gms: int,
     save_file: Path = None,
 ):
+    """GMS Pseudo acceleration response spectra plot
+
+    Parameters
+    ----------
+    gms_result_data: Dict
+    num_gms: int
+        Number of ground motions
+    save_file: Path, optional
+    """
     (
         periods_list,
         upper_percen_values,
@@ -722,11 +807,11 @@ def plot_gms_spectra(
         lower_percen_values,
         realisations_y_coords,
         selected_gms_y_coords,
-    ) = utils.calculate_gms_spectra(gms_result_dict, num_gms)
+    ) = utils.calculate_gms_spectra(gms_result_data, num_gms)
 
-    fig, ax = plt.subplots(figsize=(20, 9))
+    plt.figure(figsize=(20, 9))
 
-    ax.plot(
+    plt.plot(
         periods_list,
         lower_percen_values,
         color="red",
@@ -734,7 +819,7 @@ def plot_gms_spectra(
         label="GCIM - $84^{th}$ Percentile",
         linewidth=1,
     )
-    ax.plot(
+    plt.plot(
         periods_list,
         median_values,
         color="red",
@@ -742,7 +827,7 @@ def plot_gms_spectra(
         label="GCIM - Median",
         linewidth=1,
     )
-    ax.plot(
+    plt.plot(
         periods_list,
         upper_percen_values,
         color="red",
@@ -752,7 +837,7 @@ def plot_gms_spectra(
     )
 
     for i in range(0, num_gms):
-        ax.plot(
+        plt.plot(
             periods_list,
             selected_gms_y_coords[i],
             color="black",
@@ -760,7 +845,7 @@ def plot_gms_spectra(
             label="Selected Ground Motions" if i == 0 else None,
             linewidth=1,
         )
-        ax.plot(
+        plt.plot(
             periods_list,
             realisations_y_coords[i],
             color="blue",
@@ -768,6 +853,7 @@ def plot_gms_spectra(
             label="Realisations" if i == 0 else None,
             linewidth=1,
         )
+
     # TODO: Investigate log scale issue
     # plt.xscale("log")
     plt.yscale("log")
@@ -791,6 +877,18 @@ def plot_gms_disagg_distribution(
     metadata: str,
     save_file: Path = None,
 ):
+    """GMS disaggregation distribution plot
+    (Magnitude and Rupture distance)
+
+    Parameters
+    ----------
+    contribution: List
+    distribution: List
+    gms_metadata: List
+    bounds: Dict
+    metadata: str
+    save_file: Path, optional
+    """
     range_x, range_y = utils.calculate_gms_disagg_distribution(gms_metadata[metadata])
     bounds_y_range = [0, 1]
 
@@ -837,14 +935,19 @@ def plot_gms_disagg_distribution(
 
 def plot_gms_available_gm(
     metadata: Dict,
-    rrup_low,
-    rrup_high,
-    mw_low,
-    mw_high,
-    num_in_bounds,
+    bounds: Dict,
+    num_in_bounds: int,
     save_file: Path = None,
 ):
-    """GMS's Available GM plots"""
+    """GMS Available ground motions plot
+
+    Parameters
+    ----------
+    metadata: Dict
+    bounds: Dict
+    num_in_bounds: int
+    save_file: Path, optional
+    """
     plt.figure(figsize=(16, 9))
 
     plt.scatter(
@@ -855,15 +958,29 @@ def plot_gms_available_gm(
         edgecolors="black",
         facecolors="none",
     )
+    # Boundary box plot
     plt.plot(
-        [rrup_low, rrup_high, rrup_high, rrup_low, rrup_low],
-        [mw_low, mw_low, mw_high, mw_high, mw_low],
+        [
+            bounds["rrup_low"],
+            bounds["rrup_high"],
+            bounds["rrup_high"],
+            bounds["rrup_low"],
+            bounds["rrup_low"],
+        ],
+        [
+            bounds["mw_low"],
+            bounds["mw_low"],
+            bounds["mw_high"],
+            bounds["mw_high"],
+            bounds["mw_low"],
+        ],
         color="red",
         linestyle="dashed",
         label="Bounds",
         linewidth=1,
         dashes=(5, 5),
     )
+
     plt.xscale("log")
     plt.xlabel("Rupture distance, $R_{rup}$(km)")
     plt.ylabel("Magnitude, $M_{w}$")

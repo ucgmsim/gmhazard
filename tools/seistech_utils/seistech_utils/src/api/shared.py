@@ -444,10 +444,7 @@ def write_gms_download_data(
         # Mw Rrup plot under Causal Params
         sc.plots.plt_gms_mw_rrup(
             gms_result_data["selected_gms_metadata"],
-            default_causal_params["rrup_low"],
-            default_causal_params["rrup_high"],
-            default_causal_params["mw_low"],
-            default_causal_params["mw_high"],
+            default_causal_params,
             Path(out_dir) / "gms_mw_rrup_plot.png",
         )
         # Spectra plots
@@ -513,10 +510,7 @@ def write_gms_download_data(
             gms_result.gm_dataset.get_metadata_df(gms_result.site_info).to_dict(
                 orient="list"
             ),
-            default_causal_params["rrup_low"],
-            default_causal_params["rrup_high"],
-            default_causal_params["mw_low"],
-            default_causal_params["mw_high"],
+            default_causal_params,
             gms_result.gm_dataset.get_n_gms_in_bounds(
                 gms_result.gm_dataset.get_metadata_df(gms_result.site_info),
                 cs_param_bounds,
