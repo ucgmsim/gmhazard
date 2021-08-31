@@ -167,7 +167,6 @@ class Ensemble:
         self._stations = self.stations_ll_df.loc[list(station_ids)]
 
     def __load_rupture_df(self):
-
         for im_ensemble in self.im_ensembles:
             if self._rupture_df is None:
                 self._rupture_df = im_ensemble.rupture_df
@@ -205,8 +204,8 @@ class Ensemble:
             self._branch_rupture_dfs[erf_path] = rupture_df
             return rupture_df
 
-    def get_im_ensemble(self, im: IMType) -> IMEnsemble:
-        return self.im_ensembles_dict[im]
+    def get_im_ensemble(self, im_type: IMType) -> IMEnsemble:
+        return self.im_ensembles_dict[im_type]
 
     def check_im(self, im: IM):
         """Checks if the specified IM type is supported by
