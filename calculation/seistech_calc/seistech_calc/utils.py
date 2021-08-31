@@ -423,13 +423,35 @@ def to_mu_sigma(df: pd.DataFrame, im: IM):
 
 
 def calculate_gms_spectra(gms_data: Dict, num_gms: int):
-    cdf_x = gms_data.get("gcim_cdf_x")
-    cdf_y = gms_data.get("gcim_cdf_y")
-    realisations = gms_data.get("realisations")
-    selected_gms = gms_data.get("selected_GMs")
-    im_j = gms_data.get("im_j")
-    periods = gms_data.get("IMs")[:]
-    im_type = gms_data.get("IM_j")
+    """Create data for Spectra plot from the given GMS data
+
+    Parameters
+    ----------
+    gms_data: Dict
+    num_gms: int
+
+    Returns
+    -------
+    periods_list: List
+        plot's x-axis
+    upper_percen_values: List
+        GCIM - 84th percentile plot y coordinates
+    median_values: List
+        GCIM - Median percentile plot y coordinates
+    lower_percen_values: List
+        GCIM - 16th percentile plot y coordinates
+    realisations_values: List
+        Realisations plot y coordinates
+    selected_gms_values: List
+        Selected Ground Motions plot y coordinates
+    """
+    cdf_x = gms_data["gcim_cdf_x"]
+    cdf_y = gms_data["gcim_cdf_y"]
+    realisations = gms_data["realisations"]
+    selected_gms = gms_data["selected_GMs"]
+    im_j = gms_data["im_j"]
+    periods = gms_data["IMs"][:]
+    im_type = gms_data["IM_j"]
 
     if im_type.startswith("pSA"):
         periods.append(im_type)
@@ -450,6 +472,9 @@ def calculate_gms_spectra(gms_data: Dict, num_gms: int):
         {},
     )
 
+    # Use the original data as value cdf_x, cdf_y, realisations)
+    # if IM is not equal to im_type(selected IM by the user)
+    # else , use agreed values (period, im_j, selected_gms[IM])
     for im, period in local_periods.items():
         if im != im_type:
             sorted_cdf_x[im] = cdf_x[im]
@@ -464,6 +489,9 @@ def calculate_gms_spectra(gms_data: Dict, num_gms: int):
     # GCIM calculations
     median_index_dict, lower_percen_index_dict, upper_percen_index_dict = {}, {}, {}
 
+    # Find median, percentiles values (84th and 16th)
+    # if IM is not equal to im_type(selected IM by the user)
+    # else use im_j value
     for im, values in sorted_cdf_y.items():
         if im != im_type:
             found_median = next(filter(lambda x: x >= 0.5, values), None)
@@ -492,7 +520,15 @@ def calculate_gms_spectra(gms_data: Dict, num_gms: int):
             upper_percen_values.append(im_j)
 
     # Realisations calculation
-    realisations_y_coords = []
+    # The outer for loop is to set the index
+    # The inner loop is to put every IM's index realisation value.
+    # For instance,
+    # pSA_0.01: [1,2,3], pSA_0.02: [2,3,4], pSA_0.03: [4,5,6]
+    # after the implementation, realisations_values would look like
+    # [[1,2,4], [2,3,5], [3,4,6].
+    # [1,2,4] are the values at 0 index for each IM's realisation value
+    # [2,3,5] are the values at 1 index for each IM's realisation value
+    realisations_values = []
     for i in range(0, num_gms):
         temp_coords = []
         for im in sorted_realisations.keys():
@@ -500,36 +536,63 @@ def calculate_gms_spectra(gms_data: Dict, num_gms: int):
                 temp_coords.append(sorted_realisations[im][i])
             else:
                 temp_coords.append(sorted_realisations[im])
-        realisations_y_coords.append(temp_coords)
+        realisations_values.append(temp_coords)
 
     # Selected GMs calculation
-    selected_gms_y_coords = []
+    # Similar to Realisations caluclation above.
+    # Except, selected GMs come with selected IM Type's value
+    # so no need to check whether the im is equal/not equal to im_type
+    selected_gms_values = []
     for i in range(0, num_gms):
         temp_coords = []
         for im in sorted_selected_gms.keys():
             temp_coords.append(sorted_selected_gms[im][i])
-        selected_gms_y_coords.append(temp_coords)
+        selected_gms_values.append(temp_coords)
 
     return (
         periods_list,
         upper_percen_values,
         median_values,
         lower_percen_values,
-        realisations_y_coords,
-        selected_gms_y_coords,
+        realisations_values,
+        selected_gms_values,
     )
 
 
 def calculate_gms_im_distribution(gms_data: Dict):
-    ims = qcoreim.order_ims(gms_data.get("IMs")[:])
-    outputs = {}
+    """Create data IM Distribution plots from the given GMS data
+
+    Parameters
+    ----------
+    gms_data: Dict
+
+    Returns
+    -------
+    results: Dict,
+    E.g.,
+    {
+        im: {
+            "cdf_x": cdf_x,
+            "cdf_y": cdf_y,
+            "upper_slice_cdf_x": cdf_x[0:y_limit_at_one_index],
+            "upper_slice_cdf_y": upper_bounds[0:y_limit_at_one_index],
+            "lower_slice_cdf_x": cdf_x[y_limit_at_zero_index:],
+            "lower_slice_cdf_y": lower_bounds[y_limit_at_zero_index:],
+            "realisations": new_realisations,
+            "selected_gms": new_selected_gms,
+            "y_range": new_range_y[1:-1],
+        }
+    }
+    """
+    ims = qcoreim.order_ims(gms_data["IMs"][:])
+    results = {}
 
     for im in ims:
-        cdf_x = gms_data.get("gcim_cdf_x")[im]
-        cdf_y = gms_data.get("gcim_cdf_y")[im]
-        realisations = gms_data.get("realisations")[im][:]
-        selected_gms = gms_data.get("selected_GMs")[im][:]
-        ks_bounds = gms_data.get("ks_bounds")
+        cdf_x = gms_data["gcim_cdf_x"][im]
+        cdf_y = gms_data["gcim_cdf_y"][im]
+        realisations = gms_data["realisations"][im][:]
+        selected_gms = gms_data["selected_GMs"][im][:]
+        ks_bounds = gms_data["ks_bounds"]
 
         # GCIM + ks bounds
         upper_bounds = list(map(lambda x: x + ks_bounds, cdf_y))
@@ -549,7 +612,7 @@ def calculate_gms_im_distribution(gms_data: Dict):
         range_y = np.linspace(0, 1, len(realisations) + 1)
         new_range_y = [val for val in range_y for _ in range(2)]
 
-        outputs[im] = {
+        results[im] = {
             "cdf_x": cdf_x,
             "cdf_y": cdf_y,
             "upper_slice_cdf_x": cdf_x[0:y_limit_at_one_index],
@@ -561,10 +624,17 @@ def calculate_gms_im_distribution(gms_data: Dict):
             "y_range": new_range_y[1:-1],
         }
 
-    return outputs
+    return results
 
 
 def calculate_gms_disagg_distribution(selected_gms_metadata: List):
+    """Create data for Disaggregation Distribution plots from the given
+    selected GMS metadata.
+
+    Parameters
+    ----------
+    selected_gms_metadata: List
+    """
     copied_selected_gms_metadata = selected_gms_metadata[:]
     copied_selected_gms_metadata.sort()
     range_x = [val for val in copied_selected_gms_metadata for _ in (0, 1)]
@@ -576,9 +646,14 @@ def calculate_gms_disagg_distribution(selected_gms_metadata: List):
 
 
 def calc_gms_causal_params(gms_data: Dict, metadata: str):
-    copied_selected_gms_metadata = gms_data.get("selected_gms_metadata").get(metadata)[
-        :
-    ]
+    """Create data for Causal Parameters plots from the given GMS data
+
+    Parameters
+    ----------
+    gms_data: Dict,
+    metadata: str
+    """
+    copied_selected_gms_metadata = gms_data["selected_gms_metadata"][metadata][:]
     copied_selected_gms_metadata.sort()
     range_x = [val for val in copied_selected_gms_metadata for _ in (0, 1)]
 

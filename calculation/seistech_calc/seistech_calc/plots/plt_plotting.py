@@ -603,7 +603,6 @@ def plot_gms_im_distribution(
     Parameters
     ----------
     gms_result_data: Dict,
-        Readable GMS result
     save_file: Path, optional
     """
     plots_data = utils.calculate_gms_im_distribution(gms_result_data)
@@ -765,7 +764,7 @@ def plot_gms_causal_param(
     if metadata == "sf":
         plt.plot([1, 1], bounds_y_range, color="red", label="Reference point")
 
-    if metadata == "vs30":
+    elif metadata == "vs30":
         plt.plot(
             [bounds.get(metadata).get("vs30"), bounds.get(metadata).get("vs30")],
             bounds_y_range,
