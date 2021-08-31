@@ -952,7 +952,8 @@ def plot_gms_available_gm(
     plt.scatter(
         metadata.get("rrup"),
         metadata.get("mag"),
-        label=f"Dataset GMs (for the datapoints), N={len(metadata.get('rrup'))}\nCausal params bounding box (for the bounding box), N={num_in_bounds}",
+        label=f"Dataset GMs (for the datapoints), N={len(metadata.get('rrup'))}\n"
+        f"Causal params bounding box (for the bounding box), N={num_in_bounds}",
         marker="s",
         edgecolors="black",
         facecolors="none",
