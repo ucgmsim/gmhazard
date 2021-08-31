@@ -606,8 +606,8 @@ def calculate_gms_im_distribution(gms_data: Dict):
         # sort then duplicate every element
         realisations.sort()
         selected_gms.sort()
-        new_realisations = [val for val in realisations for _ in (0, 1)]
-        new_selected_gms = [val for val in selected_gms for _ in (0, 1)]
+        new_realisations = [val for val in realisations for _ in range(2)]
+        new_selected_gms = [val for val in selected_gms for _ in range(2)]
 
         range_y = np.linspace(0, 1, len(realisations) + 1)
         new_range_y = [val for val in range_y for _ in range(2)]
