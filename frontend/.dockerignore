@@ -1,0 +1,11 @@
+# Similar to .gitignore, except this is for Docker containers
+node_modules
+npm-debug.log
+build
+READEME.md
+Dockerfile
+.dockerignore
+.gitignore
+**/.git
+**/.DS_Store
+**/node_modules

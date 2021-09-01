@@ -1,0 +1,95 @@
+# docker-compose.yml
+
+version: "3.8"
+
+networks:
+  seistech-ea:
+    driver: bridge
+  backend-ea:
+    driver: bridge
+
+services:
+  userdb-ea:
+    image: mariadb
+    container_name: userdb-ea
+    restart: always
+    ports:
+      - ${EA_DB_PORT}:${EA_DB_PORT}
+    environment:
+      - MYSQL_DATABASE=${EA_MYSQL_DATABASE}
+      - MYSQL_USER=${EA_MYSQL_USER}
+      - MYSQL_PASSWORD=${EA_MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${EA_MYSQL_ROOT_PASSWORD}
+      - TZ=${EA_TZ}
+    volumes:
+      - ../../database/ea/db_data:/var/lib/mysql
+    expose:
+      - ${EA_DB_PORT}
+    networks:
+      - backend-ea
+  middleware:
+    image: middleware:early_access
+    container_name: middleware-ea
+    restart: on-failure
+    build:
+      context: ../../middleware/middleware
+      args:
+        - BRANCH_NAME
+    environment:
+      - ENV=EA
+      - AUTH0_DOMAIN=${AUTH0_DOMAIN_EA}
+      - API_AUDIENCE=${API_AUDIENCE_EA}
+      - ALGORITHMS=${ALGORITHMS_EA}
+      - CORE_API_SECRET=${CORE_API_SECRET_EA}
+      - API_SECRET=${API_SECRET_EA}
+      - DOWNLOAD_URL_SECRET_KEY_CORE_API=${DOWNLOAD_URL_SECRET_KEY_CORE_API_EA}
+      - DOWNLOAD_URL_SECRET_KEY_PROJECT_API=${DOWNLOAD_URL_SECRET_KEY_PROJECT_API_EA}
+      - CORE_API_BASE=${CORE_API_BASE_EA}
+      - PROJECT_API_BASE=${PROJECT_API_BASE_EA}
+      - INTER_PORT=${INTER_API_PORT_EA}
+      - N_PROCS=${N_PROCS_EA}
+      - DB_USERNAME=${DB_USERNAME_EA}
+      - DB_PASSWORD=${DB_PASSWORD_EA}
+      - DB_PORT=${DB_PORT_EA}
+      - DB_NAME=${DB_NAME_EA}
+      - AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID_EA}
+      - AUTH0_CLIENT_SECRET=${AUTH0_CLIENT_SECRET_EA}
+      - AUTH0_AUDIENCE=${AUTH0_AUDIENCE_EA}
+      - AUTH0_GRANT_TYPE=${AUTH0_GRANT_TYPE_EA}
+      - DB_SERVER=userdb-ea
+      - SLACK_TOKEN=${SLACK_TOKEN_EA}
+      - SLACK_CHANNEL=${SLACK_CHANNEL_EA}
+    networks:
+      - seistech-ea
+      - backend-ea
+    depends_on:
+      - userdb-ea
+    expose:
+      - ${INTER_API_PORT_EA}
+    ports:
+      - ${INTER_API_PORT_EA}:${INTER_API_PORT_EA}
+  frontend:
+    image: frontend:early_access
+    build: ../../frontend
+    restart: on-failure
+    environment:
+      - REACT_APP_ENV=EA
+      - REACT_APP_INTERMEDIATE_API_URL=${BASE_URL_EA}
+      - PORT=${FRONT_END_PORT_EA}
+      - REACT_APP_BUILD_DATE=${BUILD_DATE}
+      - REACT_APP_GIT_SHA=${GIT_SHA}
+      - REACT_APP_AUTH0_DOMAIN=${REACT_APP_AUTH0_DOMAIN_EA}
+      - REACT_APP_AUTH0_CLIENTID=${REACT_APP_AUTH0_CLIENTID_EA}
+      - REACT_APP_AUTH0_AUDIENCE=${REACT_APP_AUTH0_AUDIENCE_EA}
+      - REACT_APP_MAP_BOX_TOKEN=${REACT_APP_MAP_BOX_TOKEN_EA}
+    stdin_open: true
+    tty: true
+    networks:
+      - seistech-ea
+    expose:
+      - ${FRONT_END_PORT_EA}
+    ports:
+      - ${FRONT_END_PORT_EA}:${FRONT_END_PORT_EA}
+
+volumes:
+  db_data:
