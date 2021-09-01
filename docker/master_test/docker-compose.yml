@@ -1,0 +1,95 @@
+# docker-compose.yml
+
+version: "3.8"
+
+networks:
+  seistech-test:
+    driver: bridge
+  backend-test:
+    driver: bridge
+
+services:
+  userdb-test:
+    image: mariadb
+    container_name: userdb-test
+    restart: always
+    ports:
+      - ${TEST_DB_PORT}:${TEST_DB_PORT}
+    environment:
+      - MYSQL_DATABASE=${TEST_MYSQL_DATABASE}
+      - MYSQL_USER=${TEST_MYSQL_USER}
+      - MYSQL_PASSWORD=${TEST_MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${TEST_MYSQL_ROOT_PASSWORD}
+      - TZ=${TEST_TZ}
+    volumes:
+      - ../../database/test/db_data:/var/lib/mysql
+    expose:
+      - ${TEST_DB_PORT}
+    networks:
+      - backend-test
+  middleware:
+    image: middleware:master_test
+    container_name: middleware-test
+    restart: on-failure
+    build:
+      context: ../../middleware/middleware
+      args:
+        - BRANCH_NAME
+    environment:
+      - ENV=TEST
+      - AUTH0_DOMAIN=${AUTH0_DOMAIN_TEST}
+      - API_AUDIENCE=${API_AUDIENCE_TEST}
+      - ALGORITHMS=${ALGORITHMS_TEST}
+      - CORE_API_SECRET=${CORE_API_SECRET_TEST}
+      - API_SECRET=${API_SECRET_TEST}
+      - DOWNLOAD_URL_SECRET_KEY_CORE_API=${DOWNLOAD_URL_SECRET_KEY_CORE_API_TEST}
+      - DOWNLOAD_URL_SECRET_KEY_PROJECT_API=${DOWNLOAD_URL_SECRET_KEY_PROJECT_API_TEST}
+      - CORE_API_BASE=${CORE_API_BASE_TEST}
+      - PROJECT_API_BASE=${PROJECT_API_BASE_TEST}
+      - INTER_PORT=${INTER_API_PORT_TEST}
+      - N_PROCS=${N_PROCS_TEST}
+      - DB_USERNAME=${DB_USERNAME_TEST}
+      - DB_PASSWORD=${DB_PASSWORD_TEST}
+      - DB_PORT=${DB_PORT_TEST}
+      - DB_NAME=${DB_NAME_TEST}
+      - AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID_TEST}
+      - AUTH0_CLIENT_SECRET=${AUTH0_CLIENT_SECRET_TEST}
+      - AUTH0_AUDIENCE=${AUTH0_AUDIENCE_TEST}
+      - AUTH0_GRANT_TYPE=${AUTH0_GRANT_TYPE_TEST}
+      - DB_SERVER=userdb-test
+    networks:
+      - seistech-test
+      - backend-test
+    depends_on:
+      - userdb-test
+    expose:
+      - ${INTER_API_PORT_TEST}
+    ports:
+      - ${INTER_API_PORT_TEST}:${INTER_API_PORT_TEST}
+  frontend:
+    image: frontend:master_test
+    build: ../../frontend
+    restart: on-failure
+    environment:
+      - REACT_APP_DEFAULT_LAT=${DEFAULT_LAT}
+      - REACT_APP_DEFAULT_LNG=${DEFAULT_LNG}
+      - REACT_APP_ENV=TEST
+      - REACT_APP_INTERMEDIATE_API_URL=${BASE_URL_TEST}
+      - PORT=${FRONT_END_PORT_TEST}
+      - REACT_APP_BUILD_DATE=${BUILD_DATE}
+      - REACT_APP_GIT_SHA=${GIT_SHA}
+      - REACT_APP_AUTH0_DOMAIN=${REACT_APP_AUTH0_DOMAIN_TEST}
+      - REACT_APP_AUTH0_CLIENTID=${REACT_APP_AUTH0_CLIENTID_TEST}
+      - REACT_APP_AUTH0_AUDIENCE=${REACT_APP_AUTH0_AUDIENCE_TEST}
+      - REACT_APP_MAP_BOX_TOKEN=${REACT_APP_MAP_BOX_TOKEN_TEST}
+    stdin_open: true
+    tty: true
+    networks:
+      - seistech-test
+    expose:
+      - ${FRONT_END_PORT_TEST}
+    ports:
+      - ${FRONT_END_PORT_TEST}:${FRONT_END_PORT_TEST}
+
+volumes:
+  db_data:

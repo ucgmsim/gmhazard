@@ -1,0 +1,97 @@
+# docker-compose.yml
+
+version: "3.8"
+
+networks:
+  seistech-dev:
+    driver: bridge
+  backend-dev:
+    driver: bridge
+
+services:
+  userdb-dev:
+    image: mariadb
+    container_name: userdb-dev
+    restart: always
+    ports:
+      - ${DEV_DB_PORT}:${DEV_DB_PORT}
+    environment:
+      - MYSQL_DATABASE=${DEV_MYSQL_DATABASE}
+      - MYSQL_USER=${DEV_MYSQL_USER}
+      - MYSQL_PASSWORD=${DEV_MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DEV_MYSQL_ROOT_PASSWORD}
+      - TZ=${DEV_TZ}
+    volumes:
+      - ../../database/dev/db_data:/var/lib/mysql
+    expose:
+      - ${DEV_DB_PORT}
+    networks:
+      - backend-dev
+  middleware:
+    image: middleware:develop
+    container_name: middleware-dev
+    restart: on-failure
+    build:
+      context: ../../middleware/middleware
+      args:
+        - BRANCH_NAME
+    environment:
+      - ENV=DEV
+      - AUTH0_DOMAIN=${AUTH0_DOMAIN_DEV}
+      - API_AUDIENCE=${API_AUDIENCE_DEV}
+      - ALGORITHMS=${ALGORITHMS_DEV}
+      - CORE_API_SECRET=${CORE_API_SECRET_DEV}
+      - API_SECRET=${API_SECRET_DEV}
+      - DOWNLOAD_URL_SECRET_KEY_CORE_API=${DOWNLOAD_URL_SECRET_KEY_CORE_API_DEV}
+      - DOWNLOAD_URL_SECRET_KEY_PROJECT_API=${DOWNLOAD_URL_SECRET_KEY_PROJECT_API_DEV}
+      - CORE_API_BASE=${CORE_API_BASE_DEV}
+      - PROJECT_API_BASE=${PROJECT_API_BASE_DEV}
+      - INTER_PORT=${INTER_API_PORT_DEV}
+      - N_PROCS=${N_PROCS_DEV}
+      - DB_USERNAME=${DB_USERNAME_DEV}
+      - DB_PASSWORD=${DB_PASSWORD_DEV}
+      - DB_PORT=${DB_PORT_DEV}
+      - DB_NAME=${DB_NAME_DEV}
+      - AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID_DEV}
+      - AUTH0_CLIENT_SECRET=${AUTH0_CLIENT_SECRET_DEV}
+      - AUTH0_AUDIENCE=${AUTH0_AUDIENCE_DEV}
+      - AUTH0_GRANT_TYPE=${AUTH0_GRANT_TYPE_DEV}
+      - DB_SERVER=userdb-dev
+      - SLACK_TOKEN=${SLACK_TOKEN_DEV}
+      - SLACK_CHANNEL=${SLACK_CHANNEL_DEV}
+    networks:
+      - seistech-dev
+      - backend-dev
+    depends_on:
+      - userdb-dev
+    expose:
+      - ${INTER_API_PORT_DEV}
+    ports:
+      - ${INTER_API_PORT_DEV}:${INTER_API_PORT_DEV}
+  frontend:
+    image: frontend:develop
+    build: ../../frontend
+    restart: on-failure
+    environment:
+      - REACT_APP_ENV=DEV
+      - REACT_APP_DEFAULT_LAT=${DEFAULT_LAT}
+      - REACT_APP_DEFAULT_LNG=${DEFAULT_LNG}
+      - REACT_APP_INTERMEDIATE_API_URL=${BASE_URL_DEV}
+      - PORT=${FRONT_END_PORT_DEV}
+      - REACT_APP_BUILD_DATE=${BUILD_DATE}
+      - REACT_APP_GIT_SHA=${GIT_SHA}
+      - REACT_APP_AUTH0_DOMAIN=${REACT_APP_AUTH0_DOMAIN_DEV}
+      - REACT_APP_AUTH0_CLIENTID=${REACT_APP_AUTH0_CLIENTID_DEV}
+      - REACT_APP_AUTH0_AUDIENCE=${REACT_APP_AUTH0_AUDIENCE_DEV}
+      - REACT_APP_MAP_BOX_TOKEN=${REACT_APP_MAP_BOX_TOKEN_DEV}
+    stdin_open: true
+    tty: true
+    networks:
+      - seistech-dev
+    expose:
+      - ${FRONT_END_PORT_DEV}
+    ports:
+      - ${FRONT_END_PORT_DEV}:${FRONT_END_PORT_DEV}
+
+volumes:
+  db_data:
