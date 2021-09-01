@@ -146,6 +146,7 @@ def get_IM_values(
         return None
 
     im_df = pd.concat(im_dfs) if len(im_dfs) > 1 else im_dfs[0]
+    im_df.sort_index(inplace=True)
     return im_df
 
 
@@ -246,14 +247,6 @@ def get_gm_prob_df(
         )
         result_df.columns = im_levels
 
-    # Convert rupture names to rupture id indices
-    # erf_ffp, erf_type = branch.flt_erf_ffp, constants.ERFFileType.flt_nhm
-    # if source_type is constants.SourceType.distributed:
-    #     erf_ffp, erf_type = branch.ds_erf_ffp, constants.ERFFileType.ds_erf
-    # result_df.index = rupture.rupture_name_to_id_ix(
-    #     ensemble, erf_ffp, erf_type, result_df.index.values.astype(str)
-    # )
-
     return result_df
 
 
@@ -328,10 +321,30 @@ def get_im_data(
                 ensemble, erf_ffp, im_data.index.values.astype(str)
             )
         else:
-            raise NotImplementedError()
+            if source_type is constants.SourceType.distributed:
+                # This should never happen
+                raise NotImplementedError()
+
+            # im_data["rupture_name"] = im_data.index.get_level_values(0).values.astype(str)
+            # assert np.all(im_data.rupture_name.values.astype(str) == im_data.index.get_level_values(0).values.astype(str))
+            #
+            # im_data["rupture_id"] = rupture.rupture_name_to_id(im_data.rupture_name.values, branch.flt_erf_ffp)
+            # im_data.index.set_levels(rupture.rupture_name_to_id(im_data.index.unique(0).values.astype(str), branch.flt_erf_ffp), level=0, inplace=True)
+            # assert np.all(im_data.rupture_id.values.astype(str) == im_data.index.get_level_values(0).values.astype(str))
+
+            # rupture_id_ind = rupture.rupture_name_to_id_ix(ensemble, branch.flt_erf_ffp, im_data.index.get_level_values(0).values.astype(str))
+            rupture_id_ind = rupture.rupture_name_to_id_ix(ensemble, branch.flt_erf_ffp, im_data.index.unique(0).values.astype(str))
+            im_data.index.set_levels(rupture_id_ind, level=0, inplace=True)
+            im_data.sort_index(inplace=True)
+            # raise NotImplementedError()
+
+    # idx = pd.MultiIndex.from_tuples([(1, "one"), (1, "two")], names = ["foo", "bar"])
+    # idx.set_levels()
 
     return im_data, im_data_type
 
+# AwatNEVerCl
+# AwatNEVer
 
 def compute_adj_branch_weights(
     ensemble: gm_data.Ensemble, im: IM, im_value: float, site_info: site.SiteInfo,

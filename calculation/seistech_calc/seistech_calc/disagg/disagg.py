@@ -10,6 +10,7 @@ from seistech_calc import shared
 from seistech_calc import hazard
 from seistech_calc import gm_data
 from seistech_calc import site_source
+from seistech_calc import rupture
 from seistech_calc import constants as const
 from seistech_calc.im import IM
 from .DisaggData import BranchDisaggData, EnsembleDisaggData, DisaggGridData
@@ -89,8 +90,11 @@ def run_ensemble_disagg(
 
     mean_values = None
     if calc_mean_values:
-        # Compute mean magnitude
+        # Use rupture_ids (due to required location matching for rrup mean)
         full_disagg = pd.concat([fault_disagg_mean, ds_disagg_mean])
+        full_disagg.index = rupture.rupture_id_ix_to_rupture_id(ensemble, full_disagg.index.values)
+
+        # Compute mean magnitude
         mag_mean = shared.compute_contr_mean(
             im_ensemble.rupture_df_id.magnitude, full_disagg.contribution.to_frame(),
         ).values[0]
@@ -107,17 +111,25 @@ def run_ensemble_disagg(
         ).values[0]
 
         # Rrrup mean
+        # Convert to rupture_id for matching
+        fault_rrup_disagg_df = fault_disagg_mean.contribution.copy()
+        fault_rrup_disagg_df.index = rupture.rupture_id_ix_to_rupture_id(ensemble, fault_rrup_disagg_df.index.values.astype(str))
+
+        ds_rrup_disagg_df = ds_disagg_mean.contribution.copy()
+        ds_rrup_disagg_df.index = rupture.rupture_id_ix_to_rupture_id(ensemble, ds_rrup_disagg_df.index.values.astype(str))
+
         # Get distances
         fault_rrup_disagg_df = site_source.match_ruptures(
             site_source.get_distance_df(ensemble.flt_ssddb_ffp, site_info),
-            fault_disagg_mean.contribution.copy(),
+            fault_rrup_disagg_df,
             const.SourceType.fault,
         )
         ds_rrup_disagg_df = site_source.match_ruptures(
             site_source.get_distance_df(ensemble.ds_ssddb_ffp, site_info),
-            ds_disagg_mean.contribution.copy(),
+            ds_rrup_disagg_df,
             const.SourceType.distributed,
         )
+
         # Ignore nan entries (due to 200 km limit in SiteSourceDB)
         rrup_disagg_df = pd.concat([fault_rrup_disagg_df.rrup, ds_rrup_disagg_df.rrup])
         mask = ~rrup_disagg_df.isna()

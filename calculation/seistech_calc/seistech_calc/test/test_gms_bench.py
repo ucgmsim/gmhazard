@@ -37,7 +37,7 @@ def test_gms(config):
         )
 
         try:
-            assert np.all(np.isclose(gms_df.values, bench_df.values))
+            assert np.all(np.isclose(gms_df.values, bench_df.sort_index().values))
         except AssertionError:
             print(
                 "Ensemble - {}, gms_run - {}, station name - {}"

@@ -211,7 +211,7 @@ class Ensemble:
         """Gets the rupture_id_ix values for the given rupture_ids"""
 
         # Add ids if needed
-        missing_ids = (
+        missing_ids = np.unique(
             rupture_ids[
                 ~utils.pandas_isin(rupture_ids, self._rupture_id_ix_lookup.index.values)
             ]
@@ -240,15 +240,16 @@ class Ensemble:
 
         # Sanity check
         assert (
-            self._rupture_id_ix_lookup.index.unique().size
-            == self._rupture_id_ix_lookup.size
+            self._rupture_id_ix_lookup.index.unique().size == self._rupture_id_ix_lookup.size
         )
 
-        return self._rupture_id_ix_lookup[rupture_ids].values
+        return self._rupture_id_ix_lookup.loc[rupture_ids].values
 
     def get_rupture_ids(self, rupture_id_ind: np.ndarray):
         """Convert rupture id indices to rupture ids"""
-        return self._rupture_id_ix_lookup.iloc[rupture_id_ind].index.values.astype(str)
+        result = self._rupture_id_ix_lookup.iloc[rupture_id_ind].index.values.astype(str)
+
+        return result
 
     def load_erf(self, erf_ffp: str, erf_type: const.ERFFileType):
         """This function should only be used by Branches, for

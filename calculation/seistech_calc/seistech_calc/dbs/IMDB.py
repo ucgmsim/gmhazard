@@ -490,14 +490,19 @@ class IMDBNonParametric(IMDB):
             return None
 
         simulations = self.simulations()
-        df.index = simulations.iloc[df.index.values].values
+        df["realisation"] = simulations.iloc[df.index.values].values
+        df["fault"] = np.stack(np.char.split(df.realisation.values.astype(str), "_", maxsplit=1))[:, 0]
+        df.sort_values(["fault", "realisation"], inplace=True)
 
         # Create hierarchical dataframe index (fault, realisation)
-        index = pd.MultiIndex.from_tuples(
-            [(get_fault_from_realisation(sim), sim) for sim in df.index.values],
-            names=["rupture", "realisation"],
-        )
-        df.index = index
+        df.index = pd.MultiIndex.from_frame(df.loc[:, ["fault", "realisation"]])
+        df.drop(columns=["fault", "realisation"], inplace=True)
+
+        # index = pd.MultiIndex.from_tuples(
+        #     [(get_fault_from_realisation(sim), sim) for sim in df.index.values],
+        #     names=["rupture", "realisation"],
+        # )
+        # df.index = index
 
         if im is not None:
             return df[im]

@@ -196,7 +196,7 @@ def run_branch_hazard(
     )
     if fault_gm_prob_df is not None:
         fault_hazard = sha_calc.hazard_curve(
-            fault_gm_prob_df, branch.rupture_df_id["annual_rec_prob"]
+            fault_gm_prob_df, branch.rupture_df_id_ix["annual_rec_prob"]
         )
     else:
         fault_hazard = pd.Series(data=np.zeros(im_values.shape), index=im_values)
@@ -212,7 +212,7 @@ def run_branch_hazard(
     )
     if ds_gm_prob_df is not None:
         ds_hazard = sha_calc.hazard_curve(
-            ds_gm_prob_df, branch.rupture_df_id["annual_rec_prob"]
+            ds_gm_prob_df, branch.rupture_df_id_ix["annual_rec_prob"]
         )
     else:
         ds_hazard = pd.Series(data=np.zeros(im_values.shape), index=im_values)
