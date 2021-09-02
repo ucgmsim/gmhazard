@@ -354,7 +354,7 @@ export const combineIMwithPeriod = (givenIM, givenPeriod) => {
  * @param {*} projectVS30 The Vs30 value to use for that given station
  * @param {*} projectZ1p0 The Z1.0 value to use for that given station
  * @param {*} projectZ2p5 The Z2.5 value to use for that given station
- * @returns The station ID string to send to the middleware API
+ * @returns The station ID string to send to the intermediate API
  */
 export const createStationID = (
   projectLocation,

@@ -49,7 +49,7 @@ PROJECT_API_BASE = os.environ["PROJECT_API_BASE"]
 
 # Generate the projectAPI token
 PROJECT_API_TOKEN = "Bearer {}".format(
-    jwt.encode({"env": os.environ["ENV"]}, os.environ["API_SECRET"], algorithm="HS256")
+    jwt.encode({"env": os.environ["ENV"]}, os.environ["PROJECT_API_SECRET"], algorithm="HS256")
 )
 
 # See Circular Import section on here for some attempt at justification of this

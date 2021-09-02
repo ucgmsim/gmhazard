@@ -11,6 +11,7 @@ db.session.commit()
 print(auth0.get_users())
 
 # Need to be manually done as we cannot pull permission data from Auth0
+# PERMISSION may vary on their Auth0 setting
 PERMISSION_LIST = [
     "create-project",
     "edit-user",
@@ -23,31 +24,13 @@ PERMISSION_LIST = [
     "psha-admin",
 ]
 
-PROJECT_DICT = {
-    "gnzl": "Generic New Zealand Locations",
-    "mac_raes": "MacRaes Oceania Gold",
-    "nzgs_pga": "NZGS",
-    "soffitel_qtwn": "Soffitel, Queenstown",
-    "wel_par_accom": "Wellington Parliament Accomodation",
-}
-
-PUBLIC_PROJECT_IDS = {"gnzl", "nzgs_pga"}
-
 # Adding all users from Auth0 to the User table
-for key in auth0.get_users():
-    db.session.add(User(key))
+user_info, _ = auth0.get_users()
+for user_id in user_info.keys():
+    db.session.add(User(user_id))
     db.session.commit()
 
 # Adding all permission to the Auth0Permission table
 for permission in PERMISSION_LIST:
     db.session.add(Auth0Permission(permission))
     db.session.commit()
-
-# Adding initial five project ids to the Project table
-for code, name in PROJECT_DICT.items():
-    if code in PUBLIC_PROJECT_IDS:
-        db.session.add(Project(code, name, "public"))
-        db.session.commit()
-    else:
-        db.session.add(Project(code, name))
-        db.session.commit()
