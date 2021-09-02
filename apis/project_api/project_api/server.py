@@ -117,3 +117,4 @@ from project_api.api import gms
 from project_api.api import hazard
 from project_api.api import project
 from project_api.api import uhs
+from project_api.api import scenario
