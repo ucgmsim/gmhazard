@@ -27,12 +27,12 @@ services:
       - ${EA_DB_PORT}
     networks:
       - backend-ea
-  middleware:
-    image: middleware:early_access
-    container_name: middleware-ea
+  intermediate_api:
+    image: intermediate_api:early_access
+    container_name: intermediate_api-ea
     restart: on-failure
     build:
-      context: ../../middleware/middleware
+      context: ../../intermediate_api/intermediate_api
       args:
         - BRANCH_NAME
     environment:

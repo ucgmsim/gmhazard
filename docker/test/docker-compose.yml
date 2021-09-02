@@ -27,12 +27,12 @@ services:
       - ${TEST_DB_PORT}
     networks:
       - backend-test
-  middleware:
-    image: middleware:master_test
-    container_name: middleware-test
+  intermediate_api:
+    image: intermediate_api:master_test
+    container_name: intermediate_api-test
     restart: on-failure
     build:
-      context: ../../middleware/middleware
+      context: ../../intermediate_api/intermediate_api
       args:
         - BRANCH_NAME
     environment:
