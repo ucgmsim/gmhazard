@@ -170,7 +170,7 @@ def load_uhs_data(results_dir: Path, rps: List[int]):
     uhs_results = [
         sc.uhs.EnsembleUHSResult.load(results_dir / f"uhs_{rp}") for rp in rps
     ]
-    # Need to fix the `uhs_nz11750` before we generate new project data
+
     nzs1170p5_results = [
         sc.nz_code.nzs1170p5.NZS1170p5Result.load(cur_dir, ensemble=ensemble)
         for cur_dir in (results_dir / "uhs_nzs1170p5").glob("uhs_*")
