@@ -6,7 +6,7 @@
 - [Overview](#overview)
 - [Requirements](#requirements)
 - [Running locally](#running-locally)
-- [Deploying to AWS](#deploying-to-aws)
+- [Using Docker](#using-docker)
 
 ## Naming
 
@@ -16,21 +16,21 @@
 
 ## Overview
 
-This is a React/javascript SPA, using Auth0 authentication, talking to a python flask API, running on a Linux host.
+This is a React/Javascript SPA, using Auth0 authentication, talking to Python Flask APIs, running on a Linux host.
 
 ## Requirements
 
 - Node v12
-- You will need a `.env.dev` file with the following environment variables.
-  (Please contact **Tom** to get environment variables.)
+- `.env.dev` with the following environment variables for development version.
   - REACT_APP_INTERMEDIATE_API_URL=
-  - REACT_APP_DEFAULT_LAT=-43.5381
-  - REACT_APP_DEFAULT_LNG=172.6474
   - REACT_APP_ENV=DEV
-  - REACT_APP_MAP_BOX_TOKEN=
-  - REACT_APP_AUTH0_DOMAIN=
+  - REACT_APP_MAP_BOX_TOKEN= Your own MapBox public/private token
+  - REACT_APP_AUTH0_DOMAIN= Your own Auth0 application information
   - REACT_APP_AUTH0_CLIENTID=
   - REACT_APP_AUTH0_AUDIENCE=
+- Optional environment variables so don't have to manually type coordinates on re-render.
+  - REACT_APP_DEFAULT_LAT=-43.5381
+  - REACT_APP_DEFAULT_LNG=172.6474
 
 #### To run Frontend: `npm run start:dev`
 
@@ -41,7 +41,7 @@ Open a terminal to do the following steps
 1. Change the directory to frontend
 
 ```shell
-cd {seistech_psha_frontend_directory}/frontend
+cd /your_path/seistech/frontend
 ```
 
 2. Install packages
@@ -56,24 +56,22 @@ npm install
 npm run start:dev
 ```
 
-**To achieve this, you need the following file `.env.dev`**
+## Using Docker
 
-Please check **Requirements** above.
+Under a directory called `docker`.
 
-## Deploying to AWS
+There are three directories, `develop`, `early_access` and `test`.
 
-Under a directory called `seistech_psha_frontend`, there is ith a directory called `docker`.
-
-There are three directories, `master_dev`, `master_ea` and `master_test`.
+- `develop` -> This is for the development version of the frontend.
+- `early_access` -> This is the early access version of the frontend. Similar to the development version but aim to be more stable.
+- `test` -> This is designed for test purposes with Selenium. (To be implemented.)
 
 Each directory has a different setting with `docker-compose.yml` file.
 
-It also includes a shell script called `Dockerise.sh` in a `docker` directory. By running this shell script inside EC2, it will automatically pull the latest version (Frontend & Intermediate API) from the repo, create Docker images then run them. To do so, change the directory to either `master_dev` or `master_ea` as `master_test` is uesd by Jenkins, then type the following cmd.
+It also includes a shell script called `Dockerise.sh` in the `docker` directory. By running this shell script, it will automatically pull the latest version (Frontend & Intermediate API) from the repo, create Docker images then run them as containers. To do so, change the directory to either `develop` or `early_access`.
 
 ```cmd
-../Dockerise.sh {master_dev or master_ea} {master_dev or master_ea}
+../Dockerise.sh {develop or early_access}
 ```
 
-The first parameter will be added to the docker image to tell which images belong to `DEV` and `EA` version of SeisTech.
-
-The second parameter is the target branch which tells EC2 to switch to the target branch then create docker images based on the latest information. This parameter is required for Jenkins so it can switch the branch to the PR's branch.
+###### `test` directory will be uesd by Jenkins.
