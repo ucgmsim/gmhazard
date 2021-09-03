@@ -33,6 +33,7 @@ def create_project(
     new_project: bool = True,
     use_mp: bool = True,
     erf_dir: Path = None,
+    erf_pert_dir: Path = None,
     flt_erf_version: str = "NHM"
 ):
     """
@@ -59,7 +60,15 @@ def create_project(
         If True then a completely new project is setup,
         If False then only the results are computed (the results
             directory has to be empty though)
-    use_mp: bool
+    erf_dir: Path, optional
+        Path to the ERF base directory, expected to contain
+         - NZBCK2015_Chch50yearsAftershock_OpenSHA_modType4.txt
+         - NZ_DSmodel_2015.txt
+         - NZ_FLTmodel_2010.txt
+    erf_pert_dir: Path, optional
+        Directory of the fault perturbed ERF files
+        Ignored unless n_perturbations > 1 (in project_params)
+    use_mp: bool, optional
         If true then standard python multiprocessing will be
         used for PSHA result generation, otherwise celery
         will be used.
@@ -110,6 +119,7 @@ def create_project(
                 model_config_ffp,
                 scripts_dir,
                 erf_dir,
+                erf_pert_dir,
                 flt_erf_version,
                 n_procs,
                 z_ffp=z_ffp,
@@ -261,6 +271,7 @@ def generate_dbs(
     model_config_ffp: Path,
     scripts_dir: Path,
     erf_dir: Path,
+    erf_pert_dir: Path,
     flt_erf_version: str,
     n_procs: int,
     z_ffp: Path = None,
@@ -334,15 +345,14 @@ def generate_dbs(
     assert flt_distance_result.returncode == 0, "Fault site-source DB generation failed"
 
     if n_perturbations > 1:
-        if not (erf_dir / f"nhm_perturbations_{n_perturbations}").exists():
-            raise Exception(f"The perturbated ERF files for {n_perturbations} number of perturbations do not exist yet. "
-                            f"Expected directory {erf_dir / f'nhm_perturbations_{n_perturbations}'} to exist.")
+        if erf_pert_dir is None or not (erf_pert_dir).exists():
+            raise Exception(f"A valid directory with the perturbed ERF files has to be specified.")
 
     print("Generating fault IMDBs")
     for i in range(n_perturbations):
         if n_perturbations > 1:
             erf_file = str(
-                erf_dir / f"nhm_perturbations_{n_perturbations}" / f"{flt_erf_base_fn}_pert{i:02}.txt"
+                erf_pert_dir / f"{flt_erf_base_fn}_{n_perturbations}" / f"{flt_erf_base_fn}_pert{i:02}.txt"
             )
         else:
             erf_file = str(erf_dir / f"{flt_erf_base_fn}.txt")
@@ -375,6 +385,7 @@ def create_ensemble_config(
     dbs_dir: Path,
     scripts_dir: Path,
     erf_dir: Path,
+    erf_pert_dir: Path,
     flt_erf_version: str,
     n_perturbations: int = 1,
 ):
@@ -388,7 +399,7 @@ def create_ensemble_config(
         erf_ffps = [
             str(erf_ffp)
             for erf_ffp in sorted(
-                erf_dir.glob(f"nhm_perturbations_{n_perturbations}/{flt_erf_base_fn}_pert*.txt")
+                erf_pert_dir.glob(f"{flt_erf_base_fn}_{n_perturbations}/{flt_erf_base_fn}_pert*.txt")
             )
         ]
     else:
