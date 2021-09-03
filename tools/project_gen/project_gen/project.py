@@ -134,6 +134,7 @@ def create_project(
             dbs_dir,
             scripts_dir,
             erf_dir,
+            erf_pert_dir,
             flt_erf_version,
             n_perturbations=n_perturbations,
         )
@@ -352,7 +353,7 @@ def generate_dbs(
     for i in range(n_perturbations):
         if n_perturbations > 1:
             erf_file = str(
-                erf_pert_dir / f"{flt_erf_base_fn}_{n_perturbations}" / f"{flt_erf_base_fn}_pert{i:02}.txt"
+                erf_pert_dir / f"{flt_erf_base_fn}_pert{i:02}.txt"
             )
         else:
             erf_file = str(erf_dir / f"{flt_erf_base_fn}.txt")
@@ -399,7 +400,7 @@ def create_ensemble_config(
         erf_ffps = [
             str(erf_ffp)
             for erf_ffp in sorted(
-                erf_pert_dir.glob(f"{flt_erf_base_fn}_{n_perturbations}/{flt_erf_base_fn}_pert*.txt")
+                erf_pert_dir.glob(f"{flt_erf_base_fn}_pert*.txt")
             )
         ]
     else:
