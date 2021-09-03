@@ -3,16 +3,16 @@
 version: "3.8"
 
 networks:
-  seistech-test:
+  seistech_test:
     driver: bridge
-  backend-test:
+  backend_test:
     driver: bridge
 
 services:
-  userdb-test:
+  userdb_test:
     image: mariadb
-    container_name: userdb-test
-    restart: always
+    container_name: userdb_test
+    restart: on-failure:5
     ports:
       - ${TEST_DB_PORT}:${TEST_DB_PORT}
     environment:
@@ -20,19 +20,19 @@ services:
       - MYSQL_USER=${TEST_MYSQL_USER}
       - MYSQL_PASSWORD=${TEST_MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${TEST_MYSQL_ROOT_PASSWORD}
-      - TZ=${TEST_TZ}
+      - TZ=Pacific/Auckland
     volumes:
       - ../../database/test/db_data:/var/lib/mysql
     expose:
       - ${TEST_DB_PORT}
     networks:
-      - backend-test
+      - backend_test
   intermediate_api:
-    image: intermediate_api:master_test
+    image: intermediate_api:test
     container_name: intermediate_api-test
-    restart: on-failure
+    restart: on-failure:5
     build:
-      context: ../../intermediate_api/intermediate_api
+      context: ../../apis/intermediate_api
       args:
         - BRANCH_NAME
     environment:
@@ -56,20 +56,20 @@ services:
       - AUTH0_CLIENT_SECRET=${AUTH0_CLIENT_SECRET_TEST}
       - AUTH0_AUDIENCE=${AUTH0_AUDIENCE_TEST}
       - AUTH0_GRANT_TYPE=${AUTH0_GRANT_TYPE_TEST}
-      - DB_SERVER=userdb-test
+      - DB_SERVER=userdb_test
     networks:
-      - seistech-test
-      - backend-test
+      - seistech_test
+      - backend_test
     depends_on:
-      - userdb-test
+      - userdb_test
     expose:
       - ${INTER_API_PORT_TEST}
     ports:
       - ${INTER_API_PORT_TEST}:${INTER_API_PORT_TEST}
   frontend:
-    image: frontend:master_test
+    image: frontend:test
     build: ../../frontend
-    restart: on-failure
+    restart: on-failure:5
     environment:
       - REACT_APP_DEFAULT_LAT=${DEFAULT_LAT}
       - REACT_APP_DEFAULT_LNG=${DEFAULT_LNG}
@@ -85,7 +85,7 @@ services:
     stdin_open: true
     tty: true
     networks:
-      - seistech-test
+      - seistech_test
     expose:
       - ${FRONT_END_PORT_TEST}
     ports:

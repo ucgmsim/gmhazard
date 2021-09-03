@@ -3,16 +3,16 @@
 version: "3.8"
 
 networks:
-  seistech-ea:
+  seistech_ea:
     driver: bridge
-  backend-ea:
+  backend_ea:
     driver: bridge
 
 services:
-  userdb-ea:
+  userdb_ea:
     image: mariadb
-    container_name: userdb-ea
-    restart: always
+    container_name: userdb_ea
+    restart: on-failure:5
     ports:
       - ${EA_DB_PORT}:${EA_DB_PORT}
     environment:
@@ -20,19 +20,19 @@ services:
       - MYSQL_USER=${EA_MYSQL_USER}
       - MYSQL_PASSWORD=${EA_MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${EA_MYSQL_ROOT_PASSWORD}
-      - TZ=${EA_TZ}
+      - TZ=Pacific/Auckland
     volumes:
-      - ../../database/ea/db_data:/var/lib/mysql
+      - ../../database/early_access/db_data:/var/lib/mysql
     expose:
       - ${EA_DB_PORT}
     networks:
-      - backend-ea
+      - backend_ea
   intermediate_api:
     image: intermediate_api:early_access
     container_name: intermediate_api-ea
-    restart: on-failure
+    restart: on-failure:5
     build:
-      context: ../../intermediate_api/intermediate_api
+      context: ../../apis/intermediate_api
       args:
         - BRANCH_NAME
     environment:
@@ -41,7 +41,7 @@ services:
       - API_AUDIENCE=${API_AUDIENCE_EA}
       - ALGORITHMS=${ALGORITHMS_EA}
       - CORE_API_SECRET=${CORE_API_SECRET_EA}
-      - API_SECRET=${API_SECRET_EA}
+      - PROJECT_API_SECRET=${PROJECT_API_SECRET_EA}
       - DOWNLOAD_URL_SECRET_KEY_CORE_API=${DOWNLOAD_URL_SECRET_KEY_CORE_API_EA}
       - DOWNLOAD_URL_SECRET_KEY_PROJECT_API=${DOWNLOAD_URL_SECRET_KEY_PROJECT_API_EA}
       - CORE_API_BASE=${CORE_API_BASE_EA}
@@ -56,14 +56,14 @@ services:
       - AUTH0_CLIENT_SECRET=${AUTH0_CLIENT_SECRET_EA}
       - AUTH0_AUDIENCE=${AUTH0_AUDIENCE_EA}
       - AUTH0_GRANT_TYPE=${AUTH0_GRANT_TYPE_EA}
-      - DB_SERVER=userdb-ea
+      - DB_SERVER=userdb_ea
       - SLACK_TOKEN=${SLACK_TOKEN_EA}
       - SLACK_CHANNEL=${SLACK_CHANNEL_EA}
     networks:
-      - seistech-ea
-      - backend-ea
+      - seistech_ea
+      - backend_ea
     depends_on:
-      - userdb-ea
+      - userdb_ea
     expose:
       - ${INTER_API_PORT_EA}
     ports:
@@ -71,7 +71,7 @@ services:
   frontend:
     image: frontend:early_access
     build: ../../frontend
-    restart: on-failure
+    restart: on-failure:5
     environment:
       - REACT_APP_ENV=EA
       - REACT_APP_INTERMEDIATE_API_URL=${BASE_URL_EA}
@@ -85,7 +85,7 @@ services:
     stdin_open: true
     tty: true
     networks:
-      - seistech-ea
+      - seistech_ea
     expose:
       - ${FRONT_END_PORT_EA}
     ports:

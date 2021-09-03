@@ -20,9 +20,9 @@ services:
       - MYSQL_USER=${DEV_MYSQL_USER}
       - MYSQL_PASSWORD=${DEV_MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${DEV_MYSQL_ROOT_PASSWORD}
-      - TZ=${DEV_TZ}
+      - TZ=Pacific/Auckland
     volumes:
-      - ../../database/dev/db_data:/var/lib/mysql
+      - ../../database/develop/db_data:/var/lib/mysql
     expose:
       - ${DEV_DB_PORT}
     networks:
