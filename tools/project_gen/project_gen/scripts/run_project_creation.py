@@ -19,6 +19,7 @@ def main(
     scripts_dir: Path,
     n_procs: int = 6,
     erf_dir: Path = None,
+    erf_pert_dir: Path = None,
     flt_erf_version: str = "NHM",
 ):
     with open(project_params_ffp, "r") as f:
@@ -31,6 +32,7 @@ def main(
         n_procs=n_procs,
         new_project=True,
         erf_dir=erf_dir,
+        erf_pert_dir=erf_pert_dir,
         flt_erf_version=flt_erf_version,
     )
 
@@ -66,6 +68,9 @@ if __name__ == "__main__":
         "--erf_dir", type=Path, help="Path to the ERF directory", default=None
     )
     parser.add_argument(
+        "--erf_pert_dir", type=Path, help="Path to the directory of pertubated ERFs", default=None
+    )
+    parser.add_argument(
         "--flt_erf_version",
         type=str,
         choices=list(pg.FLT_ERF_MAPPING.keys()),
@@ -83,5 +88,6 @@ if __name__ == "__main__":
         args.scripts_dir,
         n_procs=args.n_procs,
         erf_dir=args.erf_dir,
+        erf_pert_dir=args.erf_pert_dir,
         flt_erf_version=args.flt_erf_version,
     )
