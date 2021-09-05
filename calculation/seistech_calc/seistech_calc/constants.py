@@ -74,28 +74,3 @@ class GMSourceType(Enum):
     historical = "historical"
     simulations = "simulations"
     mixed = "mixed"
-
-
-class GMSIMDistributionsLabel(Enum):
-    """Pre-defined label for GMS IM distribution plot's x-axis label"""
-
-    PGA = "Peak ground acceleration, PGA (g)"
-    PGV = "Peak ground velocity, PGV (cm/s)"
-    CAV = "Cumulative absolute velocity, CAV (g.s)"
-    Ds595 = "5-95% Significant duration, Ds595 (s)"
-    Ds575 = "5-75% Significatn duration, Ds575 (s)"
-    AI = "Arias intensity, AI (cms/s)"
-
-
-class GMSDisaggDistributionsLabel(Enum):
-    """Pre-defined label for GMS Disaggregation distribution plot"""
-
-    mag = "Magnitude ($M_{w}$)"
-    rrup = "Rupture distance $R_{rup}$"
-
-
-class GMSCausalParamPlotsLabel(Enum):
-    """Pre-defined label for GMS Causal Parameters plot"""
-
-    vs30 = "30m-averaged shear-wave velocity ($V_{s30}$)"
-    sf = "Scale Factor (SF)"

@@ -7,13 +7,31 @@ from matplotlib import pyplot as plt, cm as cm, colors as ml_colors
 
 from seistech_calc.im import IM
 from seistech_calc import utils
-from seistech_calc import constants as const
 
 
 GCIM_LABEL = {
     "16th": "GCIM - $16^{th}$ Percentile",
     "median": "GCIM - Median",
     "84th": "GCIM - $84^{th}$ Percentile",
+}
+
+IM_DISTRIBUTION_LABEL = {
+    "PGA": "Peak ground acceleration, PGA (g)",
+    "PGV": "Peak ground velocity, PGV (cm/s)",
+    "CAV": "Cumulative absolute velocity, CAV (g.s)",
+    "Ds595": "5-95% Significant duration, Ds595 (s)",
+    "Ds575": "5-75% Significatn duration, Ds575 (s)",
+    "AI": "Arias intensity, AI (cms/s)",
+}
+
+DISAGG_DISTRIBUTION_LABEL = {
+    "mag": "Magnitude ($M_{w}$)",
+    "rrup": "Rupture distance $R_{rup}$",
+}
+
+CAUSAL_PARAMS_LABEL = {
+    "vs30": "30m-averaged shear-wave velocity ($V_{s30}$)",
+    "sf": "Scale Factor (SF)",
 }
 
 
@@ -616,13 +634,6 @@ def plot_gms_im_distribution(
 
     plt.figure(figsize=(16, 9))
 
-    def label_maker(im: str):
-        return (
-            f"Pseudo spectral acceleration, pSA({im.split('_')[1]}) (g)"
-            if im.startswith("pSA")
-            else const.GMSIMDistributionsLabel[im].value
-        )
-
     for im, data in plots_data.items():
         plt.plot(data.get("cdf_x"), data.get("cdf_y"), color="red", label="GCIM")
         plt.plot(
@@ -652,7 +663,11 @@ def plot_gms_im_distribution(
         )
 
         plt.ylim(0, 1)
-        plt.xlabel(label_maker(im))
+        plt.xlabel(
+            f"Pseudo spectral acceleration, pSA({im.split('_')[-1]}) (g)"
+            if im.startswith("pSA")
+            else IM_DISTRIBUTION_LABEL[im]
+        )
         plt.ylabel("Cumulative Probability, CDF")
         plt.title(f"{im}")
         plt.legend()
@@ -750,7 +765,7 @@ def plot_gms_causal_param(
         range_x,
         range_y,
         color="black",
-        label=const.GMSCausalParamPlotsLabel[metadata].value,
+        label=CAUSAL_PARAMS_LABEL[metadata],
     )
 
     if bounds.get(metadata):
@@ -779,8 +794,8 @@ def plot_gms_causal_param(
             label="Site-Specific $V_{s30}$",
         )
 
-    plt.title(f"{const.GMSCausalParamPlotsLabel[metadata].value} distribution")
-    plt.xlabel(f"{const.GMSCausalParamPlotsLabel[metadata].value}")
+    plt.title(f"{CAUSAL_PARAMS_LABEL[metadata]} distribution")
+    plt.xlabel(f"{CAUSAL_PARAMS_LABEL[metadata]}")
     plt.ylabel("Cumulative Probability, CDF")
     plt.ylim(ymin=0)
     plt.legend()
@@ -883,7 +898,7 @@ def plot_gms_disagg_distribution(
         range_x,
         range_y,
         color="black",
-        label=const.GMSDisaggDistributionsLabel[metadata].value,
+        label=DISAGG_DISTRIBUTION_LABEL[metadata],
     )
     plt.plot(
         distribution, contribution, label="Disaggregation distribution", color="red"
@@ -905,10 +920,10 @@ def plot_gms_disagg_distribution(
 
     if metadata == "rrup":
         plt.xscale("log")
-    plt.xlabel(const.GMSDisaggDistributionsLabel[metadata].value)
+    plt.xlabel(DISAGG_DISTRIBUTION_LABEL[metadata])
     plt.ylabel("Cumulative Probability, CDF")
     plt.ylim(ymin=0)
-    plt.title(f"{const.GMSDisaggDistributionsLabel[metadata].value} distribution")
+    plt.title(f"{DISAGG_DISTRIBUTION_LABEL[metadata]} distribution")
     plt.legend()
 
     if save_file is not None:
