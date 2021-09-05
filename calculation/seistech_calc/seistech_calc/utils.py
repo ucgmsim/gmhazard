@@ -1,12 +1,13 @@
 import os
 import math
 import warnings
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
 
 import seistech_calc.constants as const
+import sha_calc as sha_calc
 from seistech_calc.im import IM, IMType
 from qcore import nhm
 from qcore import im as qcoreim
@@ -422,140 +423,82 @@ def to_mu_sigma(df: pd.DataFrame, im: IM):
     )
 
 
-def calculate_gms_spectra(gms_data: Dict, num_gms: int):
+def calculate_gms_spectra(
+    gms_data: Dict,
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Create data for Spectra plot from the given GMS data
 
     Parameters
     ----------
     gms_data: Dict
-    num_gms: int
 
     Returns
     -------
-    periods_list: List
-        plot's x-axis
-    upper_percen_values: List
-        GCIM - 84th percentile plot y coordinates
-    median_values: List
-        GCIM - Median percentile plot y coordinates
-    lower_percen_values: List
-        GCIM - 16th percentile plot y coordinates
-    realisations_values: List
-        Realisations plot y coordinates
-    selected_gms_values: List
-        Selected Ground Motions plot y coordinates
+    gcim_df: pd.DataFrame
+        Includes 84th, median and 16th percentiles along with IMs
+    realisations_df: pd.DataFrame
+    selected_gms_df: pd.DataFrame,
     """
     cdf_x = gms_data["gcim_cdf_x"]
     cdf_y = gms_data["gcim_cdf_y"]
     realisations = gms_data["realisations"]
     selected_gms = gms_data["selected_GMs"]
     im_j = gms_data["im_j"]
-    periods = gms_data["IMs"][:]
-    im_type = gms_data["IM_j"]
+    IM_j = gms_data["IM_j"]
 
-    if im_type.startswith("pSA"):
-        periods.append(im_type)
+    # for CDF_X
+    cdf_x_df = pd.DataFrame(cdf_x)
+    cdf_x_df.columns = [
+        0.0 if cur_col == "PGA" else float(cur_col.split("_")[-1])
+        for cur_col in cdf_x_df.columns
+    ]
+    cdf_x_df = cdf_x_df.T.sort_index().T
 
-    local_periods = {}
+    # For CDF_Y
+    cdf_y_df = pd.DataFrame(cdf_y)
+    cdf_y_df.columns = [
+        0.0 if cur_col == "PGA" else float(cur_col.split("_")[-1])
+        for cur_col in cdf_y_df.columns
+    ]
+    cdf_y_df = cdf_y_df.T.sort_index().T
 
-    for im in qcoreim.order_ims(periods):
-        if im.startswith("pSA"):
-            local_periods[im] = im.split("_")[1]
-
-    # x-axis data
-    periods_list = list(local_periods.values())
-
-    sorted_cdf_x, sorted_cdf_y, sorted_realisations, sorted_selected_gms = (
-        {},
-        {},
-        {},
-        {},
+    upper_bound, median, lower_bound = sha_calc.query_non_parametric_multi_cdf_invs(
+        [0.84, 0.5, 0.16], cdf_x_df.T.values, cdf_y_df.T.values
     )
 
-    # Use the original data as value cdf_x, cdf_y, realisations)
-    # if IM is not equal to im_type(selected IM by the user)
-    # else , use agreed values (period, im_j, selected_gms[IM])
-    for im, period in local_periods.items():
-        if im != im_type:
-            sorted_cdf_x[im] = cdf_x[im]
-            sorted_cdf_y[im] = cdf_y[im]
-            sorted_realisations[im] = realisations[im]
-        else:
-            sorted_cdf_x[im] = period
-            sorted_cdf_y[im] = im_j
-            sorted_realisations[im] = im_j
-        sorted_selected_gms[im] = selected_gms[im]
+    gcim_df = pd.DataFrame(
+        index=cdf_x_df.columns,
+        columns=np.asarray(["84th", "median", "16th"]),
+        data=np.asarray([upper_bound, median, lower_bound]).T,
+    ).T
 
-    # GCIM calculations
-    median_index_dict, lower_percen_index_dict, upper_percen_index_dict = {}, {}, {}
+    if IM_j.startswith("pSA"):
+        gcim_df[float(IM_j.split("_")[-1])] = im_j
+        gcim_df = gcim_df.T.sort_index().T
 
-    # Find median, percentiles values (84th and 16th)
-    # if IM is not equal to im_type(selected IM by the user)
-    # else use im_j value
-    for im, values in sorted_cdf_y.items():
-        if im != im_type:
-            found_median = next(filter(lambda x: x >= 0.5, values), None)
-            median_index_dict[im] = values.index(found_median)
+    # Realisations
+    realisations_df = pd.DataFrame(realisations)
+    realisations_df.columns = [
+        0.0 if cur_col == "PGA" else float(cur_col.split("_")[-1])
+        for cur_col in realisations_df.columns
+    ]
+    if IM_j.startswith("pSA"):
+        realisations_df[float(IM_j.split("_")[-1])] = im_j
 
-            found_lower_percen = next(filter(lambda x: x >= 0.16, values), None)
-            lower_percen_index_dict[im] = values.index(found_lower_percen)
+    realisations_df = realisations_df.T.sort_index().T
 
-            upper_lower_percen = next(filter(lambda x: x >= 0.84, values), None)
-            upper_percen_index_dict[im] = values.index(upper_lower_percen)
-        else:
-            median_index_dict[im] = im_j
-            lower_percen_index_dict[im] = im_j
-            upper_percen_index_dict[im] = im_j
-
-    median_values, lower_percen_values, upper_percen_values = [], [], []
-
-    for im, values in sorted_cdf_x.items():
-        if im != im_type:
-            median_values.append(values[median_index_dict[im]])
-            lower_percen_values.append(values[lower_percen_index_dict[im]])
-            upper_percen_values.append(values[upper_percen_index_dict[im]])
-        else:
-            median_values.append(im_j)
-            lower_percen_values.append(im_j)
-            upper_percen_values.append(im_j)
-
-    # Realisations calculation
-    # The outer for loop is to set the index
-    # The inner loop is to put every IM's index realisation value.
-    # For instance,
-    # pSA_0.01: [1,2,3], pSA_0.02: [2,3,4], pSA_0.03: [4,5,6]
-    # after the implementation, realisations_values would look like
-    # [[1,2,4], [2,3,5], [3,4,6].
-    # [1,2,4] are the values at 0 index for each IM's realisation value
-    # [2,3,5] are the values at 1 index for each IM's realisation value
-    realisations_values = []
-    for i in range(0, num_gms):
-        temp_coords = []
-        for im in sorted_realisations.keys():
-            if im != im_type:
-                temp_coords.append(sorted_realisations[im][i])
-            else:
-                temp_coords.append(sorted_realisations[im])
-        realisations_values.append(temp_coords)
-
-    # Selected GMs calculation
-    # Similar to Realisations caluclation above.
-    # Except, selected GMs come with selected IM Type's value
-    # so no need to check whether the im is equal/not equal to im_type
-    selected_gms_values = []
-    for i in range(0, num_gms):
-        temp_coords = []
-        for im in sorted_selected_gms.keys():
-            temp_coords.append(sorted_selected_gms[im][i])
-        selected_gms_values.append(temp_coords)
+    # Selected Ground Motions
+    selected_gms_df = pd.DataFrame(selected_gms)
+    selected_gms_df.columns = [
+        0.0 if cur_col == "PGA" else float(cur_col.split("_")[-1])
+        for cur_col in selected_gms_df.columns
+    ]
+    selected_gms_df = selected_gms_df.T.sort_index().T
 
     return (
-        periods_list,
-        upper_percen_values,
-        median_values,
-        lower_percen_values,
-        realisations_values,
-        selected_gms_values,
+        gcim_df,
+        realisations_df,
+        selected_gms_df,
     )
 
 

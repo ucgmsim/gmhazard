@@ -6,8 +6,15 @@ import pandas as pd
 from matplotlib import pyplot as plt, cm as cm, colors as ml_colors
 
 from seistech_calc.im import IM
-from .. import utils
-from .. import constants as const
+from seistech_calc import utils
+from seistech_calc import constants as const
+
+
+GCIM_LABEL = {
+    "16th": "GCIM - $16^{th}$ Percentile",
+    "median": "GCIM - Median",
+    "84th": "GCIM - $84^{th}$ Percentile",
+}
 
 
 def plot_disagg_src_type(
@@ -787,7 +794,6 @@ def plot_gms_causal_param(
 
 def plot_gms_spectra(
     gms_result_data: Dict,
-    num_gms: int,
     save_file: Path = None,
 ):
     """GMS Pseudo acceleration response spectra plot
@@ -795,66 +801,46 @@ def plot_gms_spectra(
     Parameters
     ----------
     gms_result_data: Dict
-    num_gms: int
-        Number of ground motions
     save_file: Path, optional
     """
     (
-        periods_list,
-        upper_percen_values,
-        median_values,
-        lower_percen_values,
-        realisations_y_coords,
-        selected_gms_y_coords,
-    ) = utils.calculate_gms_spectra(gms_result_data, num_gms)
+        gcim_df,
+        realisations_df,
+        selected_gms_df,
+    ) = utils.calculate_gms_spectra(gms_result_data)
 
     plt.figure(figsize=(20, 9))
 
-    plt.plot(
-        periods_list,
-        lower_percen_values,
-        color="red",
-        linestyle="dashdot",
-        label="GCIM - $84^{th}$ Percentile",
-        linewidth=1,
-    )
-    plt.plot(
-        periods_list,
-        median_values,
-        color="red",
-        linestyle="solid",
-        label="GCIM - Median",
-        linewidth=1,
-    )
-    plt.plot(
-        periods_list,
-        upper_percen_values,
-        color="red",
-        linestyle="dashdot",
-        label="GCIM - $16^{th}$ Percentile",
-        linewidth=1,
-    )
-
-    for i in range(0, num_gms):
+    for label, cur_gcim in gcim_df.iloc[:, 1:].iterrows():
         plt.plot(
-            periods_list,
-            selected_gms_y_coords[i],
-            color="black",
-            linestyle="solid",
-            label="Selected Ground Motions" if i == 0 else None,
-            linewidth=1,
+            cur_gcim.index,
+            cur_gcim.values,
+            color="red",
+            linestyle="solid" if label == "median" else "dashdot",
+            label=GCIM_LABEL[label],
         )
+
+    for cur_ix, cur_rel in realisations_df.iloc[:, 1:].iterrows():
         plt.plot(
-            periods_list,
-            realisations_y_coords[i],
+            cur_rel.index.values,
+            cur_rel.values,
             color="blue",
             linestyle="solid",
-            label="Realisations" if i == 0 else None,
-            linewidth=1,
+            label="Realisations" if cur_ix == 0 else None,
+            linewidth=0.4,
         )
 
-    # TODO: Investigate log scale issue
-    # plt.xscale("log")
+    for cur_ix, cur_rel in selected_gms_df.iloc[:, 1:].iterrows():
+        plt.plot(
+            cur_rel.index.values,
+            cur_rel.values,
+            color="black",
+            linestyle="solid",
+            label="Selected Ground Motions" if cur_ix == 0 else None,
+            linewidth=0.4,
+        )
+
+    plt.xscale("log")
     plt.yscale("log")
     plt.xlabel("Period, T (s)")
     plt.ylabel("Spectral acceleration, SA (g)")

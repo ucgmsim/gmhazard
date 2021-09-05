@@ -450,7 +450,6 @@ def write_gms_download_data(
         # Pseudo acceleration response spectra plot
         sc.plots.plt_gms_spectra(
             gms_result_data,
-            len(list(gms_result_data["realisations"].values())[0]),
             Path(out_dir) / "gms_spectra_plot.png",
         )
         # IM distribution plots
