@@ -4,7 +4,7 @@ import json
 
 import pandas as pd
 
-from seistech_calc.im import IM, to_string_list
+from seistech_calc.im import IM, to_string_list, to_im_list
 from seistech_calc import site
 from seistech_calc import gm_data
 
@@ -144,7 +144,7 @@ class BranchScenarioResult(ScenarioResult):
         return cls(
             branch,
             site.SiteInfo.load(data_dir),
-            IM.to_im_list(metadata["ims"]),
+            to_im_list(metadata["ims"]),
             pd.read_csv(str(data_dir / cls.MU_DATA_FN), index_col=0),
             pd.read_csv(str(data_dir / cls.SIGMA_DATA_FN), index_col=0),
         )
@@ -244,7 +244,7 @@ class EnsembleScenarioResult(ScenarioResult):
         ) = cls._load_data(data_dir)
 
         ensemble = gm_data.Ensemble.load(metadata["ensemble_params"])
-        percentiles = (pd.read_csv(str(data_dir / cls.PERCENTILES_FN), index_col=0),)
+        percentiles = pd.read_csv(str(data_dir / cls.PERCENTILES_FN), index_col=0)
 
         # Load the branches, each directory in the branch_scenarios folder
         branches_ffp = data_dir / "branch_scenarios"
@@ -267,7 +267,7 @@ class EnsembleScenarioResult(ScenarioResult):
             ensemble,
             branch_scenarios,
             site_info,
-            IM.to_im_list(metadata["ims"]),
+            to_im_list(metadata["ims"]),
             mu_data,
             percentiles,
         )

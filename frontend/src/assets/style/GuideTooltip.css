@@ -1,0 +1,11 @@
+div.MuiTooltip-tooltip {
+  font-size: calc(6px + 0.5vw) !important;
+}
+
+a.tooltip-a-tag {
+  color: orange;
+}
+
+a.tooltip-a-tag:hover {
+  color: orange;
+}

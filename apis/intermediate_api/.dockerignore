@@ -1,0 +1,7 @@
+Dockerfile
+.dockerignore
+READEME.md
+setup.py
+intermediate_api.egg-info
+intermediate_api/__pycache__
+intermediate_api/.idea

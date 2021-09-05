@@ -484,6 +484,7 @@ def default_causal_params(
     IM_j: IM,
     exceedance: Optional[float] = None,
     im_value: Optional[float] = None,
+    disagg_data: Optional[disagg.EnsembleDisaggData] = None,
 ) -> CausalParamBounds:
     """
     Computes default causal parameters based on
@@ -504,7 +505,9 @@ def default_causal_params(
         Compute disagg at this exceedance, either the exceedance
         or the im_value parameter has to be given
     im_value: float, optional
-        Compute disagg at this im value
+        Compute disagg at this im value if required
+    disagg_data: DisaggData, optinal
+        Computed Disagg data if pre-calculated
 
     Returns
     -------
@@ -515,15 +518,16 @@ def default_causal_params(
     Vs30 bounds: pair of floats
         (Vs30 lower bound, Vs30 upper bound)
     """
-    # Calculate disagg
-    disagg_data = disagg.run_ensemble_disagg(
-        ensemble,
-        site_info,
-        IM_j,
-        exceedance=exceedance,
-        im_value=im_value,
-        calc_mean_values=True,
-    )
+    # Calculate disagg if not already specified
+    if disagg_data is None:
+        disagg_data = disagg.run_ensemble_disagg(
+            ensemble,
+            site_info,
+            IM_j,
+            exceedance=exceedance,
+            im_value=im_value,
+            calc_mean_values=True,
+        )
 
     # Vs30 bounds
     vs_low, vs_high = site_info.vs30 * 0.5, site_info.vs30 * 1.5
