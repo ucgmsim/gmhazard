@@ -1,0 +1,216 @@
+/* 
+  TODO
+  Split into different CSS for each section 
+*/
+div.control-group {
+  border: 1px solid silver;
+  border-radius: 2px;
+  padding: 15px;
+  margin-top: 10px;
+  overflow: hidden;
+  height: auto !important;
+}
+
+button.download-button {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+
+button.hazard-disagg-contrib-button {
+  position: absolute;
+  top: 0px;
+  right: 180px;
+}
+
+div.two-column-row {
+  min-height: 42vw;
+}
+
+div.form-row,
+div.form-group-inline {
+  margin-top: 20px;
+  margin-left: 0px;
+  margin-bottom: 20px;
+}
+
+div.form-section-title {
+  font-size: calc(12px + 0.4vw);
+  margin-top: 10px;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+div.tab-content {
+  padding-top: 10px;
+}
+
+button.btn {
+  min-width: 100px;
+}
+
+nav.pivot-tabs {
+  margin-top: 10px;
+  width: 70%;
+}
+
+nav.pivot-tabs > a.nav-item {
+  font-size: 1em;
+  display: inline-block;
+}
+
+nav.pivot-tabs > a.active {
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+nav.pivot-tabs > a.disabled {
+  font-size: 0.8em;
+  margin-top: 0.3em;
+}
+
+nav.hazard-viewer-tabs > a {
+  font-weight: 600;
+}
+
+div.two-column-view-right-pane {
+  padding: 5px;
+}
+
+/* BEGIN */
+/* https://www.w3schools.com/howto/howto_css_hide_arrow_number.asp */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+/* END */
+
+label#label-haz-lat,
+label#label-haz-lng,
+label#label-create-lat,
+label#label-create-lng,
+label#label-create-vs30,
+label#label-create-name {
+  width: 7em;
+  font-size: calc(12px + 0.27vw);
+  margin-bottom: 1rem;
+}
+
+div.create-form-box {
+  margin-bottom: 22px;
+}
+
+label#label-vs30,
+label#label-z-1p0,
+label#label-z-2p5 {
+  width: 7em;
+  font-size: calc(12px + 0.27vw);
+  margin-bottom: 0;
+}
+
+label.control-label {
+  font-size: calc(12px + 0.27vw);
+}
+
+button#vs30-use-default {
+  width: 7em;
+}
+
+table#uhs-added {
+  border: 1px solid silver !important;
+  width: 100%;
+}
+
+table#uhs-added td {
+  font-size: small;
+  padding: 2px;
+}
+table#uhs-added tr {
+  background-color: white;
+  border: 1px solid silver;
+}
+
+table#uhs-added tbody tr:hover {
+  border: 2px solid black !important;
+  cursor: pointer;
+}
+table#uhs-added thead tr:hover {
+  border: none;
+  cursor: auto;
+}
+table#uhs-added th {
+  font-size: small;
+}
+table#uhs-added th,
+table#uhs-added td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#uhs-added tr:hover div.uhs-delete-row {
+  font-weight: bold;
+}
+
+div.table {
+  display: table;
+  border-spacing: 0px 8px;
+}
+div.t-row {
+  display: table-row;
+  margin-top: 10px;
+}
+div.t-cell {
+  display: table-cell;
+}
+
+div.hr {
+  border-top: 1px solid silver;
+  margin-top: 20px;
+  margin-bottom: 25px;
+}
+
+nav.hazard-tabs {
+  width: 77%;
+}
+
+span.show-nzs1170p5,
+span.show-nzta {
+  font-size: small;
+}
+
+tr.contrib-row-hidden {
+  display: none;
+}
+
+tr.contrib-ellipsis {
+  background-color: white !important;
+}
+
+tr.contrib-ellipsis td.hidden {
+  display: none;
+}
+
+button.default-button {
+  margin-left: 1.2em;
+}
+
+div.hazard-curve-viewer,
+div.disaggregation-viewer,
+div.uhs-viewer {
+  position: relative;
+}
+
+div.uhs-viewer {
+  margin-top: 10px;
+}
+
+div.nz-code-radio {
+  margin-bottom: 1em;
+}

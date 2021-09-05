@@ -1,0 +1,54 @@
+table#location-added {
+  border: 1px solid silver !important;
+  width: 100%;
+  margin-top: 25px;
+}
+
+table#location-added td {
+  font-size: small;
+  padding: 2px;
+}
+table#location-added tr {
+  background-color: white;
+  border: 1px solid silver;
+}
+
+table#location-added tbody tr:hover {
+  border: 2px solid black !important;
+  cursor: pointer;
+}
+table#location-added thead tr:hover {
+  border: none;
+  cursor: auto;
+}
+table#location-added th {
+  font-size: small;
+}
+table#location-added th,
+table#location-added td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+button.create-project-submit,
+button.create-project-add-location {
+  display: block;
+  margin: auto;
+}
+
+div.form-group.required label.control-label:after {
+  content: "*";
+  color: red;
+}
+
+h3.card-header.required:after {
+  content: "*";
+  color: red;
+}
+
+label#label-create-z1p0,
+label#label-create-z2p5 {
+  width: 7em !important;
+  font-size: calc(12px + 0.27vw) !important;
+  margin-bottom: 1rem !important;
+}
