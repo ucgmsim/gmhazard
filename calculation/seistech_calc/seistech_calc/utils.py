@@ -464,7 +464,7 @@ def calculate_gms_spectra(
     # for CDF_X
     cdf_x_df = pd.DataFrame(cdf_x)
     cdf_x_df.columns = [
-        0.0 if cur_col == "PGA" else float(cur_col.split("_")[-1])
+        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
         for cur_col in cdf_x_df.columns
     ]
     cdf_x_df = cdf_x_df.T.sort_index().T
@@ -472,7 +472,7 @@ def calculate_gms_spectra(
     # For CDF_Y
     cdf_y_df = pd.DataFrame(cdf_y)
     cdf_y_df.columns = [
-        0.0 if cur_col == "PGA" else float(cur_col.split("_")[-1])
+        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
         for cur_col in cdf_y_df.columns
     ]
     cdf_y_df = cdf_y_df.T.sort_index().T
@@ -494,7 +494,7 @@ def calculate_gms_spectra(
     # Realisations
     realisations_df = pd.DataFrame(realisations)
     realisations_df.columns = [
-        0.0 if cur_col == "PGA" else float(cur_col.split("_")[-1])
+        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
         for cur_col in realisations_df.columns
     ]
     if IM_j.startswith("pSA"):
@@ -505,7 +505,7 @@ def calculate_gms_spectra(
     # Selected Ground Motions
     selected_gms_df = pd.DataFrame(selected_gms)
     selected_gms_df.columns = [
-        0.0 if cur_col == "PGA" else float(cur_col.split("_")[-1])
+        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
         for cur_col in selected_gms_df.columns
     ]
     selected_gms_df = selected_gms_df.T.sort_index().T
