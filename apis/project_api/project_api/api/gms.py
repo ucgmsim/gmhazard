@@ -54,7 +54,7 @@ def get_ensemble_gms():
     return flask.jsonify(
         su.api.get_ensemble_gms(
             gms_result,
-            download_token=su.api.get_download_token(
+            su.api.get_download_token(
                 dict(project_id=project_id, station_id=station_id, gms_id=gms_id),
                 server.DOWNLOAD_URL_SECRET_KEY,
                 server.DOWNLOAD_URL_VALID_FOR,

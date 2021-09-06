@@ -47,7 +47,7 @@ def get_ensemble_disagg(
 
 def get_ensemble_gms(
     gms_result: sc.gms.GMSResult,
-    download_token: str = None,
+    download_token: str,
 ):
     """Creates the response for both the core and Project API"""
     return {
