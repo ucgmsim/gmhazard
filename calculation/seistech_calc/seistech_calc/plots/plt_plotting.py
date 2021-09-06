@@ -20,7 +20,7 @@ IM_DISTRIBUTION_LABEL = {
     "PGV": "Peak ground velocity, PGV (cm/s)",
     "CAV": "Cumulative absolute velocity, CAV (g.s)",
     "Ds595": "5-95% Significant duration, Ds595 (s)",
-    "Ds575": "5-75% Significatn duration, Ds575 (s)",
+    "Ds575": "5-75% Significant duration, Ds575 (s)",
     "AI": "Arias intensity, AI (cms/s)",
 }
 
