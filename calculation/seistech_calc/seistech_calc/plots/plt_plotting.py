@@ -624,7 +624,8 @@ def plot_gms_im_distribution(
     gms_result: gms.GMSResult,
     save_file: Path = None,
 ):
-    """GMS IM distribution plot for each IM
+    """Plot of the empirical distribution of selected ground motions
+    and the corresponding target GCIM distribution.
 
     Parameters
     ----------
@@ -687,7 +688,7 @@ def plot_gms_mw_rrup(
     bounds: Dict,
     save_file: Path = None,
 ):
-    """GMS Magnitude and Rupture distance distribution plot
+    """Plot of the magnitude-distance distribution of the selected ground motions representing.
 
     Parameters
     ----------
@@ -747,8 +748,8 @@ def plot_gms_causal_param(
     metadata: str,
     save_file: Path = None,
 ):
-    """GMS Causal Parameter's plot
-     (Vs30, Scale Factor)
+    """Plot of the comparison between the causal parameters (SF and Vs30 for now)
+    distribution of selected ground motions
 
     Parameters
     ----------
@@ -812,7 +813,9 @@ def plot_gms_spectra(
     gms_result: gms.GMSResult,
     save_file: Path = None,
 ):
-    """GMS Pseudo acceleration response spectra plot
+    """Plot of the SA ordinates of the selected ground motions
+    and the corresponding median, 16th, and 84th percentile
+    spectra representing.
 
     Parameters
     ----------
@@ -878,8 +881,8 @@ def plot_gms_disagg_distribution(
     metadata: str,
     save_file: Path = None,
 ):
-    """GMS disaggregation distribution plot
-    (Magnitude and Rupture distance)
+    """Plot of the empirical distribution of selected ground motions
+    and the corresponding target GCIM distribution.
 
     Parameters
     ----------
@@ -940,7 +943,9 @@ def plot_gms_available_gm(
     n_gms_in_bounds: int,
     save_file: Path = None,
 ):
-    """GMS Available ground motions plot
+    """Plot of the magnitude-distance distribution of the selected ground motions
+    representing with available ground motions in the database based
+    on the bounds applied on the causal parameters of prospective ground motions.
 
     Parameters
     ----------
