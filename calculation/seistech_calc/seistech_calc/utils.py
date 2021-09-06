@@ -8,6 +8,7 @@ import pandas as pd
 
 import seistech_calc.constants as const
 import sha_calc as sha_calc
+from seistech_calc import gms
 from seistech_calc.im import IM, IMType
 from qcore import nhm
 from qcore import im as qcoreim
@@ -424,13 +425,13 @@ def to_mu_sigma(df: pd.DataFrame, im: IM):
 
 
 def calculate_gms_spectra(
-    gms_data: Dict,
+    gms_result: gms.GMSResult,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Create data for Spectra plot from the given GMS data
 
     Parameters
     ----------
-    gms_data: Dict
+    gms_result: gms.GMSResult
 
     Returns
     -------
@@ -439,12 +440,26 @@ def calculate_gms_spectra(
     realisations_df: pd.DataFrame
     selected_gms_df: pd.DataFrame,
     """
-    cdf_x = gms_data["gcim_cdf_x"]
-    cdf_y = gms_data["gcim_cdf_y"]
-    realisations = gms_data["realisations"]
-    selected_gms = gms_data["selected_GMs"]
-    im_j = gms_data["im_j"]
-    IM_j = gms_data["IM_j"]
+    cdf_x = {
+        str(IMi): list(
+            gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.index.values.astype(float)
+        )
+        for IMi in gms_result.IMs
+    }
+    cdf_y = {
+        str(IMi): list(gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.values.astype(float))
+        for IMi in gms_result.IMs
+    }
+    realisations = {
+        str(key): value
+        for key, value in gms_result.realisations.to_dict(orient="list").items()
+    }
+    selected_gms = {
+        str(key): value
+        for key, value in gms_result.selected_gms_im_df.to_dict(orient="list").items()
+    }
+    im_j = gms_result.im_j
+    IM_j = str(gms_result.IM_j)
 
     # for CDF_X
     cdf_x_df = pd.DataFrame(cdf_x)
@@ -502,12 +517,12 @@ def calculate_gms_spectra(
     )
 
 
-def calculate_gms_im_distribution(gms_data: Dict):
+def calculate_gms_im_distribution(gms_result: gms.GMSResult):
     """Create data IM Distribution plots from the given GMS data
 
     Parameters
     ----------
-    gms_data: Dict
+    gms_result: gms.GMSResult
 
     Returns
     -------
@@ -527,15 +542,16 @@ def calculate_gms_im_distribution(gms_data: Dict):
         }
     }
     """
-    ims = qcoreim.order_ims(gms_data["IMs"][:])
+    realisations_dict = gms_result.realisations.to_dict(orient="list")
+    selected_gms_dict = gms_result.selected_gms_im_df.to_dict(orient="list")
+    ks_bounds = gms_result.metadata_dict["ks_bounds"]
     results = {}
 
-    for im in ims:
-        cdf_x = gms_data["gcim_cdf_x"][im]
-        cdf_y = gms_data["gcim_cdf_y"][im]
-        realisations = gms_data["realisations"][im][:]
-        selected_gms = gms_data["selected_GMs"][im][:]
-        ks_bounds = gms_data["ks_bounds"]
+    for IMi in gms_result.IMs:
+        cdf_x = list(gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.index.values.astype(float))
+        cdf_y = list(gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.values.astype(float))
+        realisations = realisations_dict[str(IMi)][:]
+        selected_gms = selected_gms_dict[str(IMi)][:]
 
         # GCIM + ks bounds
         upper_bounds = list(map(lambda x: x + ks_bounds, cdf_y))
@@ -555,7 +571,7 @@ def calculate_gms_im_distribution(gms_data: Dict):
         range_y = np.linspace(0, 1, len(realisations) + 1)
         new_range_y = [val for val in range_y for _ in range(2)]
 
-        results[im] = {
+        results[IMi] = {
             "cdf_x": cdf_x,
             "cdf_y": cdf_y,
             "upper_slice_cdf_x": cdf_x[0:y_limit_at_one_index],

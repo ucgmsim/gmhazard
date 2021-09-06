@@ -5,8 +5,9 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt, cm as cm, colors as ml_colors
 
-from seistech_calc.im import IM
 from seistech_calc import utils
+from seistech_calc import gms
+from seistech_calc.im import IM
 
 
 GCIM_LABEL = {
@@ -620,17 +621,17 @@ def plot_uhs_branches(
 
 
 def plot_gms_im_distribution(
-    gms_result_data: Dict,
+    gms_result: gms.GMSResult,
     save_file: Path = None,
 ):
     """GMS IM distribution plot for each IM
 
     Parameters
     ----------
-    gms_result_data: Dict,
+    gms_result: gms.GMSResult,
     save_file: Path, optional
     """
-    plots_data = utils.calculate_gms_im_distribution(gms_result_data)
+    plots_data = utils.calculate_gms_im_distribution(gms_result)
 
     plt.figure(figsize=(16, 9))
 
@@ -664,9 +665,9 @@ def plot_gms_im_distribution(
 
         plt.ylim(0, 1)
         plt.xlabel(
-            f"Pseudo spectral acceleration, pSA({im.split('_')[-1]}) (g)"
-            if im.startswith("pSA")
-            else IM_DISTRIBUTION_LABEL[im]
+            f"Pseudo spectral acceleration, pSA({str(im).split('_')[-1]}) (g)"
+            if str(im).startswith("pSA")
+            else IM_DISTRIBUTION_LABEL[str(im)]
         )
         plt.ylabel("Cumulative Probability, CDF")
         plt.title(f"{im}")
@@ -674,7 +675,7 @@ def plot_gms_im_distribution(
 
         if save_file is not None:
             plt.savefig(
-                save_file / f"gms_im_distribution_{im.replace('.', 'p')}_plot.png"
+                save_file / f"gms_im_distribution_{str(im).replace('.', 'p')}_plot.png"
             )
             plt.clf()
         else:
@@ -808,7 +809,7 @@ def plot_gms_causal_param(
 
 
 def plot_gms_spectra(
-    gms_result_data: Dict,
+    gms_result: gms.GMSResult,
     save_file: Path = None,
 ):
     """GMS Pseudo acceleration response spectra plot
@@ -822,7 +823,7 @@ def plot_gms_spectra(
         gcim_df,
         realisations_df,
         selected_gms_df,
-    ) = utils.calculate_gms_spectra(gms_result_data)
+    ) = utils.calculate_gms_spectra(gms_result)
 
     plt.figure(figsize=(20, 9))
 

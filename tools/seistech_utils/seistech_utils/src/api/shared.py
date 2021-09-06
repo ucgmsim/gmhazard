@@ -443,17 +443,21 @@ def write_gms_download_data(
 
         # Mw and Rrup distribution plot
         sc.plots.plt_gms_mw_rrup(
-            gms_result_data["selected_gms_metadata"],
+            {
+                **gms_result.selected_gms_metdata_df.to_dict(orient="list"),
+                **gms_result.selected_gms_im_16_84_df.to_dict(orient="list"),
+                **gms_result.metadata_dict,
+            },
             default_causal_params,
             Path(out_dir) / "gms_mw_rrup_plot.png",
         )
         # Pseudo acceleration response spectra plot
         sc.plots.plt_gms_spectra(
-            gms_result_data,
+            gms_result,
             Path(out_dir) / "gms_spectra_plot.png",
         )
         # IM distribution plots
-        sc.plots.plt_gms_im_distribution(gms_result_data, Path(out_dir))
+        sc.plots.plt_gms_im_distribution(gms_result, Path(out_dir))
         # Disagg Distribution plots (Mw Distribution or Rrup distribution)
         contribution_df_data = default_causal_params["contribution_df"]
         if contribution_df_data is not None:
