@@ -742,7 +742,7 @@ def plot_gms_mw_rrup(
 
 
 def plot_gms_causal_param(
-    gms_result_data: Dict,
+    gms_result: gms.GMSResult,
     bounds: Dict,
     metadata: str,
     save_file: Path = None,
@@ -752,12 +752,12 @@ def plot_gms_causal_param(
 
     Parameters
     ----------
-    gms_result_data: Dict
+    gms_result: gms.GMSResult
     bounds: Dict
     metadata: str
     save_file: Path, optional
     """
-    range_x, range_y = utils.calc_gms_causal_params(gms_result_data, metadata)
+    range_x, range_y = utils.calc_gms_causal_params(gms_result, metadata)
 
     plt.figure(figsize=(16, 9))
     bounds_y_range = [0, 1]
@@ -816,7 +816,7 @@ def plot_gms_spectra(
 
     Parameters
     ----------
-    gms_result_data: Dict
+    gms_result: gms.GMSResult
     save_file: Path, optional
     """
     (
@@ -873,7 +873,7 @@ def plot_gms_spectra(
 def plot_gms_disagg_distribution(
     contribution: List,
     distribution: List,
-    gms_metadata: List,
+    gms_metadata: Dict,
     bounds: Dict,
     metadata: str,
     save_file: Path = None,
@@ -885,7 +885,7 @@ def plot_gms_disagg_distribution(
     ----------
     contribution: List
     distribution: List
-    gms_metadata: List
+    gms_metadata: Dict
     bounds: Dict
     metadata: str
     save_file: Path, optional
@@ -937,7 +937,7 @@ def plot_gms_disagg_distribution(
 def plot_gms_available_gm(
     metadata: Dict,
     bounds: Dict,
-    num_in_bounds: int,
+    n_gms_in_bounds: int,
     save_file: Path = None,
 ):
     """GMS Available ground motions plot
@@ -946,7 +946,7 @@ def plot_gms_available_gm(
     ----------
     metadata: Dict
     bounds: Dict
-    num_in_bounds: int
+    n_gms_in_bounds: int
     save_file: Path, optional
     """
     plt.figure(figsize=(16, 9))
@@ -955,7 +955,7 @@ def plot_gms_available_gm(
         metadata.get("rrup"),
         metadata.get("mag"),
         label=f"Dataset GMs (for the datapoints), N={len(metadata.get('rrup'))}\n"
-        f"Causal params bounding box (for the bounding box), N={num_in_bounds}",
+        f"Causal params bounding box (for the bounding box), N={n_gms_in_bounds}",
         marker="s",
         edgecolors="black",
         facecolors="none",

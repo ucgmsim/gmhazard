@@ -434,20 +434,20 @@ def write_gms_download_data(
             f"Failed to find waveforms for simulations: {missing_waveforms}"
         )
 
-    # GMS Plots
-    gms_result_data = sr.get_ensemble_gms(gms_result)
     if cs_param_bounds is not None:
         default_causal_params = sr.get_default_causal_params(cs_param_bounds)
         # Bounds with min/max values
         causal_params_bounds = sr.get_causal_params_bounds(cs_param_bounds)
 
+        selected_gms_metadata = {
+            **gms_result.selected_gms_metdata_df.to_dict(orient="list"),
+            **gms_result.selected_gms_im_16_84_df.to_dict(orient="list"),
+            **gms_result.metadata_dict,
+        }
+
         # Mw and Rrup distribution plot
         sc.plots.plt_gms_mw_rrup(
-            {
-                **gms_result.selected_gms_metdata_df.to_dict(orient="list"),
-                **gms_result.selected_gms_im_16_84_df.to_dict(orient="list"),
-                **gms_result.metadata_dict,
-            },
+            selected_gms_metadata,
             default_causal_params,
             Path(out_dir) / "gms_mw_rrup_plot.png",
         )
@@ -478,7 +478,7 @@ def write_gms_download_data(
             sc.plots.plt_gms_disagg_distribution(
                 sorted_contribution_df["mag_contribution"],
                 sorted_contribution_df["magnitude"],
-                gms_result_data["selected_gms_metadata"],
+                selected_gms_metadata,
                 causal_params_bounds,
                 "mag",
                 Path(out_dir) / "gms_mag_disagg_distribution_plot.png",
@@ -487,21 +487,21 @@ def write_gms_download_data(
             sc.plots.plt_gms_disagg_distribution(
                 sorted_contribution_df["rrup_contribution"],
                 sorted_contribution_df["rrup"],
-                gms_result_data["selected_gms_metadata"],
+                selected_gms_metadata,
                 causal_params_bounds,
                 "rrup",
                 Path(out_dir) / "gms_rrup_disagg_distribution_plot.png",
             )
         # Causal Parameters plots
         sc.plots.plt_gms_causal_param(
-            gms_result_data,
+            gms_result,
             causal_params_bounds,
             "vs30",
             Path(out_dir) / "gms_vs30_causal_param_plot.png",
         )
 
         sc.plots.plt_gms_causal_param(
-            gms_result_data,
+            gms_result,
             causal_params_bounds,
             "sf",
             Path(out_dir) / "gms_sf_causal_param_plot.png",

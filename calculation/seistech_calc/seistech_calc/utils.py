@@ -604,15 +604,20 @@ def calculate_gms_disagg_distribution(selected_gms_metadata: List):
     return range_x, new_range_y[1:-1]
 
 
-def calc_gms_causal_params(gms_data: Dict, metadata: str):
+def calc_gms_causal_params(gms_result: gms.GMSResult, metadata: str):
     """Create data for Causal Parameters plots from the given GMS data
 
     Parameters
     ----------
-    gms_data: Dict,
+    gms_result: gms.GMSResult
     metadata: str
     """
-    copied_selected_gms_metadata = gms_data["selected_gms_metadata"][metadata][:]
+    selected_gms_metadata = {
+        **gms_result.selected_gms_metdata_df.to_dict(orient="list"),
+        **gms_result.selected_gms_im_16_84_df.to_dict(orient="list"),
+        **gms_result.metadata_dict,
+    }
+    copied_selected_gms_metadata = selected_gms_metadata[metadata][:]
     copied_selected_gms_metadata.sort()
     range_x = [val for val in copied_selected_gms_metadata for _ in range(2)]
 
