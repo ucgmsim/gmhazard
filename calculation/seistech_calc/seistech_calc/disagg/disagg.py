@@ -80,7 +80,7 @@ def run_ensemble_disagg(
     )
     fault_disagg_mean = fault_disagg_df.multiply(
         adj_branch_weights, axis=1, level=0
-    ).sum(axis=1, level=1)
+    ).groupby(level=1).sum(axis=1)
 
     # DS disagg branches mean
     ds_disagg_mean = ds_disagg_df.multiply(adj_branch_weights, axis=1, level=0).sum(
