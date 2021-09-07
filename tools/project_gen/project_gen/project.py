@@ -190,36 +190,36 @@ def write_project_config(project_dir: Path, project_params: Dict):
     with open(project_dir / f"{project_params['id']}.yaml", "r") as f:
         project_config = yaml.safe_load(f)
 
-        assert (
-            project_config["project_parameters"] is None
-        ), "Project parameters have already been set for this project"
-
-        project_config["project_parameters"] = {
-            "locations": {
-                cur_id: {
-                    "name": cur_config["name"],
-                    "lat": cur_config["lat"],
-                    "lon": cur_config["lon"],
-                    "vs30": cur_config["vs30"],
-                    "z1.0": cur_config.get("z1p0", [None] * len(cur_config["vs30"])),
-                    "z2.5": cur_config.get("z2p5", [None] * len(cur_config["vs30"])),
+        if project_config["project_parameters"] is not None:
+            print("Project parameters have been  set, skipping package type mapping")
+            return project_config["project_parameters"]
+        else:
+            project_config["project_parameters"] = {
+                "locations": {
+                    cur_id: {
+                        "name": cur_config["name"],
+                        "lat": cur_config["lat"],
+                        "lon": cur_config["lon"],
+                        "vs30": cur_config["vs30"],
+                        "z1.0": cur_config.get("z1p0", [None] * len(cur_config["vs30"])),
+                        "z2.5": cur_config.get("z2p5", [None] * len(cur_config["vs30"])),
+                    }
+                    for cur_id, cur_config in project_params["locations"].items()
                 }
-                for cur_id, cur_config in project_params["locations"].items()
             }
-        }
 
-        # Get & apply the package mapping
-        with open(Path(__file__).parent / "package_mapping.yaml", "r") as f:
-            package_mapping = yaml.safe_load(f)
+            # Get & apply the package mapping
+            with open(Path(__file__).parent / "package_mapping.yaml", "r") as f:
+                package_mapping = yaml.safe_load(f)
 
-        project_config["project_parameters"] = {
-            **project_config["project_parameters"],
-            **package_mapping[project_params["package_type"]],
-            "im_components": project_params["im_components"],
-        }
+            project_config["project_parameters"] = {
+                **project_config["project_parameters"],
+                **package_mapping[project_params["package_type"]],
+                "im_components": project_params["im_components"],
+            }
 
-    with open(project_dir / f"{project_params['id']}.yaml", "w") as f:
-        yaml.safe_dump(project_config, f)
+        with open(project_dir / f"{project_params['id']}.yaml", "w") as f:
+            yaml.safe_dump(project_config, f)
 
     return project_config["project_parameters"]
 
