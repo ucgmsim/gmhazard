@@ -18,7 +18,7 @@ class CausalParamBounds:
     mw_bounds: Tuple[float, float]
     rrup_bounds: Tuple[float, float]
     vs30_bounds: Tuple[float, float]
-    sf_bounds: Tuple[float, float] = (None, None),
+    sf_bounds: Tuple[float, float] = (None, None)
     contr_df: pd.DataFrame = None
     exceedance: float = None
     im_value: float = None
