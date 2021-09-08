@@ -632,51 +632,79 @@ def plot_gms_im_distribution(
     gms_result: gms.GMSResult,
     save_file: Path, optional
     """
-    plots_data = utils.calculate_gms_im_distribution(gms_result)
+    ks_bounds = gms_result.metadata_dict["ks_bounds"]
+
+    # Sort by columns individually
+    realisations = pd.DataFrame(
+        {
+            x: gms_result.realisations[x].sort_values().values
+            for x in gms_result.realisations.columns.values
+        }
+    )
+    selected_gms = pd.DataFrame(
+        {
+            x: gms_result.selected_gms_im_df[x].sort_values().values
+            for x in gms_result.selected_gms_im_df.columns.values
+        }
+    )
 
     plt.figure(figsize=(16, 9))
 
-    for im, data in plots_data.items():
-        plt.plot(data.get("cdf_x"), data.get("cdf_y"), color="red", label="GCIM")
+    for IMi in gms_result.IMs:
         plt.plot(
-            data.get("upper_slice_cdf_x"),
-            data.get("upper_slice_cdf_y"),
+            gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.index.values,
+            gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.values,
             color="red",
-            linestyle="dashdot",
+            label="GCIM",
         )
         plt.plot(
-            data.get("lower_slice_cdf_x"),
-            data.get("lower_slice_cdf_y"),
+            gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.index.values,
+            gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.values + ks_bounds,
             color="red",
             label="KS bounds, \u03B1 = 0.1",
             linestyle="dashdot",
         )
         plt.plot(
-            data.get("realisations"),
-            data.get("y_range"),
+            gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.index.values,
+            gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.values - ks_bounds,
+            color="red",
+            linestyle="dashdot",
+        )
+
+        plt.step(
+            np.insert(
+                realisations[str(IMi)].values, 0, realisations[str(IMi)].values[0]
+            ),
+            np.linspace(0, 1, len(realisations) + 1),
+            where="post",
             color="blue",
             label="Realisations",
         )
-        plt.plot(
-            data.get("selected_gms"),
-            data.get("y_range"),
+
+        plt.step(
+            np.insert(
+                selected_gms[str(IMi)].values, 0, selected_gms[str(IMi)].values[0]
+            ),
+            np.linspace(0, 1, len(selected_gms) + 1),
+            where="post",
             color="black",
             label="Selected Ground Motions",
         )
 
+        plt.xlim(xmin=0)
         plt.ylim(0, 1)
         plt.xlabel(
-            f"Pseudo spectral acceleration, pSA({str(im).split('_')[-1]}) (g)"
-            if str(im).startswith("pSA")
-            else IM_DISTRIBUTION_LABEL[str(im)]
+            f"Pseudo spectral acceleration, pSA({str(IMi).split('_')[-1]}) (g)"
+            if str(IMi).startswith("pSA")
+            else IM_DISTRIBUTION_LABEL[str(IMi)]
         )
         plt.ylabel("Cumulative Probability, CDF")
-        plt.title(f"{im}")
+        plt.title(f"{IMi}")
         plt.legend()
 
         if save_file is not None:
             plt.savefig(
-                save_file / f"gms_im_distribution_{str(im).replace('.', 'p')}_plot.png"
+                save_file / f"gms_im_distribution_{str(IMi).replace('.', 'p')}_plot.png"
             )
             plt.clf()
         else:
