@@ -527,21 +527,8 @@ def _compute_epsilon(
     )
 
     if im_data_type is const.IMDataType.parametric:
-        # Convert rupture name to rupture id
-        # im_data.index = branch.rupture_name_to_id(
-        #     im_data.index.values.astype(str), source_type
-        # )
-
         epsilon = sha_calc.epsilon_para(utils.to_mu_sigma(im_data, im), gm_prob_df)
     else:
-        # Convert rupture name to rupture id
-        # im_data.index = im_data.index.set_levels(
-        #     branch.rupture_name_to_id(
-        #         im_data.index.levels[0].values.astype(str), source_type
-        #     ),
-        #     level=0,
-        # )
-
         epsilon = sha_calc.epsilon_non_para(im_data[str(im)], gm_prob_df)
 
     epsilon.name = "epsilon"

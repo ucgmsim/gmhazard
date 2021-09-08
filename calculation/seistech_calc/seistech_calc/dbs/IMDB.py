@@ -498,12 +498,6 @@ class IMDBNonParametric(IMDB):
         df.index = pd.MultiIndex.from_frame(df.loc[:, ["fault", "realisation"]])
         df.drop(columns=["fault", "realisation"], inplace=True)
 
-        # index = pd.MultiIndex.from_tuples(
-        #     [(get_fault_from_realisation(sim), sim) for sim in df.index.values],
-        #     names=["rupture", "realisation"],
-        # )
-        # df.index = index
-
         if im is not None:
             return df[im]
         return df
