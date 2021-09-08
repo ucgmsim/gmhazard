@@ -18,7 +18,7 @@ class UHSCachedData:
         self,
         ensemble: sc.gm_data.Ensemble,
         site_info: sc.site.SiteInfo,
-        uhs_results: List[sc.uhs.UHSResult],
+        uhs_results: List[sc.uhs.BaseUHSResult],
     ):
         self.ensemble = ensemble
         self.site_info = site_info

@@ -484,7 +484,7 @@ def default_causal_params(
     IM_j: IM,
     exceedance: Optional[float] = None,
     im_value: Optional[float] = None,
-    disagg_data: Optional[disagg.EnsembleDisaggData] = None,
+    disagg_data: Optional[disagg.EnsembleDisaggResult] = None,
 ) -> CausalParamBounds:
     """
     Computes default causal parameters based on
@@ -506,7 +506,7 @@ def default_causal_params(
         or the im_value parameter has to be given
     im_value: float, optional
         Compute disagg at this im value if required
-    disagg_data: DisaggData, optinal
+    disagg_data: DisaggResult, optinal
         Computed Disagg data if pre-calculated
 
     Returns

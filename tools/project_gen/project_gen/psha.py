@@ -321,7 +321,7 @@ def process_station_im(
 
         if (
             output_dir
-            / sc.disagg.EnsembleDisaggData.get_save_dir(im, exceedance=cur_excd)
+            / sc.disagg.EnsembleDisaggResult.get_save_dir(im, exceedance=cur_excd)
         ).exists():
             print(
                 f"\t{os.getpid()} - Skipping disagg computation for station {site_info.station_name} - "

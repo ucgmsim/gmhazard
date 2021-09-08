@@ -13,7 +13,7 @@ from seistech_calc import site_source
 from seistech_calc import rupture
 from seistech_calc import constants as const
 from seistech_calc.im import IM
-from .DisaggData import BranchDisaggData, EnsembleDisaggData, DisaggGridData
+from .DisaggResult import BranchDisaggResult, EnsembleDisaggResult, DisaggGridData
 
 
 def run_ensemble_disagg(
@@ -24,7 +24,7 @@ def run_ensemble_disagg(
     im_value: Optional[float] = None,
     calc_mean_values: Optional[bool] = False,
     hazard_result: Optional[hazard.EnsembleHazardResult] = None,
-) -> EnsembleDisaggData:
+) -> EnsembleDisaggResult:
     """Computes the ensemble disagg, combining the different
     branches as per equations (9) and (10) from
     "Consideration and Propagation of Ground Motion Selection
@@ -44,7 +44,7 @@ def run_ensemble_disagg(
 
     Returns
     -------
-    DisaggData
+    BaseDisaggResult
     """
     ensemble.check_im(im)
 
@@ -168,7 +168,7 @@ def run_ensemble_disagg(
             ],
         )
 
-    return EnsembleDisaggData(
+    return EnsembleDisaggResult(
         fault_disagg_mean,
         ds_disagg_mean,
         site_info,
@@ -187,7 +187,7 @@ def run_branches_disagg(
     im: IM,
     exceedance: Optional[float] = None,
     im_value: Optional[float] = None,
-) -> Dict[str, BranchDisaggData]:
+) -> Dict[str, BranchDisaggResult]:
     """Computes the disagg for every branch in the ensemble
 
     Parameters
@@ -229,7 +229,7 @@ def run_branch_disagg(
     im: IM,
     exceedance: Optional[float] = None,
     im_value: Optional[float] = None,
-) -> BranchDisaggData:
+) -> BranchDisaggResult:
     """Computes the disagg a single branch of an ensemble
 
     Parameters
@@ -308,13 +308,13 @@ def run_branch_disagg(
     )
     ds_disagg = pd.merge(ds_disagg, ds_epsilon, left_index=True, right_index=True)
 
-    return BranchDisaggData(
+    return BranchDisaggResult(
         fault_disagg, ds_disagg, site_info, im, im_value, branch, exceedance=exceedance
     )
 
 
 def run_disagg_gridding(
-    disagg_data: Union[BranchDisaggData, EnsembleDisaggData],
+    disagg_data: Union[BranchDisaggResult, EnsembleDisaggResult],
     mag_min: float = 5.0,
     mag_n_bins: int = 16,
     mag_bin_size: float = 0.25,
@@ -327,7 +327,7 @@ def run_disagg_gridding(
 
     Parameters
     ----------
-    disagg_data: DisaggData
+    disagg_data: BaseDisaggResult
     mag_min: float
         Minimum magnitude
     mag_n_bins: int
@@ -347,7 +347,7 @@ def run_disagg_gridding(
     """
     ensemble = (
         disagg_data.ensemble
-        if isinstance(disagg_data, EnsembleDisaggData)
+        if isinstance(disagg_data, EnsembleDisaggResult)
         else disagg_data.im_ensemble.ensemble
     )
     im_ensemble = disagg_data.im_ensemble

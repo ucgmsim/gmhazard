@@ -19,7 +19,7 @@ class DisaggCachedData:
         self,
         ensemble: sc.gm_data.Ensemble,
         site_info: sc.site.SiteInfo,
-        disagg_data: sc.disagg.EnsembleDisaggData,
+        disagg_data: sc.disagg.EnsembleDisaggResult,
         merged_df: pd.DataFrame,
         src_plot_data: bytes,
         eps_plot_data: bytes,
@@ -258,7 +258,7 @@ def _get_disagg(
 ) -> Tuple[
     sc.gm_data.Ensemble,
     sc.site.SiteInfo,
-    sc.disagg.EnsembleDisaggData,
+    sc.disagg.EnsembleDisaggResult,
     pd.DataFrame,
     Union[None, bytes],
     Union[None, bytes],

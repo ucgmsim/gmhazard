@@ -12,7 +12,7 @@ from seistech_calc import rupture
 from seistech_calc.im import IM
 
 
-class DisaggData:
+class BaseDisaggResult:
     """
     This class should not be instantiated,
     it is only to be used as an base class
@@ -199,7 +199,7 @@ class DisaggData:
         )
 
 
-class BranchDisaggData(DisaggData):
+class BranchDisaggResult(BaseDisaggResult):
     """Exactly the same as DataDisagg, except that it
     also uses stores the branch & ensemble the result belongs to.
     """
@@ -234,7 +234,7 @@ class BranchDisaggData(DisaggData):
         raise NotImplementedError()
 
 
-class EnsembleDisaggData(DisaggData):
+class EnsembleDisaggResult(BaseDisaggResult):
     """Exactly the same as DataDisagg, except that it
     also uses stores the IM ensemble the result belongs to.
     """
@@ -265,7 +265,7 @@ class EnsembleDisaggData(DisaggData):
         self.im_ensemble = im_ensemble
 
     def save(self, base_dir: Path):
-        """Saves an EnsembleDisaggData as csv & json files
+        """Saves an EnsembleDisaggResult as csv & json files
         Creates a new directory in the specified base directory
         """
         save_dir = base_dir / self.get_save_dir(
@@ -326,7 +326,7 @@ class DisaggGridData:
 
     Attributes
     ----------
-    disagg_data: DisaggData
+    disagg_data: BaseDisaggResult
         The underlying disagg data
     flt_bin_contr: float array
         The fault % contributions of each bin
@@ -370,7 +370,7 @@ class DisaggGridData:
 
     def __init__(
         self,
-        disagg_data: DisaggData,
+        disagg_data: BaseDisaggResult,
         flt_bin_contr: np.array,
         ds_bin_contr: np.array,
         eps_bins: List[Tuple[float, float]],
@@ -467,18 +467,18 @@ class DisaggGridData:
         return save_dir
 
     @classmethod
-    def load(cls, data_dir: Path, disagg_data: DisaggData = None):
+    def load(cls, data_dir: Path, disagg_data: BaseDisaggResult = None):
         with open(data_dir / cls.METADATA_FN, "r") as f:
             metadata = json.load(f)
 
         if disagg_data is None:
             if metadata.get("disagg_data_save_dir") is None:
                 raise Exception(
-                    "Either the DisaggData has to be saved with the DisaggGridData, "
+                    "Either the DisaggResult has to be saved with the DisaggGridData, "
                     "or has to be provided."
                 )
 
-            disagg_data = DisaggData.load(Path(metadata["disagg_data_save_dir"]))
+            disagg_data = BaseDisaggResult.load(Path(metadata["disagg_data_save_dir"]))
 
         with open(data_dir / cls.EPS_BINS_FN, "rb") as f:
             eps_bins = pickle.load(f)

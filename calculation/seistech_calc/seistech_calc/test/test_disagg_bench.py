@@ -31,7 +31,7 @@ def test_disagg(config):
         im: IM,
         station_name: str,
         branch_name: str,
-        disagg: disagg.DisaggData,
+        disagg: disagg.DisaggResult,
         bench_data: pd.DataFrame,
     ):
         print(
