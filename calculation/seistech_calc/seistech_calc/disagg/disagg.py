@@ -92,7 +92,9 @@ def run_ensemble_disagg(
     if calc_mean_values:
         # Use rupture_ids (due to required location matching for rrup mean)
         full_disagg = pd.concat([fault_disagg_mean, ds_disagg_mean])
-        full_disagg.index = rupture.rupture_id_ix_to_rupture_id(ensemble, full_disagg.index.values)
+        full_disagg.index = rupture.rupture_id_ix_to_rupture_id(
+            ensemble, full_disagg.index.values
+        )
 
         # Compute mean magnitude
         mag_mean = shared.compute_contr_mean(
@@ -113,10 +115,14 @@ def run_ensemble_disagg(
         # Rrrup mean
         # Convert to rupture_id for matching
         fault_rrup_disagg_df = fault_disagg_mean.contribution.copy()
-        fault_rrup_disagg_df.index = rupture.rupture_id_ix_to_rupture_id(ensemble, fault_rrup_disagg_df.index.values.astype(str))
+        fault_rrup_disagg_df.index = rupture.rupture_id_ix_to_rupture_id(
+            ensemble, fault_rrup_disagg_df.index.values.astype(str)
+        )
 
         ds_rrup_disagg_df = ds_disagg_mean.contribution.copy()
-        ds_rrup_disagg_df.index = rupture.rupture_id_ix_to_rupture_id(ensemble, ds_rrup_disagg_df.index.values.astype(str))
+        ds_rrup_disagg_df.index = rupture.rupture_id_ix_to_rupture_id(
+            ensemble, ds_rrup_disagg_df.index.values.astype(str)
+        )
 
         # Get distances
         fault_rrup_disagg_df = site_source.match_ruptures(
@@ -354,7 +360,7 @@ def run_disagg_gridding(
         right_index=True,
     )
 
-    # Add distance data
+    # Add distance data to fault rupture data
     dist_df = site_source.get_distance_df(ensemble.flt_ssddb_ffp, disagg_data.site_info)
     if dist_df is None:
         raise Exception(
@@ -373,12 +379,13 @@ def run_disagg_gridding(
         right_index=True,
     )
 
+    # Add DS location name to DS rupture data
     ds_ruptures["loc_name"] = np.asarray(
         list(np.chararray.split(ds_ruptures.index.values.astype(str), "--")), dtype=str
     )[:, 0]
     ds_ruptures["rupture_id"] = ds_ruptures.index.values
 
-    # Add distance data
+    # Add distance data to DS rupture data
     dist_df = site_source.get_distance_df(ensemble.ds_ssddb_ffp, disagg_data.site_info)
     if dist_df is None:
         raise Exception(
@@ -389,8 +396,7 @@ def run_disagg_gridding(
         dist_df, ds_ruptures.copy(), const.SourceType.distributed
     )
 
-    # Drop nan values (ruptures for which rrup
-    # is not available, due to rrup > 200km)
+    # Drop nan values (ruptures for which rrup is not available, due to rrup > 200km)
     flt_ruptures.dropna(axis=0, how="any", subset=np.asarray(["rrup"]), inplace=True)
     ds_ruptures.dropna(axis=0, how="any", subset=np.asarray(["rrup"]), inplace=True)
     rupture_df = pd.concat([flt_ruptures, ds_ruptures], sort=True)

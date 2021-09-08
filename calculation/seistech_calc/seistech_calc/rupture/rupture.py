@@ -83,8 +83,7 @@ def rupture_name_to_id(rupture_names: np.ndarray, erf_ffp: str):
 
 
 def rupture_id_to_ix(
-    ensemble: "gm_data.Ensemble",
-    rupture_ids: np.ndarray,
+    ensemble: "gm_data.Ensemble", rupture_ids: np.ndarray,
 ):
     """Converts the rupture_id values to rupture_id_ix values
     Note: Should only be used for DS at this stage
@@ -93,16 +92,14 @@ def rupture_id_to_ix(
 
 
 def rupture_name_to_id_ix(
-    ensemble: "gm_data.Ensemble",
-    erf_ffp: str,
-    rupture_names: np.ndarray,
+    ensemble: "gm_data.Ensemble", erf_ffp: str, rupture_names: np.ndarray,
 ):
     """Convertes the rupture names to rupture_id_ix values"""
-    return rupture_id_to_ix(
-        ensemble, rupture_name_to_id(rupture_names, erf_ffp)
-    )
+    return rupture_id_to_ix(ensemble, rupture_name_to_id(rupture_names, erf_ffp))
 
 
-def rupture_id_ix_to_rupture_id(ensemble: "gm_data.Ensemble", rupture_id_ind: np.ndarray):
+def rupture_id_ix_to_rupture_id(
+    ensemble: "gm_data.Ensemble", rupture_id_ind: np.ndarray
+):
     """Converts rupture id ix to rupture ids"""
     return ensemble.get_rupture_ids(rupture_id_ind)

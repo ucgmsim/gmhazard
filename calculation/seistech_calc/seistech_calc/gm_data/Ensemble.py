@@ -1,7 +1,7 @@
 import os
 import hashlib
 from glob import glob
-from typing import Dict, TYPE_CHECKING, Sequence
+from typing import Dict, TYPE_CHECKING
 
 import yaml
 import numpy as np
@@ -134,7 +134,7 @@ class Ensemble:
 
         self._stations, self._rupture_df = None, None
 
-        # Create the rupture_id lookuk, needed as rupture_ids are very long and
+        # Create the rupture_id lookup, needed as rupture_ids are very long and
         # therefore use a significant amount of memory for ensembles with
         # a large number of branches
         # rupture_id = "-41.8_172.0_10.0--6.8_ACTIVE_SHALLOW_NZ_DSmodel_2015"
@@ -238,7 +238,7 @@ class Ensemble:
                 )
             )
 
-        # Sanity check
+        # Ensure that there are no duplicates in the lookup
         assert (
             self._rupture_id_ix_lookup.index.unique().size == self._rupture_id_ix_lookup.size
         )

@@ -14,6 +14,9 @@ from seistech_calc.im import IM
 
 class DisaggData:
     """
+    This class should not be instantiated,
+    it is only to be used as an base class
+
     Parameters
     ----------
     fault_disagg
@@ -56,6 +59,7 @@ class DisaggData:
         site_info: site.SiteInfo,
         im: IM,
         im_value: float,
+        ensemble: gm_data.Ensemble,
         exceedance: Optional[float] = None,
         mean_values: Optional[pd.Series] = None,
     ):
@@ -68,6 +72,7 @@ class DisaggData:
         self.exceedance = exceedance
         self.mean_values = mean_values
 
+        self._ensemble = ensemble
 
     @property
     def fault_disagg_id_ix(self):
@@ -79,11 +84,21 @@ class DisaggData:
 
     @property
     def fault_disagg_id(self):
-        raise NotImplementedError()
+        return self._fault_disagg.set_index(
+            rupture.rupture_id_ix_to_rupture_id(
+                self._ensemble, self._fault_disagg.index.values
+            ),
+            inplace=False,
+        )
 
     @property
     def ds_disagg_id(self):
-        raise NotImplementedError()
+        return self._ds_disagg.set_index(
+            rupture.rupture_id_ix_to_rupture_id(
+                self._ensemble, self._ds_disagg.index.values
+            ),
+            inplace=False,
+        )
 
     @property
     def total_contributions(self) -> pd.Series:
@@ -114,7 +129,9 @@ class DisaggData:
 
     @property
     def contribution_df(self) -> pd.DataFrame:
-        return pd.concat((self.fault_disagg_id.contribution, self.ds_disagg_id.contribution))
+        return pd.concat(
+            (self.fault_disagg_id.contribution, self.ds_disagg_id.contribution)
+        )
 
     def to_dict(self, total_only: bool = False):
         data = {
@@ -198,7 +215,13 @@ class BranchDisaggData(DisaggData):
         exceedance: Optional[float] = None,
     ):
         super().__init__(
-            fault_disagg, ds_disagg, site_info, im, im_value, exceedance=exceedance
+            fault_disagg,
+            ds_disagg,
+            site_info,
+            im,
+            im_value,
+            branch.im_ensemble.ensemble,
+            exceedance=exceedance,
         )
         self.branch = branch
         self.im_ensemble = branch.im_ensemble
@@ -209,24 +232,6 @@ class BranchDisaggData(DisaggData):
     @classmethod
     def load(cls, dir: Path):
         raise NotImplementedError()
-
-    @property
-    def fault_disagg_id(self):
-        return self._fault_disagg.set_index(
-            rupture.rupture_id_ix_to_rupture_id(
-                self.im_ensemble.ensemble, self._fault_disagg.index.values
-            ),
-            inplace=False,
-        )
-
-    @property
-    def ds_disagg_id(self):
-        return self._ds_disagg.set_index(
-            rupture.rupture_id_ix_to_rupture_id(
-                self.im_ensemble.ensemble, self._ds_disagg.index.values
-            ),
-            inplace=False,
-        )
 
 
 class EnsembleDisaggData(DisaggData):
@@ -252,29 +257,12 @@ class EnsembleDisaggData(DisaggData):
             site_info,
             im,
             im_value,
+            ensemble,
             exceedance=exceedance,
             mean_values=mean_values,
         )
         self.ensemble = ensemble
         self.im_ensemble = im_ensemble
-
-    @property
-    def fault_disagg_id(self):
-        return self._fault_disagg.set_index(
-            rupture.rupture_id_ix_to_rupture_id(
-                self.im_ensemble.ensemble, self._fault_disagg.index.values
-            ),
-            inplace=False,
-        )
-
-    @property
-    def ds_disagg_id(self):
-        return self._ds_disagg.set_index(
-            rupture.rupture_id_ix_to_rupture_id(
-                self.im_ensemble.ensemble, self._ds_disagg.index.values
-            ),
-            inplace=False,
-        )
 
     def save(self, base_dir: Path):
         """Saves an EnsembleDisaggData as csv & json files
