@@ -84,8 +84,7 @@ def create_project(
 
         n_perturbations = project_params.get("n_perturbations", 1)
 
-        api_version = version("project_api")
-        version_str = f"v{api_version.replace('.', 'p')}"
+        _, version_str = su.utils.get_package_version("project_api")
         project_dir = projects_base_dir / version_str / project_id
         dbs_dir = project_dir / "dbs"
 

@@ -1,12 +1,20 @@
 from pathlib import Path
 from typing import Tuple, Union, Sequence, List
 
-from importlib.metadata import version
-
-
 def get_package_version(package_name: str) -> Tuple[str, str]:
-    version_number = version(package_name)
+    try:
+        # Available for python version >= 3.8
+        from importlib.metadata import version
+    except ImportError:
+        try:
+            # Third party package
+            # https://pypi.org/project/importlib-metadata/
+            from importlib_metadata import version
+        except ImportError:
+            print(f"Please install the importlib-metadata package "
+                  f"or switch to a python version >= 3.8")
 
+    version_number = version(package_name)
     return version_number, f"v{version_number.replace('.', 'p')}"
 
 
