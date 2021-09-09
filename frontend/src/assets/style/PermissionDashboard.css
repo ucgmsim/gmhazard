@@ -1,0 +1,10 @@
+div.permission-dashboard {
+  width: 100%;
+  position: relative;
+}
+
+.permission-dashboard-loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}

@@ -10,3 +10,11 @@ auth0_config.json
 **/*.egg-info/*
 **/build/*
 **/dist/*
+
+.env
+.env.dev
+.env.test
+
+# DB stored externally
+**/database/**/db_data
+

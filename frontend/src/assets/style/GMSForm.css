@@ -1,0 +1,55 @@
+div.advanced-toggle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+div.div-with-status {
+  display: flex;
+  align-items: center;
+}
+
+span.status-text {
+  margin-left: 1rem;
+}
+
+div.custom-form-group {
+  margin-bottom: calc(1rem + 22px);
+}
+
+div.im-custom-form-group {
+  margin-bottom: 1rem;
+}
+
+table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+th.var-name {
+  width: 44%;
+}
+
+th.min-value,
+th.max-value {
+  width: 28%;
+  text-align: center;
+}
+
+table td {
+  position: relative;
+}
+
+table td input {
+  position: absolute;
+  display: block;
+  top: 0;
+  left: 0;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  border: none;
+  padding: 10px;
+  box-sizing: border-box;
+  text-align: center;
+}

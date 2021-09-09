@@ -48,6 +48,8 @@ def get_ensemble_disagg(
 def get_ensemble_gms(
     gms_result: sc.gms.GMSResult,
     download_token: str,
+    disagg_data: sc.disagg.EnsembleDisaggData,
+    site: str,
 ):
     """Creates the response for both the core and Project API"""
     return {
@@ -81,6 +83,13 @@ def get_ensemble_gms(
             **gms_result.metadata_dict,
         },
         "download_token": download_token,
+        "disagg_mean_values": disagg_data.mean_values.to_dict(),
+        "gm_dataset_metadata": gms_result.gm_dataset.get_metadata_df(site).to_dict(
+            orient="list"
+        ),
+        "n_gms_in_bounds": gms_result.gm_dataset.get_n_gms_in_bounds(
+            gms_result.gm_dataset.get_metadata_df(site), gms_result.cs_param_bounds
+        ),
     }
 
 

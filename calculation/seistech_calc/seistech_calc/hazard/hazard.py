@@ -413,6 +413,7 @@ def vs30_update(site_info: site.SiteInfo, hazard_result: BranchHazardResult):
     import empirical.util.empirical_factory as emp_factory
 
     branch, ensemble = hazard_result.branch, hazard_result.im_ensemble.ensemble
+    im_ensemble = hazard_result.im_ensemble
 
     # Get IM of interest and the IM values of interest
     im = hazard_result.im
@@ -461,10 +462,10 @@ def vs30_update(site_info: site.SiteInfo, hazard_result: BranchHazardResult):
     flt_ruptures = flt_disagg.index.values
     ds_ruptures = ds_disagg.index.values
     flt_mag_mean_df = shared.compute_contr_mean(
-        ensemble.rupture_df.magnitude.loc[flt_ruptures], full_disagg.loc[flt_ruptures]
+        im_ensemble.rupture_df.magnitude.loc[flt_ruptures], full_disagg.loc[flt_ruptures]
     )
     ds_mag_mean_df = shared.compute_contr_mean(
-        ensemble.rupture_df.magnitude.loc[ds_ruptures], full_disagg.loc[ds_ruptures]
+        im_ensemble.rupture_df.magnitude.loc[ds_ruptures], full_disagg.loc[ds_ruptures]
     )
 
     # Create a distance dataframe for the ruptures of interest

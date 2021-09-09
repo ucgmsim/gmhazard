@@ -87,13 +87,23 @@ class IMEnsemble:
     @property
     def rupture_df(self) -> pd.DataFrame:
         if self._rupture_df is None:
-            self._rupture_df = pd.concat(
-                [branch.rupture_df for branch in self.branches_dict.values()]
-            )
+            # Identify all unique ERFs, and then use corresponding branches to
+            # create IMEnsemble rupture dataframe
+            _, flt_ind = np.unique([cur_branch.flt_erf_ffp for cur_branch in self.branches], return_index=True)
+            _, ds_ind = np.unique([cur_branch.ds_erf_ffp for cur_branch in self.branches], return_index=True)
+            branch_ind = np.concatenate((flt_ind, ds_ind))
 
-            # Combine the rupture dfs from the branches
-            # & drop duplicates (based on index)
-            self._rupture_df = self.rupture_df.groupby(self.rupture_df.index).first()
+            for ix in branch_ind:
+                cur_branch = self.branches[ix]
+                if self._rupture_df is None:
+                    self._rupture_df = cur_branch.rupture_df
+                else:
+                    # Append and drop duplicates
+                    self._rupture_df = self._rupture_df.append(cur_branch.rupture_df)
+                    self._rupture_df = self._rupture_df.loc[
+                        ~self._rupture_df.index.duplicated()
+                    ]
+
         return self._rupture_df
 
     @property

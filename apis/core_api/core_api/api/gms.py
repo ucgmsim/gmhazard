@@ -153,26 +153,17 @@ def compute_ensemble_GMS():
         calc_mean_values=True,
     )
 
-    result = su.api.get_ensemble_gms(
-        gms_result,
-        su.api.get_download_token(
-            {"key": cache_key},
-            server.DOWNLOAD_URL_SECRET_KEY,
-            server.DOWNLOAD_URL_VALID_FOR,
-        ),
-    )
-
     return flask.jsonify(
-        {
-            **result,
-            "gm_dataset_metadata": gm_dataset.get_metadata_df(site_info).to_dict(
-                orient="list"
+        su.api.get_ensemble_gms(
+            gms_result,
+            download_token=su.api.get_download_token(
+                {"key": cache_key},
+                server.DOWNLOAD_URL_SECRET_KEY,
+                server.DOWNLOAD_URL_VALID_FOR,
             ),
-            "n_gms_in_bounds": gm_dataset.get_n_gms_in_bounds(
-                gm_dataset.get_metadata_df(site_info), gms_result.cs_param_bounds
-            ),
-            "disagg_mean_values": disagg_result.mean_values.to_dict(),
-        }
+            disagg_data=disagg_result,
+            site=str(site_info),
+        )
     )
 
 

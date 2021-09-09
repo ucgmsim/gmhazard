@@ -1,4 +1,9 @@
-## [21.5.5] - 2021-07-14 -- IM Components
+## [21.8.1] - 2021-08-30 -- IM Components
+### Changed
+    - Added support for the CFM ERF
+    - Disagg calculation improvement
+
+## [21.5.6] - 2021-07-14 -- IM Components
 ### Changed
     - Support for different IM Components with file structure change
 

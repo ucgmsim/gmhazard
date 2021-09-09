@@ -15,12 +15,15 @@ import project_gen as pg
 from . import psha
 
 EMPIRICAL_VERSION = "v20p5emp"
-FAULT_ERF_FILENAME = "NZ_FLTmodel_2010.txt"
 FLT_SITE_SOURCE_DB_FILENAME = "flt_site_source.db"
 DS_SITE_SOURCE_DB_FILENAME = "ds_site_source.db"
 
-ERF_DIR = Path(os.getenv("ERF_DIR"))
+ERF_DIR = Path(os.getenv("ERF_DIR")) if "ERF_DIR" in os.environ else None
 
+FLT_ERF_MAPPING = {
+    "NHM_v21p8p1": "NZ_FLTmodel_2010",
+    "CFM_v21p8p1": "CFM_v0_9_Akatore_mod_21p8p1"
+}
 
 def create_project(
     project_params: Dict,
@@ -30,6 +33,8 @@ def create_project(
     new_project: bool = True,
     use_mp: bool = True,
     erf_dir: Path = None,
+    erf_pert_dir: Path = None,
+    flt_erf_version: str = "NHM"
 ):
     """
     Creates a new project, generates the required DBs,
@@ -55,7 +60,15 @@ def create_project(
         If True then a completely new project is setup,
         If False then only the results are computed (the results
             directory has to be empty though)
-    use_mp: bool
+    erf_dir: Path, optional
+        Path to the ERF base directory, expected to contain
+         - NZBCK2015_Chch50yearsAftershock_OpenSHA_modType4.txt
+         - NZ_DSmodel_2015.txt
+         - NZ_FLTmodel_2010.txt
+    erf_pert_dir: Path, optional
+        Directory of the fault perturbed ERF files
+        Ignored unless n_perturbations > 1 (in project_params)
+    use_mp: bool, optional
         If true then standard python multiprocessing will be
         used for PSHA result generation, otherwise celery
         will be used.
@@ -106,6 +119,8 @@ def create_project(
                 model_config_ffp,
                 scripts_dir,
                 erf_dir,
+                erf_pert_dir,
+                flt_erf_version,
                 n_procs,
                 z_ffp=z_ffp,
                 n_perturbations=n_perturbations,
@@ -119,6 +134,8 @@ def create_project(
             dbs_dir,
             scripts_dir,
             erf_dir,
+            erf_pert_dir,
+            flt_erf_version,
             n_perturbations=n_perturbations,
         )
 
@@ -255,6 +272,8 @@ def generate_dbs(
     model_config_ffp: Path,
     scripts_dir: Path,
     erf_dir: Path,
+    erf_pert_dir: Path,
+    flt_erf_version: str,
     n_procs: int,
     z_ffp: Path = None,
     n_perturbations: int = 1,
@@ -309,6 +328,8 @@ def generate_dbs(
         ds_imdbs_result.returncode == 0
     ), "Distributed Seismicity IMDB generation failed"
 
+    flt_erf_base_fn = FLT_ERF_MAPPING[flt_erf_version]
+
     print("Generating fault distance db")
     flt_site_source_db_ffp = dbs_dir / FLT_SITE_SOURCE_DB_FILENAME
     calc_fault_distances_cmd = [
@@ -316,7 +337,7 @@ def generate_dbs(
         str(empirical_db_scripts_dir / "calc_distances_flt.py"),
         flt_site_source_db_ffp,
         "--nhm_file",
-        str(erf_dir / FAULT_ERF_FILENAME),
+        str(erf_dir / f"{flt_erf_base_fn}.txt"),
         str(ll_ffp),
     ]
     flt_distance_result = subprocess.run(calc_fault_distances_cmd, capture_output=True)
@@ -324,15 +345,18 @@ def generate_dbs(
     print("STDERR:\n" + flt_distance_result.stderr.decode())
     assert flt_distance_result.returncode == 0, "Fault site-source DB generation failed"
 
+    if n_perturbations > 1:
+        if erf_pert_dir is None or not (erf_pert_dir).exists():
+            raise Exception(f"A valid directory with the perturbed ERF files has to be specified.")
+
     print("Generating fault IMDBs")
     for i in range(n_perturbations):
         if n_perturbations > 1:
-            print(f"Generating perturbation {i}")
             erf_file = str(
-                erf_dir / "nhm_perturbations_20" / f"NZ_FLTmodel_2010_pert{i:02}.txt"
+                erf_pert_dir / f"{flt_erf_base_fn}_pert{i:02}.txt"
             )
         else:
-            erf_file = str(erf_dir / FAULT_ERF_FILENAME)
+            erf_file = str(erf_dir / f"{flt_erf_base_fn}.txt")
         flt_db_dir = dbs_dir / "flt"
         flt_db_dir.mkdir(exist_ok=True)
         flt_imdbs_cmd = [
@@ -362,21 +386,25 @@ def create_ensemble_config(
     dbs_dir: Path,
     scripts_dir: Path,
     erf_dir: Path,
+    erf_pert_dir: Path,
+    flt_erf_version: str,
     n_perturbations: int = 1,
 ):
     """Creates the ensemble config for the project"""
     ens_filename = f"{empirical_version}_{project_id}"
     ens_ffp = project_dir / f"{ens_filename}.yaml"
 
+    flt_erf_base_fn = FLT_ERF_MAPPING[flt_erf_version]
+
     if n_perturbations > 1:
         erf_ffps = [
             str(erf_ffp)
             for erf_ffp in sorted(
-                erf_dir.glob("nhm_perturbations_20/NZ_FLTmodel_2010_pert*.txt")
+                erf_pert_dir.glob(f"{flt_erf_base_fn}_pert*.txt")
             )
         ]
     else:
-        erf_ffps = [str(erf_dir / FAULT_ERF_FILENAME)]
+        erf_ffps = [str(erf_dir / f"{flt_erf_base_fn}.txt")]
 
     su.ensemble_creation.create_ensemble(
         ens_filename,

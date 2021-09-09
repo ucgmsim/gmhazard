@@ -36,9 +36,24 @@ def process_station_gms_config_comb(
     site_info = sc.site.get_site_from_name(ensemble, station_name)
     output_dir.mkdir(exist_ok=True, parents=False)
 
+    # Calculates Disagg
+    disagg_data = sc.disagg.run_ensemble_disagg(
+        ensemble,
+        site_info,
+        IMj,
+        exceedance=exceedance,
+        im_value=im_j,
+        calc_mean_values=True,
+    )
+
+    # Save the Disagg Data
+    disagg_output_dir = output_dir / f"gms_{gms_id}" / "disagg_data"
+    disagg_output_dir.mkdir(exist_ok=True, parents=True)
+    disagg_data.save(disagg_output_dir)
+
     # Retrieve the default causal filter parameters
     cs_param_bounds = sc.gms.default_causal_params(
-        ensemble, site_info, IMj, exceedance=exceedance, im_value=im_j
+        ensemble, site_info, IMj, exceedance=exceedance, im_value=im_j, disagg_data=disagg_data
     )
 
     # Get the GM dataset

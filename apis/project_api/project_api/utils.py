@@ -170,10 +170,10 @@ def load_uhs_data(results_dir: Path, rps: List[int]):
     uhs_results = [
         sc.uhs.EnsembleUHSResult.load(results_dir / f"uhs_{rp}") for rp in rps
     ]
-    # Need to fix the `uhs_nz11750` before we generate new project data
+
     nzs1170p5_results = [
         sc.nz_code.nzs1170p5.NZS1170p5Result.load(cur_dir, ensemble=ensemble)
-        for cur_dir in (results_dir / "uhs_nz11750").glob("uhs_*")
+        for cur_dir in (results_dir / "uhs_nzs1170p5").glob("uhs_*")
     ]
 
     return uhs_results, nzs1170p5_results
@@ -184,8 +184,9 @@ def load_gms_data(station_data_dir: Path, gms_id: str):
 
     gms_result = sc.gms.GMSResult.load(data_dir)
     cs_param_bounds = sc.gms.CausalParamBounds.load(data_dir / "causal_param_bounds")
+    disagg_data = sc.disagg.EnsembleDisaggData.load(data_dir / "disagg_data")
 
-    return gms_result, cs_param_bounds
+    return gms_result, cs_param_bounds, disagg_data
 
 
 def create_project_zip(

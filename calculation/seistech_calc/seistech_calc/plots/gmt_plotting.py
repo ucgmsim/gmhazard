@@ -18,11 +18,21 @@ def plot_site_vs30(
     station_lat: float,
     station_vs30: float,
     station_ll_ffp: str,
-    vs30_grid_ffp: str,
+    vs30_grid_ffp: str = None,
     site_vs30: float = None,
     distance: float = 8,
 ):
     from qcore import gmt
+
+    vs30_grid_ffp = (
+        str(
+            Path(__file__).resolve().parent.parent
+            / "resources"
+            / "nz_vs30_nz-specific-v19p1_100m.grd"
+        )
+        if vs30_grid_ffp is None
+        else vs30_grid_ffp
+    )
 
     max_lat = geo.ll_shift(site_lat, site_lon, distance, 0)[0]
     min_lon = geo.ll_shift(site_lat, site_lon, distance, -90)[1]
@@ -176,11 +186,11 @@ def plot_context(
     """
     from qcore import gmt
 
-    script_dir = Path(__file__).resolve().parent
+    resource_dir = Path(__file__).resolve().parent.parent / "resources"
     if fault_corners_ffp is None:
-        fault_corners_ffp = Path(script_dir).parent / "resources" / "SimAtlasFaults.csv"
+        fault_corners_ffp = resource_dir / "SimAtlasFaults.csv"
     if bballs_ffp is None:
-        bballs_ffp = Path(script_dir).parent / "resources" / "gmt.bb"
+        bballs_ffp = resource_dir / "gmt.bb"
 
     mom2mag = lambda mom: (2 / 3.0 * math.log(mom) / math.log(10.0)) - 10.7
 
