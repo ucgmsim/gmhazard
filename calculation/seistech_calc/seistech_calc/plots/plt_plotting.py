@@ -636,18 +636,25 @@ def plot_gms_im_distribution(
     """
     ks_bounds = gms_result.metadata_dict["ks_bounds"]
 
-    # Sort by columns individually
+    # Add the minimum value for each IM's into the 0 index
+    # to achieve the empirical distribution function with matplotlib's step plotting
     realisations = pd.DataFrame(
-        {
-            x: gms_result.realisations[x].sort_values().values
-            for x in gms_result.realisations.columns.values
-        }
+        data=np.concatenate(
+            (
+                gms_result.realisations.min(axis=0).values[None, :],
+                gms_result.realisations.values,
+            )
+        ),
+        columns=gms_result.realisations.columns.values,
     )
     selected_gms = pd.DataFrame(
-        {
-            x: gms_result.selected_gms_im_df[x].sort_values().values
-            for x in gms_result.selected_gms_im_df.columns.values
-        }
+        data=np.concatenate(
+            (
+                gms_result.selected_gms_im_df.min(axis=0).values[None, :],
+                gms_result.selected_gms_im_df.values,
+            )
+        ),
+        columns=gms_result.selected_gms_im_df.columns.values,
     )
 
     plt.figure(figsize=(16, 9))
@@ -673,21 +680,20 @@ def plot_gms_im_distribution(
             linestyle="dashdot",
         )
 
+        # Sort before plotting
+        sorted_realisations = realisations.loc[:, str(IMi)].sort_values()
         plt.step(
-            np.insert(
-                realisations[str(IMi)].values, 0, realisations[str(IMi)].values[0]
-            ),
-            np.linspace(0, 1, len(realisations) + 1),
+            sorted_realisations.values,
+            np.linspace(0, 1, len(sorted_realisations)),
             where="post",
             color="blue",
             label="Realisations",
         )
 
+        sorted_selected_gms = selected_gms.loc[:, str(IMi)].sort_values()
         plt.step(
-            np.insert(
-                selected_gms[str(IMi)].values, 0, selected_gms[str(IMi)].values[0]
-            ),
-            np.linspace(0, 1, len(selected_gms) + 1),
+            sorted_selected_gms.values,
+            np.linspace(0, 1, len(sorted_selected_gms)),
             where="post",
             color="black",
             label="Selected Ground Motions",
@@ -716,7 +722,6 @@ def plot_gms_im_distribution(
 def plot_gms_mw_rrup(
     metadata: Dict,
     disagg_mean_values: pd.Series,
-    selected_gms_agg: Dict,
     bounds: Dict = None,
     save_file: Path = None,
 ):
@@ -728,7 +733,6 @@ def plot_gms_mw_rrup(
     ----------
     metadata: Dict
     disagg_mean_values: pd.DataFrame
-    selected_gms_agg: Dict
     bounds: Dict, optional
     save_file: Path, optional
     """
@@ -786,6 +790,7 @@ def plot_gms_mw_rrup(
         + "$16^{th}$ to $84^{th}$ percentile $M_{w}$-$R_{rup}$ limits.",
     )
 
+    selected_gms_agg = metadata["selected_gms_agg"]
     plt.errorbar(
         selected_gms_agg["rrup_mean"],
         selected_gms_agg["mag_mean"],
@@ -818,7 +823,7 @@ def plot_gms_mw_rrup(
 
 
 def plot_gms_causal_param(
-    gms_result: gms.GMSResult,
+    selected_gms_metadata: Dict,
     metadata: str,
     bounds: Dict = None,
     save_file: Path = None,
@@ -830,19 +835,23 @@ def plot_gms_causal_param(
 
     Parameters
     ----------
-    gms_result: gms.GMSResult
+    selected_gms_metadata: Dictionary
     metadata: str
     bounds: Dict, optional
     save_file: Path, optional
     """
-    range_x, range_y = utils.calc_gms_causal_params(gms_result, metadata)
+    # To achieve Empirical distribution function with matplotlib's step plotting
+    copied_metadata = selected_gms_metadata[metadata][:]
+    copied_metadata.append(min(copied_metadata))
+    copied_metadata.sort()
 
     plt.figure(figsize=(16, 9))
     bounds_y_range = [0, 1]
 
-    plt.plot(
-        range_x,
-        range_y,
+    plt.step(
+        copied_metadata,
+        np.linspace(0, 1, len(copied_metadata)),
+        where="post",
         color="black",
         label=CAUSAL_PARAMS_LABEL[metadata],
     )
@@ -973,14 +982,18 @@ def plot_gms_disagg_distribution(
     bounds: Dict, optional
     save_file: Path, optional
     """
-    range_x, range_y = utils.calculate_gms_disagg_distribution(gms_metadata[metadata])
     bounds_y_range = [0, 1]
+    # To achieve Empirical distribution function with matplotlib's step plotting
+    copied_metadata = gms_metadata[metadata][:]
+    copied_metadata.append(min(copied_metadata))
+    copied_metadata.sort()
 
     plt.figure(figsize=(16, 9))
 
-    plt.plot(
-        range_x,
-        range_y,
+    plt.step(
+        copied_metadata,
+        np.linspace(0, 1, len(copied_metadata)),
+        where="post",
         color="black",
         label=DISAGG_DISTRIBUTION_LABEL[metadata],
     )

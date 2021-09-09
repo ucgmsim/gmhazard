@@ -453,7 +453,6 @@ def write_gms_download_data(
         sc.plots.plt_gms_mw_rrup(
             selected_gms_metadata,
             disagg_data.mean_values,
-            selected_gms_metadata["selected_gms_agg"],
             bounds=default_causal_params,
             save_file=Path(out_dir) / f"{prefix}gms_mw_rrup_plot.png",
         )
@@ -502,14 +501,14 @@ def write_gms_download_data(
             )
         # Causal Parameters plots
         sc.plots.plt_gms_causal_param(
-            gms_result,
+            selected_gms_metadata,
             "vs30",
             bounds=causal_params_bounds,
             save_file=Path(out_dir) / f"{prefix}gms_vs30_causal_param_plot.png",
         )
 
         sc.plots.plt_gms_causal_param(
-            gms_result,
+            selected_gms_metadata,
             "sf",
             bounds=causal_params_bounds,
             save_file=Path(out_dir) / f"{prefix}gms_sf_causal_param_plot.png",
