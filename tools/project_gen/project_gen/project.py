@@ -33,7 +33,8 @@ def create_project(
     use_mp: bool = True,
     erf_dir: Path = None,
     erf_pert_dir: Path = None,
-    flt_erf_version: str = "NHM"
+    flt_erf_version: str = "NHM",
+    setup_only: bool = False,
 ):
     """
     Creates a new project, generates the required DBs,
@@ -71,6 +72,9 @@ def create_project(
         If true then standard python multiprocessing will be
         used for PSHA result generation, otherwise celery
         will be used.
+    setup_only: bool, optional
+        If true, then only the config and DBs are generated, but
+        no results are computed
     """
     erf_dir = ERF_DIR if erf_dir is None else erf_dir
 
@@ -136,6 +140,9 @@ def create_project(
             flt_erf_version,
             n_perturbations=n_perturbations,
         )
+
+        if setup_only:
+            return
 
         # Generate the PSHA project data and GMS
         psha.gen_psha_project_data(project_dir, n_procs=n_procs, use_mp=use_mp)
