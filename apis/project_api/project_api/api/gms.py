@@ -83,7 +83,11 @@ def download_gms_results(token):
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_ffp = su.api.create_gms_download_zip(
-            gms_result, server.app, tmp_dir, cs_param_bounds=cs_param_bounds
+            gms_result,
+            server.app,
+            tmp_dir,
+            disagg_data,
+            cs_param_bounds=cs_param_bounds,
         )
         return flask.send_file(
             zip_ffp, as_attachment=True, attachment_filename=os.path.basename(zip_ffp)

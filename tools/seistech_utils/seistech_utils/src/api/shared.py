@@ -424,6 +424,7 @@ def write_gms_download_data(
     gms_result: sc.gms.GMSResult,
     app: flask.app,
     out_dir: str,
+    disagg_data: sc.disagg.EnsembleDisaggData,
     cs_param_bounds: sc.gms.CausalParamBounds = None,
 ):
     missing_waveforms = gms_result.gm_dataset.get_waveforms(
@@ -441,23 +442,25 @@ def write_gms_download_data(
 
         selected_gms_metadata = {
             **gms_result.selected_gms_metdata_df.to_dict(orient="list"),
-            **gms_result.selected_gms_im_16_84_df.to_dict(orient="list"),
+            # mean and error bounds for selected GMs, used in Mw Rrup plot
             **gms_result.metadata_dict,
         }
 
         # Mw and Rrup distribution plot
         sc.plots.plt_gms_mw_rrup(
             selected_gms_metadata,
-            default_causal_params,
-            Path(out_dir) / "gms_mw_rrup_plot.png",
+            disagg_data.mean_values,
+            selected_gms_metadata["selected_gms_agg"],
+            bounds=default_causal_params,
+            save_file=Path(out_dir) / "gms_mw_rrup_plot.png",
         )
         # Pseudo acceleration response spectra plot
         sc.plots.plt_gms_spectra(
             gms_result,
-            Path(out_dir) / "gms_spectra_plot.png",
+            save_file=Path(out_dir) / "gms_spectra_plot.png",
         )
         # IM distribution plots
-        sc.plots.plt_gms_im_distribution(gms_result, Path(out_dir))
+        sc.plots.plt_gms_im_distribution(gms_result, save_file=Path(out_dir))
         # Disagg Distribution plots (Mw Distribution or Rrup distribution)
         contribution_df_data = default_causal_params["contribution_df"]
         if contribution_df_data is not None:
@@ -479,32 +482,32 @@ def write_gms_download_data(
                 sorted_contribution_df["mag_contribution"],
                 sorted_contribution_df["magnitude"],
                 selected_gms_metadata,
-                causal_params_bounds,
                 "mag",
-                Path(out_dir) / "gms_mag_disagg_distribution_plot.png",
+                bounds=causal_params_bounds,
+                save_file=Path(out_dir) / "gms_mag_disagg_distribution_plot.png",
             )
 
             sc.plots.plt_gms_disagg_distribution(
                 sorted_contribution_df["rrup_contribution"],
                 sorted_contribution_df["rrup"],
                 selected_gms_metadata,
-                causal_params_bounds,
                 "rrup",
-                Path(out_dir) / "gms_rrup_disagg_distribution_plot.png",
+                bounds=causal_params_bounds,
+                save_file=Path(out_dir) / "gms_rrup_disagg_distribution_plot.png",
             )
         # Causal Parameters plots
         sc.plots.plt_gms_causal_param(
             gms_result,
-            causal_params_bounds,
             "vs30",
-            Path(out_dir) / "gms_vs30_causal_param_plot.png",
+            bounds=causal_params_bounds,
+            save_file=Path(out_dir) / "gms_vs30_causal_param_plot.png",
         )
 
         sc.plots.plt_gms_causal_param(
             gms_result,
-            causal_params_bounds,
             "sf",
-            Path(out_dir) / "gms_sf_causal_param_plot.png",
+            bounds=causal_params_bounds,
+            save_file=Path(out_dir) / "gms_sf_causal_param_plot.png",
         )
 
         # Available Ground Motions plot
@@ -512,12 +515,12 @@ def write_gms_download_data(
             gms_result.gm_dataset.get_metadata_df(gms_result.site_info).to_dict(
                 orient="list"
             ),
-            default_causal_params,
             gms_result.gm_dataset.get_n_gms_in_bounds(
                 gms_result.gm_dataset.get_metadata_df(gms_result.site_info),
                 cs_param_bounds,
             ),
-            Path(out_dir) / "gms_available_gm_plot.png",
+            bounds=default_causal_params,
+            save_file=Path(out_dir) / "gms_available_gm_plot.png",
         )
 
     return os.listdir(out_dir)
@@ -527,11 +530,16 @@ def create_gms_download_zip(
     gms_result: sc.gms.GMSResult,
     app: flask.app,
     tmp_dir: str,
+    disagg_data: sc.disagg.EnsembleDisaggData,
     cs_param_bounds: sc.gms.CausalParamBounds = None,
 ):
 
     ffps = write_gms_download_data(
-        gms_result, app, tmp_dir, cs_param_bounds=cs_param_bounds
+        gms_result,
+        app,
+        tmp_dir,
+        disagg_data,
+        cs_param_bounds=cs_param_bounds,
     )
 
     zip_ffp = os.path.join(

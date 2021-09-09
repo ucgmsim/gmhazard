@@ -715,16 +715,21 @@ def plot_gms_im_distribution(
 
 def plot_gms_mw_rrup(
     metadata: Dict,
-    bounds: Dict,
-    disagg_mean_values: pd.DataFrame,
+    disagg_mean_values: pd.Series,
+    selected_gms_agg: Dict,
+    bounds: Dict = None,
     save_file: Path = None,
 ):
-    """Magnitude - Distance (Rrup) plot of the selected GMs with
+    """Magnitude - Distance (Rrup) plot of the selected GMs and the mean of the
+    disaggregation distribution and selected ground motions with 16th and 84th
+    percentile limits.
 
     Parameters
     ----------
     metadata: Dict
-    bounds: Dict
+    disagg_mean_values: pd.DataFrame
+    selected_gms_agg: Dict
+    bounds: Dict, optional
     save_file: Path, optional
     """
     plt.figure(figsize=(16, 9))
@@ -737,41 +742,66 @@ def plot_gms_mw_rrup(
         edgecolors="black",
         facecolors="none",
     )
+
     # Boundary box plot
-    plt.plot(
-        [
-            bounds["rrup_low"],
-            bounds["rrup_high"],
-            bounds["rrup_high"],
-            bounds["rrup_low"],
-            bounds["rrup_low"],
-        ],
-        [
-            bounds["mw_low"],
-            bounds["mw_low"],
-            bounds["mw_high"],
-            bounds["mw_high"],
-            bounds["mw_low"],
-        ],
-        color="red",
-        linestyle="dashed",
-        label="Bounds",
-        linewidth=1,
-        dashes=(5, 5),
-    )
+    if bounds is not None:
+        plt.plot(
+            [
+                bounds["rrup_low"],
+                bounds["rrup_high"],
+                bounds["rrup_high"],
+                bounds["rrup_low"],
+                bounds["rrup_low"],
+            ],
+            [
+                bounds["mw_low"],
+                bounds["mw_low"],
+                bounds["mw_high"],
+                bounds["mw_high"],
+                bounds["mw_low"],
+            ],
+            color="red",
+            linestyle="dashed",
+            label="Bounds",
+            linewidth=1,
+            dashes=(5, 5),
+        )
 
     # Error bounds
     plt.errorbar(
         disagg_mean_values["rrup"],
         disagg_mean_values["magnitude"],
+        fmt="^",
         xerr=[
-            disagg_mean_values["rrup_84th"] - disagg_mean_values["rrup"],
-            disagg_mean_values["rrup"] - disagg_mean_values["rrup_16th"],
+            [disagg_mean_values["rrup"] - disagg_mean_values["rrup_16th"]],
+            [disagg_mean_values["rrup_84th"] - disagg_mean_values["rrup"]],
         ],
         yerr=[
-            disagg_mean_values["magnitude_84th"] - disagg_mean_values["magnitude"],
-            disagg_mean_values["magnitude"] - disagg_mean_values["magnitude_16th"],
+            [disagg_mean_values["magnitude"] - disagg_mean_values["magnitude_16th"]],
+            [disagg_mean_values["magnitude_84th"] - disagg_mean_values["magnitude"]],
         ],
+        capsize=15,
+        color=[1, 0, 0, 0.4],
+        label="Mean $M_{w}$-$R_{rup}$ of disaggregation distribution\n"
+        + "$16^{th}$ to $84^{th}$ percentile $M_{w}$-$R_{rup}$ limits.",
+    )
+
+    plt.errorbar(
+        selected_gms_agg["rrup_mean"],
+        selected_gms_agg["mag_mean"],
+        fmt="^",
+        xerr=[
+            [selected_gms_agg["rrup_mean"] - selected_gms_agg["rrup_error_bounds"][0]],
+            [selected_gms_agg["rrup_error_bounds"][1] - selected_gms_agg["rrup_mean"]],
+        ],
+        yerr=[
+            [selected_gms_agg["mag_mean"] - selected_gms_agg["mag_error_bounds"][0]],
+            [selected_gms_agg["mag_error_bounds"][1] - selected_gms_agg["mag_mean"]],
+        ],
+        capsize=15,
+        color=[0, 0, 0, 0.4],
+        label="Mean $M_{w}$-$R_{rup}$ of selected GMs\n"
+        + "$16^{th}$ to $84^{th}$ percentile $M_{w}$-$R_{rup}$ limits.",
     )
 
     plt.xscale("log")
@@ -789,8 +819,8 @@ def plot_gms_mw_rrup(
 
 def plot_gms_causal_param(
     gms_result: gms.GMSResult,
-    bounds: Dict,
     metadata: str,
+    bounds: Dict = None,
     save_file: Path = None,
 ):
     """CDF plot of the selected GMs for Vs30 and
@@ -801,8 +831,8 @@ def plot_gms_causal_param(
     Parameters
     ----------
     gms_result: gms.GMSResult
-    bounds: Dict
     metadata: str
+    bounds: Dict, optional
     save_file: Path, optional
     """
     range_x, range_y = utils.calc_gms_causal_params(gms_result, metadata)
@@ -817,7 +847,7 @@ def plot_gms_causal_param(
         label=CAUSAL_PARAMS_LABEL[metadata],
     )
 
-    if bounds.get(metadata):
+    if bounds is not None and bounds.get(metadata) is not None:
         plt.plot(
             [bounds.get(metadata).get("min"), bounds.get(metadata).get("min")],
             bounds_y_range,
@@ -861,8 +891,8 @@ def plot_gms_spectra(
     save_file: Path = None,
 ):
     """Plot of the pSA values of the realisations and
-     selected ground motions and
-     the median, 16th, and 84th percentile of the GCIM
+     selected ground motions and the median, 16th,
+     and 84th percentile of the GCIM
 
     Parameters
     ----------
@@ -924,8 +954,8 @@ def plot_gms_disagg_distribution(
     contribution: List,
     distribution: List,
     gms_metadata: Dict,
-    bounds: Dict,
     metadata: str,
+    bounds: Dict = None,
     save_file: Path = None,
 ):
     """CDF plots for the selected GMs and
@@ -939,8 +969,8 @@ def plot_gms_disagg_distribution(
     contribution: List
     distribution: List
     gms_metadata: Dict
-    bounds: Dict
     metadata: str
+    bounds: Dict, optional
     save_file: Path, optional
     """
     range_x, range_y = utils.calculate_gms_disagg_distribution(gms_metadata[metadata])
@@ -958,19 +988,20 @@ def plot_gms_disagg_distribution(
         distribution, contribution, label="Disaggregation distribution", color="red"
     )
 
-    plt.plot(
-        [bounds[metadata]["min"], bounds[metadata]["min"]],
-        bounds_y_range,
-        color="red",
-        linestyle="dotted",
-        label="Lower and upper bound limits",
-    )
-    plt.plot(
-        [bounds[metadata]["max"], bounds[metadata]["max"]],
-        bounds_y_range,
-        color="red",
-        linestyle="dotted",
-    )
+    if bounds is not None:
+        plt.plot(
+            [bounds[metadata]["min"], bounds[metadata]["min"]],
+            bounds_y_range,
+            color="red",
+            linestyle="dotted",
+            label="Lower and upper bound limits",
+        )
+        plt.plot(
+            [bounds[metadata]["max"], bounds[metadata]["max"]],
+            bounds_y_range,
+            color="red",
+            linestyle="dotted",
+        )
 
     if metadata == "rrup":
         plt.xscale("log")
@@ -989,8 +1020,8 @@ def plot_gms_disagg_distribution(
 
 def plot_gms_available_gm(
     metadata: Dict,
-    bounds: Dict,
     n_gms_in_bounds: int,
+    bounds: Dict = None,
     save_file: Path = None,
 ):
     """Distance (Rrup) - Magnitude plot of the GMs in the GM-dataset
@@ -1000,8 +1031,8 @@ def plot_gms_available_gm(
     Parameters
     ----------
     metadata: Dict
-    bounds: Dict
     n_gms_in_bounds: int
+    bounds: Dict, optional
     save_file: Path, optional
     """
     plt.figure(figsize=(16, 9))
@@ -1016,27 +1047,28 @@ def plot_gms_available_gm(
         facecolors="none",
     )
     # Boundary box plot
-    plt.plot(
-        [
-            bounds["rrup_low"],
-            bounds["rrup_high"],
-            bounds["rrup_high"],
-            bounds["rrup_low"],
-            bounds["rrup_low"],
-        ],
-        [
-            bounds["mw_low"],
-            bounds["mw_low"],
-            bounds["mw_high"],
-            bounds["mw_high"],
-            bounds["mw_low"],
-        ],
-        color="red",
-        linestyle="dashed",
-        label="Bounds",
-        linewidth=1,
-        dashes=(5, 5),
-    )
+    if bounds is not None:
+        plt.plot(
+            [
+                bounds["rrup_low"],
+                bounds["rrup_high"],
+                bounds["rrup_high"],
+                bounds["rrup_low"],
+                bounds["rrup_low"],
+            ],
+            [
+                bounds["mw_low"],
+                bounds["mw_low"],
+                bounds["mw_high"],
+                bounds["mw_high"],
+                bounds["mw_low"],
+            ],
+            color="red",
+            linestyle="dashed",
+            label="Bounds",
+            linewidth=1,
+            dashes=(5, 5),
+        )
 
     plt.xscale("log")
     plt.xlabel("Rupture distance, $R_{rup}$(km)")
