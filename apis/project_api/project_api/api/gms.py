@@ -60,7 +60,7 @@ def get_ensemble_gms():
                 server.DOWNLOAD_URL_VALID_FOR,
             ),
             disagg_data,
-            project_id
+            project_id,
         )
     )
 
@@ -79,7 +79,7 @@ def download_gms_results(token):
     results_dir = (
         server.BASE_PROJECTS_DIR / version_str / project_id / "results" / station_id
     )
-    gms_result, cs_param_bounds = utils.load_gms_data(results_dir, gms_id)
+    gms_result, cs_param_bounds, disagg_data = utils.load_gms_data(results_dir, gms_id)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_ffp = su.api.create_gms_download_zip(
@@ -110,6 +110,6 @@ def get_default_causal_params():
     results_dir = (
         server.BASE_PROJECTS_DIR / version_str / project_id / "results" / station_id
     )
-    gms_result, cs_param_bounds = utils.load_gms_data(results_dir, gms_id)
+    gms_result, cs_param_bounds, disagg_data = utils.load_gms_data(results_dir, gms_id)
 
     return flask.jsonify(su.api.get_default_causal_params(cs_param_bounds))
