@@ -160,8 +160,7 @@ def create_project(
 def setup_project(base_dir: Path, project_id: str):
     """Sets up the required directories and files for a project"""
     # Get the current projectAPI version
-    api_version = version("project_api")
-    version_str = f"v{api_version.replace('.', 'p')}"
+    _, version_str = su.utils.get_package_version("project_api")
 
     # Create the version folder
     (base_dir / version_str).mkdir(exist_ok=True, parents=False)
