@@ -8,11 +8,15 @@ import pandas as pd
 
 from seistech_calc import site
 from seistech_calc import gm_data
+from seistech_calc import rupture
 from seistech_calc.im import IM
 
 
-class DisaggData:
+class BaseDisaggResult:
     """
+    This class should not be instantiated,
+    it is only to be used as an base class
+
     Parameters
     ----------
     fault_disagg
@@ -55,11 +59,12 @@ class DisaggData:
         site_info: site.SiteInfo,
         im: IM,
         im_value: float,
+        ensemble: gm_data.Ensemble,
         exceedance: Optional[float] = None,
         mean_values: Optional[pd.Series] = None,
     ):
-        self.fault_disagg = fault_disagg.sort_values("contribution", ascending=False)
-        self.ds_disagg = ds_disagg.sort_values("contribution", ascending=False)
+        self._fault_disagg = fault_disagg.sort_values("contribution", ascending=False)
+        self._ds_disagg = ds_disagg.sort_values("contribution", ascending=False)
 
         self.site_info = site_info
         self.im = im
@@ -67,21 +72,49 @@ class DisaggData:
         self.exceedance = exceedance
         self.mean_values = mean_values
 
+        self._ensemble = ensemble
+
+    @property
+    def fault_disagg_id_ix(self):
+        return self._fault_disagg
+
+    @property
+    def ds_disagg_id_ix(self):
+        return self._ds_disagg
+
+    @property
+    def fault_disagg_id(self):
+        return self._fault_disagg.set_index(
+            rupture.rupture_id_ix_to_rupture_id(
+                self._ensemble, self._fault_disagg.index.values
+            ),
+            inplace=False,
+        )
+
+    @property
+    def ds_disagg_id(self):
+        return self._ds_disagg.set_index(
+            rupture.rupture_id_ix_to_rupture_id(
+                self._ensemble, self._ds_disagg.index.values
+            ),
+            inplace=False,
+        )
+
     @property
     def total_contributions(self) -> pd.Series:
-        return self.fault_disagg.contribution.append(
-            pd.Series({"distributed_seismicity": self.ds_disagg.contribution.sum()})
+        return self.fault_disagg_id.contribution.append(
+            pd.Series({"distributed_seismicity": self.ds_disagg_id.contribution.sum()})
         ).sort_values(ascending=False)
 
     @property
     def total_contributions_df(self) -> pd.DataFrame:
         df = (
-            self.fault_disagg[["contribution", "epsilon"]]
+            self.fault_disagg_id[["contribution", "epsilon"]]
             .append(
                 pd.DataFrame.from_dict(
                     {
                         "distributed_seismicity": {
-                            "contribution": self.ds_disagg.contribution.sum(),
+                            "contribution": self.ds_disagg_id.contribution.sum(),
                             "epsilon": np.nan,
                         }
                     },
@@ -96,7 +129,9 @@ class DisaggData:
 
     @property
     def contribution_df(self) -> pd.DataFrame:
-        return pd.concat((self.fault_disagg.contribution, self.ds_disagg.contribution))
+        return pd.concat(
+            (self.fault_disagg_id.contribution, self.ds_disagg_id.contribution)
+        )
 
     def to_dict(self, total_only: bool = False):
         data = {
@@ -110,8 +145,8 @@ class DisaggData:
         }
 
         if not total_only:
-            data["fault_disagg"] = self.fault_disagg.to_dict()
-            data["ds_disagg"] = self.ds_disagg.to_dict()
+            data["fault_disagg"] = self.fault_disagg_id.to_dict()
+            data["ds_disagg"] = self.ds_disagg_id.to_dict()
 
         return data
 
@@ -122,8 +157,8 @@ class DisaggData:
         raise NotImplementedError()
 
     def _save(self, data_dir: Path, metadata: Dict = None):
-        self.fault_disagg.to_csv(data_dir / self.FAULT_DISAGG_FN)
-        self.ds_disagg.to_csv(data_dir / self.DS_DISAGG_FN)
+        self.fault_disagg_id.to_csv(data_dir / self.FAULT_DISAGG_FN)
+        self.ds_disagg_id.to_csv(data_dir / self.DS_DISAGG_FN)
         self.site_info.save(data_dir)
 
         # Save the metadata
@@ -164,7 +199,7 @@ class DisaggData:
         )
 
 
-class BranchDisaggData(DisaggData):
+class BranchDisaggResult(BaseDisaggResult):
     """Exactly the same as DataDisagg, except that it
     also uses stores the branch & ensemble the result belongs to.
     """
@@ -180,7 +215,13 @@ class BranchDisaggData(DisaggData):
         exceedance: Optional[float] = None,
     ):
         super().__init__(
-            fault_disagg, ds_disagg, site_info, im, im_value, exceedance=exceedance
+            fault_disagg,
+            ds_disagg,
+            site_info,
+            im,
+            im_value,
+            branch.im_ensemble.ensemble,
+            exceedance=exceedance,
         )
         self.branch = branch
         self.im_ensemble = branch.im_ensemble
@@ -193,7 +234,7 @@ class BranchDisaggData(DisaggData):
         raise NotImplementedError()
 
 
-class EnsembleDisaggData(DisaggData):
+class EnsembleDisaggResult(BaseDisaggResult):
     """Exactly the same as DataDisagg, except that it
     also uses stores the IM ensemble the result belongs to.
     """
@@ -216,6 +257,7 @@ class EnsembleDisaggData(DisaggData):
             site_info,
             im,
             im_value,
+            ensemble,
             exceedance=exceedance,
             mean_values=mean_values,
         )
@@ -223,7 +265,7 @@ class EnsembleDisaggData(DisaggData):
         self.im_ensemble = im_ensemble
 
     def save(self, base_dir: Path):
-        """Saves an EnsembleDisaggData as csv & json files
+        """Saves an EnsembleDisaggResult as csv & json files
         Creates a new directory in the specified base directory
         """
         save_dir = base_dir / self.get_save_dir(
@@ -284,7 +326,7 @@ class DisaggGridData:
 
     Attributes
     ----------
-    disagg_data: DisaggData
+    disagg_data: BaseDisaggResult
         The underlying disagg data
     flt_bin_contr: float array
         The fault % contributions of each bin
@@ -328,7 +370,7 @@ class DisaggGridData:
 
     def __init__(
         self,
-        disagg_data: DisaggData,
+        disagg_data: BaseDisaggResult,
         flt_bin_contr: np.array,
         ds_bin_contr: np.array,
         eps_bins: List[Tuple[float, float]],
@@ -425,18 +467,18 @@ class DisaggGridData:
         return save_dir
 
     @classmethod
-    def load(cls, data_dir: Path, disagg_data: DisaggData = None):
+    def load(cls, data_dir: Path, disagg_data: BaseDisaggResult = None):
         with open(data_dir / cls.METADATA_FN, "r") as f:
             metadata = json.load(f)
 
         if disagg_data is None:
             if metadata.get("disagg_data_save_dir") is None:
                 raise Exception(
-                    "Either the DisaggData has to be saved with the DisaggGridData, "
+                    "Either the DisaggResult has to be saved with the DisaggGridData, "
                     "or has to be provided."
                 )
 
-            disagg_data = DisaggData.load(Path(metadata["disagg_data_save_dir"]))
+            disagg_data = BaseDisaggResult.load(Path(metadata["disagg_data_save_dir"]))
 
         with open(data_dir / cls.EPS_BINS_FN, "rb") as f:
             eps_bins = pickle.load(f)

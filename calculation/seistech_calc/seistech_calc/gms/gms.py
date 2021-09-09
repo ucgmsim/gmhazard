@@ -484,7 +484,7 @@ def default_causal_params(
     IM_j: IM,
     exceedance: Optional[float] = None,
     im_value: Optional[float] = None,
-    disagg_data: Optional[disagg.EnsembleDisaggData] = None,
+    disagg_data: Optional[disagg.EnsembleDisaggResult] = None,
 ) -> CausalParamBounds:
     """
     Computes default causal parameters based on
@@ -506,7 +506,7 @@ def default_causal_params(
         or the im_value parameter has to be given
     im_value: float, optional
         Compute disagg at this im value if required
-    disagg_data: DisaggData, optinal
+    disagg_data: DisaggResult, optinal
         Computed Disagg data if pre-calculated
 
     Returns
@@ -533,13 +533,13 @@ def default_causal_params(
     vs_low, vs_high = site_info.vs30 * 0.5, site_info.vs30 * 1.5
 
     contr_df = pd.concat(
-        (disagg_data.fault_disagg.contribution, disagg_data.ds_disagg.contribution)
+        (disagg_data.fault_disagg_id.contribution, disagg_data.ds_disagg_id.contribution)
     )
 
     # Mw bounds
     contr_df = pd.merge(
         contr_df.to_frame("contribution"),
-        ensemble.rupture_df.magnitude.to_frame("magnitude"),
+        ensemble.rupture_df_id.magnitude.to_frame("magnitude"),
         how="left",
         left_index=True,
         right_index=True,
@@ -575,12 +575,12 @@ def default_causal_params(
     # Get distances
     fault_rrup_disagg_df = site_source.match_ruptures(
         site_source.get_distance_df(ensemble.flt_ssddb_ffp, site_info),
-        disagg_data.fault_disagg.contribution.copy(),
+        disagg_data.fault_disagg_id.contribution.copy(),
         constants.SourceType.fault,
     )
     ds_rrup_disagg_df = site_source.match_ruptures(
         site_source.get_distance_df(ensemble.ds_ssddb_ffp, site_info),
-        disagg_data.ds_disagg.contribution.copy(),
+        disagg_data.ds_disagg_id.contribution.copy(),
         constants.SourceType.distributed,
     )
     contr_df = pd.merge(

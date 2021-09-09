@@ -31,7 +31,7 @@ def test_scenarios(config):
                 ensemble_id, station_name
             )
         )
-        pd.testing.assert_frame_equal(bench_data, percentiles_df)
+        pd.testing.assert_frame_equal(bench_data.sort_index(), percentiles_df)
         print(
             "Ensemble - {}, station name - {} - PASSED".format(
                 ensemble_id, station_name

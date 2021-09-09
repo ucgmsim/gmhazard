@@ -11,7 +11,7 @@ from seistech_calc import gm_data
 from seistech_calc import exceptions
 from seistech_calc.nz_code import nzs1170p5
 from seistech_calc.im import IM, IMType, IMComponent
-from .UHSResult import UHSResult, EnsembleUHSResult, BranchUHSResult
+from .UHSResult import BaseUHSResult, EnsembleUHSResult, BranchUHSResult
 
 DEFAULT_PSA_PERIODS = [
     0.01,
@@ -286,6 +286,6 @@ def run_uhs_single(
 
     Returns
     -------
-    UHSResult
+    BaseUHSResult
     """
     return run_ensemble_uhs(ensemble, site_info, np.asarray([exceedance_value]))[0]

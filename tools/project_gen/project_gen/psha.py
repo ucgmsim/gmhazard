@@ -263,6 +263,7 @@ def process_station_im(
     are generated and saved)
     """
     output_dir = Path(output_dir)
+    print(f"\t{os.getpid()} - Processing station {station_name} and IM {im}")
 
     # Get the site
     site_info = sc.site.get_site_from_name(ensemble, station_name)
@@ -271,12 +272,13 @@ def process_station_im(
     ens_hazard = None
     if (output_dir / sc.hazard.EnsembleHazardResult.get_save_dir(im)).exists():
         print(
-            f"Skipping hazard computation for station {site_info.station_name} - "
+            f"\t{os.getpid()} - Skipping hazard computation for station {site_info.station_name} - "
             f"IM {im} - Component {im.component} as it already exists"
         )
     else:
         print(
-            f"Computing hazard for station {site_info.station_name} - IM {im} - Component {im.component}"
+            f"\t{os.getpid()} - Computing hazard for station"
+            f" {site_info.station_name} - IM {im} - Component {im.component}"
         )
         ens_hazard = sc.hazard.run_ensemble_hazard(
             ensemble, site_info, im, calc_percentiles=True
@@ -288,12 +290,13 @@ def process_station_im(
         output_dir / sc.nz_code.nzs1170p5.NZS1170p5Result.get_save_dir(im, "hazard")
     ).exists():
         print(
-            f"Skipping NZS1170.5 computation for station {site_info.station_name} - "
+            f"\t{os.getpid()} - Skipping NZS1170.5 computation for station {site_info.station_name} - "
             f"IM {im} - Component {im.component} as it already exists"
         )
     else:
         print(
-            f"Computing NZS1170.5 for station {site_info.station_name} - IM {im} - Component {im.component}"
+            f"\t{os.getpid()} - Computing NZS1170.5 for station "
+            f"{site_info.station_name} - IM {im} - Component {im.component}"
         )
         sc.nz_code.nzs1170p5.run_ensemble_nzs1170p5(ensemble, site_info, im).save(
             output_dir, "hazard"
@@ -303,11 +306,13 @@ def process_station_im(
     if im.im_type == sc.im.IMType.PGA:
         if (output_dir / sc.nz_code.nzta_2018.NZTAResult.get_save_dir()).exists():
             print(
-                f"Skipping NZTA computation for station {site_info.station_name} "
+                f"\t{os.getpid()} - Skipping NZTA computation for station {site_info.station_name} "
                 f"as it already exists"
             )
         else:
-            print(f"Computing NZTA for station {site_info.station_name}")
+            print(
+                f"\t{os.getpid()} - Computing NZTA for station {site_info.station_name}"
+            )
             sc.nz_code.nzta_2018.run_ensemble_nzta(ensemble, site_info).save(output_dir)
 
     # Compute & write disagg for the different exceedances
@@ -316,15 +321,15 @@ def process_station_im(
 
         if (
             output_dir
-            / sc.disagg.EnsembleDisaggData.get_save_dir(im, exceedance=cur_excd)
+            / sc.disagg.EnsembleDisaggResult.get_save_dir(im, exceedance=cur_excd)
         ).exists():
             print(
-                f"Skipping disagg computation for station {site_info.station_name} - "
+                f"\t{os.getpid()} - Skipping disagg computation for station {site_info.station_name} - "
                 f"IM {im} - Component {im.component} - Return period {cur_rp} as it already exists"
             )
         else:
             print(
-                f"Computing disagg for station {site_info.station_name} - "
+                f"\t{os.getpid()} - Computing disagg for station {site_info.station_name} - "
                 f"IM {im} - Component {im.component} - Return period {cur_rp}"
             )
             try:
@@ -338,7 +343,7 @@ def process_station_im(
                 )
             except sc.exceptions.ExceedanceOutOfRangeError as ex:
                 print(
-                    f"Failed to compute disagg for IM {ex.im} and exceedance {ex.exceedance} as the"
+                    f"\t{os.getpid()} - Failed to compute disagg for IM {ex.im} and exceedance {ex.exceedance} as the"
                     f"exceedance is outside of the computed hazard range for this site, skipping!"
                 )
             else:
@@ -350,8 +355,8 @@ def process_station_im(
 
                 # Additional info for the table
                 # Annual rec prob, magnitude and rrup (for disagg table)
-                ruptures_df = ensemble.rupture_df.loc[
-                    cur_disagg_data.fault_disagg.index.values
+                ruptures_df = ensemble.get_im_ensemble(im.im_type).rupture_df_id.loc[
+                    cur_disagg_data.fault_disagg_id.index.values
                 ]
                 flt_dist_df = sc.site_source.get_distance_df(
                     ensemble.flt_ssddb_ffp, site_info
@@ -386,4 +391,8 @@ def process_station_im(
                     ),
                     cur_disagg_grid_data.to_dict(),
                     bin_type="eps",
+                )
+                print(
+                    f"\t{os.getpid()} - Completed disagg for station {site_info.station_name} - "
+                    f"IM {im} - Component {im.component} - Return period {cur_rp}"
                 )

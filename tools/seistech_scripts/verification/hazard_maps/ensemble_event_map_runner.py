@@ -41,18 +41,18 @@ def main(
         raise NotImplementedError()
 
     # Get all ruptures & IMs that are in both ensembles
-    flt_ruptures_1 = ens_1.rupture_df.loc[
-        ens_1.rupture_df.rupture_type == sc.SourceType.fault.value
-    ].index.values.astype(str)
-    flt_ruptures_2 = ens_2.rupture_df.loc[
-        ens_2.rupture_df.rupture_type == sc.SourceType.fault.value
-    ].index.values.astype(str)
+    flt_ruptures_1 = ens_1.rupture_df_id.loc[
+        ens_1.rupture_df_id.rupture_type == sc.SourceType.fault.value
+        ].index.values.astype(str)
+    flt_ruptures_2 = ens_2.rupture_df_id.loc[
+        ens_2.rupture_df_id.rupture_type == sc.SourceType.fault.value
+        ].index.values.astype(str)
     flt_ruptures = set(flt_ruptures_1) & set(flt_ruptures_2)
     ims = set(ens_1.ims) & set(ens_2.ims)
 
     for ix, cur_rup in enumerate(list(flt_ruptures)):
         print(f"Processing rupture {cur_rup}, {ix + 1}/{len(flt_ruptures)}")
-        cur_dir = os.path.join(output_dir, ens_1.rupture_df.loc[cur_rup].rupture_name)
+        cur_dir = os.path.join(output_dir, ens_1.rupture_df_id.loc[cur_rup].rupture_name)
         if os.path.isdir(cur_dir):
             print(f"Output dir for fault {cur_rup} already exists, skipping")
             continue

@@ -11,7 +11,7 @@ from seistech_calc import gm_data
 from seistech_calc.im import IM
 
 
-class HazardResult:
+class BaseHazardResult:
     """Contains the hazard calculation result data (this can be at data set
     or ensemble level)
 
@@ -144,7 +144,7 @@ class HazardResult:
         )
 
 
-class BranchHazardResult(HazardResult):
+class BranchHazardResult(BaseHazardResult):
     """Exactly the same as HazardResult, except that it
     also uses stores the branch the result belongs to.
     """
@@ -179,7 +179,7 @@ class BranchHazardResult(HazardResult):
         )
 
 
-class EnsembleHazardResult(HazardResult):
+class EnsembleHazardResult(BaseHazardResult):
     """Exactly the same as HazardResult, except that it
     also uses stores the ensemble the result belongs to,
     and the individual hazard results of the its branches

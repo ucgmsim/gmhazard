@@ -10,7 +10,7 @@ from seistech_calc import gm_data
 from seistech_calc import site
 
 
-class UHSResult:
+class BaseUHSResult:
     """Contains uniform hazard spectra result data
 
     Parameters
@@ -93,7 +93,7 @@ class UHSResult:
         )
 
 
-class BranchUHSResult(UHSResult):
+class BranchUHSResult(BaseUHSResult):
     """Exactly the same as UHSResult, except that it
     also uses stores the branch the result belongs to.
     """
@@ -164,7 +164,7 @@ class BranchUHSResult(UHSResult):
         ).sort_index()
 
 
-class EnsembleUHSResult(UHSResult):
+class EnsembleUHSResult(BaseUHSResult):
     """Exactly the same as UHSResult, except that it
     also uses stores the ensemble the result belongs to and the branch data.
     """

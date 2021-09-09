@@ -10,9 +10,10 @@ from seistech_calc import shared
 from seistech_calc import hazard
 from seistech_calc import gm_data
 from seistech_calc import site_source
+from seistech_calc import rupture
 from seistech_calc import constants as const
 from seistech_calc.im import IM
-from .DisaggData import BranchDisaggData, EnsembleDisaggData, DisaggGridData
+from .DisaggResult import BranchDisaggResult, EnsembleDisaggResult, DisaggGridData
 
 
 def run_ensemble_disagg(
@@ -23,7 +24,7 @@ def run_ensemble_disagg(
     im_value: Optional[float] = None,
     calc_mean_values: Optional[bool] = False,
     hazard_result: Optional[hazard.EnsembleHazardResult] = None,
-) -> EnsembleDisaggData:
+) -> EnsembleDisaggResult:
     """Computes the ensemble disagg, combining the different
     branches as per equations (9) and (10) from
     "Consideration and Propagation of Ground Motion Selection
@@ -43,7 +44,7 @@ def run_ensemble_disagg(
 
     Returns
     -------
-    DisaggData
+    BaseDisaggResult
     """
     ensemble.check_im(im)
 
@@ -60,14 +61,14 @@ def run_ensemble_disagg(
 
     fault_disagg_df = pd.DataFrame(
         {
-            (branch_name, column): disagg_result.fault_disagg[column]
+            (branch_name, column): disagg_result.fault_disagg_id_ix[column]
             for branch_name, disagg_result in branches_dict.items()
             for column in ["contribution", "epsilon"]
         }
     )
     ds_disagg_df = pd.DataFrame(
         {
-            (branch_name, column): disagg_result.ds_disagg[column]
+            (branch_name, column): disagg_result.ds_disagg_id_ix[column]
             for branch_name, disagg_result in branches_dict.items()
             for column in ["contribution", "epsilon"]
         }
@@ -89,14 +90,19 @@ def run_ensemble_disagg(
 
     mean_values = None
     if calc_mean_values:
-        # Compute mean magnitude
+        # Use rupture_ids (due to required location matching for rrup mean)
         full_disagg = pd.concat([fault_disagg_mean, ds_disagg_mean])
+        full_disagg.index = rupture.rupture_id_ix_to_rupture_id(
+            ensemble, full_disagg.index.values
+        )
+
+        # Compute mean magnitude
         mag_mean = shared.compute_contr_mean(
-            im_ensemble.rupture_df.magnitude, full_disagg.contribution.to_frame(),
+            im_ensemble.rupture_df_id.magnitude, full_disagg.contribution.to_frame(),
         ).values[0]
 
         mag_16th, mag_84th = shared.compute_contr_16_84(
-            im_ensemble.rupture_df.magnitude, full_disagg.contribution.to_frame()
+            im_ensemble.rupture_df_id.magnitude, full_disagg.contribution.to_frame()
         )
 
         # Epsilon mean, ignore entries with epsilon np.inf
@@ -107,17 +113,29 @@ def run_ensemble_disagg(
         ).values[0]
 
         # Rrrup mean
+        # Convert to rupture_id for matching
+        fault_rrup_disagg_df = fault_disagg_mean.contribution.copy()
+        fault_rrup_disagg_df.index = rupture.rupture_id_ix_to_rupture_id(
+            ensemble, fault_rrup_disagg_df.index.values.astype(str)
+        )
+
+        ds_rrup_disagg_df = ds_disagg_mean.contribution.copy()
+        ds_rrup_disagg_df.index = rupture.rupture_id_ix_to_rupture_id(
+            ensemble, ds_rrup_disagg_df.index.values.astype(str)
+        )
+
         # Get distances
         fault_rrup_disagg_df = site_source.match_ruptures(
             site_source.get_distance_df(ensemble.flt_ssddb_ffp, site_info),
-            fault_disagg_mean.contribution.copy(),
+            fault_rrup_disagg_df,
             const.SourceType.fault,
         )
         ds_rrup_disagg_df = site_source.match_ruptures(
             site_source.get_distance_df(ensemble.ds_ssddb_ffp, site_info),
-            ds_disagg_mean.contribution.copy(),
+            ds_rrup_disagg_df,
             const.SourceType.distributed,
         )
+
         # Ignore nan entries (due to 200 km limit in SiteSourceDB)
         rrup_disagg_df = pd.concat([fault_rrup_disagg_df.rrup, ds_rrup_disagg_df.rrup])
         mask = ~rrup_disagg_df.isna()
@@ -150,7 +168,7 @@ def run_ensemble_disagg(
             ],
         )
 
-    return EnsembleDisaggData(
+    return EnsembleDisaggResult(
         fault_disagg_mean,
         ds_disagg_mean,
         site_info,
@@ -169,7 +187,7 @@ def run_branches_disagg(
     im: IM,
     exceedance: Optional[float] = None,
     im_value: Optional[float] = None,
-) -> Dict[str, BranchDisaggData]:
+) -> Dict[str, BranchDisaggResult]:
     """Computes the disagg for every branch in the ensemble
 
     Parameters
@@ -211,7 +229,7 @@ def run_branch_disagg(
     im: IM,
     exceedance: Optional[float] = None,
     im_value: Optional[float] = None,
-) -> BranchDisaggData:
+) -> BranchDisaggResult:
     """Computes the disagg a single branch of an ensemble
 
     Parameters
@@ -253,7 +271,7 @@ def run_branch_disagg(
     )
 
     # Get the recurrence probabilities
-    rec_prob_df = branch.rupture_df["annual_rec_prob"]
+    rec_prob_df = branch.rupture_df_id_ix["annual_rec_prob"]
 
     # Compute the branch hazard for the specified IM value
     excd_prob = sha_calc.hazard_single(
@@ -290,13 +308,13 @@ def run_branch_disagg(
     )
     ds_disagg = pd.merge(ds_disagg, ds_epsilon, left_index=True, right_index=True)
 
-    return BranchDisaggData(
+    return BranchDisaggResult(
         fault_disagg, ds_disagg, site_info, im, im_value, branch, exceedance=exceedance
     )
 
 
 def run_disagg_gridding(
-    disagg_data: Union[BranchDisaggData, EnsembleDisaggData],
+    disagg_data: Union[BranchDisaggResult, EnsembleDisaggResult],
     mag_min: float = 5.0,
     mag_n_bins: int = 16,
     mag_bin_size: float = 0.25,
@@ -309,7 +327,7 @@ def run_disagg_gridding(
 
     Parameters
     ----------
-    disagg_data: DisaggData
+    disagg_data: BaseDisaggResult
     mag_min: float
         Minimum magnitude
     mag_n_bins: int
@@ -329,52 +347,56 @@ def run_disagg_gridding(
     """
     ensemble = (
         disagg_data.ensemble
-        if isinstance(disagg_data, EnsembleDisaggData)
+        if isinstance(disagg_data, EnsembleDisaggResult)
         else disagg_data.im_ensemble.ensemble
     )
     im_ensemble = disagg_data.im_ensemble
 
     # Get rupture details for the flt ruptures
     flt_ruptures = pd.merge(
-        im_ensemble.rupture_df,
-        disagg_data.fault_disagg,
+        im_ensemble.rupture_df_id,
+        disagg_data.fault_disagg_id,
         left_index=True,
         right_index=True,
     )
-    # Get the distances
+
+    # Add distance data to fault rupture data
     dist_df = site_source.get_distance_df(ensemble.flt_ssddb_ffp, disagg_data.site_info)
+    if dist_df is None:
+        raise Exception(
+            f"No distance data available for station {disagg_data.site_info.station_name}, "
+            f"can't perform gridding without distance data!"
+        )
     flt_ruptures = site_source.match_ruptures(
         dist_df, flt_ruptures.copy(), const.SourceType.fault
     )
 
     # Get rupture details for the ds ruptures
     ds_ruptures = pd.merge(
-        im_ensemble.rupture_df,
-        disagg_data.ds_disagg,
+        im_ensemble.rupture_df_id,
+        disagg_data.ds_disagg_id,
         left_index=True,
         right_index=True,
     )
 
+    # Add DS location name to DS rupture data
     ds_ruptures["loc_name"] = np.asarray(
         list(np.chararray.split(ds_ruptures.index.values.astype(str), "--")), dtype=str
     )[:, 0]
     ds_ruptures["rupture_id"] = ds_ruptures.index.values
 
-    # Get the distances
+    # Add distance data to DS rupture data
     dist_df = site_source.get_distance_df(ensemble.ds_ssddb_ffp, disagg_data.site_info)
-
     if dist_df is None:
         raise Exception(
             f"No distance data available for station {disagg_data.site_info.station_name}, "
             f"can't perform gridding without distance data!"
         )
-
     ds_ruptures = site_source.match_ruptures(
         dist_df, ds_ruptures.copy(), const.SourceType.distributed
     )
 
-    # Drop nan values (ruptures for which rrup
-    # is not available, due to rrup > 200km)
+    # Drop nan values (ruptures for which rrup is not available, due to rrup > 200km)
     flt_ruptures.dropna(axis=0, how="any", subset=np.asarray(["rrup"]), inplace=True)
     ds_ruptures.dropna(axis=0, how="any", subset=np.asarray(["rrup"]), inplace=True)
     rupture_df = pd.concat([flt_ruptures, ds_ruptures], sort=True)
@@ -501,24 +523,18 @@ def _compute_epsilon(
     pd.Series
         Epsilon for each rupture
     """
-    im_data, im_data_type = shared.get_im_data(branch, ensemble, site_info, source_type)
+    im_data, im_data_type = shared.get_im_data(
+        branch,
+        ensemble,
+        site_info,
+        source_type,
+        im_component=im.component,
+        as_rupture_id_ix=True,
+    )
 
     if im_data_type is const.IMDataType.parametric:
-        # Convert rupture name to rupture id
-        im_data.index = branch.rupture_name_to_id(
-            im_data.index.values.astype(str), source_type
-        )
-
         epsilon = sha_calc.epsilon_para(utils.to_mu_sigma(im_data, im), gm_prob_df)
     else:
-        # Convert rupture name to rupture id
-        im_data.index = im_data.index.set_levels(
-            branch.rupture_name_to_id(
-                im_data.index.levels[0].values.astype(str), source_type
-            ),
-            level=0,
-        )
-
         epsilon = sha_calc.epsilon_non_para(im_data[str(im)], gm_prob_df)
 
     epsilon.name = "epsilon"

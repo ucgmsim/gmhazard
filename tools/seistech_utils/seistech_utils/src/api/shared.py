@@ -194,7 +194,7 @@ def create_hazard_download_zip(
 
 
 def write_disagg_download_data(
-    disagg_data: sc.disagg.EnsembleDisaggData,
+    disagg_data: sc.disagg.EnsembleDisaggResult,
     metadata_df: pd.DataFrame,
     out_dir: str,
     src_plot_data: bytes = None,
@@ -279,7 +279,7 @@ def write_disagg_download_data(
 
 
 def create_disagg_download_zip(
-    ensemble_disagg: sc.disagg.EnsembleDisaggData,
+    ensemble_disagg: sc.disagg.EnsembleDisaggResult,
     metadata_df: pd.DataFrame,
     data_dir: str,
     src_plot_data: bytes = None,
