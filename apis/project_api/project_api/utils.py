@@ -148,7 +148,7 @@ def load_hazard_data(results_dir: Path, im: sc.im.IM):
 
 def load_disagg_data(station_data_dir: Path, im: sc.im.IM, rp: int):
     data_dir = station_data_dir / f"disagg_{im.file_format()}_{rp}"
-    ensemble_disagg = sc.disagg.EnsembleDisaggData.load(data_dir)
+    ensemble_disagg = sc.disagg.EnsembleDisaggResult.load(data_dir)
 
     metadata_df = pd.read_csv(
         data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv",
@@ -184,7 +184,7 @@ def load_gms_data(station_data_dir: Path, gms_id: str):
 
     gms_result = sc.gms.GMSResult.load(data_dir)
     cs_param_bounds = sc.gms.CausalParamBounds.load(data_dir / "causal_param_bounds")
-    disagg_data = sc.disagg.EnsembleDisaggData.load(data_dir / "disagg_data")
+    disagg_data = sc.disagg.EnsembleDisaggResult.load(data_dir / "disagg_data")
 
     return gms_result, cs_param_bounds, disagg_data
 

@@ -28,7 +28,7 @@ def get_ensemble_hazard_response(
 
 
 def get_ensemble_disagg(
-    ensemble_disagg: sc.disagg.EnsembleDisaggData,
+    ensemble_disagg: sc.disagg.EnsembleDisaggResult,
     metadata_df: pd.DataFrame,
     src_png_data: str,
     eps_png_data: str,
@@ -51,7 +51,7 @@ def get_ensemble_disagg(
 def get_ensemble_gms(
     gms_result: sc.gms.GMSResult,
     download_token: str,
-    disagg_data: sc.disagg.EnsembleDisaggData,
+    disagg_data: sc.disagg.EnsembleDisaggResult,
     site: str,
 ):
     """ Creates the response for both the core and Project API"""

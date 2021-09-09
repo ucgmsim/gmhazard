@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Dict, Union, Sequence
 import numpy as np
 import pandas as pd
 
+from seistech_calc import rupture
 from seistech_calc import constants as const
 from seistech_calc.im import IM, IMType, IM_COMPONENT_MAPPING
 from .Branch import Branch
@@ -85,31 +86,27 @@ class IMEnsemble:
         return self._stations
 
     @property
-    def rupture_df(self) -> pd.DataFrame:
+    def rupture_df_id_ix(self) -> pd.DataFrame:
         if self._rupture_df is None:
-            # Identify all unique ERFs, and then use corresponding branches to
-            # create IMEnsemble rupture dataframe
-            _, flt_ind = np.unique([cur_branch.flt_erf_ffp for cur_branch in self.branches], return_index=True)
-            _, ds_ind = np.unique([cur_branch.ds_erf_ffp for cur_branch in self.branches], return_index=True)
-            branch_ind = np.concatenate((flt_ind, ds_ind))
-
-            for ix in branch_ind:
-                cur_branch = self.branches[ix]
-                if self._rupture_df is None:
-                    self._rupture_df = cur_branch.rupture_df
-                else:
-                    # Append and drop duplicates
-                    self._rupture_df = self._rupture_df.append(cur_branch.rupture_df)
-                    self._rupture_df = self._rupture_df.loc[
-                        ~self._rupture_df.index.duplicated()
-                    ]
+            self.__load_rupture_df()
 
         return self._rupture_df
 
     @property
+    def rupture_df_id(self) -> pd.DataFrame:
+        if self._rupture_df is None:
+            self.__load_rupture_df()
+
+        return self._rupture_df.set_index(
+            rupture.rupture_id_ix_to_rupture_id(
+                self.ensemble, self._rupture_df.index.values
+            )
+        )
+
+    @property
     def fault_rupture_df(self):
-        return self.rupture_df.loc[
-            self.rupture_df.rupture_type == const.SourceType.fault.value, :
+        return self.rupture_df_id.loc[
+            self.rupture_df_id.rupture_type == const.SourceType.fault.value, :
         ]
 
     @property
@@ -128,3 +125,25 @@ class IMEnsemble:
             raise ValueError(
                 f"The specified IM type {im} is not valid for this ensemble."
             )
+
+    def __load_rupture_df(self):
+        # Identify all unique ERFs, and then use corresponding branches to
+        # create IMEnsemble rupture dataframe
+        _, flt_ind = np.unique(
+            [cur_branch.flt_erf_ffp for cur_branch in self.branches], return_index=True
+        )
+        _, ds_ind = np.unique(
+            [cur_branch.ds_erf_ffp for cur_branch in self.branches], return_index=True
+        )
+        branch_ind = np.concatenate((flt_ind, ds_ind))
+
+        for ix in branch_ind:
+            cur_branch = self.branches[ix]
+            if self._rupture_df is None:
+                self._rupture_df = cur_branch.rupture_df_id_ix
+            else:
+                # Append and drop duplicates
+                self._rupture_df = self._rupture_df.append(cur_branch.rupture_df_id_ix)
+                self._rupture_df = self._rupture_df.loc[
+                    ~self._rupture_df.index.duplicated()
+                ]

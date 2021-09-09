@@ -146,6 +146,7 @@ def get_IM_values(
         return None
 
     im_df = pd.concat(im_dfs) if len(im_dfs) > 1 else im_dfs[0]
+    im_df.sort_index(inplace=True)
     return im_df
 
 
@@ -212,7 +213,12 @@ def get_gm_prob_df(
         format: index = rupture_name, columns = IM_levels
     """
     im_data, im_data_type = get_im_data(
-        branch, ensemble, site_info, source_type, im_component=im.component
+        branch,
+        ensemble,
+        site_info,
+        source_type,
+        im_component=im.component,
+        as_rupture_id_ix=True,
     )
 
     # No IM data for the specified branch and source type
@@ -233,10 +239,7 @@ def get_gm_prob_df(
             columns={str(im): "mu", f"{im}_sigma": "sigma"}
         )
 
-        result_df = sha_calc.parametric_gm_excd_prob(
-            im_levels,
-            im_data,
-        )
+        result_df = sha_calc.parametric_gm_excd_prob(im_levels, im_data,)
     # Non-parametric
     else:
         result_df = pd.concat(
@@ -248,14 +251,6 @@ def get_gm_prob_df(
             join="inner",
         )
         result_df.columns = im_levels
-
-    # Convert rupture names to rupture ids
-    result_df.index = rupture.rupture_name_to_id(
-        result_df.index.values,
-        branch.flt_erf_ffp
-        if source_type is constants.SourceType.fault
-        else branch.ds_erf_ffp,
-    )
 
     return result_df
 
@@ -271,7 +266,12 @@ def _apply_mu_im_component(value, component):
 
 
 def get_im_data(
-    branch, ensemble, site_info, source_type, im_component=IMComponent.RotD50
+    branch: gm_data.Branch,
+    ensemble: gm_data.Ensemble,
+    site_info: site.SiteInfo,
+    source_type: constants.SourceType,
+    im_component: IMComponent = IMComponent.RotD50,
+    as_rupture_id_ix: bool = False,
 ):
     # Load the IM data
     im_data_type = (
@@ -319,14 +319,33 @@ def get_im_data(
             raise NotImplementedError(
                 "IM Components other than RotD50 are not currently supported for Non-parametric calculations"
             )
+
+    # Convert rupture names to rupture id indices
+    if as_rupture_id_ix:
+        if im_data_type is constants.IMDataType.parametric:
+            erf_ffp, erf_type = branch.flt_erf_ffp, constants.ERFFileType.flt_nhm
+            if source_type is constants.SourceType.distributed:
+                erf_ffp, erf_type = branch.ds_erf_ffp, constants.ERFFileType.ds_erf
+
+            im_data.index = rupture.rupture_name_to_id_ix(
+                ensemble, erf_ffp, im_data.index.values.astype(str)
+            )
+        else:
+            if source_type is constants.SourceType.distributed:
+                # This should never happen
+                raise NotImplementedError()
+
+            rupture_id_ind = rupture.rupture_name_to_id_ix(
+                ensemble, branch.flt_erf_ffp, im_data.index.unique(0).values.astype(str)
+            )
+            im_data.index.set_levels(rupture_id_ind, level=0, inplace=True)
+            im_data.sort_index(inplace=True)
+
     return im_data, im_data_type
 
 
 def compute_adj_branch_weights(
-    ensemble: gm_data.Ensemble,
-    im: IM,
-    im_value: float,
-    site_info: site.SiteInfo,
+    ensemble: gm_data.Ensemble, im: IM, im_value: float, site_info: site.SiteInfo,
 ) -> Tuple[pd.Series, float]:
     """
     Computes hazard adjusted branch weights using equations (9) and (10) from
