@@ -186,7 +186,9 @@ def load_gms_data(station_data_dir: Path, gms_id: str):
 
     gms_result = sc.gms.GMSResult.load(data_dir)
     cs_param_bounds = sc.gms.CausalParamBounds.load(data_dir / "causal_param_bounds")
-    disagg_data = sc.disagg.EnsembleDisaggResult.load(data_dir / "disagg_data" / disagg_dir)
+    disagg_data = sc.disagg.EnsembleDisaggResult.load(
+        data_dir / "disagg_data" / disagg_dir
+    )
 
     return gms_result, cs_param_bounds, disagg_data
 

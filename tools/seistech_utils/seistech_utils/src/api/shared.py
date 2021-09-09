@@ -424,7 +424,7 @@ def write_gms_download_data(
     gms_result: sc.gms.GMSResult,
     app: flask.app,
     out_dir: str,
-    disagg_data: sc.disagg.EnsembleDisaggData,
+    disagg_data: sc.disagg.EnsembleDisaggResult,
     cs_param_bounds: sc.gms.CausalParamBounds = None,
     prefix: str = None,
 ):
@@ -535,7 +535,7 @@ def create_gms_download_zip(
     gms_result: sc.gms.GMSResult,
     app: flask.app,
     tmp_dir: str,
-    disagg_data: sc.disagg.EnsembleDisaggData,
+    disagg_data: sc.disagg.EnsembleDisaggResult,
     cs_param_bounds: sc.gms.CausalParamBounds = None,
     prefix: str = None,
 ):

@@ -98,7 +98,8 @@ def run_ensemble_disagg(
 
         # Compute mean magnitude
         mag_mean = shared.compute_contr_mean(
-            im_ensemble.rupture_df_id.magnitude, full_disagg.contribution.to_frame(),
+            im_ensemble.rupture_df_id.magnitude,
+            full_disagg.contribution.to_frame(),
         ).values[0]
 
         mag_16th, mag_84th = shared.compute_contr_16_84(
@@ -140,7 +141,8 @@ def run_ensemble_disagg(
         rrup_disagg_df = pd.concat([fault_rrup_disagg_df.rrup, ds_rrup_disagg_df.rrup])
         mask = ~rrup_disagg_df.isna()
         rrup_mean = shared.compute_contr_mean(
-            rrup_disagg_df.loc[mask], full_disagg.contribution.loc[mask].to_frame(),
+            rrup_disagg_df.loc[mask],
+            full_disagg.contribution.loc[mask].to_frame(),
         ).values[0]
 
         rrup_16th, rrup_84th = shared.compute_contr_16_84(
