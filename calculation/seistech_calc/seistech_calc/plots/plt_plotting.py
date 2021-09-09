@@ -624,8 +624,10 @@ def plot_gms_im_distribution(
     gms_result: gms.GMSResult,
     save_file: Path = None,
 ):
-    """Plot of the empirical distribution of selected ground motions
-    and the corresponding target GCIM distribution.
+    """Plots the CDF of the GCIM and selected GMs
+    for each specified IM
+
+    Also shows the KS bounds
 
     Parameters
     ----------
@@ -714,9 +716,10 @@ def plot_gms_im_distribution(
 def plot_gms_mw_rrup(
     metadata: Dict,
     bounds: Dict,
+    disagg_mean_values: pd.DataFrame,
     save_file: Path = None,
 ):
-    """Plot of the magnitude-distance distribution of the selected ground motions representing.
+    """Magnitude - Distance (Rrup) plot of the selected GMs with
 
     Parameters
     ----------
@@ -757,6 +760,20 @@ def plot_gms_mw_rrup(
         dashes=(5, 5),
     )
 
+    # Error bounds
+    plt.errorbar(
+        disagg_mean_values["rrup"],
+        disagg_mean_values["magnitude"],
+        xerr=[
+            disagg_mean_values["rrup_84th"] - disagg_mean_values["rrup"],
+            disagg_mean_values["rrup"] - disagg_mean_values["rrup_16th"],
+        ],
+        yerr=[
+            disagg_mean_values["magnitude_84th"] - disagg_mean_values["magnitude"],
+            disagg_mean_values["magnitude"] - disagg_mean_values["magnitude_16th"],
+        ],
+    )
+
     plt.xscale("log")
     plt.xlabel("Rupture distance, $R_{rup}$(km)")
     plt.ylabel("Magnitude, $M_{w}$")
@@ -776,8 +793,10 @@ def plot_gms_causal_param(
     metadata: str,
     save_file: Path = None,
 ):
-    """Plot of the comparison between the causal parameters (SF and Vs30 for now)
-    distribution of selected ground motions
+    """CDF plot of the selected GMs for Vs30 and
+    Scaling Factor (separate plots)
+
+    Also shows causal bounding parameters if specified
 
     Parameters
     ----------
@@ -841,9 +860,9 @@ def plot_gms_spectra(
     gms_result: gms.GMSResult,
     save_file: Path = None,
 ):
-    """Plot of the SA ordinates of the selected ground motions
-    and the corresponding median, 16th, and 84th percentile
-    spectra representing.
+    """Plot of the pSA values of the realisations and
+     selected ground motions and
+     the median, 16th, and 84th percentile of the GCIM
 
     Parameters
     ----------
@@ -909,8 +928,11 @@ def plot_gms_disagg_distribution(
     metadata: str,
     save_file: Path = None,
 ):
-    """Plot of the empirical distribution of selected ground motions
-    and the corresponding target GCIM distribution.
+    """CDF plots for the selected GMs and
+    all ruptures (disaggregation) for Magnitude
+    and Distance (Rrup)
+
+    Also shows causal bounding parameters if specified
 
     Parameters
     ----------
@@ -971,9 +993,9 @@ def plot_gms_available_gm(
     n_gms_in_bounds: int,
     save_file: Path = None,
 ):
-    """Plot of the magnitude-distance distribution of the selected ground motions
-    representing with available ground motions in the database based
-    on the bounds applied on the causal parameters of prospective ground motions.
+    """Distance (Rrup) - Magnitude plot of the GMs in the GM-dataset
+
+    Also shows a bounding box to visualise the causal bound parameters
 
     Parameters
     ----------
