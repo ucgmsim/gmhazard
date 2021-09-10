@@ -166,7 +166,7 @@ class GMSResult:
 
     def save(self, base_dir: Path, id: str) -> Path:
         save_dir = base_dir / self.get_save_dir(id)
-        save_dir.mkdir(exist_ok=False, parents=False)
+        save_dir.mkdir(exist_ok=True, parents=False)
 
         self.site_info.save(save_dir)
         self.selected_gms_im_df.to_csv(save_dir / self.SELECTED_GMS_IMS_FN)

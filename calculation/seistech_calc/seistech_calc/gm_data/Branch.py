@@ -121,13 +121,28 @@ class Branch:
         return self._ds_rupture_df
 
     @property
-    def rupture_df(self) -> pd.DataFrame:
+    def rupture_df_id_ix(self) -> pd.DataFrame:
+        """Standardised dataframe that contains
+        information for fault and ds ruptures, format:
+        index = rupture id ix
+        columns = [rupture name, annual recurrence probability, magnitude, tectonic type]
+        """
+        return pd.concat([self.flt_rupture_df, self.ds_rupture_df], sort=True)
+
+    @property
+    def rupture_df_id(self) -> pd.DataFrame:
         """Standardised dataframe that contains
         information for fault and ds ruptures, format:
         index = rupture id
         columns = [rupture name, annual recurrence probability, magnitude, tectonic type]
         """
-        return pd.concat([self.flt_rupture_df, self.ds_rupture_df], sort=True)
+        rupture_df = pd.concat([self.flt_rupture_df, self.ds_rupture_df], sort=True)
+        return rupture_df.set_index(
+            rupture.rupture_id_ix_to_rupture_id(
+                self.im_ensemble.ensemble, rupture_df.index.values
+            ),
+            inplace=False,
+        )
 
     @property
     def flt_erf_name(self) -> str:

@@ -45,7 +45,7 @@ for im, period in zip(sa_ims, sa_periods):
 
     cur_df.index = sc.rupture.rupture_name_to_id(cur_df.index.values, ens._config["datasets"]["sim"]["flt_erf"])
 
-    cur_hazard = haz.hazard_curve(cur_df, ens.rupture_df["annual_rec_prob"])
+    cur_hazard = haz.hazard_curve(cur_df, ens.rupture_df_id["annual_rec_prob"])
 
     sa_values.append(sc.hazard.exceedance_to_im(exceedance, cur_hazard.index.values, cur_hazard.values))
 

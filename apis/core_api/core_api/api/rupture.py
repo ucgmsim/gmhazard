@@ -26,4 +26,4 @@ def get_rupture_df():
     server.app.logger.debug(f"Loading ensemble and rupture information")
     ensemble = sc.gm_data.Ensemble(ensemble_id)
 
-    return flask.jsonify({"ruptures": ensemble.rupture_df.to_json()})
+    return flask.jsonify({"ruptures": ensemble.rupture_df_id.to_json()})

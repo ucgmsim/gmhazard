@@ -19,7 +19,7 @@ class DisaggCachedData:
         self,
         ensemble: sc.gm_data.Ensemble,
         site_info: sc.site.SiteInfo,
-        disagg_data: sc.disagg.EnsembleDisaggData,
+        disagg_data: sc.disagg.EnsembleDisaggResult,
         merged_df: pd.DataFrame,
         src_plot_data: bytes,
         eps_plot_data: bytes,
@@ -258,7 +258,7 @@ def _get_disagg(
 ) -> Tuple[
     sc.gm_data.Ensemble,
     sc.site.SiteInfo,
-    sc.disagg.EnsembleDisaggData,
+    sc.disagg.EnsembleDisaggResult,
     pd.DataFrame,
     Union[None, bytes],
     Union[None, bytes],
@@ -293,8 +293,8 @@ def _get_disagg(
         )
 
         # Also include annual rec prob, magnitude and rrup (for disagg table)
-        ruptures_df = ensemble.get_im_ensemble(im.im_type).rupture_df.loc[
-            disagg_data.fault_disagg.index.values
+        ruptures_df = ensemble.get_im_ensemble(im.im_type).rupture_df_id.loc[
+            disagg_data.fault_disagg_id.index.values
         ]
         flt_dist_df = sc.site_source.get_distance_df(ensemble.flt_ssddb_ffp, site_info)
         merged_df = pd.merge(
