@@ -191,7 +191,7 @@ def write_project_config(project_dir: Path, project_specs: Dict):
     with open(project_dir / f"{project_specs['id']}.yaml", "r") as f:
         project_config = yaml.safe_load(f)
 
-        if project_specs["project_parameters"] is not None:
+        if project_specs.get("project_parameters") is not None:
             print("Project parameters are already specified  set, skipping package type mapping")
             project_config["project_parameters"] = project_specs["project_parameters"]
         else:
