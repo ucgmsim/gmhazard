@@ -384,7 +384,7 @@ def run(
     # The worker memory can probably be significantly lower.
     ray.init(
         num_cpus=max(n_procs, pre_n_procs),
-        object_store_memory=15 * 1e9,
+        object_store_memory=30 * 1e9,
         logging_level=logging.DEBUG,
     )
 
