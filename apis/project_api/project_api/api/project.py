@@ -178,7 +178,7 @@ def create_new():
     """
     Parameters
     ----------
-    project_params: dictionary
+    project_specs: dictionary
         The project parameters,
         Example of JSON format:
         {

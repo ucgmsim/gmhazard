@@ -163,7 +163,7 @@ def gen_psha_project_data(project_dir: Path, n_procs: int = 1, use_mp: bool = Tr
     if use_mp:
         with mp.Pool(processes=n_procs) as p:
             p.starmap(
-                process_station_component,
+                process_station_scenarios,
                 [
                     (
                         ensemble,
@@ -225,7 +225,7 @@ def generate_maps(
         print("Skipping vs30 map generation as it already exists")
 
 
-def process_station_component(
+def process_station_scenarios(
     ensemble: sc.gm_data.Ensemble,
     station_name: str,
     im_component: sc.im.IMComponent,
@@ -237,9 +237,13 @@ def process_station_component(
     site_info = sc.site.get_site_from_name(ensemble, station_name)
 
     # Compute and Write Scenario
-    sc.scenario.run_ensemble_scenario(
-        ensemble, site_info, im_component=im_component,
-    ).save(output_dir)
+    if (output_dir / sc.scenario.EnsembleScenarioResult.get_save_dir()).exists():
+        print(f"Skipping scenario computation for station {station_name} "
+              f"- IM component {im_component} as it already exists")
+    else:
+        sc.scenario.run_ensemble_scenario(
+            ensemble, site_info, im_component=im_component,
+        ).save(output_dir)
 
 
 def process_station_im(
