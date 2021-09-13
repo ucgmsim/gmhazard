@@ -181,13 +181,14 @@ def load_uhs_data(results_dir: Path, rps: List[int]):
 
 def load_gms_data(station_data_dir: Path, gms_id: str):
     data_dir = station_data_dir / f"gms_{gms_id}"
-    split_gms_id = gms_id.split("_")
-    disagg_dir = f"disagg_{split_gms_id[0]}_{split_gms_id[1]}_{int(1 / float(split_gms_id[2].replace('p', '.')))}"
 
     gms_result = sc.gms.GMSResult.load(data_dir)
     cs_param_bounds = sc.gms.CausalParamBounds.load(data_dir / "causal_param_bounds")
     disagg_data = sc.disagg.EnsembleDisaggResult.load(
-        data_dir / "disagg_data" / disagg_dir
+        data_dir
+        / "disagg_data"
+        / f"disagg_{str(gms_result.cs_param_bounds.IM_j).replace('.', 'p')}"
+        f"_{int(1 / gms_result.cs_param_bounds.exceedance)}"
     )
 
     return gms_result, cs_param_bounds, disagg_data

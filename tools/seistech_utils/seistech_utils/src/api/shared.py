@@ -440,29 +440,24 @@ def write_gms_download_data(
 
     if cs_param_bounds is not None:
         default_causal_params = sr.get_default_causal_params(cs_param_bounds)
-        # Bounds with min/max values
-        causal_params_bounds = sr.get_causal_params_bounds(cs_param_bounds)
-
-        selected_gms_metadata = {
-            **gms_result.selected_gms_metdata_df.to_dict(orient="list"),
-            # mean and error bounds for selected GMs, used in Mw Rrup plot
-            **gms_result.metadata_dict,
-        }
 
         # Mw and Rrup distribution plot
         sc.plots.plt_gms_mw_rrup(
-            selected_gms_metadata,
+            gms_result,
             disagg_data.mean_values,
             bounds=default_causal_params,
             save_file=Path(out_dir) / f"{prefix}gms_mw_rrup_plot.png",
         )
+
         # Pseudo acceleration response spectra plot
         sc.plots.plt_gms_spectra(
             gms_result,
             save_file=Path(out_dir) / f"{prefix}gms_spectra_plot.png",
         )
+
         # IM distribution plots
         sc.plots.plt_gms_im_distribution(gms_result, save_file=Path(out_dir))
+
         # Disagg Distribution plots (Mw Distribution or Rrup distribution)
         contribution_df_data = default_causal_params["contribution_df"]
         if contribution_df_data is not None:
@@ -473,56 +468,45 @@ def write_gms_download_data(
                 contribution_df_data["contribution"][:],
                 contribution_df_data["magnitude"][:],
             )
-            sorted_contribution_df = {
-                "magnitude": sorted_mag.tolist(),
-                "mag_contribution": mag_cdf.tolist(),
-                "rrup": sorted_rrup.tolist(),
-                "rrup_contribution": rrup_cdf.tolist(),
-            }
 
             sc.plots.plt_gms_disagg_distribution(
-                sorted_contribution_df["mag_contribution"],
-                sorted_contribution_df["magnitude"],
-                selected_gms_metadata,
+                mag_cdf.tolist(),
+                sorted_mag.tolist(),
+                gms_result,
                 "mag",
-                bounds=causal_params_bounds,
+                cs_param_bounds=cs_param_bounds,
                 save_file=Path(out_dir)
                 / f"{prefix}gms_mag_disagg_distribution_plot.png",
             )
 
             sc.plots.plt_gms_disagg_distribution(
-                sorted_contribution_df["rrup_contribution"],
-                sorted_contribution_df["rrup"],
-                selected_gms_metadata,
+                rrup_cdf.tolist(),
+                sorted_rrup.tolist(),
+                gms_result,
                 "rrup",
-                bounds=causal_params_bounds,
+                cs_param_bounds=cs_param_bounds,
                 save_file=Path(out_dir)
                 / f"{prefix}gms_rrup_disagg_distribution_plot.png",
             )
         # Causal Parameters plots
         sc.plots.plt_gms_causal_param(
-            selected_gms_metadata,
+            gms_result,
             "vs30",
-            bounds=causal_params_bounds,
+            cs_param_bounds=cs_param_bounds,
             save_file=Path(out_dir) / f"{prefix}gms_vs30_causal_param_plot.png",
         )
 
         sc.plots.plt_gms_causal_param(
-            selected_gms_metadata,
+            gms_result,
             "sf",
-            bounds=causal_params_bounds,
+            cs_param_bounds=cs_param_bounds,
             save_file=Path(out_dir) / f"{prefix}gms_sf_causal_param_plot.png",
         )
 
         # Available Ground Motions plot
         sc.plots.plt_gms_available_gm(
-            gms_result.gm_dataset.get_metadata_df(gms_result.site_info).to_dict(
-                orient="list"
-            ),
-            gms_result.gm_dataset.get_n_gms_in_bounds(
-                gms_result.gm_dataset.get_metadata_df(gms_result.site_info),
-                cs_param_bounds,
-            ),
+            gms_result,
+            cs_param_bounds,
             bounds=default_causal_params,
             save_file=Path(out_dir) / f"{prefix}gms_available_gm_plot.png",
         )

@@ -292,14 +292,14 @@ def post_err_on_slack(
         app.logger.error(f"Slack WebClient failed with: {e.response.get('error')}")
 
 
-def calc_cdf(weights, x_values):
+def calc_cdf(weights: List, x_values: List):
     """Sorting two corresponding arrays in ascending order of
     element in x_values(Mw or Rrup)
     Parameters
     ----------
-    weights: array
-        contribution_df: contribution
-    x_values: array
+    weights: List
+        The contribution of the rupture
+    x_values: List
         For rrup or magnitude
     """
     sort_ind = np.argsort(np.array(x_values))

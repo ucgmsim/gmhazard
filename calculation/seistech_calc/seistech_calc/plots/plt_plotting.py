@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt, cm as cm, colors as ml_colors
 
-from seistech_calc import utils
+import sha_calc as sha_calc
 from seistech_calc import gms
 from seistech_calc.im import IM
 
@@ -681,19 +681,17 @@ def plot_gms_im_distribution(
         )
 
         # Sort before plotting
-        sorted_realisations = realisations.loc[:, str(IMi)].sort_values()
         plt.step(
-            sorted_realisations.values,
-            np.linspace(0, 1, len(sorted_realisations)),
+            realisations.loc[:, str(IMi)].sort_values().values,
+            np.linspace(0, 1, len(realisations.loc[:, str(IMi)])),
             where="post",
             color="blue",
             label="Realisations",
         )
 
-        sorted_selected_gms = selected_gms.loc[:, str(IMi)].sort_values()
         plt.step(
-            sorted_selected_gms.values,
-            np.linspace(0, 1, len(sorted_selected_gms)),
+            selected_gms.loc[:, str(IMi)].sort_values().values,
+            np.linspace(0, 1, len(selected_gms.loc[:, str(IMi)])),
             where="post",
             color="black",
             label="Selected Ground Motions",
@@ -720,7 +718,7 @@ def plot_gms_im_distribution(
 
 
 def plot_gms_mw_rrup(
-    metadata: Dict,
+    gms_result: gms.GMSResult,
     disagg_mean_values: pd.Series,
     bounds: Dict = None,
     save_file: Path = None,
@@ -731,11 +729,17 @@ def plot_gms_mw_rrup(
 
     Parameters
     ----------
-    metadata: Dict
+    gms_result: gms.GMSResult
     disagg_mean_values: pd.DataFrame
     bounds: Dict, optional
     save_file: Path, optional
     """
+    metadata = {
+        **gms_result.selected_gms_metdata_df.to_dict(orient="list"),
+        # mean and error bounds for selected GMs, used in Mw Rrup plot
+        **gms_result.metadata_dict,
+    }
+
     plt.figure(figsize=(16, 9))
 
     plt.scatter(
@@ -823,9 +827,9 @@ def plot_gms_mw_rrup(
 
 
 def plot_gms_causal_param(
-    selected_gms_metadata: Dict,
-    metadata: str,
-    bounds: Dict = None,
+    gms_result: gms.GMSResult,
+    metadata_key: str,
+    cs_param_bounds: gms.CausalParamBounds = None,
     save_file: Path = None,
 ):
     """CDF plot of the selected GMs for Vs30 and
@@ -835,13 +839,16 @@ def plot_gms_causal_param(
 
     Parameters
     ----------
-    selected_gms_metadata: Dictionary
-    metadata: str
-    bounds: Dict, optional
+    gms_result: gms.GMSResult
+    metadata_key: str
+        Currently only support vs30 and sf
+    cs_param_bounds: Dict, optional
     save_file: Path, optional
     """
+    selected_gms_metadata = gms_result.selected_gms_metdata_df.to_dict(orient="list")
+    bounds = _get_causal_params_bounds(cs_param_bounds)
     # To achieve Empirical distribution function with matplotlib's step plotting
-    copied_metadata = selected_gms_metadata[metadata][:]
+    copied_metadata = selected_gms_metadata[metadata_key][:]
     copied_metadata.append(min(copied_metadata))
     copied_metadata.sort()
 
@@ -853,37 +860,40 @@ def plot_gms_causal_param(
         np.linspace(0, 1, len(copied_metadata)),
         where="post",
         color="black",
-        label=CAUSAL_PARAMS_LABEL[metadata],
+        label=CAUSAL_PARAMS_LABEL[metadata_key],
     )
 
-    if bounds is not None and bounds.get(metadata) is not None:
+    if bounds is not None and bounds.get(metadata_key) is not None:
         plt.plot(
-            [bounds.get(metadata).get("min"), bounds.get(metadata).get("min")],
+            [bounds.get(metadata_key).get("min"), bounds.get(metadata_key).get("min")],
             bounds_y_range,
             color="red",
             linestyle="dotted",
             label="Lower and upper bound limits",
         )
         plt.plot(
-            [bounds.get(metadata).get("max"), bounds.get(metadata).get("max")],
+            [bounds.get(metadata_key).get("max"), bounds.get(metadata_key).get("max")],
             bounds_y_range,
             color="red",
             linestyle="dotted",
         )
 
-    if metadata == "sf":
+    if metadata_key == "sf":
         plt.plot([1, 1], bounds_y_range, color="red", label="Reference point")
 
-    elif metadata == "vs30":
+    elif metadata_key == "vs30":
         plt.plot(
-            [bounds.get(metadata).get("vs30"), bounds.get(metadata).get("vs30")],
+            [
+                bounds.get(metadata_key).get("vs30"),
+                bounds.get(metadata_key).get("vs30"),
+            ],
             bounds_y_range,
             color="red",
             label="Site-Specific $V_{s30}$",
         )
 
-    plt.title(f"{CAUSAL_PARAMS_LABEL[metadata]} distribution")
-    plt.xlabel(f"{CAUSAL_PARAMS_LABEL[metadata]}")
+    plt.title(f"{CAUSAL_PARAMS_LABEL[metadata_key]} distribution")
+    plt.xlabel(f"{CAUSAL_PARAMS_LABEL[metadata_key]}")
     plt.ylabel("Cumulative Probability, CDF")
     plt.ylim(ymin=0)
     plt.legend()
@@ -912,7 +922,7 @@ def plot_gms_spectra(
         gcim_df,
         realisations_df,
         selected_gms_df,
-    ) = utils.calculate_gms_spectra(gms_result)
+    ) = _prepare_gms_spectra(gms_result)
 
     plt.figure(figsize=(20, 9))
 
@@ -962,9 +972,9 @@ def plot_gms_spectra(
 def plot_gms_disagg_distribution(
     contribution: List,
     distribution: List,
-    gms_metadata: Dict,
-    metadata: str,
-    bounds: Dict = None,
+    gms_result: gms.GMSResult,
+    metadata_key: str,
+    cs_param_bounds: gms.CausalParamBounds = None,
     save_file: Path = None,
 ):
     """CDF plots for the selected GMs and
@@ -976,15 +986,20 @@ def plot_gms_disagg_distribution(
     Parameters
     ----------
     contribution: List
+        Cumulative sum of the contribution of the ruptures
+        corresponding to the distribution
     distribution: List
-    gms_metadata: Dict
-    metadata: str
-    bounds: Dict, optional
+        List of either Mw or Rrup in an ascending order
+    gms_result: gms.GMSResult
+    metadata_key: str
+    cs_param_bounds: Dict, optional
     save_file: Path, optional
     """
+    selected_gms_metadata = gms_result.selected_gms_metdata_df.to_dict(orient="list")
+    bounds = _get_causal_params_bounds(cs_param_bounds)
     bounds_y_range = [0, 1]
     # To achieve Empirical distribution function with matplotlib's step plotting
-    copied_metadata = gms_metadata[metadata][:]
+    copied_metadata = selected_gms_metadata[metadata_key][:]
     copied_metadata.append(min(copied_metadata))
     copied_metadata.sort()
 
@@ -995,7 +1010,7 @@ def plot_gms_disagg_distribution(
         np.linspace(0, 1, len(copied_metadata)),
         where="post",
         color="black",
-        label=DISAGG_DISTRIBUTION_LABEL[metadata],
+        label=DISAGG_DISTRIBUTION_LABEL[metadata_key],
     )
     plt.plot(
         distribution, contribution, label="Disaggregation distribution", color="red"
@@ -1003,25 +1018,25 @@ def plot_gms_disagg_distribution(
 
     if bounds is not None:
         plt.plot(
-            [bounds[metadata]["min"], bounds[metadata]["min"]],
+            [bounds[metadata_key]["min"], bounds[metadata_key]["min"]],
             bounds_y_range,
             color="red",
             linestyle="dotted",
             label="Lower and upper bound limits",
         )
         plt.plot(
-            [bounds[metadata]["max"], bounds[metadata]["max"]],
+            [bounds[metadata_key]["max"], bounds[metadata_key]["max"]],
             bounds_y_range,
             color="red",
             linestyle="dotted",
         )
 
-    if metadata == "rrup":
+    if metadata_key == "rrup":
         plt.xscale("log")
-    plt.xlabel(DISAGG_DISTRIBUTION_LABEL[metadata])
+    plt.xlabel(DISAGG_DISTRIBUTION_LABEL[metadata_key])
     plt.ylabel("Cumulative Probability, CDF")
     plt.ylim(ymin=0)
-    plt.title(f"{DISAGG_DISTRIBUTION_LABEL[metadata]} distribution")
+    plt.title(f"{DISAGG_DISTRIBUTION_LABEL[metadata_key]} distribution")
     plt.legend()
 
     if save_file is not None:
@@ -1032,8 +1047,8 @@ def plot_gms_disagg_distribution(
 
 
 def plot_gms_available_gm(
-    metadata: Dict,
-    n_gms_in_bounds: int,
+    gms_result: gms.GMSResult,
+    cs_param_bounds: gms.CausalParamBounds,
     bounds: Dict = None,
     save_file: Path = None,
 ):
@@ -1043,11 +1058,19 @@ def plot_gms_available_gm(
 
     Parameters
     ----------
-    metadata: Dict
-    n_gms_in_bounds: int
+    gms_result: gms.GMSResult
+    cs_param_bounds: gms.CausalParamBounds
     bounds: Dict, optional
     save_file: Path, optional
     """
+    metadata = gms_result.gm_dataset.get_metadata_df(gms_result.site_info).to_dict(
+        orient="list"
+    )
+    n_gms_in_bounds = gms_result.gm_dataset.get_n_gms_in_bounds(
+        gms_result.gm_dataset.get_metadata_df(gms_result.site_info),
+        cs_param_bounds,
+    )
+
     plt.figure(figsize=(16, 9))
 
     plt.scatter(
@@ -1094,3 +1117,114 @@ def plot_gms_available_gm(
         plt.close()
     else:
         plt.show()
+
+
+def _prepare_gms_spectra(
+    gms_result: gms.GMSResult,
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Create data for Spectra plot from the given GMS data
+
+    Parameters
+    ----------
+    gms_result: gms.GMSResult
+
+    Returns
+    -------
+    gcim_df: pd.DataFrame
+        Includes 84th, median and 16th percentiles along with IMs
+    realisations_df: pd.DataFrame
+    selected_gms_df: pd.DataFrame,
+    """
+    cdf_x = {
+        str(IMi): list(
+            gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.index.values.astype(float)
+        )
+        for IMi in gms_result.IMs
+    }
+    cdf_y = {
+        str(IMi): list(gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.values.astype(float))
+        for IMi in gms_result.IMs
+    }
+    realisations = {
+        str(key): value
+        for key, value in gms_result.realisations.to_dict(orient="list").items()
+    }
+    selected_gms = {
+        str(key): value
+        for key, value in gms_result.selected_gms_im_df.to_dict(orient="list").items()
+    }
+    im_j = gms_result.im_j
+    IM_j = str(gms_result.IM_j)
+
+    # for CDF_X
+    cdf_x_df = pd.DataFrame(cdf_x)
+    cdf_x_df.columns = [
+        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
+        for cur_col in cdf_x_df.columns
+    ]
+    cdf_x_df = cdf_x_df.T.sort_index().T
+
+    # For CDF_Y
+    cdf_y_df = pd.DataFrame(cdf_y)
+    cdf_y_df.columns = [
+        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
+        for cur_col in cdf_y_df.columns
+    ]
+    cdf_y_df = cdf_y_df.T.sort_index().T
+
+    upper_bound, median, lower_bound = sha_calc.query_non_parametric_multi_cdf_invs(
+        [0.84, 0.5, 0.16], cdf_x_df.T.values, cdf_y_df.T.values
+    )
+
+    gcim_df = pd.DataFrame(
+        index=cdf_x_df.columns,
+        columns=np.asarray(["84th", "median", "16th"]),
+        data=np.asarray([upper_bound, median, lower_bound]).T,
+    ).T
+
+    if IM_j.startswith("pSA"):
+        gcim_df[float(IM_j.split("_")[-1])] = im_j
+        gcim_df = gcim_df.T.sort_index().T
+
+    # Realisations
+    realisations_df = pd.DataFrame(realisations)
+    realisations_df.columns = [
+        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
+        for cur_col in realisations_df.columns
+    ]
+    if IM_j.startswith("pSA"):
+        realisations_df[float(IM_j.split("_")[-1])] = im_j
+
+    realisations_df = realisations_df.T.sort_index().T
+
+    # Selected Ground Motions
+    selected_gms_df = pd.DataFrame(selected_gms)
+    selected_gms_df.columns = [
+        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
+        for cur_col in selected_gms_df.columns
+    ]
+    selected_gms_df = selected_gms_df.T.sort_index().T
+
+    return (
+        gcim_df,
+        realisations_df,
+        selected_gms_df,
+    )
+
+
+def _get_causal_params_bounds(cs_param_bounds: gms.CausalParamBounds):
+    return {
+        "mag": {
+            "min": cs_param_bounds.mw_low,
+            "max": cs_param_bounds.mw_high,
+        },
+        "rrup": {
+            "min": cs_param_bounds.rrup_low,
+            "max": cs_param_bounds.rrup_high,
+        },
+        "vs30": {
+            "min": cs_param_bounds.vs30_low,
+            "max": cs_param_bounds.vs30_high,
+            "vs30": cs_param_bounds.site_info.db_vs30,
+        },
+    }
