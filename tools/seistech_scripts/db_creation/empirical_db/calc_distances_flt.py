@@ -90,7 +90,7 @@ def compute_site_source_distances(
                 distances[index, :]["rx"][~too_far_mask],
                 distances[index, :]["ry"][~too_far_mask],
             ) = src_site_dist.calc_rx_ry(
-                srf_points, srf_header, stations[~too_far_mask]
+                srf_points, srf_header, stations[~too_far_mask], type=1
             )
         else:
             # Set Rx/Ry to rrup for point sources
