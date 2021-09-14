@@ -439,13 +439,11 @@ def write_gms_download_data(
         )
 
     if cs_param_bounds is not None:
-        default_causal_params = sr.get_default_causal_params(cs_param_bounds)
-
         # Mw and Rrup distribution plot
         sc.plots.plt_gms_mw_rrup(
             gms_result,
             disagg_data.mean_values,
-            bounds=default_causal_params,
+            cs_param_bounds=cs_param_bounds,
             save_file=Path(out_dir) / f"{prefix}gms_mw_rrup_plot.png",
         )
 
@@ -459,7 +457,9 @@ def write_gms_download_data(
         sc.plots.plt_gms_im_distribution(gms_result, save_file=Path(out_dir))
 
         # Disagg Distribution plots (Mw Distribution or Rrup distribution)
-        contribution_df_data = default_causal_params["contribution_df"]
+        contribution_df_data = sr.get_default_causal_params(cs_param_bounds)[
+            "contribution_df"
+        ]
         if contribution_df_data is not None:
             sorted_rrup, rrup_cdf = utils.calc_cdf(
                 contribution_df_data["contribution"][:], contribution_df_data["rrup"][:]
@@ -507,7 +507,6 @@ def write_gms_download_data(
         sc.plots.plt_gms_available_gm(
             gms_result,
             cs_param_bounds,
-            bounds=default_causal_params,
             save_file=Path(out_dir) / f"{prefix}gms_available_gm_plot.png",
         )
 

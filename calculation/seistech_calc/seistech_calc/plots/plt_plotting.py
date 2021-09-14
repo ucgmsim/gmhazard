@@ -720,7 +720,7 @@ def plot_gms_im_distribution(
 def plot_gms_mw_rrup(
     gms_result: gms.GMSResult,
     disagg_mean_values: pd.Series,
-    bounds: Dict = None,
+    cs_param_bounds: gms.CausalParamBounds = None,
     save_file: Path = None,
 ):
     """Magnitude - Distance (Rrup) plot of the selected GMs and the mean of the
@@ -730,8 +730,8 @@ def plot_gms_mw_rrup(
     Parameters
     ----------
     gms_result: gms.GMSResult
-    disagg_mean_values: pd.DataFrame
-    bounds: Dict, optional
+    disagg_mean_values: pd.Series
+    cs_param_bounds: gms.CausalParamBounds, optional
     save_file: Path, optional
     """
     metadata = {
@@ -752,21 +752,21 @@ def plot_gms_mw_rrup(
     )
 
     # Boundary box plot
-    if bounds is not None:
+    if cs_param_bounds is not None:
         plt.plot(
             [
-                bounds["rrup_low"],
-                bounds["rrup_high"],
-                bounds["rrup_high"],
-                bounds["rrup_low"],
-                bounds["rrup_low"],
+                cs_param_bounds.rrup_low,
+                cs_param_bounds.rrup_high,
+                cs_param_bounds.rrup_high,
+                cs_param_bounds.rrup_low,
+                cs_param_bounds.rrup_low,
             ],
             [
-                bounds["mw_low"],
-                bounds["mw_low"],
-                bounds["mw_high"],
-                bounds["mw_high"],
-                bounds["mw_low"],
+                cs_param_bounds.mw_low,
+                cs_param_bounds.mw_low,
+                cs_param_bounds.mw_high,
+                cs_param_bounds.mw_high,
+                cs_param_bounds.mw_low,
             ],
             color="red",
             linestyle="dashed",
@@ -842,7 +842,7 @@ def plot_gms_causal_param(
     gms_result: gms.GMSResult
     metadata_key: str
         Currently only support vs30 and sf
-    cs_param_bounds: Dict, optional
+    cs_param_bounds: gms.CausalParamBounds, optional
     save_file: Path, optional
     """
     selected_gms_metadata = gms_result.selected_gms_metdata_df.to_dict(orient="list")
@@ -992,7 +992,7 @@ def plot_gms_disagg_distribution(
         List of either Mw or Rrup in an ascending order
     gms_result: gms.GMSResult
     metadata_key: str
-    cs_param_bounds: Dict, optional
+    cs_param_bounds: gms.CausalParamBounds, optional
     save_file: Path, optional
     """
     selected_gms_metadata = gms_result.selected_gms_metdata_df.to_dict(orient="list")
@@ -1049,7 +1049,6 @@ def plot_gms_disagg_distribution(
 def plot_gms_available_gm(
     gms_result: gms.GMSResult,
     cs_param_bounds: gms.CausalParamBounds,
-    bounds: Dict = None,
     save_file: Path = None,
 ):
     """Distance (Rrup) - Magnitude plot of the GMs in the GM-dataset
@@ -1060,7 +1059,6 @@ def plot_gms_available_gm(
     ----------
     gms_result: gms.GMSResult
     cs_param_bounds: gms.CausalParamBounds
-    bounds: Dict, optional
     save_file: Path, optional
     """
     metadata = gms_result.gm_dataset.get_metadata_df(gms_result.site_info).to_dict(
@@ -1083,28 +1081,27 @@ def plot_gms_available_gm(
         facecolors="none",
     )
     # Boundary box plot
-    if bounds is not None:
-        plt.plot(
-            [
-                bounds["rrup_low"],
-                bounds["rrup_high"],
-                bounds["rrup_high"],
-                bounds["rrup_low"],
-                bounds["rrup_low"],
-            ],
-            [
-                bounds["mw_low"],
-                bounds["mw_low"],
-                bounds["mw_high"],
-                bounds["mw_high"],
-                bounds["mw_low"],
-            ],
-            color="red",
-            linestyle="dashed",
-            label="Bounds",
-            linewidth=1,
-            dashes=(5, 5),
-        )
+    plt.plot(
+        [
+            cs_param_bounds.rrup_low,
+            cs_param_bounds.rrup_high,
+            cs_param_bounds.rrup_high,
+            cs_param_bounds.rrup_low,
+            cs_param_bounds.rrup_low,
+        ],
+        [
+            cs_param_bounds.mw_low,
+            cs_param_bounds.mw_low,
+            cs_param_bounds.mw_high,
+            cs_param_bounds.mw_high,
+            cs_param_bounds.mw_low,
+        ],
+        color="red",
+        linestyle="dashed",
+        label="Bounds",
+        linewidth=1,
+        dashes=(5, 5),
+    )
 
     plt.xscale("log")
     plt.xlabel("Rupture distance, $R_{rup}$(km)")
