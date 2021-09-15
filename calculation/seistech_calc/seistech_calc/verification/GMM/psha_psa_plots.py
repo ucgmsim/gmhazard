@@ -2,6 +2,7 @@ import pathlib
 from typing import List, Dict, Union
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
 import constants as const
@@ -237,9 +238,11 @@ def plot_psha_psa(
     """
     for tect_type, im_models in const.MODELS_DICT.items():
         x_position = 0
-        fig, ax = plt.subplots(
-            len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 13.5), dpi=300
-        )
+        # fig, ax = plt.subplots(
+        #     len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 13.5), dpi=300
+        # )
+        plt.figure(figsize=(16, 9))
+
         for vs30 in vs30_values:
             y_position = 0
             for mag in mag_dict[tect_type]:
@@ -248,7 +251,7 @@ def plot_psha_psa(
                     # To match the color with global version
                     if model.endswith("NZ"):
                         color_index -= 1
-                    ax[x_position, y_position].plot(
+                    plt.plot(
                         period_values,
                         result_dict[tect_type][const.PSA_IM_NAME][vs30][mag][model],
                         label=model,
@@ -257,12 +260,147 @@ def plot_psha_psa(
                     )
                     color_index += 1
 
-                ax[x_position, y_position].set_title(
-                    f"SA versus T - Mw{mag}, Vs30-{vs30}"
+                # Create DatFrame to make life easier
+                df = np.log(
+                    pd.DataFrame(
+                        list(
+                            result_dict[tect_type][const.PSA_IM_NAME][vs30][
+                                mag
+                            ].values()
+                        ),
+                        columns=period_values,
+                        index=list(
+                            result_dict[tect_type][const.PSA_IM_NAME][vs30][mag].keys()
+                        ),
+                    )
                 )
-                ax[x_position, y_position].legend(im_models[const.PSA_IM_NAME])
+
+                average_medians = df.sum(axis=0) / len(
+                    list(result_dict[tect_type][const.PSA_IM_NAME][vs30][mag].keys())
+                )
+                sigma_intermodel = np.sqrt(
+                    np.square(df - average_medians).sum(axis=0)
+                    / len(
+                        list(
+                            result_dict[tect_type][const.PSA_IM_NAME][vs30][mag].keys()
+                        )
+                    )
+                )
+
+                plt.plot(
+                    period_values,
+                    np.exp(average_medians),
+                    color="black",
+                    label="average medians",
+                )
+                plt.plot(
+                    period_values,
+                    np.exp(np.add(average_medians, sigma_intermodel)),
+                    color="black",
+                    linestyle="--",
+                    label="average medians + sigma intermodel",
+                )
+                plt.plot(
+                    period_values,
+                    np.exp(np.subtract(average_medians, sigma_intermodel)),
+                    color="black",
+                    linestyle="--",
+                    label="average medians - sigma intermodel",
+                )
+
+                plt.title(f"SA versus T - Mw{mag}, Vs30-{vs30}")
+                plt.legend()
+                plt.xlabel("Period [sec]")
+                plt.ylabel("SA [g]")
+                plt.xscale("log")
+                plt.yscale("log")
+                # plt.xaxis.grid(True, which="both", linestyle="dotted")
+                # plt.yaxis.grid(True, which="both", linestyle="dotted")
+
+                plt.savefig(
+                    f"{plot_directory}/{tect_type}_{str(mag).replace('.', 'p')}_{str(vs30).replace('.', 'p')}_pSA_versus_T.png"
+                )
+                plt.clf()
+            #     y_position += 1
+            # x_position += 1
+
+        # fig.tight_layout()
+        # plt.savefig(f"{plot_directory}/{tect_type}_{}pSA_versus_T.png")
+        # plt.close()
+
+
+def plot_psha_median_psa(
+    vs30_values: List,
+    mag_dict: Dict,
+    period_values: List,
+    result_dict: Dict,
+    plot_directory: pathlib.PosixPath,
+):
+    """Plots for pSA versus T
+
+    Parameters
+    ----------
+    vs30_values: List
+        list of Vs30s
+    mag_dict: Dict
+        Dictionary with a different Mw lists for a different tectonic type
+    period_values: List
+        list of Periods
+    result_dict: Dict
+        nested dictionary with a different Vs30 and Magnitude
+    plot_directory: pathlib.PosixPath
+        absolute path for a directory to store plot image
+    """
+    for tect_type, im_models in const.MODELS_DICT.items():
+        x_position = 0
+        fig, ax = plt.subplots(
+            len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 13.5), dpi=300
+        )
+        for vs30 in vs30_values:
+            y_position = 0
+            for mag in mag_dict[tect_type]:
+                # Create DatFrame to make life easier
+                df = np.log(
+                    pd.DataFrame(
+                        list(result_dict[tect_type]["pSA"][vs30][mag].values()),
+                        columns=period_values,
+                        index=list(result_dict[tect_type]["pSA"][vs30][mag].keys()),
+                    )
+                )
+
+                average_medians = df.sum(axis=0) / len(
+                    list(result_dict[tect_type]["pSA"][vs30][mag].keys())
+                )
+                sigma_intermodel = np.sqrt(
+                    np.square(df - average_medians).sum(axis=0)
+                    / len(list(result_dict[tect_type]["pSA"][vs30][mag].keys()))
+                )
+
+                ax[x_position, y_position].plot(
+                    period_values,
+                    np.exp(average_medians),
+                    c="k",
+                    label="average medians",
+                )
+                ax[x_position, y_position].plot(
+                    period_values,
+                    np.exp(np.add(average_medians, sigma_intermodel)),
+                    c="k",
+                    linestyle="--",
+                    label="average medians + sigma intermodel",
+                )
+                ax[x_position, y_position].plot(
+                    period_values,
+                    np.exp(np.subtract(average_medians, sigma_intermodel)),
+                    c="k",
+                    linestyle="--",
+                    label="average medians - sigma intermodel",
+                )
+
+                ax[x_position, y_position].set_title(f"Median - Mw{mag}, Vs30-{vs30}")
+                # ax[x_position, y_position].legend()
                 ax[x_position, y_position].xaxis.set_label_text("Period [sec]")
-                ax[x_position, y_position].yaxis.set_label_text("SA [g]")
+                # ax[x_position, y_position].yaxis.set_label_text("SA [g]")
                 ax[x_position, y_position].set_xscale("log")
                 ax[x_position, y_position].set_yscale("log")
                 ax[x_position, y_position].xaxis.grid(
@@ -276,7 +414,7 @@ def plot_psha_psa(
             x_position += 1
 
         fig.tight_layout()
-        plt.savefig(f"{plot_directory}/{tect_type}_pSA_versus_T.png")
+        plt.savefig(f"{plot_directory}/{tect_type}_pSA_median_versus_T.png")
         plt.close()
 
 
@@ -284,7 +422,7 @@ def psa_sigma_plot(
     mag_dict: Dict,
     vs30_values: List,
     psa_periods: np.ndarray,
-    rrup_value: Union[float, int],
+    rrup_values: List[Union[float, int]],
 ):
     """Plot function for a pSA Sigma versus T
 
@@ -296,32 +434,38 @@ def psa_sigma_plot(
         list of Vs30s
     psa_periods: np.ndarray
         list of Periods
-    rrup_value: Union[float, int]
+    rrup_values: List[Union[float, int]]
         Rupture distance in km
     """
-
-    plot_directory = (
-        pathlib.Path(__file__).resolve().parent.parent / "plot" / "psa_sigma_period"
-    )
-    plot_directory.mkdir(exist_ok=True, parents=True)
-
     faults, result_dict = init_setup(mag_dict, vs30_values)
-    sites = get_sites(vs30_values, rrup_value)
 
-    faults = get_faults(vs30_values, mag_dict, faults)
+    for rrup in rrup_values:
+        sites = get_sites(vs30_values, rrup)
 
-    result_dict = get_computed_gmms(
-        vs30_values, sites, mag_dict, faults, result_dict, psa_periods, True
-    )
+        faults = get_faults(vs30_values, mag_dict, faults)
 
-    plot_psha_psa_sigma(vs30_values, mag_dict, psa_periods, result_dict, plot_directory)
+        result_dict = get_computed_gmms(
+            vs30_values, sites, mag_dict, faults, result_dict, psa_periods, True
+        )
+
+        plot_directory = (
+            pathlib.Path(__file__).resolve().parent.parent
+            / "plot"
+            / "psa_sigma_period"
+            / f"{rrup}"
+        )
+        plot_directory.mkdir(exist_ok=True, parents=True)
+
+        plot_psha_psa_sigma(
+            vs30_values, mag_dict, psa_periods, result_dict, plot_directory
+        )
 
 
 def psa_plot(
     mag_dict: Dict,
     vs30_values: List,
     psa_periods: np.ndarray,
-    rrup_value: Union[float, int],
+    rrup_values: List[Union[float, int]],
 ):
     """Plot function for a pSA versus T
 
@@ -333,24 +477,72 @@ def psa_plot(
         list of Vs30s
     psa_periods: np.ndarray
         list of Periods
-    rrup_value: Union[float, int]
+    rrup_values: List[Union[float, int]]
         Rupture distance in km
     """
-    plot_directory = (
-        pathlib.Path(__file__).resolve().parent.parent / "plot" / "psa_period"
-    )
-    plot_directory.mkdir(exist_ok=True, parents=True)
-
     faults, result_dict = init_setup(mag_dict, vs30_values)
-    sites = get_sites(vs30_values, rrup_value)
 
-    faults = get_faults(vs30_values, mag_dict, faults)
+    for rrup in rrup_values:
+        sites = get_sites(vs30_values, rrup)
 
-    result_dict = get_computed_gmms(
-        vs30_values, sites, mag_dict, faults, result_dict, psa_periods, False
-    )
+        faults = get_faults(vs30_values, mag_dict, faults)
 
-    plot_psha_psa(vs30_values, mag_dict, psa_periods, result_dict, plot_directory)
+        result_dict = get_computed_gmms(
+            vs30_values, sites, mag_dict, faults, result_dict, psa_periods, False
+        )
+
+        plot_directory = (
+            pathlib.Path(__file__).resolve().parent.parent
+            / "plot"
+            / "psa_period"
+            / f"{rrup}"
+        )
+        plot_directory.mkdir(exist_ok=True, parents=True)
+
+        plot_psha_psa(vs30_values, mag_dict, psa_periods, result_dict, plot_directory)
+
+
+def psa_median_plot(
+    mag_dict: Dict,
+    vs30_values: List,
+    psa_periods: np.ndarray,
+    rrup_value: List[Union[float, int]],
+):
+    """Plot function for a pSA medians, std versus T
+
+    Parameters
+    ----------
+    mag_dict: Dict
+        Dictionary with a different Mw lists for a different tectonic type
+    vs30_values: List
+        list of Vs30s
+    psa_periods: np.ndarray
+        list of Periods
+    rrup_value: List[Union[float, int]]
+        Rupture distance in km
+    """
+    faults, result_dict = init_setup(mag_dict, vs30_values)
+
+    for rrup in rrup_value:
+        sites = get_sites(vs30_values, rrup)
+
+        faults = get_faults(vs30_values, mag_dict, faults)
+
+        result_dict = get_computed_gmms(
+            vs30_values, sites, mag_dict, faults, result_dict, psa_periods, False
+        )
+
+        plot_directory = (
+            pathlib.Path(__file__).resolve().parent.parent
+            / "plot"
+            / "psa_median_period"
+            / f"{rrup}"
+        )
+        plot_directory.mkdir(exist_ok=True, parents=True)
+
+        plot_psha_median_psa(
+            vs30_values, mag_dict, psa_periods, result_dict, plot_directory
+        )
 
 
 if __name__ == "__main__":
@@ -358,11 +550,12 @@ if __name__ == "__main__":
     mag_dict = {
         "ACTIVE_SHALLOW": [5, 6, 7, 8],
         "SUBDUCTION_SLAB": [5, 6, 7],
-        "SUBDUCTION_INTERFACE": [7, 8, 9],
+        "SUBDUCTION_INTERFACE": [5.0, 6.0, 7.0, 8.0, 9.0],
     }
-    vs30_list = [200, 400, 760]
+    vs30_list = [200, 300, 400, 760]
     period_list = np.linspace(0.01, 10, 200)
-    rrup = 200
+    rrup = [50, 100, 200, 300, 400, 500]
 
-    psa_sigma_plot(mag_dict, vs30_list, period_list, rrup)
+    # psa_sigma_plot(mag_dict, vs30_list, period_list, rrup)
     psa_plot(mag_dict, vs30_list, period_list, rrup)
+    # psa_median_plot(mag_dict, vs30_list, period_list, rrup)
