@@ -290,21 +290,3 @@ def post_err_on_slack(
         )
     except SlackApiError as e:
         app.logger.error(f"Slack WebClient failed with: {e.response.get('error')}")
-
-
-def calc_cdf(weights: List, x_values: List):
-    """Sorting two corresponding arrays in ascending order of
-    element in x_values(Mw or Rrup)
-    Parameters
-    ----------
-    weights: List
-        The contribution of the rupture
-    x_values: List
-        For rrup or magnitude
-    """
-    sort_ind = np.argsort(np.array(x_values))
-
-    x_values = np.array(x_values)[sort_ind]
-    weights = np.array(weights)[sort_ind]
-
-    return x_values, np.cumsum(weights)

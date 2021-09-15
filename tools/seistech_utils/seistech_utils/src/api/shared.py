@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Sequence
 
 import yaml
-import flask
 import numpy as np
 import pandas as pd
 
@@ -422,7 +421,6 @@ def create_uhs_download_zip(
 
 def write_gms_download_data(
     gms_result: sc.gms.GMSResult,
-    app: flask.app,
     out_dir: str,
     disagg_data: sc.disagg.EnsembleDisaggResult,
     cs_param_bounds: sc.gms.CausalParamBounds = None,
@@ -433,10 +431,6 @@ def write_gms_download_data(
     missing_waveforms = gms_result.gm_dataset.get_waveforms(
         gms_result.selected_gms_ids, gms_result.site_info, out_dir
     )
-    if len(missing_waveforms) > 0:
-        app.logger.info(
-            f"Failed to find waveforms for simulations: {missing_waveforms}"
-        )
 
     if cs_param_bounds is not None:
         # Mw and Rrup distribution plot
@@ -461,17 +455,10 @@ def write_gms_download_data(
             "contribution_df"
         ]
         if contribution_df_data is not None:
-            sorted_rrup, rrup_cdf = utils.calc_cdf(
-                contribution_df_data["contribution"][:], contribution_df_data["rrup"][:]
-            )
-            sorted_mag, mag_cdf = utils.calc_cdf(
-                contribution_df_data["contribution"][:],
-                contribution_df_data["magnitude"][:],
-            )
-
             sc.plots.plt_gms_disagg_distribution(
-                mag_cdf.tolist(),
-                sorted_mag.tolist(),
+                cs_param_bounds.contr_df.loc[
+                    :, ["contribution", "magnitude"]
+                ].set_index("magnitude", drop=True),
                 gms_result,
                 "mag",
                 cs_param_bounds=cs_param_bounds,
@@ -480,8 +467,9 @@ def write_gms_download_data(
             )
 
             sc.plots.plt_gms_disagg_distribution(
-                rrup_cdf.tolist(),
-                sorted_rrup.tolist(),
+                cs_param_bounds.contr_df.loc[:, ["contribution", "rrup"]].set_index(
+                    "rrup", drop=True
+                ),
                 gms_result,
                 "rrup",
                 cs_param_bounds=cs_param_bounds,
@@ -510,21 +498,19 @@ def write_gms_download_data(
             save_file=Path(out_dir) / f"{prefix}gms_available_gm_plot.png",
         )
 
-    return os.listdir(out_dir)
+    return os.listdir(out_dir), len(missing_waveforms)
 
 
 def create_gms_download_zip(
     gms_result: sc.gms.GMSResult,
-    app: flask.app,
     tmp_dir: str,
     disagg_data: sc.disagg.EnsembleDisaggResult,
     cs_param_bounds: sc.gms.CausalParamBounds = None,
     prefix: str = None,
 ):
 
-    ffps = write_gms_download_data(
+    ffps, missing_waveforms = write_gms_download_data(
         gms_result,
-        app,
         tmp_dir,
         disagg_data,
         cs_param_bounds=cs_param_bounds,
@@ -543,7 +529,7 @@ def create_gms_download_zip(
                     os.path.join(tmp_dir, cur_file),
                     arcname=os.path.basename(cur_file),
                 )
-    return zip_ffp
+    return zip_ffp, missing_waveforms
 
 
 def write_scenario_download_data(

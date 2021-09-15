@@ -970,8 +970,7 @@ def plot_gms_spectra(
 
 
 def plot_gms_disagg_distribution(
-    contribution: List,
-    distribution: List,
+    contribution_df: pd.DataFrame,
     gms_result: gms.GMSResult,
     metadata_key: str,
     cs_param_bounds: gms.CausalParamBounds = None,
@@ -985,35 +984,42 @@ def plot_gms_disagg_distribution(
 
     Parameters
     ----------
-    contribution: List
-        Cumulative sum of the contribution of the ruptures
-        corresponding to the distribution
-    distribution: List
-        List of either Mw or Rrup in an ascending order
+    contribution_df: pd.DataFrame
+        Contribution of the ruptures corresponding to the distribution
+        index = list of either Mw or Rrup values
+        values = contributions
     gms_result: gms.GMSResult
     metadata_key: str
     cs_param_bounds: gms.CausalParamBounds, optional
     save_file: Path, optional
     """
-    selected_gms_metadata = gms_result.selected_gms_metdata_df.to_dict(orient="list")
     bounds = _get_causal_params_bounds(cs_param_bounds)
     bounds_y_range = [0, 1]
     # To achieve Empirical distribution function with matplotlib's step plotting
-    copied_metadata = selected_gms_metadata[metadata_key][:]
-    copied_metadata.append(min(copied_metadata))
-    copied_metadata.sort()
+    metadata_values = list(
+        gms_result.selected_gms_metdata_df.loc[:, metadata_key].values
+    )
+    metadata_values.append(min(metadata_values))
+    metadata_values.sort()
+
+    sorted_distribution, sum_cdf = _calc_cdf(
+        list(contribution_df.values), list(contribution_df.index.values)
+    )
 
     plt.figure(figsize=(16, 9))
 
     plt.step(
-        copied_metadata,
-        np.linspace(0, 1, len(copied_metadata)),
+        metadata_values,
+        np.linspace(0, 1, len(metadata_values)),
         where="post",
         color="black",
         label=DISAGG_DISTRIBUTION_LABEL[metadata_key],
     )
     plt.plot(
-        distribution, contribution, label="Disaggregation distribution", color="red"
+        list(sorted_distribution),
+        list(sum_cdf),
+        label="Disaggregation distribution",
+        color="red",
     )
 
     if bounds is not None:
@@ -1061,9 +1067,6 @@ def plot_gms_available_gm(
     cs_param_bounds: gms.CausalParamBounds
     save_file: Path, optional
     """
-    metadata = gms_result.gm_dataset.get_metadata_df(gms_result.site_info).to_dict(
-        orient="list"
-    )
     n_gms_in_bounds = gms_result.gm_dataset.get_n_gms_in_bounds(
         gms_result.gm_dataset.get_metadata_df(gms_result.site_info),
         cs_param_bounds,
@@ -1072,9 +1075,18 @@ def plot_gms_available_gm(
     plt.figure(figsize=(16, 9))
 
     plt.scatter(
-        metadata.get("rrup"),
-        metadata.get("mag"),
-        label=f"Dataset GMs (for the datapoints), N={len(metadata.get('rrup'))}\n"
+        list(
+            gms_result.gm_dataset.get_metadata_df(gms_result.site_info)
+            .loc[:, "rrup"]
+            .values
+        ),
+        list(
+            gms_result.gm_dataset.get_metadata_df(gms_result.site_info)
+            .loc[:, "mag"]
+            .values
+        ),
+        label=f"Dataset GMs (for the datapoints), "
+        f"N={gms_result.gm_dataset.get_metadata_df(gms_result.site_info).index.size}\n"
         f"Causal params bounding box (for the bounding box), N={n_gms_in_bounds}",
         marker="s",
         edgecolors="black",
@@ -1225,3 +1237,21 @@ def _get_causal_params_bounds(cs_param_bounds: gms.CausalParamBounds):
             "vs30": cs_param_bounds.site_info.db_vs30,
         },
     }
+
+
+def _calc_cdf(weights: List, x_values: List):
+    """Sorting two corresponding arrays in ascending order of
+    element in x_values(Mw or Rrup)
+    Parameters
+    ----------
+    weights: List
+        The contribution of the rupture
+    x_values: List
+        For rrup or magnitude
+    """
+    sort_ind = np.argsort(np.array(x_values))
+
+    x_values = np.array(x_values)[sort_ind]
+    weights = np.array(weights)[sort_ind]
+
+    return x_values, np.cumsum(weights)
