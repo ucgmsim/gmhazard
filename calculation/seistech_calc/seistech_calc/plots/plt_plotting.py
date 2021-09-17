@@ -1002,9 +1002,7 @@ def plot_gms_disagg_distribution(
     metadata_values.append(min(metadata_values))
     metadata_values.sort()
 
-    sorted_distribution, sum_cdf = _calc_cdf(
-        list(contribution_df.values), list(contribution_df.index.values)
-    )
+    contribution_df = contribution_df.sort_index(ascending=True)
 
     plt.figure(figsize=(16, 9))
 
@@ -1016,8 +1014,8 @@ def plot_gms_disagg_distribution(
         label=DISAGG_DISTRIBUTION_LABEL[metadata_key],
     )
     plt.plot(
-        list(sorted_distribution),
-        list(sum_cdf),
+        contribution_df.index.values,
+        np.cumsum(contribution_df.values),
         label="Disaggregation distribution",
         color="red",
     )
@@ -1237,21 +1235,3 @@ def _get_causal_params_bounds(cs_param_bounds: gms.CausalParamBounds):
             "vs30": cs_param_bounds.site_info.db_vs30,
         },
     }
-
-
-def _calc_cdf(weights: List, x_values: List):
-    """Sorting two corresponding arrays in ascending order of
-    element in x_values(Mw or Rrup)
-    Parameters
-    ----------
-    weights: List
-        The contribution of the rupture
-    x_values: List
-        For rrup or magnitude
-    """
-    sort_ind = np.argsort(np.array(x_values))
-
-    x_values = np.array(x_values)[sort_ind]
-    weights = np.array(weights)[sort_ind]
-
-    return x_values, np.cumsum(weights)

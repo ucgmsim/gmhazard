@@ -9,7 +9,6 @@ from functools import wraps
 import git
 import flask
 import itsdangerous
-import numpy as np
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
