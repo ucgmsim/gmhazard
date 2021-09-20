@@ -60,7 +60,7 @@ def get_ensemble_gms():
                 server.DOWNLOAD_URL_VALID_FOR,
             ),
             disagg_data,
-            project_id
+            project_id,
         )
     )
 
@@ -79,10 +79,21 @@ def download_gms_results(token):
     results_dir = (
         server.BASE_PROJECTS_DIR / version_str / project_id / "results" / station_id
     )
-    gms_result, cs_param_bounds = utils.load_gms_data(results_dir, gms_id)
+    gms_result, cs_param_bounds, disagg_data = utils.load_gms_data(results_dir, gms_id)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        zip_ffp = su.api.download_gms_result(gms_result, server.app, tmp_dir)
+        zip_ffp, missing_waveforms = su.api.create_gms_download_zip(
+            gms_result,
+            tmp_dir,
+            disagg_data,
+            cs_param_bounds=cs_param_bounds,
+        )
+
+        if missing_waveforms > 0:
+            server.app.logger.info(
+                f"Failed to find waveforms for simulations: {missing_waveforms}"
+            )
+
         return flask.send_file(
             zip_ffp, as_attachment=True, attachment_filename=os.path.basename(zip_ffp)
         )
@@ -108,6 +119,6 @@ def get_default_causal_params():
     results_dir = (
         server.BASE_PROJECTS_DIR / version_str / project_id / "results" / station_id
     )
-    gms_result, cs_param_bounds = utils.load_gms_data(results_dir, gms_id)
+    gms_result, cs_param_bounds, disagg_data = utils.load_gms_data(results_dir, gms_id)
 
     return flask.jsonify(su.api.get_default_causal_params(cs_param_bounds))

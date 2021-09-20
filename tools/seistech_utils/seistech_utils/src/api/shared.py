@@ -1,6 +1,7 @@
 """Contains functions that are used by both the coreAPi and projectAPI"""
 import logging
 import zipfile
+import os
 from pathlib import Path
 from typing import Sequence
 
@@ -10,6 +11,7 @@ import pandas as pd
 
 import seistech_calc as sc
 from . import utils
+from . import shared_responses as sr
 
 
 def write_hazard_download_data(
@@ -415,6 +417,119 @@ def create_uhs_download_zip(
             cur_zip.write(cur_ffp, Path(cur_ffp).name)
 
     return zip_ffp
+
+
+def write_gms_download_data(
+    gms_result: sc.gms.GMSResult,
+    out_dir: str,
+    disagg_data: sc.disagg.EnsembleDisaggResult,
+    cs_param_bounds: sc.gms.CausalParamBounds = None,
+    prefix: str = None,
+):
+    prefix = "" if prefix is None else f"{prefix}_"
+
+    missing_waveforms = gms_result.gm_dataset.get_waveforms(
+        gms_result.selected_gms_ids, gms_result.site_info, out_dir
+    )
+
+    if cs_param_bounds is not None:
+        # Mw and Rrup distribution plot
+        sc.plots.plt_gms_mw_rrup(
+            gms_result,
+            disagg_data.mean_values,
+            cs_param_bounds=cs_param_bounds,
+            save_file=Path(out_dir) / f"{prefix}gms_mw_rrup_plot.png",
+        )
+
+        # Pseudo acceleration response spectra plot
+        sc.plots.plt_gms_spectra(
+            gms_result,
+            save_file=Path(out_dir) / f"{prefix}gms_spectra_plot.png",
+        )
+
+        # IM distribution plots
+        sc.plots.plt_gms_im_distribution(gms_result, save_file=Path(out_dir))
+
+        # Disagg Distribution plots (Mw Distribution or Rrup distribution)
+        contribution_df_data = sr.get_default_causal_params(cs_param_bounds)[
+            "contribution_df"
+        ]
+        if contribution_df_data is not None:
+            sc.plots.plt_gms_disagg_distribution(
+                cs_param_bounds.contr_df.loc[
+                    :, ["contribution", "magnitude"]
+                ].set_index("magnitude", drop=True),
+                gms_result,
+                "mag",
+                cs_param_bounds=cs_param_bounds,
+                save_file=Path(out_dir)
+                / f"{prefix}gms_mag_disagg_distribution_plot.png",
+            )
+
+            sc.plots.plt_gms_disagg_distribution(
+                cs_param_bounds.contr_df.loc[:, ["contribution", "rrup"]].set_index(
+                    "rrup", drop=True
+                ),
+                gms_result,
+                "rrup",
+                cs_param_bounds=cs_param_bounds,
+                save_file=Path(out_dir)
+                / f"{prefix}gms_rrup_disagg_distribution_plot.png",
+            )
+        # Causal Parameters plots
+        sc.plots.plt_gms_causal_param(
+            gms_result,
+            "vs30",
+            cs_param_bounds=cs_param_bounds,
+            save_file=Path(out_dir) / f"{prefix}gms_vs30_causal_param_plot.png",
+        )
+
+        sc.plots.plt_gms_causal_param(
+            gms_result,
+            "sf",
+            cs_param_bounds=cs_param_bounds,
+            save_file=Path(out_dir) / f"{prefix}gms_sf_causal_param_plot.png",
+        )
+
+        # Available Ground Motions plot
+        sc.plots.plt_gms_available_gm(
+            gms_result,
+            cs_param_bounds,
+            save_file=Path(out_dir) / f"{prefix}gms_available_gm_plot.png",
+        )
+
+    return os.listdir(out_dir), len(missing_waveforms)
+
+
+def create_gms_download_zip(
+    gms_result: sc.gms.GMSResult,
+    tmp_dir: str,
+    disagg_data: sc.disagg.EnsembleDisaggResult,
+    cs_param_bounds: sc.gms.CausalParamBounds = None,
+    prefix: str = None,
+):
+
+    ffps, missing_waveforms = write_gms_download_data(
+        gms_result,
+        tmp_dir,
+        disagg_data,
+        cs_param_bounds=cs_param_bounds,
+        prefix=prefix,
+    )
+
+    zip_ffp = os.path.join(
+        tmp_dir,
+        f"{prefix}{gms_result.ensemble.name}_{gms_result.IM_j.file_format()}_{gms_result.gm_dataset.name}_waveforms.zip",
+    )
+
+    with zipfile.ZipFile(zip_ffp, mode="w") as cur_zip:
+        for cur_file in ffps:
+            if cur_file != os.path.basename(zip_ffp):
+                cur_zip.write(
+                    os.path.join(tmp_dir, cur_file),
+                    arcname=os.path.basename(cur_file),
+                )
+    return zip_ffp, missing_waveforms
 
 
 def write_scenario_download_data(
