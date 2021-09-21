@@ -79,13 +79,17 @@ def run_ensemble_disagg(
     adj_branch_weights, _ = shared.compute_adj_branch_weights(
         ensemble, im, im_value, site_info
     )
-    fault_disagg_mean = fault_disagg_df.multiply(
-        adj_branch_weights, axis=1, level=0
-    ).sum(axis=1, level=1)
+    fault_disagg_mean = (
+        fault_disagg_df.multiply(adj_branch_weights, axis=1, level=0)
+        .groupby(axis=1, level=1)
+        .sum()
+    )
 
     # DS disagg branches mean
-    ds_disagg_mean = ds_disagg_df.multiply(adj_branch_weights, axis=1, level=0).sum(
-        axis=1, level=1
+    ds_disagg_mean = (
+        ds_disagg_df.multiply(adj_branch_weights, axis=1, level=0)
+        .groupby(axis=1, level=1)
+        .sum()
     )
 
     mean_values = None

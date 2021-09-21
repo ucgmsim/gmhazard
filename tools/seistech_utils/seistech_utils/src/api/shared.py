@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Sequence
 
 import yaml
-import flask
 import numpy as np
 import pandas as pd
 
@@ -422,7 +421,6 @@ def create_uhs_download_zip(
 
 def write_gms_download_data(
     gms_result: sc.gms.GMSResult,
-    app: flask.app,
     out_dir: str,
     disagg_data: sc.disagg.EnsembleDisaggResult,
     cs_param_bounds: sc.gms.CausalParamBounds = None,
@@ -433,115 +431,86 @@ def write_gms_download_data(
     missing_waveforms = gms_result.gm_dataset.get_waveforms(
         gms_result.selected_gms_ids, gms_result.site_info, out_dir
     )
-    if len(missing_waveforms) > 0:
-        app.logger.info(
-            f"Failed to find waveforms for simulations: {missing_waveforms}"
-        )
 
     if cs_param_bounds is not None:
-        default_causal_params = sr.get_default_causal_params(cs_param_bounds)
-        # Bounds with min/max values
-        causal_params_bounds = sr.get_causal_params_bounds(cs_param_bounds)
-
-        selected_gms_metadata = {
-            **gms_result.selected_gms_metdata_df.to_dict(orient="list"),
-            # mean and error bounds for selected GMs, used in Mw Rrup plot
-            **gms_result.metadata_dict,
-        }
-
         # Mw and Rrup distribution plot
         sc.plots.plt_gms_mw_rrup(
-            selected_gms_metadata,
+            gms_result,
             disagg_data.mean_values,
-            bounds=default_causal_params,
+            cs_param_bounds=cs_param_bounds,
             save_file=Path(out_dir) / f"{prefix}gms_mw_rrup_plot.png",
         )
+
         # Pseudo acceleration response spectra plot
         sc.plots.plt_gms_spectra(
             gms_result,
             save_file=Path(out_dir) / f"{prefix}gms_spectra_plot.png",
         )
+
         # IM distribution plots
         sc.plots.plt_gms_im_distribution(gms_result, save_file=Path(out_dir))
-        # Disagg Distribution plots (Mw Distribution or Rrup distribution)
-        contribution_df_data = default_causal_params["contribution_df"]
-        if contribution_df_data is not None:
-            sorted_rrup, rrup_cdf = utils.calc_cdf(
-                contribution_df_data["contribution"][:], contribution_df_data["rrup"][:]
-            )
-            sorted_mag, mag_cdf = utils.calc_cdf(
-                contribution_df_data["contribution"][:],
-                contribution_df_data["magnitude"][:],
-            )
-            sorted_contribution_df = {
-                "magnitude": sorted_mag.tolist(),
-                "mag_contribution": mag_cdf.tolist(),
-                "rrup": sorted_rrup.tolist(),
-                "rrup_contribution": rrup_cdf.tolist(),
-            }
 
+        # Disagg Distribution plots (Mw Distribution or Rrup distribution)
+        contribution_df_data = sr.get_default_causal_params(cs_param_bounds)[
+            "contribution_df"
+        ]
+        if contribution_df_data is not None:
             sc.plots.plt_gms_disagg_distribution(
-                sorted_contribution_df["mag_contribution"],
-                sorted_contribution_df["magnitude"],
-                selected_gms_metadata,
+                cs_param_bounds.contr_df.loc[
+                    :, ["contribution", "magnitude"]
+                ].set_index("magnitude", drop=True),
+                gms_result,
                 "mag",
-                bounds=causal_params_bounds,
+                cs_param_bounds=cs_param_bounds,
                 save_file=Path(out_dir)
                 / f"{prefix}gms_mag_disagg_distribution_plot.png",
             )
 
             sc.plots.plt_gms_disagg_distribution(
-                sorted_contribution_df["rrup_contribution"],
-                sorted_contribution_df["rrup"],
-                selected_gms_metadata,
+                cs_param_bounds.contr_df.loc[:, ["contribution", "rrup"]].set_index(
+                    "rrup", drop=True
+                ),
+                gms_result,
                 "rrup",
-                bounds=causal_params_bounds,
+                cs_param_bounds=cs_param_bounds,
                 save_file=Path(out_dir)
                 / f"{prefix}gms_rrup_disagg_distribution_plot.png",
             )
         # Causal Parameters plots
         sc.plots.plt_gms_causal_param(
-            selected_gms_metadata,
+            gms_result,
             "vs30",
-            bounds=causal_params_bounds,
+            cs_param_bounds=cs_param_bounds,
             save_file=Path(out_dir) / f"{prefix}gms_vs30_causal_param_plot.png",
         )
 
         sc.plots.plt_gms_causal_param(
-            selected_gms_metadata,
+            gms_result,
             "sf",
-            bounds=causal_params_bounds,
+            cs_param_bounds=cs_param_bounds,
             save_file=Path(out_dir) / f"{prefix}gms_sf_causal_param_plot.png",
         )
 
         # Available Ground Motions plot
         sc.plots.plt_gms_available_gm(
-            gms_result.gm_dataset.get_metadata_df(gms_result.site_info).to_dict(
-                orient="list"
-            ),
-            gms_result.gm_dataset.get_n_gms_in_bounds(
-                gms_result.gm_dataset.get_metadata_df(gms_result.site_info),
-                cs_param_bounds,
-            ),
-            bounds=default_causal_params,
+            gms_result,
+            cs_param_bounds,
             save_file=Path(out_dir) / f"{prefix}gms_available_gm_plot.png",
         )
 
-    return os.listdir(out_dir)
+    return os.listdir(out_dir), len(missing_waveforms)
 
 
 def create_gms_download_zip(
     gms_result: sc.gms.GMSResult,
-    app: flask.app,
     tmp_dir: str,
     disagg_data: sc.disagg.EnsembleDisaggResult,
     cs_param_bounds: sc.gms.CausalParamBounds = None,
     prefix: str = None,
 ):
 
-    ffps = write_gms_download_data(
+    ffps, missing_waveforms = write_gms_download_data(
         gms_result,
-        app,
         tmp_dir,
         disagg_data,
         cs_param_bounds=cs_param_bounds,
@@ -560,7 +529,7 @@ def create_gms_download_zip(
                     os.path.join(tmp_dir, cur_file),
                     arcname=os.path.basename(cur_file),
                 )
-    return zip_ffp
+    return zip_ffp, missing_waveforms
 
 
 def write_scenario_download_data(

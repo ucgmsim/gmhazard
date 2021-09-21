@@ -233,6 +233,10 @@ class EnsembleScenarioResult(ScenarioResult):
         for cur_branch_scenarios in self.branch_scenarios:
             cur_branch_scenarios.save(branch_scenarios_dir)
 
+    @staticmethod
+    def get_save_dir():
+        return "scenario"
+
     @classmethod
     def load(cls, data_dir: Path):
         """Loads the generic ScenarioResult data from the specified directory,

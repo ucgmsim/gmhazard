@@ -108,24 +108,6 @@ def get_default_causal_params(cs_param_bounds: sc.gms.CausalParamBounds):
     }
 
 
-def get_causal_params_bounds(cs_param_bounds: sc.gms.CausalParamBounds):
-    return {
-        "mag": {
-            "min": cs_param_bounds.mw_low,
-            "max": cs_param_bounds.mw_high,
-        },
-        "rrup": {
-            "min": cs_param_bounds.rrup_low,
-            "max": cs_param_bounds.rrup_high,
-        },
-        "vs30": {
-            "min": cs_param_bounds.vs30_low,
-            "max": cs_param_bounds.vs30_high,
-            "vs30": cs_param_bounds.site_info.db_vs30,
-        },
-    }
-
-
 def get_ensemble_uhs(
     uhs_results: Sequence[sc.uhs.EnsembleUHSResult], download_token: str
 ):

@@ -23,17 +23,38 @@ PLOT_CMD_TEMPLATE = "{} {} --xyz {} -f {} --xyz-cpt-labels {} --title"
 
 EXCD_IM_SCALING_LOOKUP = {
     "0.00040405": {  # 2% in 50 years (rounded to 8 decimal points)
-        "PGA": 1.3,
-        "pSA_0.2": 4,
-        "pSA_2.0": 1.0,
-        "pSA_5.0": 0.275,
+        "PGV": 80,
+        "PGA": 1.0,
+        "pSA_0.1": 2.5,
+        "pSA_0.2": 2.5,
+        "pSA_0.5": 1.5,
+        "pSA_1.0": 0.8,
+        "pSA_2.0": 0.6,
+        "pSA_3.0": 0.6,
+        "pSA_5.0": 0.4,
     },
     "0.00210721": {  # 10% in 50 years (rounded to 8 decimal points)
-        "PGA": 0.7,
-        "pSA_0.2": 1.75,
-        "pSA_2.0": 0.4,
-        "pSA_5.0": 0.125,
+        "PGV": 80,
+        "PGA": 1.0,
+        "pSA_0.1": 2.5,
+        "pSA_0.2": 2.5,
+        "pSA_0.5": 1.5,
+        "pSA_1.0": 0.8,
+        "pSA_2.0": 0.6,
+        "pSA_3.0": 0.6,
+        "pSA_5.0": 0.4,
     },
+    "0.01386294": { # 50% in 50 years (rounded to 8 decimal points)
+        "PGV": 80,
+        "PGA": 1.0,
+        "pSA_0.1": 2.5,
+        "pSA_0.2": 2.5,
+        "pSA_0.5": 1.5,
+        "pSA_1.0": 0.8,
+        "pSA_2.0": 0.6,
+        "pSA_3.0": 0.6,
+        "pSA_5.0": 0.4,
+    }
 }
 
 

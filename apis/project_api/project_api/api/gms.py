@@ -82,13 +82,18 @@ def download_gms_results(token):
     gms_result, cs_param_bounds, disagg_data = utils.load_gms_data(results_dir, gms_id)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        zip_ffp = su.api.create_gms_download_zip(
+        zip_ffp, missing_waveforms = su.api.create_gms_download_zip(
             gms_result,
-            server.app,
             tmp_dir,
             disagg_data,
             cs_param_bounds=cs_param_bounds,
         )
+
+        if missing_waveforms > 0:
+            server.app.logger.info(
+                f"Failed to find waveforms for simulations: {missing_waveforms}"
+            )
+
         return flask.send_file(
             zip_ffp, as_attachment=True, attachment_filename=os.path.basename(zip_ffp)
         )

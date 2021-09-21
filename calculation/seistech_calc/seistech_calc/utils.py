@@ -1,17 +1,13 @@
 import os
 import math
 import warnings
-from typing import Tuple
 
 import numpy as np
 import pandas as pd
 
 import seistech_calc.constants as const
-import sha_calc as sha_calc
-from seistech_calc import gms
 from seistech_calc.im import IM, IMType
 from qcore import nhm
-from qcore import im as qcoreim
 
 
 def calculate_rupture_rates(
@@ -421,97 +417,4 @@ def create_parametric_db_name(
 def to_mu_sigma(df: pd.DataFrame, im: IM):
     return df.loc[:, [str(im), f"{im}_sigma"]].rename(
         columns={str(im): "mu", f"{im}_sigma": "sigma"}
-    )
-
-
-def calculate_gms_spectra(
-    gms_result: gms.GMSResult,
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Create data for Spectra plot from the given GMS data
-
-    Parameters
-    ----------
-    gms_result: gms.GMSResult
-
-    Returns
-    -------
-    gcim_df: pd.DataFrame
-        Includes 84th, median and 16th percentiles along with IMs
-    realisations_df: pd.DataFrame
-    selected_gms_df: pd.DataFrame,
-    """
-    cdf_x = {
-        str(IMi): list(
-            gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.index.values.astype(float)
-        )
-        for IMi in gms_result.IMs
-    }
-    cdf_y = {
-        str(IMi): list(gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.values.astype(float))
-        for IMi in gms_result.IMs
-    }
-    realisations = {
-        str(key): value
-        for key, value in gms_result.realisations.to_dict(orient="list").items()
-    }
-    selected_gms = {
-        str(key): value
-        for key, value in gms_result.selected_gms_im_df.to_dict(orient="list").items()
-    }
-    im_j = gms_result.im_j
-    IM_j = str(gms_result.IM_j)
-
-    # for CDF_X
-    cdf_x_df = pd.DataFrame(cdf_x)
-    cdf_x_df.columns = [
-        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
-        for cur_col in cdf_x_df.columns
-    ]
-    cdf_x_df = cdf_x_df.T.sort_index().T
-
-    # For CDF_Y
-    cdf_y_df = pd.DataFrame(cdf_y)
-    cdf_y_df.columns = [
-        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
-        for cur_col in cdf_y_df.columns
-    ]
-    cdf_y_df = cdf_y_df.T.sort_index().T
-
-    upper_bound, median, lower_bound = sha_calc.query_non_parametric_multi_cdf_invs(
-        [0.84, 0.5, 0.16], cdf_x_df.T.values, cdf_y_df.T.values
-    )
-
-    gcim_df = pd.DataFrame(
-        index=cdf_x_df.columns,
-        columns=np.asarray(["84th", "median", "16th"]),
-        data=np.asarray([upper_bound, median, lower_bound]).T,
-    ).T
-
-    if IM_j.startswith("pSA"):
-        gcim_df[float(IM_j.split("_")[-1])] = im_j
-        gcim_df = gcim_df.T.sort_index().T
-
-    # Realisations
-    realisations_df = pd.DataFrame(realisations)
-    realisations_df.columns = [
-        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
-        for cur_col in realisations_df.columns
-    ]
-    if IM_j.startswith("pSA"):
-        realisations_df[float(IM_j.split("_")[-1])] = im_j
-
-    realisations_df = realisations_df.T.sort_index().T
-
-    # Selected Ground Motions
-    selected_gms_df = pd.DataFrame(selected_gms)
-    selected_gms_df.columns = [
-        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
-        for cur_col in selected_gms_df.columns
-    ]
-    selected_gms_df = selected_gms_df.T.sort_index().T
-
-    return (
-        gcim_df,
-        realisations_df,
-        selected_gms_df,
     )
