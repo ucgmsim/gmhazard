@@ -57,6 +57,7 @@ class DataCollector:
         stations: np.ndarray,
         csv_ffps: np.ndarray,
         im_names: np.ndarray,
+        component: str,
     ):
         """Constructor, called using DataCollector.remote(args)
 
@@ -70,11 +71,14 @@ class DataCollector:
             Full path for all csv files
         im_names: numpy array of strings
             The name of the IMs to retrieve from the IM csv files
+        component: str
+            The IM Component to extract from the IM csv files
         """
         self._faults = fault_dirs
         self._stations = stations
         self._csv_ffps = csv_ffps
         self._im_names = im_names
+        self.component = component
 
     def run(self) -> List[Tuple[np.ndarray, List[str], Dict[str, np.ndarray]]]:
         """Runs the data collection
@@ -103,11 +107,6 @@ class DataCollector:
             df = pd.read_csv(im_files[0], index_col=0, usecols=[0, 1], engine="c")
 
             # Requires the csv files to be sorted by the station name
-            # and only have a geom component.
-            # If this is ever an issue, drop the "geom" rows
-            # and sort the dataframe in the for loop below.
-            assert np.all(df["component"].values == "geom")
-
             # Sort if required
             if not df.index.is_monotonic_increasing:
                 df.sort_index(inplace=True)
@@ -123,6 +122,9 @@ class DataCollector:
             sim_dict = {}
             for im_file, sim_name in zip(im_files, sim_names):
                 cur_df = pd.read_csv(im_file, index_col=0, engine="c", sep=",")
+
+                # Filtering by Component before potential sorting
+                cur_df = cur_df.loc[cur_df["component"] == self.component]
 
                 # Sort if required
                 if not cur_df.index.is_monotonic_increasing:
@@ -343,6 +345,7 @@ def run(
     output_file: str,
     pre_n_procs: int,
     n_procs: int,
+    component: str,
     im_names: np.ndarray = None,
     rupture_lookup: bool = False,
     iteration: int = 0,
@@ -414,7 +417,7 @@ def run(
             if ix + 1 < pre_n_procs
             else faults[ix * n_faults_per :]
         )
-        cur_collector = DataCollector.remote(cur_faults, stations, np.asarray(csv_ffps), im_names)
+        cur_collector = DataCollector.remote(cur_faults, stations, np.asarray(csv_ffps), im_names, component)
         data_collectors.append(cur_collector)
         split_faults.append(cur_faults)
         result_ids.append(cur_collector.run.remote())
@@ -522,6 +525,7 @@ def main(args):
                 args.output_file,
                 args.pre_n_procs,
                 args.n_procs,
+                args.component,
                 im_names=im_names,
             )
         # Have to create the IMDB incrementally
@@ -540,6 +544,7 @@ def main(args):
                     args.output_file,
                     args.pre_n_procs,
                     args.n_procs,
+                    args.component,
                     im_names=cur_im_names,
                     iteration=ix,
                 )
@@ -591,6 +596,13 @@ if __name__ == "__main__":
         help="If set, then only the specified IMs "
         "are processed from the IM csv files",
         default=None,
+    )
+    parser.add_argument(
+        "--component",
+        type=str,
+        help="IM Component to extract from the IM csv files."
+             "Default value is rotd50",
+        default="rotd50",
     )
 
     args = parser.parse_args()

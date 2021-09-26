@@ -533,7 +533,10 @@ def default_causal_params(
     vs_low, vs_high = site_info.vs30 * 0.5, site_info.vs30 * 1.5
 
     contr_df = pd.concat(
-        (disagg_data.fault_disagg_id.contribution, disagg_data.ds_disagg_id.contribution)
+        (
+            disagg_data.fault_disagg_id.contribution,
+            disagg_data.ds_disagg_id.contribution,
+        )
     )
 
     # Mw bounds
