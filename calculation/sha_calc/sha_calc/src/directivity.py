@@ -2,26 +2,33 @@ import numpy as np
 import numpy.matlib
 import math
 import matplotlib.pyplot as plt
+from typing import List, Union, Tuple
 
 from IM_calculation.source_site_dist import src_site_dist
 from qcore import srf
 
-m = 7.2 # Moment magnitude, 5<=m<=8. 1x1 double.
+m = 7.2  # Moment magnitude, 5<=m<=8. 1x1 double.
 u = np.arange(-90, 140.5, 0.5).tolist()
-t = [-80] * 461 # The GC2 coordinates in km. Must both be nX1 doubles where n is the number of locations at which the model provides a prediction. Must be columnar.
-s_max = [-10, 70] # The maximum possible values of s for the scenario in km. 1x2 double with the first element corresponding to the maximum s in the antistrike direction (defined to be a negative value) and the second element the maximum in the strike direction (positive value).
-d = 10 # The effective rupture travel width, measured from the hypocenter to the shallowest depth of the rupture plane, up-dip (km). 1x1 double.
-t_bot = 0 # The t ordinate of the bottom of the rupture plane (projected to the surface) in km. 1x1 double.
+t = [
+    -80
+] * 461  # The GC2 coordinates in km. Must both be nX1 doubles where n is the number of locations at which the model provides a prediction. Must be columnar.
+s_max = [
+    -10,
+    70,
+]  # The maximum possible values of s for the scenario in km. 1x2 double with the first element corresponding to the maximum s in the antistrike direction (defined to be a negative value) and the second element the maximum in the strike direction (positive value).
+d = 10  # The effective rupture travel width, measured from the hypocenter to the shallowest depth of the rupture plane, up-dip (km). 1x1 double.
+t_bot = 0  # The t ordinate of the bottom of the rupture plane (projected to the surface) in km. 1x1 double.
 # The vertical depth of the bottom of the rupture plane from the ground surface, including Ztor, in km. 1x1 double.
 d_bot = 15
 rake = 0
 
 dip = 90  # The characteristic rupture rake and dip angles, in degrees. 1x1 doubles. -180<=rake<=180 and dip<=90
-force_type = 0   # A flag for determining the SOF category. 0->select SOF based on rake angle. 1->force SOF=1. 2->force SOF=2. 1x1 double.
-period = 3      # The spectral period for which fD is requested, in sec. 0.01<period<10. 1x1 double.
+force_type = 0  # A flag for determining the SOF category. 0->select SOF based on rake angle. 1->force SOF=1. 2->force SOF=2. 1x1 double.
+period = 3  # The spectral period for which fD is requested, in sec. 0.01<period<10. 1x1 double.
+
 
 def get_directivity_effects():
-    """ Calcualtes directivity effects at the given site"""
+    """Calcualtes directivity effects at the given site"""
 
     # srf_file = "/isilon/cybershake/v20p4/Sources/scale_wlg_ nobackup/filesets/nobackup/nesi00213/RunFolder/jpa198/cybershake_sources/Data/Sources/AlpineK2T/Srf/AlpineK2T_REL01.srf"
     srf_file = "/home/joel/local/AlpineK2T_REL01.srf"
@@ -33,29 +40,39 @@ def get_directivity_effects():
     lat_lon_depth = np.asarray([[x["lat"], x["lon"], x["depth"]] for x in points])
     site_loc = np.asarray([[-41.713595, 173.090279], [-41.613595, 173.090279]])
 
-    rx, ry = src_site_dist.calc_rx_ry_GC2(lat_lon_depth, planes, site_loc, hypocentre_origin=True)
+    rx, ry = src_site_dist.calc_rx_ry_GC2(
+        lat_lon_depth, planes, site_loc, hypocentre_origin=True
+    )
 
     nominal_strike, nominal_strike2 = calc_nominal_strike(lat_lon_depth)
 
-    rx_end, _ = src_site_dist.calc_rx_ry_GC2(lat_lon_depth, planes, nominal_strike, hypocentre_origin=True)
-    rx_end2, _ = src_site_dist.calc_rx_ry_GC2(lat_lon_depth, planes, nominal_strike2, hypocentre_origin=True)
+    rx_end, _ = src_site_dist.calc_rx_ry_GC2(
+        lat_lon_depth, planes, nominal_strike, hypocentre_origin=True
+    )
+    rx_end2, _ = src_site_dist.calc_rx_ry_GC2(
+        lat_lon_depth, planes, nominal_strike2, hypocentre_origin=True
+    )
 
     s_max = [min(rx_end, rx_end2)[0], max(rx_end, rx_end2)[0]]
 
-    # TODO Add ZTOR value if applicable
-    z_tor = 0
+    z_tor = planes[0]["dtop"]
 
     dip = planes[0]["dip"]
     d_bot = z_tor + planes[0]["width"] * math.sin(dip)
     t_bot = z_tor / math.tan(dip) + planes[0]["width"] * math.cos(dip)
     d = (planes[0]["dhyp"] - z_tor) / math.sin(dip)
-    fd, fdi, phi_red, phi_redi, predictor_functions, other = Bea20(m, rx, ry, s_max, d, t_bot, d_bot, rake, dip,
-                                                                   force_type, period)
-    print("YES")
+    fd, fdi, phi_red, phi_redi, predictor_functions, other = bea20(
+        m, rx, ry, s_max, d, t_bot, d_bot, rake, dip, force_type, period
+    )
+    return fdi
+
 
 def calc_nominal_strike(traces):
-    """ Gets the start and ending trace of the fault and ensures order for largest lat value first"""
-    trace_start, trace_end = [traces[0][0], traces[0][1]], [traces[-1][0], traces[-1][1]]
+    """Gets the start and ending trace of the fault and ensures order for largest lat value first"""
+    trace_start, trace_end = [traces[0][0], traces[0][1]], [
+        traces[-1][0],
+        traces[-1][1],
+    ]
     if trace_start[0] < trace_end[0]:
         return np.asarray([trace_end]), np.asarray([trace_start])
     else:
@@ -83,19 +100,51 @@ def get_srf_values(srf_file):
         average_rake = average_rake / n_point
     return points, average_rake
 
-def Bea20(m,u,t,s_max,d,t_bot,d_bot,rake,dip,force_type,period):
-    """ Bayless 2020 model function from matlab code"""
+
+def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot: float, rake: float, dip: float, type: int, period: float):
+    """
+    Calculates the directivity effects at given locations based on fault information.
+    Algorithm has been taken from the Bayless 2020 model found in the paper.
+    "A Rupture Directivity Adjustment Model Applicable to the NGA-West2 Ground Motion Models and Complex Fault Geometries
+    (Bayless 2020)".
+    This functionality was compared to the matlab code taken from the paper.
+
+    Parameters
+    ----------
+    m: float
+        Moment magnitude, 5<=m<=8
+    u: list
+        The GC2 coordinates in km. Equivalent to rx.
+        Must be nX1 number where n is the number of locations at which the model provides a prediction.
+    t: list
+        The GC2 coordinates in km. Equivalent to ry.
+        Must be nX1 number where n is the number of locations at which the model provides a prediction.
+    s_max: List
+        List of 2x1 number where first is the lowest max value and the second is the largest max value for s.
+        Computed from GC2 using nominal strike of the fault.
+    d: float
+        The effective rupture travel width, measured from the hypocenter to the shallowest depth of the rupture plane.
+    t_bot: float
+        The length of the bottom of the rupture plane (projected to the surface) in km.
+    d_bot: float
+        The vertical depth of the bottom of the rupture plane from the ground surface, including Ztor, in km.
+    rake: float
+        The rake of the fault
+    dip: float
+        The dip of the fault at the hypocenter
+    type: float
+        1 for a strike slip
+        2 for a oblique, reverse or normal
+    period: float
+        Used for specifying the period for a pSA IM
+    """
 
     # If not specified, determine rupture category from rake angle
-    if force_type == 0:
+    if type == 0:
         if (-30 <= rake <= 30) or (-180 <= rake <= -150) or (150 <= rake <= 180):
             type = 1
         else:
             type = 2
-    elif force_type == 1:
-        type = 1
-    elif force_type == 2:
-        type = 2
 
     # Convert u to s
     # Limit s to the s_max values for positive and negative numbers
@@ -115,7 +164,7 @@ def Bea20(m,u,t,s_max,d,t_bot,d_bot,rake,dip,force_type,period):
     # Calculate S2
     if type == 2 and rake < 0:
         s = -s
-    s_rake = s*math.cos(rake)
+    s_rake = s * math.cos(rake)
     d = max(d, 3)  # Gets the max value for d, 3 is the minimum
     s2 = s_rake ** 2 + d ** 2
     s2 = np.sqrt(s2)
@@ -143,7 +192,9 @@ def Bea20(m,u,t,s_max,d,t_bot,d_bot,rake,dip,force_type,period):
         t_pos, t_neg = t > 0, t <= 0
         phi = np.zeros(u.size)
 
-        phi[t_neg] = np.degrees(np.arctan(np.divide(abs(t[t_neg]) + t_bot, d_bot))) + dip - 90
+        phi[t_neg] = (
+            np.degrees(np.arctan(np.divide(abs(t[t_neg]) + t_bot, d_bot))) + dip - 90
+        )
 
         t1 = np.logical_and(t_pos, t < t_bot)
         phi[t1] = 90 - dip - np.degrees(np.arctan(np.divide(t_bot - t[t1], d_bot)))
@@ -184,10 +235,10 @@ def Bea20(m,u,t,s_max,d,t_bot,d_bot,rake,dip,force_type,period):
 
     # Constants
     per = np.logspace(-2, 1, 1000)
-    coefb = [-0.0336, 0.5469] # mag dependence of bmax
-    coefc = [0.2858, -1.2090] # mag scaling of Tpeak
-    coefd1 = [0.9928, -4.8300] # mag dependence of fG0 for SOF=1
-    coefd2 = [0.3946, -1.5415] # mag dependence of fG0 for SOF=2
+    coefb = [-0.0336, 0.5469]  # mag dependence of bmax
+    coefc = [0.2858, -1.2090]  # mag scaling of Tpeak
+    coefd1 = [0.9928, -4.8300]  # mag dependence of fG0 for SOF=1
+    coefd2 = [0.3946, -1.5415]  # mag dependence of fG0 for SOF=2
     sigg = 0.4653
 
     # Impose the limits on m, Table 4-3
@@ -206,7 +257,7 @@ def Bea20(m,u,t,s_max,d,t_bot,d_bot,rake,dip,force_type,period):
 
     # Period dependent coefficients: a and b
     x = np.log10(np.divide(per, t_peak))
-    b = b_max * np.exp(np.divide(-x ** 2, 2 * sigg ** 2))
+    b = b_max * np.exp(np.divide(-(x ** 2), 2 * sigg ** 2))
     a = -b * fg0
 
     # fd and fdi
@@ -216,7 +267,23 @@ def Bea20(m,u,t,s_max,d,t_bot,d_bot,rake,dip,force_type,period):
     fdi = fd[:, ti]
 
     phi_per = [0.01, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1, 1.5, 2, 3, 4, 5, 7.5, 10]
-    e1 = [0.000, 0.000, 0.008, 0.020, 0.035, 0.051, 0.067, 0.080, 0.084, 0.093, 0.110, 0.139, 0.166, 0.188, 0.199]
+    e1 = [
+        0.000,
+        0.000,
+        0.008,
+        0.020,
+        0.035,
+        0.051,
+        0.067,
+        0.080,
+        0.084,
+        0.093,
+        0.110,
+        0.139,
+        0.166,
+        0.188,
+        0.199,
+    ]
     e1interp = np.interp(np.log(per), np.log(phi_per), e1)
 
     # phired and phiredi
@@ -224,8 +291,22 @@ def Bea20(m,u,t,s_max,d,t_bot,d_bot,rake,dip,force_type,period):
     phi_red[np.invert(footprint), :] = 0
     phi_redi = phi_red[:, ti]
 
-    predictor_functions = {"fg": fg, "fdist": f_dist, "ftheta": f_theta, "fphi": fphi, "fs2": fs2}
-    other = {"per": per, "rmax": r_max, "footprint": footprint, "tpeak": t_peak, "fg0": fg0, "bmax": b_max, "s2": s2}
+    predictor_functions = {
+        "fg": fg,
+        "fdist": f_dist,
+        "ftheta": f_theta,
+        "fphi": fphi,
+        "fs2": fs2,
+    }
+    other = {
+        "per": per,
+        "rmax": r_max,
+        "footprint": footprint,
+        "tpeak": t_peak,
+        "fg0": fg0,
+        "bmax": b_max,
+        "s2": s2,
+    }
 
     return fd, fdi, phi_red, phi_redi, predictor_functions, other
 
@@ -235,7 +316,9 @@ def directivity_plots():
     plot_s2 = None
     for i in range(0, 461):
         t = [t_base + i * 0.5] * 461
-        fd, fdi, phi_red, phi_redi, predictor_functions, other = Bea20(m, u, t, s_max, d, t_bot, d_bot, rake, dip, force_type, period)
+        fd, fdi, phi_red, phi_redi, predictor_functions, other = bea20(
+            m, u, t, s_max, d, t_bot, d_bot, rake, dip, force_type, period
+        )
 
         # If first run set all plotting variables
         if plot_s2 is None:
@@ -247,10 +330,18 @@ def directivity_plots():
             plot_fdi = np.exp(fdi[:, np.newaxis])
         else:
             plot_s2 = np.append(plot_s2, other["s2"][:, np.newaxis], axis=1)
-            plot_fs2 = np.append(plot_fs2, predictor_functions["fs2"][:, np.newaxis], axis=1)
-            plot_ftheta = np.append(plot_ftheta, predictor_functions["ftheta"][:, np.newaxis], axis=1)
-            plot_fg = np.append(plot_fg, predictor_functions["fg"][:, np.newaxis], axis=1)
-            plot_fdist = np.append(plot_fdist, predictor_functions["fdist"][:, np.newaxis], axis=1)
+            plot_fs2 = np.append(
+                plot_fs2, predictor_functions["fs2"][:, np.newaxis], axis=1
+            )
+            plot_ftheta = np.append(
+                plot_ftheta, predictor_functions["ftheta"][:, np.newaxis], axis=1
+            )
+            plot_fg = np.append(
+                plot_fg, predictor_functions["fg"][:, np.newaxis], axis=1
+            )
+            plot_fdist = np.append(
+                plot_fdist, predictor_functions["fdist"][:, np.newaxis], axis=1
+            )
             plot_fdi = np.append(plot_fdi, np.exp(fdi[:, np.newaxis]), axis=1)
 
     fig = plt.figure(figsize=(18, 12))
@@ -262,35 +353,33 @@ def directivity_plots():
     ax5 = fig.add_subplot(235)
     ax6 = fig.add_subplot(236)
 
-    ax.set_title('S2')
+    ax.set_title("S2")
     ax.set_xlim(0, 320)
     ax.matshow(plot_s2)
 
-    ax2.set_title('FS2')
+    ax2.set_title("FS2")
     ax2.set_xlim(0, 320)
     ax2.matshow(plot_fs2)
 
-    ax3.set_title('F Theta')
+    ax3.set_title("F Theta")
     ax3.set_xlim(0, 320)
     ax3.matshow(plot_ftheta)
 
-    ax4.set_title('FG')
+    ax4.set_title("FG")
     ax4.set_xlim(0, 320)
     ax4.matshow(plot_fg)
 
-    ax5.set_title('F Dist')
+    ax5.set_title("F Dist")
     ax5.set_xlim(0, 320)
     ax5.matshow(plot_fdist)
 
-    ax6.set_title('FDI')
+    ax6.set_title("FDI")
     ax6.set_xlim(0, 320)
     ax6.matshow(plot_fdi)
 
+    # fig.savefig("/home/joel/local/fig_test.png")
 
-    fig.savefig("/home/joel/local/fig_test.png")
 
-    print("Done")
-
-# output = Bea20(m,u,t,s_max,d,t_bot,d_bot,rake,dip,force_type,period)
+# output = bea20(m,u,t,s_max,d,t_bot,d_bot,rake,dip,force_type,period)
 # directivity_plots()
-get_directivity_effects()
+# get_directivity_effects()
