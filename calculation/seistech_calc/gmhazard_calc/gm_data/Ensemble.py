@@ -7,15 +7,15 @@ import yaml
 import numpy as np
 import pandas as pd
 
-from seistech_calc import utils
-from seistech_calc import rupture
-from seistech_calc import constants as const
-from seistech_calc.im import IM, IMType
+from gmhazard_calc import utils
+from gmhazard_calc import rupture
+from gmhazard_calc import constants as const
+from gmhazard_calc.im import IM, IMType
 from qcore.formats import load_station_file
 from .IMEnsemble import IMEnsemble
 
 if TYPE_CHECKING:
-    from seistech_calc.site.SiteInfo import SiteInfo
+    from gmhazard_calc.site.SiteInfo import SiteInfo
 
 
 def load_data():

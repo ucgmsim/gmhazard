@@ -5,8 +5,8 @@ from typing import Dict
 import pandas as pd
 
 import sha_calc as sha_calc
-from seistech_calc.im import IM
-from seistech_calc import gm_data
+from gmhazard_calc.im import IM
+from gmhazard_calc import gm_data
 
 
 class BranchUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):

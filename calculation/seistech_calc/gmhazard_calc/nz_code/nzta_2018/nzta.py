@@ -6,10 +6,10 @@ import pandas as pd
 import numpy as np
 
 import sha_calc as sha
-from seistech_calc import site
-from seistech_calc import gm_data
-from seistech_calc import constants as const
-from seistech_calc.im import IMComponent
+from gmhazard_calc import site
+from gmhazard_calc import gm_data
+from gmhazard_calc import constants as const
+from gmhazard_calc.im import IMComponent
 from .NZTAResult import NZTAResult
 from qcore import geo
 

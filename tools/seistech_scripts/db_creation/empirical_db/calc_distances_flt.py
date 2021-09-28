@@ -7,7 +7,7 @@ from typing import List, Union, Dict
 from qcore import nhm, formats, geo
 from IM_calculation.source_site_dist import src_site_dist
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 POINTS_PER_KILOMETER = (
     1 / 0.1

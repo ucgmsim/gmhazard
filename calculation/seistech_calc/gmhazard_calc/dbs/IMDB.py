@@ -8,9 +8,9 @@ import tables
 import numpy as np
 import pandas as pd
 
-from seistech_calc import utils
-from seistech_calc import constants as const
-from seistech_calc.im import IM
+from gmhazard_calc import utils
+from gmhazard_calc import constants as const
+from gmhazard_calc.im import IM
 from .BaseDB import BaseDB, check_open
 from qcore.simulation_structure import get_fault_from_realisation
 

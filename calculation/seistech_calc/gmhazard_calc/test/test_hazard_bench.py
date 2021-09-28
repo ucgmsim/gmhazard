@@ -7,11 +7,11 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from seistech_calc import site
-from seistech_calc import hazard
-from seistech_calc import gm_data
-from seistech_calc import constants
-from seistech_calc.im import IM, IM_COMPONENT_MAPPING
+from gmhazard_calc import site
+from gmhazard_calc import hazard
+from gmhazard_calc import gm_data
+from gmhazard_calc import constants
+from gmhazard_calc.im import IM, IM_COMPONENT_MAPPING
 
 
 @pytest.fixture(scope="module")

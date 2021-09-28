@@ -5,7 +5,7 @@ import flask
 import numpy as np
 from flask_cors import cross_origin
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 import seistech_utils as su
 from project_api import server
 from project_api import constants as const

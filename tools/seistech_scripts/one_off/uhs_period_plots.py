@@ -10,7 +10,7 @@ import numpy as np
 
 import sha_calc.src.ground_motion as gm
 import sha_calc.src.hazard as haz
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 
 exceedance = 0.00010025083647088573

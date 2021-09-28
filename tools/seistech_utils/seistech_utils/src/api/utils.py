@@ -12,7 +12,7 @@ import itsdangerous
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 
 class MissingKeyError(Exception):

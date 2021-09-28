@@ -8,7 +8,7 @@ from typing import Iterable
 
 import yaml
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 RunCombination = namedtuple(
     "RunCombination", "ensemble_id, im, excd_prob, excd_percentage, excd_years, n_procs"

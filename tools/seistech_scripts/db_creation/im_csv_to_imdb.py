@@ -33,7 +33,7 @@ import ray
 import numpy as np
 import pandas as pd
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 from qcore.formats import load_station_file
 
 

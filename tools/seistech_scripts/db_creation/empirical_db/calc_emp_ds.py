@@ -10,7 +10,7 @@ import threading
 from mpi4py import MPI
 import pandas as pd
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 import common
 
 comm = MPI.COMM_WORLD

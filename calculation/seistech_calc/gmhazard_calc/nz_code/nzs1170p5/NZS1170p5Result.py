@@ -5,10 +5,10 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 
-from seistech_calc import site
-from seistech_calc import gm_data
-from seistech_calc import constants as const
-from seistech_calc.im import IM
+from gmhazard_calc import site
+from gmhazard_calc import gm_data
+from gmhazard_calc import constants as const
+from gmhazard_calc.im import IM
 
 
 class NZS1170p5Result:

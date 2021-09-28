@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, Dict, Union, Sequence
 import numpy as np
 import pandas as pd
 
-from seistech_calc import rupture
-from seistech_calc import constants as const
-from seistech_calc.im import IM, IMType, IM_COMPONENT_MAPPING
+from gmhazard_calc import rupture
+from gmhazard_calc import constants as const
+from gmhazard_calc.im import IM, IMType, IM_COMPONENT_MAPPING
 from .Branch import Branch
 
 if TYPE_CHECKING:

@@ -6,7 +6,7 @@ import os
 
 import pandas as pd
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 ANNUAL_REC_PROB = "annual_rec_prob"
 RUP_NAME = "rupture_name"

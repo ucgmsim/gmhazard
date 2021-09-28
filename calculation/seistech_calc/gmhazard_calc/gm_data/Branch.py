@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
 
-from seistech_calc import utils
-from seistech_calc import rupture
-from seistech_calc import constants as const
+from gmhazard_calc import utils
+from gmhazard_calc import rupture
+from gmhazard_calc import constants as const
 from .Leaf import Leaf
 
 if TYPE_CHECKING:

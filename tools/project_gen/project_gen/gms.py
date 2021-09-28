@@ -6,7 +6,7 @@ from typing import List
 import yaml
 import numpy as np
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 from . import utils
 
 

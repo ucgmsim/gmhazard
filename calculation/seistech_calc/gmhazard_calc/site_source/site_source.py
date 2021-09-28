@@ -3,9 +3,9 @@ from typing import Union
 import numpy as np
 import pandas as pd
 
-from seistech_calc import dbs
-from seistech_calc import site
-from seistech_calc import constants as const
+from gmhazard_calc import dbs
+from gmhazard_calc import site
+from gmhazard_calc import constants as const
 
 
 def get_distance_df(

@@ -7,7 +7,7 @@ import pytest
 import pandas as pd
 import numpy as np
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 
 @pytest.fixture(scope="module")

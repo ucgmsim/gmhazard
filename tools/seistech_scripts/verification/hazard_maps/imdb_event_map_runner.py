@@ -6,7 +6,7 @@ then this script should be modified to support this.
 import os
 import argparse
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 import shared
 
 

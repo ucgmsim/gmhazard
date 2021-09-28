@@ -4,12 +4,12 @@ import pandas as pd
 import numpy as np
 
 
-from seistech_calc import utils
-from seistech_calc import constants as const
+from gmhazard_calc import utils
+from gmhazard_calc import constants as const
 from qcore.nhm import load_nhm
 
 if TYPE_CHECKING:
-    from seistech_calc import gm_data
+    from gmhazard_calc import gm_data
 
 RUPTURE_FAULT_DF_COLUMNS = [
     "rupture_name",

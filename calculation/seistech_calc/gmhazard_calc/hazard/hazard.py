@@ -7,13 +7,13 @@ import pandas as pd
 from scipy.interpolate.interpolate import interp1d
 
 import sha_calc as sha_calc
-from seistech_calc import site
-from seistech_calc import utils
-from seistech_calc import shared
-from seistech_calc import gm_data
-from seistech_calc import site_source
-from seistech_calc import constants as const
-from seistech_calc.im import IM
+from gmhazard_calc import site
+from gmhazard_calc import utils
+from gmhazard_calc import shared
+from gmhazard_calc import gm_data
+from gmhazard_calc import site_source
+from gmhazard_calc import constants as const
+from gmhazard_calc.im import IM
 from .HazardResult import BranchHazardResult, EnsembleHazardResult
 
 

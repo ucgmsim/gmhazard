@@ -11,8 +11,8 @@ import numpy as np
 import pandas as pd
 
 from qcore import formats
-from seistech_calc.constants import SourceType
-import seistech_calc.utils as utils
+from gmhazard_calc.constants import SourceType
+import gmhazard_calc.utils as utils
 import common
 
 

@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 import sha_calc as sha
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 DEFAULT_RETURN_PERIODS = np.array([20, 25, 50, 100, 250, 500, 1000, 2000, 2500])
 DEFAULT_EXCEEDANCE_VALUES = 1 / DEFAULT_RETURN_PERIODS

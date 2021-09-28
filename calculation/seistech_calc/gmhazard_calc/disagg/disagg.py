@@ -4,15 +4,15 @@ import pandas as pd
 import numpy as np
 
 import sha_calc as sha_calc
-from seistech_calc import site
-from seistech_calc import utils
-from seistech_calc import shared
-from seistech_calc import hazard
-from seistech_calc import gm_data
-from seistech_calc import site_source
-from seistech_calc import rupture
-from seistech_calc import constants as const
-from seistech_calc.im import IM
+from gmhazard_calc import site
+from gmhazard_calc import utils
+from gmhazard_calc import shared
+from gmhazard_calc import hazard
+from gmhazard_calc import gm_data
+from gmhazard_calc import site_source
+from gmhazard_calc import rupture
+from gmhazard_calc import constants as const
+from gmhazard_calc.im import IM
 from .DisaggResult import BranchDisaggResult, EnsembleDisaggResult, DisaggGridData
 
 

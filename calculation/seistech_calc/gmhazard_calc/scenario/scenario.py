@@ -5,11 +5,11 @@ import numpy as np
 from scipy import stats
 
 import sha_calc as sha_calc
-from seistech_calc.im import IMComponent, IM, to_string_list
-from seistech_calc import site
-from seistech_calc import gm_data
-from seistech_calc import shared
-from seistech_calc import constants
+from gmhazard_calc.im import IMComponent, IM, to_string_list
+from gmhazard_calc import site
+from gmhazard_calc import gm_data
+from gmhazard_calc import shared
+from gmhazard_calc import constants
 from .ScenarioResult import BranchScenarioResult
 from .ScenarioResult import EnsembleScenarioResult
 

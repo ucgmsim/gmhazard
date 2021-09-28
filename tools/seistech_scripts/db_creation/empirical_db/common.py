@@ -11,11 +11,11 @@ import pandas as pd
 from empirical.util import empirical_factory, classdef
 from empirical.util.classdef import Site, Fault
 from qcore import formats
-from seistech_calc.nz_code.nzs1170p5.nzs_zfactor_2016.ll2z import ll2z
-from seistech_calc.im import IM, IMType
+from gmhazard_calc.nz_code.nzs1170p5.nzs_zfactor_2016.ll2z import ll2z
+from gmhazard_calc.im import IM, IMType
 
-from seistech_calc import utils
-from seistech_calc import dbs
+from gmhazard_calc import utils
+from gmhazard_calc import dbs
 
 # fmt: off
 PERIOD = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.9, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]

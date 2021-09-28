@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 import seistech_utils as su
 import project_gen as pg
 

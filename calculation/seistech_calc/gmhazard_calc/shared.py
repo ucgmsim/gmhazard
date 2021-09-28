@@ -5,14 +5,14 @@ import numpy as np
 import pandas as pd
 
 import sha_calc as sha_calc
-from seistech_calc.im import IM, IMType, IMComponent, IM_COMPONENT_MAPPING
-from seistech_calc import site
-from seistech_calc import gm_data
-from seistech_calc import dbs
-from seistech_calc import constants
-from seistech_calc import rupture
-from seistech_calc import utils
-from seistech_calc import hazard
+from gmhazard_calc.im import IM, IMType, IMComponent, IM_COMPONENT_MAPPING
+from gmhazard_calc import site
+from gmhazard_calc import gm_data
+from gmhazard_calc import dbs
+from gmhazard_calc import constants
+from gmhazard_calc import rupture
+from gmhazard_calc import utils
+from gmhazard_calc import hazard
 
 
 def get_IM_params(

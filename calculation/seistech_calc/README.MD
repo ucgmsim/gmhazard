@@ -19,7 +19,7 @@ To run any calculation:
 2) Site of interest has to be specified
 
 ```python
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 # Create the ensemble
 ens = sc.gm_data.Ensemble("gnzl", config_ffp="/path-to/seistech_example_data/v20p5emp_gnzl.yaml")

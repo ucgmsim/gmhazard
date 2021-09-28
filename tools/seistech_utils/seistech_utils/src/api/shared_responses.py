@@ -3,7 +3,7 @@ from typing import Sequence
 
 import pandas as pd
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 
 def get_ensemble_hazard_response(

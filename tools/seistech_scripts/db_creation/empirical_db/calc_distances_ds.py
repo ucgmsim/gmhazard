@@ -15,7 +15,7 @@ import pandas as pd
 from qcore import formats
 from qcore import geo
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 import common
 
 MAX_RJB = max(common.DIST)

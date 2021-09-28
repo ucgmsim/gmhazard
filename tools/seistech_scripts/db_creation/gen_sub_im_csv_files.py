@@ -13,9 +13,9 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-import seistech_calc.utils as utils
-import seistech_calc.modules.gm_data as gm_data
-import seistech_calc.modules.location as site
+import gmhazard_calc.utils as utils
+import gmhazard_calc.modules.gm_data as gm_data
+import gmhazard_calc.modules.location as site
 from qcore.simulation_structure import get_realisation_name
 
 EMP_FILE_COLUMN_NAMES = [

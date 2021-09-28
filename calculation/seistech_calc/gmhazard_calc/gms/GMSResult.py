@@ -6,9 +6,9 @@ import pandas as pd
 import numpy as np
 
 import sha_calc as sha_calc
-from seistech_calc.im import IM, to_im_list, to_string_list
-from seistech_calc import gm_data
-from seistech_calc import site
+from gmhazard_calc.im import IM, to_im_list, to_string_list
+from gmhazard_calc import gm_data
+from gmhazard_calc import site
 from .GroundMotionDataset import GMDataset
 from .CausalParamBounds import CausalParamBounds
 from .GCIMResult import IMEnsembleUniGCIM

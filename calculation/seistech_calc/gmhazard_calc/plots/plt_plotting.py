@@ -6,8 +6,8 @@ import pandas as pd
 from matplotlib import pyplot as plt, cm as cm, colors as ml_colors
 
 import sha_calc as sha_calc
-from seistech_calc import gms
-from seistech_calc.im import IM
+from gmhazard_calc import gms
+from gmhazard_calc.im import IM
 
 
 GCIM_LABEL = {

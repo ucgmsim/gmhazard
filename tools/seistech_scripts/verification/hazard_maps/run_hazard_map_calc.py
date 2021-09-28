@@ -9,7 +9,7 @@ import argparse
 import numpy as np
 
 import seistech_utils as su
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 
 def main(args):

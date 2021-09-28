@@ -6,10 +6,10 @@ from typing import List, Tuple, Optional, Dict
 import numpy as np
 import pandas as pd
 
-from seistech_calc import site
-from seistech_calc import gm_data
-from seistech_calc import rupture
-from seistech_calc.im import IM
+from gmhazard_calc import site
+from gmhazard_calc import gm_data
+from gmhazard_calc import rupture
+from gmhazard_calc.im import IM
 
 
 class BaseDisaggResult:

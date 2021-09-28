@@ -7,7 +7,7 @@ similarly to imdb_event_map_runner
 import os
 import argparse
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 import shared
 
 

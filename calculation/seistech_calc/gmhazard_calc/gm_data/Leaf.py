@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, List
 
 import numpy as np
 
-from seistech_calc import dbs
-from seistech_calc import constants as const
-from seistech_calc.im import IM, IMType
+from gmhazard_calc import dbs
+from gmhazard_calc import constants as const
+from gmhazard_calc.im import IM, IMType
 
 if TYPE_CHECKING:
     from .Branch import Branch

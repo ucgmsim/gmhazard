@@ -9,7 +9,7 @@ import yaml
 import numpy as np
 import pandas as pd
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 from . import utils
 from . import shared_responses as sr
 

@@ -7,7 +7,7 @@ This is debugging/analysis script.
 """
 import argparse
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 import shared
 
 

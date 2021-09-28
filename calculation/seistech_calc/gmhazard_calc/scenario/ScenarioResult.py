@@ -4,9 +4,9 @@ import json
 
 import pandas as pd
 
-from seistech_calc.im import IM, to_string_list, to_im_list
-from seistech_calc import site
-from seistech_calc import gm_data
+from gmhazard_calc.im import IM, to_string_list, to_im_list
+from gmhazard_calc import site
+from gmhazard_calc import gm_data
 
 
 class ScenarioResult:

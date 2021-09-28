@@ -5,14 +5,14 @@ import numpy as np
 from scipy import stats
 
 import sha_calc as sha_calc
-from seistech_calc.im import IM, IMType, to_im_list, to_string_list
-from seistech_calc import gm_data
-from seistech_calc import site
-from seistech_calc import constants
-from seistech_calc import hazard
-from seistech_calc import shared
-from seistech_calc import site_source
-from seistech_calc import disagg
+from gmhazard_calc.im import IM, IMType, to_im_list, to_string_list
+from gmhazard_calc import gm_data
+from gmhazard_calc import site
+from gmhazard_calc import constants
+from gmhazard_calc import hazard
+from gmhazard_calc import shared
+from gmhazard_calc import site_source
+from gmhazard_calc import disagg
 from .GroundMotionDataset import GMDataset, HistoricalGMDataset
 from .GMSResult import GMSResult
 from .GCIMResult import BranchUniGCIM, IMEnsembleUniGCIM

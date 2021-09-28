@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 import seistech_utils as su
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 
 def gen_event_data(

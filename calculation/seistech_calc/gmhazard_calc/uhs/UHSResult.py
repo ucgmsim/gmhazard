@@ -5,9 +5,9 @@ from typing import Dict, List, Sequence
 import numpy as np
 import pandas as pd
 
-from seistech_calc.im import IMType
-from seistech_calc import gm_data
-from seistech_calc import site
+from gmhazard_calc.im import IMType
+from gmhazard_calc import gm_data
+from gmhazard_calc import site
 
 
 class BaseUHSResult:

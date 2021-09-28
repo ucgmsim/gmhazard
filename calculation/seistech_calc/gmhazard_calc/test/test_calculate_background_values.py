@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import pandas as pd
 
-from seistech_calc import utils
+from gmhazard_calc import utils
 
 
 @pytest.mark.parametrize(

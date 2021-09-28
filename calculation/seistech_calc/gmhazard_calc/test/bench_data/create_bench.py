@@ -8,7 +8,7 @@ from typing import List, Dict
 import numpy as np
 import pandas as pd
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 BENCH_ENSEMBLE_DIR = (
             pathlib.Path(os.getenv("ENSEMBLE_CONFIG_PATH"))

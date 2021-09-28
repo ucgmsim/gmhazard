@@ -5,7 +5,7 @@ import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 rupture = "AlpineF2K"
 station = "CCCC"

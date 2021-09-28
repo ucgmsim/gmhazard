@@ -12,12 +12,12 @@ from qcore.timeseries import BBSeis
 from qcore import simulation_structure as ss
 
 import sha_calc as sha
-from seistech_calc.im import IM, IMType
-from seistech_calc import gm_data
-from seistech_calc import site
-from seistech_calc import constants
-from seistech_calc import dbs
-from seistech_calc import shared
+from gmhazard_calc.im import IM, IMType
+from gmhazard_calc import gm_data
+from gmhazard_calc import site
+from gmhazard_calc import constants
+from gmhazard_calc import dbs
+from gmhazard_calc import shared
 from .CausalParamBounds import CausalParamBounds
 
 

@@ -3,7 +3,7 @@
 Data for this example can be found here:
 https://www.dropbox.com/s/2il2hhbzrlueujl/seistech_example_data.zip?dl=0
 """
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 # Create the ensemble
 ens = sc.gm_data.Ensemble("gnzl", config_ffp="/path-to/seistech_example_data/v20p5emp_gnzl.yaml")

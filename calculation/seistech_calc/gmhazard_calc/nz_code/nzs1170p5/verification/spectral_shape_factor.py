@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from sha_calc import nzs1170p5_spectra
-from seistech_calc import NZSSoilClass
+from gmhazard_calc import NZSSoilClass
 
 fig = plt.figure()
 ax = fig.gca()

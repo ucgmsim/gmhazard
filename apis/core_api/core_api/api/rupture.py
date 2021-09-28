@@ -1,7 +1,7 @@
 import flask
 from flask_cors import cross_origin
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 import seistech_utils as su
 from core_api import server
 from core_api import constants as const

@@ -5,8 +5,8 @@ import warnings
 import numpy as np
 import pandas as pd
 
-import seistech_calc.constants as const
-from seistech_calc.im import IM, IMType
+import gmhazard_calc.constants as const
+from gmhazard_calc.im import IM, IMType
 from qcore import nhm
 
 
