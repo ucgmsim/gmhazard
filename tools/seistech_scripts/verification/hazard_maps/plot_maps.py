@@ -17,7 +17,7 @@ from typing import Dict
 import yaml
 import pandas as pd
 
-import seistech_utils as su
+import gmhazard_utils as su
 
 PLOT_CMD_TEMPLATE = "{} {} --xyz {} -f {} --xyz-cpt-labels {} --title"
 

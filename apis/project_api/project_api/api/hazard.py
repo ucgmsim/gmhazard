@@ -3,7 +3,7 @@ import tempfile
 import flask
 from flask_cors import cross_origin
 
-import seistech_utils as su
+import gmhazard_utils as su
 import gmhazard_calc as sc
 from project_api import server
 from project_api import constants as const

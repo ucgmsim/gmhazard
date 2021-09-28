@@ -6,7 +6,7 @@ from pathlib import Path
 import flask
 from jose import jwt
 
-from seistech_utils import MultiProcessSafeTimedRotatingFileHandler
+from gmhazard_utils import MultiProcessSafeTimedRotatingFileHandler
 
 app = flask.Flask("project_api")
 

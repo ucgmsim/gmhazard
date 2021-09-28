@@ -10,7 +10,7 @@ import numpy as np
 import yaml
 from importlib.metadata import version
 
-import seistech_utils as su
+import gmhazard_utils as su
 import project_gen as pg
 from . import psha
 

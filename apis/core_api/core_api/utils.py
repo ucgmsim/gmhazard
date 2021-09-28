@@ -4,7 +4,7 @@ import numpy as np
 from werkzeug.contrib.cache import BaseCache
 
 import gmhazard_calc as sc
-import seistech_utils as su
+import gmhazard_utils as su
 from core_api import server
 
 

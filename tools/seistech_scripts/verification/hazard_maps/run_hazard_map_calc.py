@@ -8,7 +8,7 @@ import argparse
 
 import numpy as np
 
-import seistech_utils as su
+import gmhazard_utils as su
 import gmhazard_calc as sc
 
 

@@ -8,7 +8,7 @@ import multiprocessing as mp
 import pandas as pd
 import matplotlib.pyplot as plt
 
-import seistech_utils as su
+import gmhazard_utils as su
 
 
 def plot_hist(data_ffp: str, n_bins: int = 15, no_clobber: bool = False):

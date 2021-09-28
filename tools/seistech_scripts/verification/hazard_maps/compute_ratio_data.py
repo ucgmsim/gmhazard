@@ -28,7 +28,7 @@ import argparse
 import pandas as pd
 import numpy as np
 
-import seistech_utils as su
+import gmhazard_utils as su
 
 
 def merge_station(ffp_1: str, ffp_2: str, lat_max_filter: float = None):

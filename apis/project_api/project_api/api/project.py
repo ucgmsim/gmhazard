@@ -8,7 +8,7 @@ import pandas as pd
 import flask
 from flask_cors import cross_origin
 
-import seistech_utils as su
+import gmhazard_utils as su
 import gmhazard_calc as sc
 import project_gen as pg
 from project_api import utils

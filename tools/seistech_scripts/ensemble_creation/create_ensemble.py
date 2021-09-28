@@ -1,6 +1,6 @@
 import argparse
 
-import seistech_utils as utils
+import gmhazard_utils as utils
 
 
 def create_ensemble_main():

@@ -13,7 +13,7 @@ import tempfile
 
 import pandas as pd
 
-import seistech_utils as su
+import gmhazard_utils as su
 
 
 def interpolate_hazard_csv(f_name):

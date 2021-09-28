@@ -2,7 +2,7 @@ import flask
 from flask_cors import cross_origin
 
 import gmhazard_calc as sc
-import seistech_utils as su
+import gmhazard_utils as su
 from ..server import app, requires_auth
 from .. import constants as const
 
