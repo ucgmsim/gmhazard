@@ -8,6 +8,6 @@
 
 ### Update Docker and its ReadME - ([PR #8](https://github.com/ucgmsim/gmhazard/pull/8))
 
-- Update Docker to use the seistech repo for both frontend and intermediate API.
+- Update Docker to use the gmhazard repo for both frontend and intermediate API.
 - Upload `.env.example`.
 - Update ReadME to provide better information.
