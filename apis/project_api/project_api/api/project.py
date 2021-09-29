@@ -222,7 +222,7 @@ def create_new():
         args=[
             project_params,
             str(server.BASE_PROJECTS_DIR),
-            str(seistech_root_dir / "seistech_scripts/seistech_scripts/local"),
+            str(seistech_root_dir / "gmhazard_scripts/gmhazard_scripts/local"),
         ],
         kwargs={"new_project": True},
     )
