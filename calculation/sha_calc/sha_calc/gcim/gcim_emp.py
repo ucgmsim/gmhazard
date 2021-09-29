@@ -7,7 +7,7 @@ import numpy as np
 from scipy import stats
 
 from sha_calc import disagg
-import sha_calc.ground_motion as gm
+from sha_calc import ground_motion as gm
 from . import distributions as dist
 from . import im_correlations
 
