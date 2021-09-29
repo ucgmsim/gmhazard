@@ -216,13 +216,13 @@ def create_new():
     server.app.logger.info(
         f"Triggering generation of new project {project_params['id']}"
     )
-    seistech_root_dir = Path(__file__).resolve().parent.parent.parent.parent
+    gmhazard_root_dir = Path(__file__).resolve().parent.parent.parent.parent
     pg.tasks.create_project_task.server.apply_async(
         queue="project_gen",
         args=[
             project_params,
             str(server.BASE_PROJECTS_DIR),
-            str(seistech_root_dir / "gmhazard_scripts/gmhazard_scripts/local"),
+            str(gmhazard_root_dir / "gmhazard_scripts/gmhazard_scripts/local"),
         ],
         kwargs={"new_project": True},
     )

@@ -1,11 +1,11 @@
-class SeistechError(BaseException):
-    """Base Seistech error"""
+class GMHazardError(BaseException):
+    """Base GMHazard error"""
 
     def __init__(self, message: str):
         self.message = message
 
 
-class ExceedanceOutOfRangeError(SeistechError):
+class ExceedanceOutOfRangeError(GMHazardError):
     """Raised when the specified exceedance value is out of range when
     going from exceedance to IM on the hazard curve"""
 

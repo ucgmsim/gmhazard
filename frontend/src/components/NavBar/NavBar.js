@@ -9,7 +9,8 @@ import { GlobalContext } from "context";
 import { LogoutButton, LoginButton } from "components/NavBar";
 
 import "assets/style/NavBar.css";
-import SeisTechLogo from "assets/seistech_long_logo_simple.png";
+// Update the logo when we have a newer one
+import GMHazardLogo from "assets/seistech_long_logo_simple.png";
 
 const MainNav = () => {
   const { hasPermission } = useContext(GlobalContext);
@@ -73,7 +74,7 @@ const NavBar = () => {
       <div className="container-fluid max-width">
         <NavbarBrand tag={Link} to={"/"}>
           <img
-            src={SeisTechLogo}
+            src={GMHazardLogo}
             alt=""
             width="150"
             className="nav-brand-logo"

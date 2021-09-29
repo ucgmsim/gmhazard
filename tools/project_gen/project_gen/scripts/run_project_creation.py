@@ -55,7 +55,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "scripts_dir",
         type=Path,
-        help="The path to the Seistech Scripts Local scripts folder",
+        help="The path to the GMHazard Scripts Local scripts folder",
     )
     # Distributed seismicity calculation needs 2 processes to run
     parser.add_argument(
@@ -68,7 +68,10 @@ if __name__ == "__main__":
         "--erf_dir", type=Path, help="Path to the ERF directory", default=None
     )
     parser.add_argument(
-        "--erf_pert_dir", type=Path, help="Path to the directory of pertubated ERFs", default=None
+        "--erf_pert_dir",
+        type=Path,
+        help="Path to the directory of pertubated ERFs",
+        default=None,
     )
     parser.add_argument(
         "--flt_erf_version",

@@ -1,4 +1,4 @@
-# SeisTech - DB
+# GMHazard - DB
 
 ## Contents
 
@@ -78,8 +78,8 @@ volumes:
 
 1. Make sure the DB is up and running
 2. Type the following command within the working venv. (Python 3.6+)
-   - `python /your_path_to_cloned_repo/seistech/apis/intermediate_api/intermediate_api/create_db.py`
-3. Project table needs to be filled to use the Projects tab under the SeisTech.
+   - `python /your_path_to_cloned_repo/gmhazard/apis/intermediate_api/intermediate_api/create_db.py`
+3. Project table needs to be filled to use the Projects tab under the GMHazard.
    - Refer to the `create_db.py`, projects vary on their application.
 
 This will create some initial tables for the DEV environment and Auth0 users under the application.

@@ -1,4 +1,4 @@
-# Seistech Calculation
+# GMHazard Calculation
 
 This package is used for PSHA calculation using logic trees (referred to as ensembles in the code and documentation)
 
@@ -10,7 +10,7 @@ Additionally files describing the sites of interest are also required:
     - Site locations (.ll file)
     - Site conditions (.vs30 and .z)
 
-A complete example dataset along with its ensemble config can be found [here](https://www.dropbox.com/s/2il2hhbzrlueujl/seistech_example_data.zip?dl=0)
+A complete example dataset along with its ensemble config can be found [here](https://www.dropbox.com/s/2il2hhbzrlueujl/gmhazard_example_data.zip?dl=0)
 
 ## Run PSHA calculations
 
@@ -22,7 +22,7 @@ To run any calculation:
 import gmhazard_calc as sc
 
 # Create the ensemble
-ens = sc.gm_data.Ensemble("gnzl", config_ffp="/path-to/seistech_example_data/v20p5emp_gnzl.yaml")
+ens = sc.gm_data.Ensemble("gnzl", config_ffp="/path-to/gmhazard_example_data/v20p5emp_gnzl.yaml")
 
 # Create site
 site = sc.site.get_site_from_name(ens, "Christchurch_300_0p535_2p375")

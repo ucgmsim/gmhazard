@@ -195,7 +195,7 @@ class HistoricalGMDataset(GMDataset):
 
     @property
     def ims(self):
-        # Get all IMs from the dataframe columns that are supported by seistech
+        # Get all IMs from the dataframe columns that are supported by GMHazard
         return [
             IM.from_str(cur_col)
             for cur_col in self._im_df.columns

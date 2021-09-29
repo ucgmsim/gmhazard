@@ -1,6 +1,6 @@
 """Generates UHS plots with different number of data points.
 The plots are used to determine the number of periods of SA we need/want for
-future UHS (seistech) plots.
+future UHS (GMHazard) plots.
 """
 import os
 
@@ -19,7 +19,9 @@ ens = sc.gm_data.Ensemble("v19p5sim")
 
 output_folder = "/home/cbs51/code/data/200218_uhs_115"
 
-with sc.dbs.IMDBNonParametric("/home/cbs51/code/data/200108_v18p6_full_imdb/imdb_full.h5") as db:
+with sc.dbs.IMDBNonParametric(
+    "/home/cbs51/code/data/200108_v18p6_full_imdb/imdb_full.h5"
+) as db:
     im_df = db.im_data("CCCC")
 
 # Get SA periods that are in all the datasets
@@ -43,11 +45,17 @@ for im, period in zip(sa_ims, sa_periods):
     cur_df = pd.concat(im_series, axis=1, join="inner")
     cur_df.columns = im_levels
 
-    cur_df.index = sc.rupture.rupture_name_to_id(cur_df.index.values, ens._config["datasets"]["sim"]["flt_erf"])
+    cur_df.index = sc.rupture.rupture_name_to_id(
+        cur_df.index.values, ens._config["datasets"]["sim"]["flt_erf"]
+    )
 
     cur_hazard = haz.hazard_curve(cur_df, ens.rupture_df_id["annual_rec_prob"])
 
-    sa_values.append(sc.hazard.exceedance_to_im(exceedance, cur_hazard.index.values, cur_hazard.values))
+    sa_values.append(
+        sc.hazard.exceedance_to_im(
+            exceedance, cur_hazard.index.values, cur_hazard.values
+        )
+    )
 
 m_size = 3.0
 
@@ -58,7 +66,7 @@ for cur_n_periods in n_periods:
     cur_sa_values = np.interp(cur_sa_periods, sa_periods, sa_values)
 
     fig = plt.figure(figsize=(12, 9))
-    plt.plot(cur_sa_periods, cur_sa_values, marker='o', ms=m_size)
+    plt.plot(cur_sa_periods, cur_sa_values, marker="o", ms=m_size)
     plt.title(cur_n_periods)
 
     plt.xlabel("Period (s)")
@@ -68,11 +76,13 @@ for cur_n_periods in n_periods:
     plt.close()
 
 for cur_n_periods in n_periods:
-    cur_sa_periods = np.exp(np.linspace(np.log(min_period + 1e-8), np.log(max_period), cur_n_periods))
+    cur_sa_periods = np.exp(
+        np.linspace(np.log(min_period + 1e-8), np.log(max_period), cur_n_periods)
+    )
     cur_sa_values = np.interp(cur_sa_periods, sa_periods, sa_values)
 
     fig = plt.figure(figsize=(12, 9))
-    plt.plot(cur_sa_periods, cur_sa_values, marker='o', ms=m_size)
+    plt.plot(cur_sa_periods, cur_sa_values, marker="o", ms=m_size)
     plt.title(cur_n_periods)
 
     plt.xlabel("Period (s)")
@@ -82,7 +92,7 @@ for cur_n_periods in n_periods:
     plt.close()
 
 fig = plt.figure(figsize=(12, 9))
-plt.plot(sa_periods, sa_values, marker='o', ms=m_size)
+plt.plot(sa_periods, sa_values, marker="o", ms=m_size)
 plt.title(len(sa_periods))
 
 plt.xlabel("Period (s)")
@@ -93,16 +103,15 @@ plt.close()
 
 for ix in range(2, 11):
     fig = plt.figure(figsize=(12, 9))
-    plt.plot(sa_periods[::ix], sa_values[::ix], marker='o', ms=m_size)
+    plt.plot(sa_periods[::ix], sa_values[::ix], marker="o", ms=m_size)
     plt.title(len(sa_periods[::ix]))
 
     plt.xlabel("Period (s)")
     plt.ylabel("SA (g)")
 
-    fig.savefig(os.path.join(output_folder, f"UHS_orig_{len(sa_periods[::ix])}_{ix}th.png"))
+    fig.savefig(
+        os.path.join(output_folder, f"UHS_orig_{len(sa_periods[::ix])}_{ix}th.png")
+    )
     plt.close()
 
 exit()
-
-
-
