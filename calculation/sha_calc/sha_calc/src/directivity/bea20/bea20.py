@@ -39,7 +39,7 @@ period = 3  # The spectral period for which fD is requested, in sec. 0.01<period
 #
 #     points, rake = get_srf_values(srf_file)
 #
-#     lat_lon_depth = np.asarray([[x["lat"], x["lon"], x["depth"]] for x in points])
+#     lon_lat_depth = np.asarray([[x["lat"], x["lon"], x["depth"]] for x in points])
 #     site_loc = np.asarray([[-41.713595, 173.090279], [-41.613595, 173.090279]])
 #
 #     fdi_list = []
@@ -47,16 +47,16 @@ period = 3  # The spectral period for which fD is requested, in sec. 0.01<period
 #     for index, planes in planes_list:
 #
 #         rx, ry = src_site_dist.calc_rx_ry_GC2(
-#             lat_lon_depth, planes, site_loc, hypocentre_origin=True
+#             lon_lat_depth, planes, site_loc, hypocentre_origin=True
 #         )
 #
-#         nominal_strike, nominal_strike2 = calc_nominal_strike(lat_lon_depth)
+#         nominal_strike, nominal_strike2 = calc_nominal_strike(lon_lat_depth)
 #
 #         rx_end, _ = src_site_dist.calc_rx_ry_GC2(
-#             lat_lon_depth, planes, nominal_strike, hypocentre_origin=True
+#             lon_lat_depth, planes, nominal_strike, hypocentre_origin=True
 #         )
 #         rx_end2, _ = src_site_dist.calc_rx_ry_GC2(
-#             lat_lon_depth, planes, nominal_strike2, hypocentre_origin=True
+#             lon_lat_depth, planes, nominal_strike2, hypocentre_origin=True
 #         )
 #
 #         s_max = [min(rx_end, rx_end2)[0], max(rx_end, rx_end2)[0]]
@@ -230,7 +230,7 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
     # Calculate S2
     if type == 2 and rake < 0:
         s = -s
-    s_rake = s * math.cos(rake)
+    s_rake = s * math.cos(rake * math.pi / 180)
     d = max(d, 3)  # Gets the max value for d, 3 is the minimum
     s2 = s_rake ** 2 + d ** 2
     s2 = np.sqrt(s2)
@@ -249,7 +249,7 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
         fs2[fs2 > fs_cap] = fs_cap
 
     # Angular predictor variables
-    t = np.asarray(t)
+    t = np.asarray(t).copy()
     if type == 1:
         theta = np.nan_to_num(np.arctan(np.divide(t, u)))
         f_theta = abs(np.cos(2 * theta))
@@ -269,9 +269,9 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
         phi[t2] = 90 - dip + np.degrees(np.arctan(np.divide(t[t2] - t_bot, d_bot)))
 
         phi[phi > 45] = 45
-        fphi = np.cos(2 * phi)
+        fphi = np.cos(2 * phi * np.pi / 180)
 
-        t_min = 10 * (abs(math.cos(rake)) + 1)
+        t_min = 10 * (abs(math.cos(rake * math.pi / 180)) + 1)
         t2 = abs(t)
         t2[t2 < t_min] = t_min
         t2[t_pos] = t_min
@@ -456,13 +456,13 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
 #
 #     points = srf.read_latlondepth(srf_file)
 #
-#     lat_lon_depth = np.asarray([[x["lat"], x["lon"], x["depth"]] for x in points])
+#     lon_lat_depth = np.asarray([[x["lat"], x["lon"], x["depth"]] for x in points])
 #
 #     lon_values = np.linspace(
-#         lat_lon_depth[:, 0].min() - 1, lat_lon_depth[:, 0].max() + 1, 100
+#         lon_lat_depth[:, 0].min() - 1, lon_lat_depth[:, 0].max() + 1, 100
 #     )
 #     lat_values = np.linspace(
-#         lat_lon_depth[:, 1].min() - 1, lat_lon_depth[:, 1].max() + 1, 100
+#         lon_lat_depth[:, 1].min() - 1, lon_lat_depth[:, 1].max() + 1, 100
 #     )
 #
 #     x, y = np.meshgrid(lon_values, lat_values)
@@ -477,7 +477,7 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
 #         plane_index = planes_index[index]
 #
 #         rx, ry = src_site_dist.calc_rx_ry_GC2(
-#             lat_lon_depth, planes, site_coords, hypocentre_origin=True
+#             lon_lat_depth, planes, site_coords, hypocentre_origin=True
 #         )
 #
 #         fig3, (ax3, ax4) = plt.subplots(1, 2, figsize=(21, 13.5), dpi=144)
@@ -493,16 +493,16 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
 #         fig.colorbar(ct, ax=ax3, pad=0.01)
 #         fig.colorbar(ct2, ax=ax4, pad=0.01)
 #         ax3.scatter(
-#             lat_lon_depth[:, 1][::2],
-#             lat_lon_depth[:, 0][::2],
-#             c=lat_lon_depth[:, 2][::2],
+#             lon_lat_depth[:, 1][::2],
+#             lon_lat_depth[:, 0][::2],
+#             c=lon_lat_depth[:, 2][::2],
 #             label="srf points",
 #             s=1.0,
 #         )
 #         ax4.scatter(
-#             lat_lon_depth[:, 1][::2],
-#             lat_lon_depth[:, 0][::2],
-#             c=lat_lon_depth[:, 2][::2],
+#             lon_lat_depth[:, 1][::2],
+#             lon_lat_depth[:, 0][::2],
+#             c=lon_lat_depth[:, 2][::2],
 #             label="srf points",
 #             s=1.0,
 #         )
@@ -515,13 +515,13 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
 #
 #         fig3.savefig(f"/home/joel/local/gc2_{index}.png")
 #
-#         nominal_strike, nominal_strike2 = calc_nominal_strike(lat_lon_depth)
+#         nominal_strike, nominal_strike2 = calc_nominal_strike(lon_lat_depth)
 #
 #         rx_end, _ = src_site_dist.calc_rx_ry_GC2(
-#             lat_lon_depth, planes, nominal_strike, hypocentre_origin=True
+#             lon_lat_depth, planes, nominal_strike, hypocentre_origin=True
 #         )
 #         rx_end2, _ = src_site_dist.calc_rx_ry_GC2(
-#             lat_lon_depth, planes, nominal_strike2, hypocentre_origin=True
+#             lon_lat_depth, planes, nominal_strike2, hypocentre_origin=True
 #         )
 #
 #         s_max = [min(rx_end, rx_end2)[0], max(rx_end, rx_end2)[0]]
@@ -552,9 +552,9 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
 #         ax2.set_title("Fdi pSA_3.0")
 #         fig.colorbar(ct, ax=ax2, pad=0.01)
 #         ax2.scatter(
-#             lat_lon_depth[:, 1][::2],
-#             lat_lon_depth[:, 0][::2],
-#             c=lat_lon_depth[:, 2][::2],
+#             lon_lat_depth[:, 1][::2],
+#             lon_lat_depth[:, 0][::2],
+#             c=lon_lat_depth[:, 2][::2],
 #             label="srf points",
 #             s=1.0,
 #         )
@@ -585,9 +585,9 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
 #     ax1.set_title("Fdi pSA_3.0")
 #     fig.colorbar(ct, ax=ax1, pad=0.01)
 #     ax1.scatter(
-#         lat_lon_depth[:, 1][::2],
-#         lat_lon_depth[:, 0][::2],
-#         c=lat_lon_depth[:, 2][::2],
+#         lon_lat_depth[:, 1][::2],
+#         lon_lat_depth[:, 0][::2],
+#         c=lon_lat_depth[:, 2][::2],
 #         label="srf points",
 #         s=1.0,
 #     )
