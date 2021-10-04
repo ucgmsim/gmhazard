@@ -3,7 +3,7 @@ from .ground_motion import non_parametric_gm_excd_prob, parametric_gm_excd_prob
 from .hazard import hazard_single, hazard_curve
 from .exceptions import InputDataError
 from .nzs1170p5_spectra import nzs1170p5_spectra, get_return_period_factor
-from .directivity import bea20, set_hypocenters, calc_nominal_strike, get_rake_value, remove_plane_idx
+from sha_calc.src.directivity.bea20.bea20 import bea20, set_hypocenters, calc_nominal_strike, get_rake_value, remove_plane_idx
 from sha_calc.src.im_component.im_component_ratio import get_component_ratio, get_computed_component_ratio
 
 from .gms import *
