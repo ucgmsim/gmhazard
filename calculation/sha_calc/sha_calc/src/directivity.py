@@ -122,9 +122,15 @@ def set_hypocenters(n_hypo: int, planes: List, depth_method: List):
 
 def calc_nominal_strike(traces):
     """Gets the start and ending trace of the fault and ensures order for largest lat value first"""
+    depth = traces[0][2]
+    trace_end_index = 0
+    for index, trace in enumerate(traces):
+        if depth != trace[2]:
+            trace_end_index = index -1
+            break
     trace_start, trace_end = [traces[0][0], traces[0][1]], [
-        traces[-1][0],
-        traces[-1][1],
+        traces[trace_end_index][0],
+        traces[trace_end_index][1],
     ]
     if trace_start[0] < trace_end[0]:
         return np.asarray([trace_end]), np.asarray([trace_start])
@@ -174,10 +180,10 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
     m: float
         Moment magnitude, 5<=m<=8
     u: list
-        The GC2 coordinates in km. Equivalent to rx.
+        The GC2 coordinates in km. Equivalent to ry.
         Must be nX1 number where n is the number of locations at which the model provides a prediction.
     t: list
-        The GC2 coordinates in km. Equivalent to ry.
+        The GC2 coordinates in km. Equivalent to rx.
         Must be nX1 number where n is the number of locations at which the model provides a prediction.
     s_max: List
         List of 2x1 number where first is the lowest max value and the second is the largest max value for s.
@@ -209,7 +215,7 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
     # Convert u to s
     # Limit s to the s_max values for positive and negative numbers
     s_max1, s_max2 = s_max
-    u, s = np.asarray(u), np.asarray(u)
+    u, s = np.asarray(u).copy(), np.asarray(u).copy()
     s[u < s_max1] = s_max1
     s[u > s_max2] = s_max2
 
