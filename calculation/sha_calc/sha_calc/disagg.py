@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import scipy.stats as stats
 
-from sha_calc.src.hazard import hazard_single
+from sha_calc.hazard import hazard_single
 
 
 def disagg_equal(gm_prob: pd.Series, gm_prob_delta: pd.Series, rec_prop: pd.Series):

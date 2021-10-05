@@ -9,7 +9,6 @@ Earthquake Engineering & Structural Dynamics 44.13 (2015): 2321-2340.
 
 import numpy as np
 import pandas as pd
-from scipy import stats
 
 from . import shared
 
