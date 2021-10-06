@@ -3,7 +3,7 @@ import pandas as pd
 from pathlib import Path
 
 from qcore import srf
-from sha_calc.src.directivity.bea20 import directivity
+from sha_calc.directivity.bea20 import directivity
 
 FAULTS = ["AlpineK2T", "Ashley", "Browning", "Hossack"]
 SRF_LOCATION = Path("/home/joel/local")  # TODO Need an actual srf location for GMHazard

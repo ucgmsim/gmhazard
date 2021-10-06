@@ -5,7 +5,7 @@ from pathlib import Path
 
 from qcore import srf
 from IM_calculation.source_site_dist import src_site_dist
-from sha_calc.src.directivity.bea20 import bea20, utils
+from sha_calc.directivity.bea20 import bea20, utils
 
 
 def get_directivity_effects(
