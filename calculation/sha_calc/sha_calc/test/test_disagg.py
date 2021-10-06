@@ -2,8 +2,8 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from sha_calc.src.hazard import hazard_single
-from sha_calc.src.disagg import (
+from sha_calc.hazard import hazard_single
+from sha_calc.disagg import (
     disagg_exceedance,
     disagg_mean_weights,
     epsilon_non_para_single,

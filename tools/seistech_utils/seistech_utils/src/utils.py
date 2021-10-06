@@ -6,8 +6,8 @@ from importlib.metadata import version
 
 
 def get_package_version(package_name: str) -> Tuple[str, str]:
-    version_number = version(package_name)
 
+    version_number = version(package_name)
     return version_number, f"v{version_number.replace('.', 'p')}"
 
 

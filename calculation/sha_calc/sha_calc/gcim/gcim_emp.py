@@ -6,8 +6,8 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 
-import sha_calc.src.disagg as disagg
-import sha_calc.src.ground_motion as gm
+from sha_calc import disagg
+from sha_calc import ground_motion as gm
 from . import distributions as dist
 from . import im_correlations
 

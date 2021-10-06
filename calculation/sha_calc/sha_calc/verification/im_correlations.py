@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from sha_calc.src import gcim
+from sha_calc import gcim
 
 DEFAULT_PERIODS = np.logspace(np.log(0.01000001), np.log(10.0), base=np.e)
 DEFAULT_PERIODS[-1] = 10.0
