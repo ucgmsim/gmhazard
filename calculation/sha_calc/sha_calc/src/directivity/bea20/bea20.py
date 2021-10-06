@@ -5,31 +5,10 @@ import math
 import matplotlib.pyplot as plt
 from typing import List, Union, Tuple
 
-from IM_calculation.source_site_dist import src_site_dist
-from qcore import srf, geo
-
-m = 7.2  # Moment magnitude, 5<=m<=8. 1x1 double.
-u = np.arange(-90, 140.5, 0.5).tolist()
-t = [
-    -80
-] * 461  # The GC2 coordinates in km. Must both be nX1 doubles where n is the number of locations at which the model provides a prediction. Must be columnar.
-s_max = [
-    -10,
-    70,
-]  # The maximum possible values of s for the scenario in km. 1x2 double with the first element corresponding to the maximum s in the antistrike direction (defined to be a negative value) and the second element the maximum in the strike direction (positive value).
-d = 10  # The effective rupture travel width, measured from the hypocenter to the shallowest depth of the rupture plane, up-dip (km). 1x1 double.
-t_bot = 0  # The t ordinate of the bottom of the rupture plane (projected to the surface) in km. 1x1 double.
-# The vertical depth of the bottom of the rupture plane from the ground surface, including Ztor, in km. 1x1 double.
-d_bot = 15
-rake = 0
-
-dip = 90  # The characteristic rupture rake and dip angles, in degrees. 1x1 doubles. -180<=rake<=180 and dip<=90
-force_type = 0  # A flag for determining the SOF category. 0->select SOF based on rake angle. 1->force SOF=1. 2->force SOF=2. 1x1 double.
-period = 3  # The spectral period for which fD is requested, in sec. 0.01<period<10. 1x1 double.
 
 # WIP
 # def get_directivity_effects():
-#     """Calcualtes directivity effects at the given site"""
+#     """Calculates directivity effects at the given site"""
 #
 #     # srf_file = "/isilon/cybershake/v20p4/Sources/scale_wlg_ nobackup/filesets/nobackup/nesi00213/RunFolder/jpa198/cybershake_sources/Data/Sources/AlpineK2T/Srf/AlpineK2T_REL01.srf"
 #     srf_file = "/home/joel/local/AlpineK2T_REL01.srf"
@@ -37,7 +16,7 @@ period = 3  # The spectral period for which fD is requested, in sec. 0.01<period
 #     planes = srf.read_header(srf_file, idx=True)
 #     planes_list, planes_index = set_hypocenters(10, planes, [0.5])
 #
-#     points, rake = get_srf_values(srf_file)
+#     points, Rake = get_srf_values(srf_file)
 #
 #     lon_lat_depth = np.asarray([[x["lat"], x["lon"], x["depth"]] for x in points])
 #     site_loc = np.asarray([[-41.713595, 173.090279], [-41.613595, 173.090279]])
@@ -59,16 +38,16 @@ period = 3  # The spectral period for which fD is requested, in sec. 0.01<period
 #             lon_lat_depth, planes, nominal_strike2, hypocentre_origin=True
 #         )
 #
-#         s_max = [min(rx_end, rx_end2)[0], max(rx_end, rx_end2)[0]]
+#         Smax = [min(rx_end, rx_end2)[0], max(rx_end, rx_end2)[0]]
 #
 #         z_tor = planes[index]["dtop"]
 #
-#         dip = planes[index]["dip"]
-#         d_bot = z_tor + planes[index]["width"] * math.sin(dip)
-#         t_bot = z_tor / math.tan(dip) + planes[index]["width"] * math.cos(dip)
-#         d = (planes[index]["dhyp"] - z_tor) / math.sin(dip)
+#         Dip = planes[index]["dip"]
+#         Dbot = z_tor + planes[index]["width"] * math.sin(Dip)
+#         Tbot = z_tor / math.tan(Dip) + planes[index]["width"] * math.cos(Dip)
+#         D = (planes[index]["dhyp"] - z_tor) / math.sin(Dip)
 #         fd, fdi, phi_red, phi_redi, predictor_functions, other = bea20(
-#             m, rx, ry, s_max, d, t_bot, d_bot, rake, dip, force_type, period
+#             M, rx, ry, Smax, D, Tbot, Dbot, Rake, Dip, force_type, period
 #         )
 #
 #         fdi_list.append(fdi)
@@ -76,98 +55,7 @@ period = 3  # The spectral period for which fD is requested, in sec. 0.01<period
 #     return fdi_list
 
 
-def set_hypocenters(n_hypo: int, planes: List, depth_method: List):
-    """
-    Creates a List of planes each with a different set hypocenter for directivity calculations
-    Sets n_hypo amount of hypocenters across the planes evenly
-
-    Parameters
-    ----------
-    n_hypo: int
-        Number of hypocenters across strike to set
-    planes: list
-        The planes to adjust and set the hypocenter on
-    depth_method: List
-        How deep the hypocenter is to be placed e.g. [0.5] would be every hypocenter at 50% depth
-        where as [0.33, 0.66] would be every 2nd hypocenter would have a depth of 66% and every other would have 33%
-    """
-
-    # Gets the total length and removes any previous hypocenters
-    total_length = 0
-    for plane in planes:
-        total_length += plane["length"]
-        plane["shyp"] = -999.9
-        plane["dhyp"] = -999.9
-
-    # Works out the distances across the length of the fault for each hypocenter
-    distances = [(total_length/n_hypo * x) - ((total_length/n_hypo)/2) for x in range(1, n_hypo+1)]
-
-    depth_index = 0
-    planes_list = []
-    planes_index = []
-
-    for distance in distances:
-        current_length = 0
-        planes_copy = [plane.copy() for plane in planes]
-        for index, plane in enumerate(planes_copy):
-            if current_length < distance and (current_length + plane["length"]) > distance:
-                plane["shyp"] = distance - (current_length + plane["length"] / 2)
-                plane["dhyp"] = plane["width"] * depth_method[depth_index]
-                depth_index = (depth_index + 1) % len(depth_method)
-                planes_index.append(index)
-            current_length += plane["length"]
-        planes_list.append(planes_copy)
-    return planes_list, planes_index
-
-
-def calc_nominal_strike(traces):
-    """Gets the start and ending trace of the fault and ensures order for largest lat value first"""
-    depth = traces[0][2]
-    trace_end_index = 0
-    for index, trace in enumerate(traces):
-        if depth != trace[2]:
-            trace_end_index = index -1
-            break
-    trace_start, trace_end = [traces[0][0], traces[0][1]], [
-        traces[trace_end_index][0],
-        traces[trace_end_index][1],
-    ]
-    if trace_start[0] < trace_end[0]:
-        return np.asarray([trace_end]), np.asarray([trace_start])
-    else:
-        return np.asarray([trace_start]), np.asarray([trace_end])
-
-
-def get_rake_value(srf_file: str, lat: float, lon: float):
-    """
-    Gets the rake value at a given lat lon for a hypocenter
-    Used for a more accurate representation of rake for the bea20 model
-
-    Parameters
-    ----------
-    srf_file: str
-        Fault srf file to read from
-    lat: float
-        The latitude value to extract rake from
-    lon: float
-        The Longitude value to extract rake from
-    """
-    with open(srf_file, "r") as sf:
-        sf.readline()
-        n_seg = int(sf.readline().split()[1])
-        for _ in range(n_seg):
-            sf.readline()
-            sf.readline()
-        n_point = int(sf.readline().split()[1])
-        rake = 0  # If not found
-        for _ in range(n_point):
-            values = srf.get_lonlat(sf, "rake", True)
-            if lat == values[1] and lon == values[0]:
-                rake = values[3]
-    return rake
-
-
-def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot: float, rake: float, dip: float, type: int, period: float):
+def bea20(M: float, U: List, T: List, Smax: List, D: float, Tbot: float, Dbot: float, Rake: float, Dip: float, type: int, Period: float):
     """
     Calculates the directivity effects at given locations based on fault information.
     Algorithm has been taken from the Bayless 2020 model found in the paper.
@@ -177,162 +65,160 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
 
     Parameters
     ----------
-    m: float
-        Moment magnitude, 5<=m<=8
-    u: list
+    M: float
+        Moment magnitude, 5<=M<=8
+    U: list
         The GC2 coordinates in km. Equivalent to ry.
         Must be nX1 number where n is the number of locations at which the model provides a prediction.
-    t: list
+    T: list
         The GC2 coordinates in km. Equivalent to rx.
         Must be nX1 number where n is the number of locations at which the model provides a prediction.
-    s_max: List
+    Smax: List
         List of 2x1 number where first is the lowest max value and the second is the largest max value for s.
         Computed from GC2 using nominal strike of the fault.
-    d: float
+    D: float
         The effective rupture travel width, measured from the hypocenter to the shallowest depth of the rupture plane.
-    t_bot: float
+    Tbot: float
         The length of the bottom of the rupture plane (projected to the surface) in km.
-    d_bot: float
+    Dbot: float
         The vertical depth of the bottom of the rupture plane from the ground surface, including Ztor, in km.
-    rake: float
-        The rake of the fault
-    dip: float
-        The dip of the fault at the hypocenter
+    Rake: float
+        The Rake of the fault
+    Dip: float
+        The Dip of the fault at the hypocenter
     type: float
         1 for a strike slip
         2 for a oblique, reverse or normal
-    period: float
+    Period: float
         Used for specifying the period for a pSA IM
     """
 
-    # If not specified, determine rupture category from rake angle
+    # If not specified, determine rupture category from Rake angle
     if type == 0:
-        if (-30 <= rake <= 30) or (-180 <= rake <= -150) or (150 <= rake <= 180):
+        if (-30 <= Rake <= 30) or (-180 <= Rake <= -150) or (150 <= Rake <= 180):
             type = 1
         else:
             type = 2
 
-    # Convert u to s
-    # Limit s to the s_max values for positive and negative numbers
-    s_max1, s_max2 = s_max
-    u, s = np.asarray(u).copy(), np.asarray(u).copy()
-    s[u < s_max1] = s_max1
-    s[u > s_max2] = s_max2
+    # Convert U to S
+    # Limit S to the Smax values for positive and negative numbers
+    Smax1, Smax2 = Smax
+    U, S = np.asarray(U).copy(), np.asarray(U).copy()
+    S[U < Smax1] = Smax1
+    S[U > Smax2] = Smax2
 
-    # Convert u to ry
-    # Reduce each positive and negative side by absolute value of s_max and remove negative numbers inbetween
-    pos, neg = u >= 0, u < 0
-    ry = np.zeros(u.size)
-    ry[pos] = u[pos] - s_max2
-    ry[neg] = abs(u[neg]) - abs(s_max1)
-    ry[ry < 0] = 0
+    # Convert U to Ry
+    # Reduce each positive and negative side by absolute value of Smax and remove negative numbers inbetween
+    upos, uneg = U >= 0, U < 0
+    Ry = np.zeros(U.size)
+    Ry[upos] = U[upos] - Smax2
+    Ry[uneg] = abs(U[uneg]) - abs(Smax1)
+    Ry[Ry < 0] = 0
 
     # Calculate S2
-    if type == 2 and rake < 0:
-        s = -s
-    s_rake = s * math.cos(rake * math.pi / 180)
-    d = max(d, 3)  # Gets the max value for d, 3 is the minimum
-    s2 = s_rake ** 2 + d ** 2
-    s2 = np.sqrt(s2)
+    if type == 2 and Rake < 0:
+        S = -S
+    Srake = S * math.cos(math.radians(Rake))
+    D = max(D, 3)  # Gets the max value for D, 3 is the minimum
+    S2 = np.sqrt(Srake ** 2 + D ** 2)
 
     # Predictor variable fs2
     if type == 1:
-        fs2 = np.log(s2)
-        fs_cap = math.log(465)
-        fs2[fs2 > fs_cap] = fs_cap
+        fs2 = np.log(S2)
+        fsCap = math.log(465)
+        fs2[fs2 > fsCap] = fsCap
     else:
-        fs2 = np.zeros(u.size)
-        s_pos, s_neg = s_rake >= 0, s_rake < 0
-        fs2[s_pos] = np.log(s2[s_pos])
-        fs2[s_neg] = np.log(d)
-        fs_cap = math.log(188)
-        fs2[fs2 > fs_cap] = fs_cap
+        fs2 = np.zeros(U.size)
+        spos, sneg = Srake >= 0, Srake < 0
+        fs2[spos] = np.log(S2[spos])
+        fs2[sneg] = np.log(D)
+        fsCap = math.log(188)
+        fs2[fs2 > fsCap] = fsCap
 
     # Angular predictor variables
-    t = np.asarray(t).copy()
+    T = np.asarray(T).copy()
     if type == 1:
-        theta = np.nan_to_num(np.arctan(np.divide(t, u)))
-        f_theta = abs(np.cos(2 * theta))
-        fphi = np.ones(u.size)
+        theta = np.nan_to_num(np.arctan(np.divide(T, U)))
+        ftheta = abs(np.cos(2 * theta))
+        fphi = np.ones(U.size)
     else:
-        t_pos, t_neg = t > 0, t <= 0
-        phi = np.zeros(u.size)
+        tpos, tneg = T > 0, T <= 0
+        phi = np.zeros(U.size)
 
-        phi[t_neg] = (
-            np.degrees(np.arctan(np.divide(abs(t[t_neg]) + t_bot, d_bot))) + dip - 90
+        phi[tneg] = (
+            np.degrees(np.arctan(np.divide(abs(T[tneg]) + Tbot, Dbot))) + Dip - 90
         )
 
-        t1 = np.logical_and(t_pos, t < t_bot)
-        phi[t1] = 90 - dip - np.degrees(np.arctan(np.divide(t_bot - t[t1], d_bot)))
+        t1 = np.logical_and(tpos, T < Tbot)
+        phi[t1] = 90 - Dip - np.degrees(np.arctan(np.divide(Tbot - T[t1], Dbot)))
 
-        t2 = np.logical_and(t_pos, t >= t_bot)
-        phi[t2] = 90 - dip + np.degrees(np.arctan(np.divide(t[t2] - t_bot, d_bot)))
+        t2 = np.logical_and(tpos, T >= Tbot)
+        phi[t2] = 90 - Dip + np.degrees(np.arctan(np.divide(T[t2] - Tbot, Dbot)))
 
         phi[phi > 45] = 45
         fphi = np.cos(2 * phi * np.pi / 180)
 
-        t_min = 10 * (abs(math.cos(rake * math.pi / 180)) + 1)
-        t2 = abs(t)
-        t2[t2 < t_min] = t_min
-        t2[t_pos] = t_min
+        Tmin = 10 * (abs(math.cos(math.radians(Rake))) + 1)
+        T2 = abs(T)
+        T2[T2 < Tmin] = Tmin
+        T2[tpos] = Tmin
 
-        omega = np.arctan(np.divide(t2, ry))
-        f_theta = np.nan_to_num(np.sin(omega), nan=1)
+        omega = np.arctan(np.divide(T2, Ry))
+        ftheta = np.nan_to_num(np.sin(omega), nan=1)
 
     # Distance taper
-    r = np.sqrt(t ** 2 + ry ** 2)
-    if m < 5:
-        r_max = 40
-    elif m > 7:
-        r_max = 80
+    R = np.sqrt(T ** 2 + Ry ** 2) # Distance from surface trace
+    if M < 5:
+        Rmax = 40
+    elif M > 7:
+        Rmax = 80
     else:
-        r_max = -60 + 20 * m
+        Rmax = -60 + 20 * M
 
     if type == 2:
-        r_max = r_max - 20
+        Rmax = Rmax - 20
 
-    ar = -4 * r_max
-    footprint = r <= r_max
-    f_dist = np.zeros(r.size)
-    f_dist[footprint] = 1 - np.exp(np.divide(ar, r[footprint]) - np.divide(ar, r_max))
-    fg = fs2 * f_theta * fphi
+    AR = -4 * Rmax
+    Footprint = R <= Rmax
+    fdist = np.zeros(R.size)
+    fdist[Footprint] = 1 - np.exp(np.divide(AR, R[Footprint]) - np.divide(AR, Rmax))
+    fG = fs2 * ftheta * fphi
 
-    # Calculate fd
+    # Calculate fD
 
     # Constants
-    per = np.logspace(-2, 1, 1000)
+    Per = np.logspace(-2, 1, 1000)
     coefb = [-0.0336, 0.5469]  # mag dependence of bmax
     coefc = [0.2858, -1.2090]  # mag scaling of Tpeak
     coefd1 = [0.9928, -4.8300]  # mag dependence of fG0 for SOF=1
     coefd2 = [0.3946, -1.5415]  # mag dependence of fG0 for SOF=2
-    sigg = 0.4653
+    SigG = 0.4653
 
-    # Impose the limits on m, Table 4-3
-    if m > 8:
-        m = 8
-    elif m < 5.5:
-        m = 5.5
+    # Impose the limits on M, Table 4-3
+    if M > 8:
+        M = 8
+    elif M < 5.5:
+        M = 5.5
 
     # Determine magnitude dependent parameters
     if type == 1:
-        fg0 = coefd1[1] + coefd1[0] * m
+        fG0 = coefd1[1] + coefd1[0] * M
     else:
-        fg0 = coefd2[1] + coefd2[0] * m
-    b_max = coefb[1] + coefb[0] * m
-    t_peak = 10 ** (coefc[1] + coefc[0] * m)
+        fG0 = coefd2[1] + coefd2[0] * M
+    bmax = coefb[1] + coefb[0] * M
+    Tpeak = 10 ** (coefc[1] + coefc[0] * M)
 
     # Period dependent coefficients: a and b
-    x = np.log10(np.divide(per, t_peak))
-    b = b_max * np.exp(np.divide(-(x ** 2), 2 * sigg ** 2))
-    a = -b * fg0
+    x = np.log10(np.divide(Per, Tpeak))
+    b = bmax * np.exp(np.divide(-(x ** 2), 2 * SigG ** 2))
+    a = -b * fG0
 
     # fd and fdi
-    fd = (a + fg[:, np.newaxis] * b) * f_dist[:, np.newaxis]
-    ti_array = abs(per - period)
-    ti = np.where(ti_array == np.amin(ti_array))[0][0]
-    fdi = fd[:, ti]
+    fD = (a + fG[:, np.newaxis] * b) * fdist[:, np.newaxis]
+    ti = np.argmin(np.abs(Per - Period))
+    fDi = fD[:, ti]
 
-    phi_per = [0.01, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1, 1.5, 2, 3, 4, 5, 7.5, 10]
+    PhiPer = [0.01, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1, 1.5, 2, 3, 4, 5, 7.5, 10]
     e1 = [
         0.000,
         0.000,
@@ -350,31 +236,31 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
         0.188,
         0.199,
     ]
-    e1interp = np.interp(np.log(per), np.log(phi_per), e1)
+    e1interp = np.interp(np.log(Per), np.log(PhiPer), e1)
 
     # phired and phiredi
-    phi_red = np.matlib.repmat(e1interp, len(fd), 1)
-    phi_red[np.invert(footprint), :] = 0
-    phi_redi = phi_red[:, ti]
+    PhiRed = np.matlib.repmat(e1interp, len(fD), 1)
+    PhiRed[np.invert(Footprint), :] = 0
+    PhiRedi = PhiRed[:, ti]
 
     predictor_functions = {
-        "fg": fg,
-        "fdist": f_dist,
-        "ftheta": f_theta,
+        "fG": fG,
+        "fdist": fdist,
+        "ftheta": ftheta,
         "fphi": fphi,
         "fs2": fs2,
     }
     other = {
-        "per": per,
-        "rmax": r_max,
-        "footprint": footprint,
-        "tpeak": t_peak,
-        "fg0": fg0,
-        "bmax": b_max,
-        "s2": s2,
+        "Per": Per,
+        "Rmax": Rmax,
+        "Footprint": Footprint,
+        "Tpeak": Tpeak,
+        "fG0": fG0,
+        "bmax": bmax,
+        "S2": S2,
     }
 
-    return fd, fdi, phi_red, phi_redi, predictor_functions, other
+    return fD, fDi, PhiRed, PhiRedi, predictor_functions, other
 
 
 # WIP (May not need)
@@ -382,9 +268,9 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
 #     t_base = -80
 #     plot_s2 = None
 #     for i in range(0, 461):
-#         t = [t_base + i * 0.5] * 461
+#         T = [t_base + i * 0.5] * 461
 #         fd, fdi, phi_red, phi_redi, predictor_functions, other = bea20(
-#             m, u, t, s_max, d, t_bot, d_bot, rake, dip, force_type, period
+#             M, U, T, Smax, D, Tbot, Dbot, Rake, Dip, force_type, Period
 #         )
 #
 #         # If first run set all plotting variables
@@ -482,7 +368,7 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
 #
 #         fig3, (ax3, ax4) = plt.subplots(1, 2, figsize=(21, 13.5), dpi=144)
 #
-#         ry_plot = np.asarray(ry).reshape(100, 100)
+#         ry_plot = np.asarray(Ry).reshape(100, 100)
 #         rx_plot = np.asarray(rx).reshape(100, 100)
 #
 #         levels = 20
@@ -524,18 +410,18 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
 #             lon_lat_depth, planes, nominal_strike2, hypocentre_origin=True
 #         )
 #
-#         s_max = [min(rx_end, rx_end2)[0], max(rx_end, rx_end2)[0]]
+#         Smax = [min(rx_end, rx_end2)[0], max(rx_end, rx_end2)[0]]
 #
 #         z_tor = planes[plane_index]["dtop"]
 #
-#         dip = planes[plane_index]["dip"]
-#         d_bot = z_tor + planes[plane_index]["width"] * math.sin(dip)
-#         t_bot = z_tor / math.tan(dip) + planes[plane_index]["width"] * math.cos(dip)
-#         d = (planes[plane_index]["dhyp"] - z_tor) / math.sin(dip)
+#         Dip = planes[plane_index]["dip"]
+#         Dbot = z_tor + planes[plane_index]["width"] * math.sin(Dip)
+#         Tbot = z_tor / math.tan(Dip) + planes[plane_index]["width"] * math.cos(Dip)
+#         D = (planes[plane_index]["dhyp"] - z_tor) / math.sin(Dip)
 #         hypo_lon, hypo_lat = srf.get_hypo(srf_file, custom_planes=remove_plane_idx(planes))
-#         rake = get_rake_value(srf_file, hypo_lat, hypo_lon)
+#         Rake = get_rake_value(srf_file, hypo_lat, hypo_lon)
 #         fd, fdi, phi_red, phi_redi, predictor_functions, other = bea20(
-#             m, rx, ry, s_max, d, t_bot, d_bot, rake, dip, force_type, period
+#             M, rx, ry, Smax, D, Tbot, Dbot, Rake, Dip, force_type, Period
 #         )
 #
 #         if fdi_average.size == 0:
@@ -597,34 +483,7 @@ def bea20(m: float, u: List, t: List, s_max: List, d: float, t_bot: float, d_bot
 #
 #     return fdi_average
 
-
-def remove_plane_idx(planes: List):
-    """
-    Removes the idx from the plane
-
-    Parameters
-    ----------
-    planes: List
-        List of planes to remove the idx dict format from
-    """
-    new_planes = []
-    for plane in planes:
-        new_planes.append((
-                    float(plane["centre"][0]),
-                    float(plane["centre"][1]),
-                    int(plane["nstrike"]),
-                    int(plane["ndip"]),
-                    float(plane["length"]),
-                    float(plane["width"]),
-                    plane["strike"],
-                    plane["dip"],
-                    plane["dtop"],
-                    plane["shyp"],
-                    plane["dhyp"],
-                ))
-    return new_planes
-
-# output = bea20(m,u,t,s_max,d,t_bot,d_bot,rake,dip,force_type,period)
+# output = bea20(M,U,T,Smax,D,Tbot,Dbot,Rake,dip,force_type,Period)
 # directivity_plots()
 # get_directivity_effects()
 # directivity_srf_plot()
