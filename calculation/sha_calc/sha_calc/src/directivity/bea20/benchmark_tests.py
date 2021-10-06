@@ -8,6 +8,7 @@ from sha_calc.src.directivity.bea20 import directivity
 FAULTS = ["AlpineK2T", "Ashley", "Browning", "Hossack"]
 SRF_LOCATION = Path("/home/joel/local")  # TODO Need an actual srf location for GMHazard
 
+
 def create_benchmark_data():
     """Creates the benchmark data with 4 different faults using 9 points and saving the fd results"""
 
@@ -31,7 +32,9 @@ def create_benchmark_data():
 
         fd, _ = directivity.get_directivity_effects(srf_file, srf_csv, site_coords)
 
-        pd.DataFrame(fd).to_csv(Path(__file__).parent / "bench_data" / f"{fault}_fd.csv")
+        pd.DataFrame(fd).to_csv(
+            Path(__file__).parent / "bench_data" / f"{fault}_fd.csv"
+        )
 
 
 def test_directivity():
@@ -40,24 +43,18 @@ def test_directivity():
         fd_result: pd.DataFrame,
         bench_data: pd.DataFrame,
     ):
-        print(
-            f"Directivity test for fault - {fault}"
-        )
+        print(f"Directivity test for fault - {fault}")
 
         try:
             # Benchmark checking
-            assert np.all(
-                np.isclose(bench_data.values, fd_result.values)
-            )
+            assert np.all(np.isclose(bench_data.values, fd_result.values))
         except AssertionError:
             print(
                 f"Directivity test for fault - {fault} - FAILED - Results are different"
             )
             return 1
 
-        print(
-            f"Directivity test for fault - {fault} - PASSED - Results are different"
-        )
+        print(f"Directivity test for fault - {fault} - PASSED - Results are different")
         return 0
 
     # Iterate over the faults to test
@@ -82,7 +79,9 @@ def test_directivity():
 
         fd, _ = directivity.get_directivity_effects(srf_file, srf_csv, site_coords)
 
-        bench_data = pd.read_csv(Path(__file__).parent / "bench_data" / f"{fault}_fd.csv", index_col=0)
+        bench_data = pd.read_csv(
+            Path(__file__).parent / "bench_data" / f"{fault}_fd.csv", index_col=0
+        )
 
         results.append(test_data(fault, pd.DataFrame(fd), bench_data))
 

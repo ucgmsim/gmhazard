@@ -4,7 +4,19 @@ import math
 from typing import List
 
 
-def bea20(M: float, U: List, T: List, Smax: List, D: float, Tbot: float, Dbot: float, Rake: float, Dip: float, type: int, Period: float):
+def bea20(
+    M: float,
+    U: List,
+    T: List,
+    Smax: List,
+    D: float,
+    Tbot: float,
+    Dbot: float,
+    Rake: float,
+    Dip: float,
+    type: int,
+    Period: float,
+):
     """
     Calculates the directivity effects at given locations based on fault information.
     Algorithm has been taken from the Bayless 2020 model found in the paper.
@@ -116,7 +128,7 @@ def bea20(M: float, U: List, T: List, Smax: List, D: float, Tbot: float, Dbot: f
         ftheta = np.nan_to_num(np.sin(omega), nan=1)
 
     # Distance taper
-    R = np.sqrt(T ** 2 + Ry ** 2) # Distance from surface trace
+    R = np.sqrt(T ** 2 + Ry ** 2)  # Distance from surface trace
     if M < 5:
         Rmax = 40
     elif M > 7:

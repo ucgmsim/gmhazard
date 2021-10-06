@@ -8,7 +8,9 @@ from IM_calculation.source_site_dist import src_site_dist
 from sha_calc.src.directivity.bea20 import bea20, utils
 
 
-def get_directivity_effects(srf_file: str, srf_csv: Path, sites: np.ndarray, period: float = 3.0):
+def get_directivity_effects(
+    srf_file: str, srf_csv: Path, sites: np.ndarray, period: float = 3.0
+):
     """Calculates directivity effects at the given sites and srf
 
     Parameters
@@ -60,7 +62,9 @@ def get_directivity_effects(srf_file: str, srf_csv: Path, sites: np.ndarray, per
     z_tor = planes[plane_index]["dtop"]
     dip = planes[plane_index]["dip"]
     d_bot = z_tor + planes[plane_index]["width"] * math.sin(math.radians(dip))
-    t_bot = z_tor / math.tan(math.radians(dip)) + planes[0]["width"] * math.cos(math.radians(dip))
+    t_bot = z_tor / math.tan(math.radians(dip)) + planes[0]["width"] * math.cos(
+        math.radians(dip)
+    )
     d = (planes[plane_index]["dhyp"] - z_tor) / math.sin(math.radians(dip))
 
     # Ensures the model selects the type of fault based on the rake value

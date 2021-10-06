@@ -13,19 +13,21 @@ def remove_plane_idx(planes: List):
     """
     new_planes = []
     for plane in planes:
-        new_planes.append((
-                    float(plane["centre"][0]),
-                    float(plane["centre"][1]),
-                    int(plane["nstrike"]),
-                    int(plane["ndip"]),
-                    float(plane["length"]),
-                    float(plane["width"]),
-                    plane["strike"],
-                    plane["dip"],
-                    plane["dtop"],
-                    plane["shyp"],
-                    plane["dhyp"],
-                ))
+        new_planes.append(
+            (
+                float(plane["centre"][0]),
+                float(plane["centre"][1]),
+                int(plane["nstrike"]),
+                int(plane["ndip"]),
+                float(plane["length"]),
+                float(plane["width"]),
+                plane["strike"],
+                plane["dip"],
+                plane["dtop"],
+                plane["shyp"],
+                plane["dhyp"],
+            )
+        )
     return new_planes
 
 
@@ -53,7 +55,10 @@ def set_hypocenters(n_hypo: int, planes: List, depth_method: List):
         plane["dhyp"] = -999.9
 
     # Works out the distances across the length of the fault for each hypocenter
-    distances = [(total_length/n_hypo * x) - ((total_length/n_hypo)/2) for x in range(1, n_hypo+1)]
+    distances = [
+        (total_length / n_hypo * x) - ((total_length / n_hypo) / 2)
+        for x in range(1, n_hypo + 1)
+    ]
 
     depth_index = 0
     planes_list = []
@@ -63,7 +68,10 @@ def set_hypocenters(n_hypo: int, planes: List, depth_method: List):
         current_length = 0
         planes_copy = [plane.copy() for plane in planes]
         for index, plane in enumerate(planes_copy):
-            if current_length < distance and (current_length + plane["length"]) > distance:
+            if (
+                current_length < distance
+                and (current_length + plane["length"]) > distance
+            ):
                 plane["shyp"] = distance - (current_length + plane["length"] / 2)
                 plane["dhyp"] = plane["width"] * depth_method[depth_index]
                 depth_index = (depth_index + 1) % len(depth_method)
