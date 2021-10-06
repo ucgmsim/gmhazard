@@ -1,0 +1,14 @@
+id: "temp_hazard_curve_two_sites"
+locations:
+  Christchurch_Hospital:
+    name: "Christchurch Hospital"
+    lat: -43.533509967644505
+    lon: 172.62713091302967
+    vs30: [216]
+  Wellington_Te_Papa_Museum:
+    name: "Wellington Te Papa Museum"
+    lat: -41.291
+    lon: 174.781
+    vs30: [ 216 ]
+package_type: "pga_psa"
+n_perturbations: 1
