@@ -1,0 +1,159 @@
+#select a empirical model for the tect-type and intensity measure
+# current valid options are:
+# Br_10 -- Bradley 2010
+# ZA_06 -- Zhao 2006
+# CB_12 -- Campbell  Bozorgina 2012
+# CB_10 -- Campbell  Bozorgina 2010
+# AS_16 -- Afshari Stewart 2016
+# ASK_14 -- Abrahamson Silva Kamai 2014
+# BCH_16 -- BC Hydro 2016 Subduction
+# BSSA_14 -- Boore Stewart Seyhan Atkinson 2014
+# CB_14 -- Campbell Bozorgina 2014 NGA
+# CY_14 -- Chiou Youngso2014 NGA
+# SB_13 -- Shahi Baker 2013
+# BB_13 -- Burks Baker 2013
+# A_18 -- Abrahamson 2018 Subduction
+
+### OpenQuake Models
+# P_20_SI -- Parker 2020 Subduction Interface
+# P_20_SS -- Parker 2020 Subduction Slab
+# HA_20_CR -- HAssaniAtkinson 2020 Shallow Crustal
+# HA_20_SI -- HAssaniAtkinson 2020 Suduction Interface
+# HA_20_SS -- HAssaniAtkinson 2020 Suduction Slab
+
+# G_17 -- Gulerce et al 2017 Vertical
+# BC_16 -- BorzorginaCampbell 2016 Vertical
+# S_16 -- Stewart et al 2016 Vertical
+
+# Options for each model are listed to the right
+ACTIVE_SHALLOW:
+  PGV:
+    geom:
+      - Br_10 # Br_10 or BSSA_14 or CB_14 or CY_14 or ASK_14
+    ver:
+      - BC_16 # S_16
+  PGA:
+    geom:
+      - Br_10  # ZA_06 or Br_10 or BSSA_14 or CB_14 or CY_14 or ASK_14
+    ver:
+      - BC_16 # S16
+      - S_16
+  pSA:
+    geom:
+      - Br_10  # ZA_06 or Br_10 or BSSA_14 or CB_14 or CY_14 or ASK_14
+    rotd100_50:
+      - SB_13
+    ver:
+      - BC_16 # S16 or G_17
+      - S_16
+      - G_17
+  CAV:
+    geom:
+      - CB_10
+  AI:
+    geom:
+      - CB_12
+  Ds575:
+    geom:
+      - AS_16
+  Ds595:
+    geom:
+      - AS_16
+  Ds2080:
+    geom:
+      - AS_16
+  IESDR:
+    geom:
+      - BB_13
+VOLCANIC:
+  PGV:
+    geom:
+      - Br_10
+  PGA:
+    geom:
+      - Br_10
+  pSA:
+    geom:
+      - Br_10
+    rotd100_50:
+      - SB_13
+  CAV:
+    geom:
+      - CB_10 # These are only for shallow crustal in lieu of a more appropriate model
+  AI:
+    geom:
+      - CB_12 # These are only for shallow crustal in lieu of a more appropriate model
+  Ds575:
+    geom:
+      - AS_16 # These are only for shallow crustal in lieu of a more appropriate model
+  Ds595:
+    geom:
+      - AS_16 # These are only for shallow crustal in lieu of a more appropriate model
+  IESDR:
+    geom:
+      - BB_13
+SUBDUCTION_SLAB:
+  PGV:
+    geom:
+      - Br_10 # These are only for shallow crustal in lieu of a more appropriate model
+  PGA:
+    geom:
+      - A_18 # ZA06 or BCH16
+  pSA:
+    rotd50:
+      - ZA_06
+      - BCH_16 # ZA_06 or BCH_16
+      - A_18
+      - AG_20_SS
+      - AG_20_SS_NZ
+      - K_20_SS
+      - K_20_SS_NZ
+      - P_20_SS
+    geom:
+      - A_18 # ZA06 or BCH16
+    rotd100_50:
+      - SB_13
+  CAV:
+    geom:
+      - CB_10 # These are only for shallow crustal in lieu of a more appropriate model
+  AI:
+    geom:
+      - CB_12 # These are only for shallow crustal in lieu of a more appropriate model
+  Ds575:
+    geom:
+      - AS_16 # These are only for shallow crustal in lieu of a more appropriate model
+  Ds595:
+    geom:
+      - AS_16 # These are only for shallow crustal in lieu of a more appropriate model
+  IESDR:
+    geom:
+      - BB_13
+SUBDUCTION_INTERFACE:
+  PGV:
+    geom:
+      - Br_10 # These are only for shallow crustal in lieu of a more appropriate model
+  PGA:
+    geom:
+      - A_18 # ZA06 or BCH16
+  pSA:
+    rotd50:
+      - META
+    geom:
+      - A_18 # ZA06 or BCH16
+    rotd100_50:
+      - SB_13
+  CAV:
+    geom:
+      - CB_10 # These are only for shallow crustal in lieu of a more appropriate model
+  AI:
+    geom:
+      - CB_12 # These are only for shallow crustal in lieu of a more appropriate model
+  Ds575:
+    geom:
+      - AS_16 # These are only for shallow crustal in lieu of a more appropriate model
+  Ds595:
+    geom:
+      - AS_16 # These are only for shallow crustal in lieu of a more appropriate model
+  IESDR:
+    geom:
+      - BB_13

@@ -111,7 +111,7 @@ def create_project(
                 / "db_creation"
                 / "empirical_db"
                 / "empirical_model_configs"
-                / "20p4.yaml"
+                / "temp.yaml"
             )
             generate_dbs(
                 dbs_dir,
@@ -410,7 +410,7 @@ def create_ensemble_config(
     su.ensemble_creation.create_ensemble(
         ens_filename,
         str(project_dir),
-        str(scripts_dir / "ensemble_creation/gmm_weights.yaml"),
+        str(scripts_dir / "ensemble_creation/temp.yaml"),
         str(dbs_dir / DS_SITE_SOURCE_DB_FILENAME),
         str(dbs_dir / FLT_SITE_SOURCE_DB_FILENAME),
         str(dbs_dir / f"{project_id}.ll"),
