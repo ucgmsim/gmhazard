@@ -59,9 +59,9 @@ def get_directivity_effects(srf_file: str, srf_csv: Path, sites: np.ndarray, per
     # Trig to calculate extra features of the fault for directivity based on plane info
     z_tor = planes[plane_index]["dtop"]
     dip = planes[plane_index]["dip"]
-    d_bot = z_tor + planes[plane_index]["width"] * math.sin(dip * math.pi / 180)
-    t_bot = z_tor / math.tan(dip * math.pi / 180) + planes[0]["width"] * math.cos(dip * math.pi / 180)
-    d = (planes[plane_index]["dhyp"] - z_tor) / math.sin(dip * math.pi / 180)
+    d_bot = z_tor + planes[plane_index]["width"] * math.sin(math.radians(dip))
+    t_bot = z_tor / math.tan(math.radians(dip)) + planes[0]["width"] * math.cos(math.radians(dip))
+    d = (planes[plane_index]["dhyp"] - z_tor) / math.sin(math.radians(dip))
 
     # Ensures the model selects the type of fault based on the rake value
     force_type = 0
