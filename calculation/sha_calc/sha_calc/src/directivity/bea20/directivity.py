@@ -2,30 +2,41 @@ import numpy as np
 import pandas as pd
 import math
 from pathlib import Path
-from typing import List
 
-import utils
-import bea20
 from qcore import srf
 from IM_calculation.source_site_dist import src_site_dist
+from sha_calc.src.directivity.bea20 import bea20, utils
 
-def get_directivity_effects(srf_file: Path, srf_csv: Path, sites: List, period: float = 3.0):
-    """Calculates directivity effects at the given sites and srf"""
+
+def get_directivity_effects(srf_file: str, srf_csv: Path, sites: np.ndarray, period: float = 3.0):
+    """Calculates directivity effects at the given sites and srf
+
+    Parameters
+    ----------
+    srf_file: str
+        String of the ffp to the location of the srf file
+    srf_csv: Path
+        Path to the location of the srf csv file
+    sites: np.ndarray
+        Numpy array full of site lon/lat values [[lon, lat],...]
+    period: float, optional
+        Float to indicate which period to extract from fD to get fDi
+    """
 
     # Get rake, magnitude from srf_csv
     mag = pd.read_csv(srf_csv)["magnitude"][0]
     rake = pd.read_csv(srf_csv)["rake"][0]
 
     # Get planes and points from srf_file
-    planes = srf.read_header(str(srf_file), idx=True)
-    points = srf.read_latlondepth(str(srf_file))
+    planes = srf.read_header(srf_file, idx=True)
+    points = srf.read_latlondepth(srf_file)
 
     # Convert points to non dictionary format
     lon_lat_depth = np.asarray([[x["lon"], x["lat"], x["depth"]] for x in points])
 
     # Calculate rx ry from GC2
     rx, ry = src_site_dist.calc_rx_ry_GC2(
-        lon_lat_depth, planes, np.asarray(sites), hypocentre_origin=True
+        lon_lat_depth, planes, sites, hypocentre_origin=True
     )
 
     # Gets the s_max values from the two end points of the fault
@@ -60,4 +71,4 @@ def get_directivity_effects(srf_file: Path, srf_csv: Path, sites: List, period: 
         mag, ry, rx, s_max, d, t_bot, d_bot, rake, dip, force_type, period
     )
 
-    return fd
+    return fd, fdi

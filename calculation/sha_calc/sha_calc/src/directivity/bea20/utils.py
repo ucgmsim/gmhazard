@@ -1,8 +1,6 @@
 import numpy as np
 from typing import List
 
-from qcore import srf
-
 
 def remove_plane_idx(planes: List):
     """
@@ -29,6 +27,7 @@ def remove_plane_idx(planes: List):
                     plane["dhyp"],
                 ))
     return new_planes
+
 
 def set_hypocenters(n_hypo: int, planes: List, depth_method: List):
     """
@@ -74,18 +73,32 @@ def set_hypocenters(n_hypo: int, planes: List, depth_method: List):
     return planes_list, planes_index
 
 
-def calc_nominal_strike(traces):
-    """Gets the start and ending trace of the fault and ensures order for largest lat value first"""
+def calc_nominal_strike(traces: np.ndarray):
+    """
+    Gets the start and ending trace of the fault and ensures order for largest lon value first
+
+    Parameters
+    ----------
+    traces: np.ndarray
+        Array of traces of points across a fault with the format [[lon, lat, depth],...]
+    """
+    # Lowest depth point
     depth = traces[0][2]
     trace_end_index = 0
+
+    # Loops to find the last point with that depth value to find the end points of the fault at the highest depth
     for index, trace in enumerate(traces):
         if depth != trace[2]:
             trace_end_index = index - 1
             break
+
+    # Extract just lat and lon for the start and end of the traces
     trace_start, trace_end = [traces[0][0], traces[0][1]], [
         traces[trace_end_index][0],
         traces[trace_end_index][1],
     ]
+
+    # Ensures correct order
     if trace_start[0] < trace_end[0]:
         return np.asarray([trace_end]), np.asarray([trace_start])
     else:
