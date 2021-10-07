@@ -111,7 +111,7 @@ def create_project(
                 / "db_creation"
                 / "empirical_db"
                 / "empirical_model_configs"
-                / "temp.yaml"
+                / "20p4.yaml"
             )
             generate_dbs(
                 dbs_dir,
