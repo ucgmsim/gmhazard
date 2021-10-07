@@ -341,6 +341,7 @@ def generate_dbs(
         str(erf_dir / f"{flt_erf_base_fn}.txt"),
         str(ll_ffp),
     ]
+    print(calc_fault_distances_cmd)
     flt_distance_result = subprocess.run(calc_fault_distances_cmd, capture_output=True)
     print("STDOUT:\n" + flt_distance_result.stdout.decode())
     print("STDERR:\n" + flt_distance_result.stderr.decode())
