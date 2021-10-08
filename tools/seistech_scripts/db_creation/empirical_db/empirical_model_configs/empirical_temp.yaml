@@ -1,0 +1,113 @@
+#select a empirical model for the tect-type and intensity measure
+# current valid options are:
+# Br_10 -- Bradley 2010
+# ZA_06 -- Zhao 2006
+# CB_12 -- Campbell  Bozorgina 2012
+# CB_10 -- Campbell  Bozorgina 2010
+# AS_16 -- Afshari Stewart 2016
+# ASK_14 -- Abrahamson Silva Kamai 2014
+# BCH_16 -- BC Hydro 2016 Subduction
+# BSSA_14 -- Boore Stewart Seyhan Atkinson 2014
+# CB_14 -- Campbell Bozorgina 2014 NGA
+# CY_14 -- Chiou Youngso2014 NGA
+# SB_13 -- Shahi Baker 2013
+# BB_13 -- Burks Baker 2013
+# A_18 -- Abrahamson 2018 Subduction
+
+### OpenQuake Models
+# P_20_SI -- Parker 2020 Subduction Interface
+# P_20_SS -- Parker 2020 Subduction Slab
+# HA_20_CR -- HAssaniAtkinson 2020 Shallow Crustal
+# HA_20_SI -- HAssaniAtkinson 2020 Suduction Interface
+# HA_20_SS -- HAssaniAtkinson 2020 Suduction Slab
+
+# G_17 -- Gulerce et al 2017 Vertical
+# BC_16 -- BorzorginaCampbell 2016 Vertical
+# S_16 -- Stewart et al 2016 Vertical
+
+# Options for each model are listed to the right
+ACTIVE_SHALLOW:
+  PGV:
+    geom:
+      - Br_10 # Br_10 or BSSA_14 or CB_14 or CY_14 or ASK_14
+      - ASK_14
+      - BSSA_14
+      - CB_14
+      - CY_14
+  PGA:
+    geom:
+      - Br_10  # ZA_06 or Br_10 or BSSA_14 or CB_14 or CY_14 or ASK_14
+      - ASK_14
+      - BSSA_14
+      - CB_14
+      - CY_14
+  pSA:
+    geom:
+      - Br_10  # ZA_06 or Br_10 or BSSA_14 or CB_14 or CY_14 or ASK_14
+      - ASK_14
+      - BSSA_14
+      - CB_14
+      - CY_14
+VOLCANIC:
+  PGV:
+    geom:
+      - Br_10
+  PGA:
+    geom:
+      - Br_10
+  pSA:
+    geom:
+      - Br_10
+SUBDUCTION_SLAB:
+  PGV:
+    geom:
+      - P_20_SS # These are only for shallow crustal in lieu of a more appropriate model
+      - AG_20_SS
+      - AG_20_SS_NZ
+  PGA:
+    geom:
+      - ZA_06
+      - BCH_16
+      - A_18 # ZA06 or BCH16
+      - P_20_SS
+      - AG_20_SS
+      - AG_20_SS_NZ
+      - K_20_SS
+      - K_20_SS_NZ
+  pSA:
+    geom:
+      - ZA_06
+      - BCH_16
+      - A_18 # ZA06 or BCH16
+      - P_20_SS
+      - AG_20_SS
+      - AG_20_SS_NZ
+      - K_20_SS
+      - K_20_SS_NZ
+SUBDUCTION_INTERFACE:
+  PGV:
+    geom:
+      - P_20_SI # These are only for shallow crustal in lieu of a more appropriate model
+      - AG_20_SI
+      - AG_20_SI_NZ
+  PGA:
+    geom:
+      - ZA_06
+      - BCH_16
+      - A_18 # ZA06 or BCH16
+      - P_20_SI
+      - AG_20_SI
+      - AG_20_SI_NZ
+      - K_20_SI
+      - K_20_SI_NZ
+
+  pSA:
+    geom:
+      - ZA_06
+      - BCH_16
+      - A_18 # ZA06 or BCH16
+      - P_20_SI
+      - AG_20_SI
+      - AG_20_SI_NZ
+      - K_20_SI
+      - K_20_SI_NZ
