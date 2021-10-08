@@ -103,6 +103,8 @@ def get_directivity_effects(
         f_dist = predictor_functions["fdist"].reshape((100, 100))
         fdi = fdi.reshape((100, 100))
 
+        hypo_lon, hypo_lat = srf.get_hypo(srf_file, custom_planes=utils.remove_plane_idx(planes))
+
         # Plot each hypocenter adjustment
         plot(
             np.asarray([coord[0] for coord in sites]).reshape((100, 100)),
@@ -114,9 +116,10 @@ def get_directivity_effects(
             f_dist,
             fdi,
             lon_lat_depth,
-            Path("/home/joel/local"),
-            index,
-            0,
+            Path("/home/joel/local/AlpineK2T"),
+            hypo_lon,
+            hypo_lat,
+            True
         )
 
         if fdi_average.size == 0:
