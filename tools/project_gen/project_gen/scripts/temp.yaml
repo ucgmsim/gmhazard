@@ -1,4 +1,4 @@
-id: "temp_hazard_curve_two_sites_ims"
+id: "temp_hazard_curve_two_sites_new_weights"
 locations:
   Christchurch_Hospital:
     name: "Christchurch Hospital"
@@ -10,39 +10,5 @@ locations:
     lat: -41.291
     lon: 174.781
     vs30: [ 216 ]
-ims: [ "PGA",
-       "PGV",
-       "pSA_0.01",
-       "pSA_0.02",
-       "pSA_0.03",
-       "pSA_0.04",
-       "pSA_0.05",
-       "pSA_0.075",
-       "pSA_0.1",
-       "pSA_0.12",
-       "pSA_0.15",
-       "pSA_0.17",
-       "pSA_0.2",
-       "pSA_0.25",
-       "pSA_0.3",
-       "pSA_0.4",
-       "pSA_0.5",
-       "pSA_0.6",
-       "pSA_0.7",
-       "pSA_0.75",
-       "pSA_0.8",
-       "pSA_0.9",
-       "pSA_1.0",
-       "pSA_1.25",
-       "pSA_1.5",
-       "pSA_2.0",
-       "pSA_2.5",
-       "pSA_3.0",
-       "pSA_4.0",
-       "pSA_5.0",
-       "pSA_6.0",
-       "pSA_7.5",
-       "pSA_10.0",
-    ]
 package_type: "pga_psa"
 n_perturbations: 1
