@@ -7,8 +7,8 @@ import numpy.matlib
 
 def bea20(
     M: float,
-    U: List,
-    T: List,
+    U: np.ndarray,
+    T: np.ndarray,
     Smax: List,
     D: float,
     Tbot: float,
@@ -29,10 +29,10 @@ def bea20(
     ----------
     M: float
         Moment magnitude, 5<=M<=8
-    U: list
+    U: np.ndarray
         The GC2 coordinates in km. Equivalent to ry.
         Must be nX1 number where n is the number of locations at which the model provides a prediction.
-    T: list
+    T: np.ndarray
         The GC2 coordinates in km. Equivalent to rx.
         Must be nX1 number where n is the number of locations at which the model provides a prediction.
     Smax: List
