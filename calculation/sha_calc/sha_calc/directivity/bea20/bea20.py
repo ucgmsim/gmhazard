@@ -7,16 +7,16 @@ import numpy.matlib
 
 def bea20(
     M: float,
-    U: List,
-    T: List,
+    U: np.ndarray,
+    T: np.ndarray,
     Smax: List,
     D: float,
     Tbot: float,
     Dbot: float,
     Rake: float,
     Dip: float,
-    type: int,
     Period: float,
+    type: int = 0,
 ):
     """
     Calculates the directivity effects at given locations based on fault information.
@@ -29,10 +29,10 @@ def bea20(
     ----------
     M: float
         Moment magnitude, 5<=M<=8
-    U: list
+    U: np.ndarray
         The GC2 coordinates in km. Equivalent to ry.
         Must be nX1 number where n is the number of locations at which the model provides a prediction.
-    T: list
+    T: np.ndarray
         The GC2 coordinates in km. Equivalent to rx.
         Must be nX1 number where n is the number of locations at which the model provides a prediction.
     Smax: List
@@ -48,11 +48,12 @@ def bea20(
         The Rake of the fault
     Dip: float
         The Dip of the fault at the hypocenter
-    type: float
-        1 for a strike slip
-        2 for a oblique, reverse or normal
     Period: float
         Used for specifying the period for a pSA IM
+    type: float, optional
+        0 for type base don strike
+        1 for a strike slip
+        2 for a oblique, reverse or normal
     """
 
     # If not specified, determine rupture category from Rake angle

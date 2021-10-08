@@ -12,24 +12,22 @@ def remove_plane_idx(planes: List):
     planes: List
         List of planes to remove the idx dict format from
     """
-    new_planes = []
-    for plane in planes:
-        new_planes.append(
-            (
-                float(plane["centre"][0]),
-                float(plane["centre"][1]),
-                int(plane["nstrike"]),
-                int(plane["ndip"]),
-                float(plane["length"]),
-                float(plane["width"]),
-                plane["strike"],
-                plane["dip"],
-                plane["dtop"],
-                plane["shyp"],
-                plane["dhyp"],
-            )
+    return [
+        (
+            float(plane["centre"][0]),
+            float(plane["centre"][1]),
+            int(plane["nstrike"]),
+            int(plane["ndip"]),
+            float(plane["length"]),
+            float(plane["width"]),
+            plane["strike"],
+            plane["dip"],
+            plane["dtop"],
+            plane["shyp"],
+            plane["dhyp"],
         )
-    return new_planes
+        for plane in planes
+    ]
 
 
 def set_hypocenters(n_hypo: int, planes: List, depth_method: List):

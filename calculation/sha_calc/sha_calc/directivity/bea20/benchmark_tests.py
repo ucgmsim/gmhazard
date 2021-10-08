@@ -7,7 +7,7 @@ from qcore import srf
 from sha_calc.directivity.bea20 import directivity
 
 FAULTS = ["AlpineK2T", "Ashley", "Browning", "Hossack"]
-SRF_LOCATION = Path("/home/joel/local")  # TODO Need an actual srf location for GMHazard
+SRF_LOCATION = Path("/mnt/mantle_data/seistech")  # TODO Change to virtual srfs
 
 
 def create_benchmark_data():
