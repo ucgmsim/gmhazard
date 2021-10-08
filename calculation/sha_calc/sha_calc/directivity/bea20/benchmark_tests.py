@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
 
 from qcore import srf
 from sha_calc.directivity.bea20 import directivity
@@ -30,7 +31,7 @@ def create_benchmark_data():
         x, y = np.meshgrid(lon_values, lat_values)
         site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
-        fd, _ = directivity.get_directivity_effects(srf_file, srf_csv, site_coords)
+        fd, _, _, _, _, _ = directivity.get_directivity_effects(srf_file, srf_csv, site_coords)
 
         pd.DataFrame(fd).to_csv(
             Path(__file__).parent / "bench_data" / f"{fault}_fd.csv"
@@ -77,7 +78,7 @@ def test_directivity():
         x, y = np.meshgrid(lon_values, lat_values)
         site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
-        fd, _ = directivity.get_directivity_effects(srf_file, srf_csv, site_coords)
+        fd, _, _, _, _, _ = directivity.get_directivity_effects(srf_file, srf_csv, site_coords)
 
         bench_data = pd.read_csv(
             Path(__file__).parent / "bench_data" / f"{fault}_fd.csv", index_col=0

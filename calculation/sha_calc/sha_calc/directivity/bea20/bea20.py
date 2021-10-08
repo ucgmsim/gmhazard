@@ -1,7 +1,8 @@
-import numpy as np
-import numpy.matlib
 import math
 from typing import List
+
+import numpy as np
+import numpy.matlib
 
 
 def bea20(

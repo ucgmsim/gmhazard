@@ -1,5 +1,6 @@
-import numpy as np
 from typing import List
+
+import numpy as np
 
 
 def remove_plane_idx(planes: List):
@@ -72,7 +73,7 @@ def set_hypocenters(n_hypo: int, planes: List, depth_method: List):
                 current_length < distance
                 and (current_length + plane["length"]) > distance
             ):
-                plane["shyp"] = distance - (current_length + plane["length"] / 2)
+                plane["shyp"] = distance - (total_length / 2)
                 plane["dhyp"] = plane["width"] * depth_method[depth_index]
                 depth_index = (depth_index + 1) % len(depth_method)
                 planes_index.append(index)
@@ -92,13 +93,13 @@ def calc_nominal_strike(traces: np.ndarray):
     """
     # Lowest depth point
     depth = traces[0][2]
-    trace_end_index = 0
+    trace_end_index = -1
 
     # Loops to find the last point with that depth value to find the end points of the fault at the highest depth
-    for index, trace in enumerate(traces):
-        if depth != trace[2]:
-            trace_end_index = index - 1
-            break
+    # for index, trace in enumerate(traces):
+    #     if depth != trace[2]:
+    #         trace_end_index = index - 1
+    #         break
 
     # Extract just lat and lon for the start and end of the traces
     trace_start, trace_end = [traces[0][0], traces[0][1]], [
