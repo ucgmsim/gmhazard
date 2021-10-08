@@ -1,7 +1,8 @@
-import numpy as np
-import numpy.matlib
 import math
 from typing import List
+
+import numpy as np
+import numpy.matlib
 
 
 def bea20(
@@ -14,8 +15,8 @@ def bea20(
     Dbot: float,
     Rake: float,
     Dip: float,
-    type: int,
     Period: float,
+    type: int = 0,
 ):
     """
     Calculates the directivity effects at given locations based on fault information.
@@ -47,11 +48,12 @@ def bea20(
         The Rake of the fault
     Dip: float
         The Dip of the fault at the hypocenter
-    type: float
-        1 for a strike slip
-        2 for a oblique, reverse or normal
     Period: float
         Used for specifying the period for a pSA IM
+    type: float, optional
+        0 for type base don strike
+        1 for a strike slip
+        2 for a oblique, reverse or normal
     """
 
     # If not specified, determine rupture category from Rake angle

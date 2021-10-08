@@ -1,7 +1,8 @@
-import numpy as np
-import pandas as pd
 import math
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
 
 from qcore import srf
 from IM_calculation.source_site_dist import src_site_dist
@@ -67,12 +68,9 @@ def get_directivity_effects(
     )
     d = (planes[plane_index]["dhyp"] - z_tor) / math.sin(math.radians(dip))
 
-    # Ensures the model selects the type of fault based on the rake value
-    force_type = 0
-
     # Use the bea20 model to work out directivity (fd) at the given sites
     fd, fdi, phi_red, phi_redi, predictor_functions, other = bea20.bea20(
-        mag, ry, rx, s_max, d, t_bot, d_bot, rake, dip, force_type, period
+        mag, ry, rx, s_max, d, t_bot, d_bot, rake, dip, period
     )
 
     return fd, fdi
