@@ -1,11 +1,11 @@
-from typing import List, Union, Dict
+from typing import Dict
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-import sha_calc.src.gcim.distributions as dist
+import sha_calc.gcim.distributions as dist
 from . import shared
 
 

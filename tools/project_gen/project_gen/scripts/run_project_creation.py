@@ -21,6 +21,7 @@ def main(
     erf_dir: Path = None,
     erf_pert_dir: Path = None,
     flt_erf_version: str = "NHM",
+    setup_only: bool = False,
 ):
     with open(project_params_ffp, "r") as f:
         project_params = yaml.safe_load(f)
@@ -34,6 +35,7 @@ def main(
         erf_dir=erf_dir,
         erf_pert_dir=erf_pert_dir,
         flt_erf_version=flt_erf_version,
+        setup_only=setup_only,
     )
 
 
@@ -80,6 +82,13 @@ if __name__ == "__main__":
         help="The ERF version to use",
         default="NHM_v21p8p1",
     )
+    parser.add_argument(
+        "--setup_only",
+        action="store_true",
+        help="If set, only the config and DBs are generated, "
+        "but no results are computed",
+        default=False,
+    )
     args = parser.parse_args()
 
     if args.n_procs < 2:
@@ -93,4 +102,5 @@ if __name__ == "__main__":
         erf_dir=args.erf_dir,
         erf_pert_dir=args.erf_pert_dir,
         flt_erf_version=args.flt_erf_version,
+        setup_only=args.setup_only,
     )

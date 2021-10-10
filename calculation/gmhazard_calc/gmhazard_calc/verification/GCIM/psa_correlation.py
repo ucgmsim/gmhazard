@@ -15,7 +15,7 @@ def get_correlation_data():
     for period_a in period_values:
         period_a_result = []
         for period_b in period_values:
-            col_result = sha_calc.src.gcim.im_correlations.baker_correlations_2008(
+            col_result = sha_calc.gcim.im_correlations.baker_correlations_2008(
                 f"pSA_{period_a}", f"pSA_{period_b}"
             )
             period_a_result.append(col_result)

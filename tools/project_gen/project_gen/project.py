@@ -8,7 +8,6 @@ import git
 import pandas as pd
 import numpy as np
 import yaml
-from importlib.metadata import version
 
 import gmhazard_utils as su
 import project_gen as pg
@@ -34,7 +33,8 @@ def create_project(
     use_mp: bool = True,
     erf_dir: Path = None,
     erf_pert_dir: Path = None,
-    flt_erf_version: str = "NHM"
+    flt_erf_version: str = "NHM",
+    setup_only: bool = False,
 ):
     """
     Creates a new project, generates the required DBs,
@@ -71,6 +71,9 @@ def create_project(
         If true then standard python multiprocessing will be
         used for PSHA result generation, otherwise celery
         will be used.
+    setup_only: bool, optional
+        If true, then only the config and DBs are generated, but
+        no results are computed
     """
     erf_dir = ERF_DIR if erf_dir is None else erf_dir
 
@@ -83,8 +86,7 @@ def create_project(
 
         n_perturbations = project_specs.get("n_perturbations", 1)
 
-        api_version = version("project_api")
-        version_str = f"v{api_version.replace('.', 'p')}"
+        _, version_str = su.utils.get_package_version("project_api")
         project_dir = projects_base_dir / version_str / project_id
         dbs_dir = project_dir / "dbs"
 
@@ -138,6 +140,9 @@ def create_project(
             n_perturbations=n_perturbations,
         )
 
+        if setup_only:
+            return
+
         # Generate the PSHA project data and GMS
         psha.gen_psha_project_data(project_dir, n_procs=n_procs, use_mp=use_mp)
         pg.gen_gms_project_data(project_dir, n_procs=n_procs)
@@ -154,8 +159,7 @@ def create_project(
 def setup_project(base_dir: Path, project_id: str):
     """Sets up the required directories and files for a project"""
     # Get the current projectAPI version
-    api_version = version("project_api")
-    version_str = f"v{api_version.replace('.', 'p')}"
+    _, version_str = su.utils.get_package_version("project_api")
 
     # Create the version folder
     (base_dir / version_str).mkdir(exist_ok=True, parents=False)
@@ -187,7 +191,7 @@ def write_project_config(project_dir: Path, project_specs: Dict):
     with open(project_dir / f"{project_specs['id']}.yaml", "r") as f:
         project_config = yaml.safe_load(f)
 
-        if project_specs["project_parameters"] is not None:
+        if project_specs.get("project_parameters") is not None:
             print("Project parameters are already specified  set, skipping package type mapping")
             project_config["project_parameters"] = project_specs["project_parameters"]
         else:
