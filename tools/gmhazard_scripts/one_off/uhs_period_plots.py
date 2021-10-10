@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-import sha_calc.src.ground_motion as gm
-import sha_calc.src.hazard as haz
+import sha_calc.ground_motion as gm
+import sha_calc.hazard as haz
 import gmhazard_calc as sc
 
 

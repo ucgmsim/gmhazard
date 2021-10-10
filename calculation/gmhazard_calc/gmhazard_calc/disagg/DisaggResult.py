@@ -31,10 +31,10 @@ class BaseDisaggResult:
     ----------
     fault_disagg: pd.Data
         Fault based disagg
-        format: index = rupture_name, columns = [rupture contribution, epsilon]
+        format: index = rupture_id_ix, columns = [rupture contribution, epsilon]
     ds_disagg: pd.DataFrame
         Distributed seismicity disagg
-        format: index = rupture_name, columns = [rupture contribution, epsilon]
+        format: index = rupture_id_ix, columns = [rupture contribution, epsilon]
     site_info: SiteInfo
     im: IM
     im_value: float
@@ -179,25 +179,6 @@ class BaseDisaggResult:
         if self.mean_values is not None:
             self.mean_values.to_csv(data_dir / self.MEAN_VALUES_FN)
 
-    @classmethod
-    def _load_data(cls, dir: Path):
-        with open(dir / cls.METADATA_FN, "r") as f:
-            metadata = json.load(f)
-
-        mean_values = (
-            pd.read_csv(dir / cls.MEAN_VALUES_FN, index_col=0).squeeze()
-            if (dir / cls.MEAN_VALUES_FN).exists()
-            else None
-        )
-
-        return (
-            metadata,
-            site.SiteInfo.load(dir),
-            pd.read_csv(dir / cls.FAULT_DISAGG_FN, index_col=0),
-            pd.read_csv(dir / cls.DS_DISAGG_FN, index_col=0),
-            mean_values,
-        )
-
 
 class BranchDisaggResult(BaseDisaggResult):
     """Exactly the same as DataDisagg, except that it
@@ -288,12 +269,26 @@ class EnsembleDisaggResult(BaseDisaggResult):
 
     @classmethod
     def load(cls, data_dir: Path):
-        metadata, site_info, fault_disagg, ds_disagg, mean_values = cls._load_data(
-            data_dir
+        with open(data_dir / cls.METADATA_FN, "r") as f:
+            metadata = json.load(f)
+
+        mean_values = (
+            pd.read_csv(data_dir / cls.MEAN_VALUES_FN, index_col=0).squeeze()
+            if (data_dir / cls.MEAN_VALUES_FN).exists()
+            else None
         )
 
         im = IM.from_str(metadata["im"])
         ensemble = gm_data.Ensemble.load(metadata["ensemble_params"])
+
+        site_info = site.SiteInfo.load(data_dir)
+        fault_disagg = pd.read_csv(data_dir / cls.FAULT_DISAGG_FN, index_col=0)
+        ds_disagg = pd.read_csv(data_dir / cls.DS_DISAGG_FN, index_col=0)
+
+        fault_disagg.index = rupture.rupture_id_to_ix(
+            ensemble, fault_disagg.index.values
+        )
+        ds_disagg.index = rupture.rupture_id_to_ix(ensemble, ds_disagg.index.values)
 
         return cls(
             fault_disagg,
