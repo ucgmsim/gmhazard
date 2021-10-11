@@ -43,10 +43,7 @@ class Project:
             # Vs30 and Z1.0, Z2.5 values for correct mapping
             assert len(z1p0) == len(cur_data["vs30"]) and len(z1p0) == len(z2p5)
             self.locations[cur_loc_id] = Location(
-                cur_data["name"],
-                cur_data["vs30"],
-                z1p0,
-                z2p5,
+                cur_data["name"], cur_data["vs30"], z1p0, z2p5,
             )
         self.station_ids = [
             pg.utils.create_station_id(cur_loc, cur_vs30, z1p0=cur_z1p0, z2p5=cur_z2p5)
@@ -133,13 +130,21 @@ def load_hazard_data(results_dir: Path, im: sc.im.IM):
     ensemble_hazard = sc.hazard.EnsembleHazardResult.load(
         results_dir / f"hazard_{im.file_format()}"
     )
-    nzs1170p5_hazard = sc.nz_code.nzs1170p5.NZS1170p5Result.load(
-        results_dir / f"hazard_nzs1170p5_{im.file_format()}"
+    nzs1170p5_hazard = (
+        sc.nz_code.nzs1170p5.NZS1170p5Result.load(
+            results_dir / f"hazard_nzs1170p5_{im.file_format()}"
+        )
+        if im.im_type == sc.im.IMType.pSA or im.im_type == sc.im.IMType.PGA
+        else None
     )
 
     nzta_hazard = (
-        sc.nz_code.nzta_2018.NZTAResult.load(results_dir / "hazard_nzta")
-        if im.im_type == sc.im.IMType.PGA
+        (
+            sc.nz_code.nzta_2018.NZTAResult.load(results_dir / "hazard_nzta")
+            if im.im_type == sc.im.IMType.PGA
+            else None
+        )
+        if im.im_type == sc.im.IMType.pSA or im.im_type == sc.im.IMType.PGA
         else None
     )
 
@@ -151,8 +156,7 @@ def load_disagg_data(station_data_dir: Path, im: sc.im.IM, rp: int):
     ensemble_disagg = sc.disagg.EnsembleDisaggResult.load(data_dir)
 
     metadata_df = pd.read_csv(
-        data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv",
-        index_col=0,
+        data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv", index_col=0,
     )
 
     with open(data_dir / f"disagg_{im.file_format()}_{rp}_src.png", "rb") as f:
