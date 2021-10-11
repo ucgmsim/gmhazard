@@ -10,28 +10,8 @@ FAULTS = ["AlpineK2T", "Ashley", "Browning", "Hossack"]
 SRF_LOCATION = Path("/mnt/mantle_data/seistech")  # TODO Change to virtual srfs
 
 
-def test_directivity():
-    def test_data(
-        fault: str,
-        fd_result: pd.DataFrame,
-        bench_data: pd.DataFrame,
-    ):
-        print(f"Directivity test for fault - {fault}")
-
-        try:
-            # Benchmark checking
-            assert np.all(np.isclose(bench_data.values, fd_result.values))
-        except AssertionError:
-            print(
-                f"Directivity test for fault - {fault} - FAILED - Results are different"
-            )
-            return 1
-
-        print(f"Directivity test for fault - {fault} - PASSED")
-        return 0
-
-    # Iterate over the faults to test
-    results = []
+def create_benchmark_data():
+    """Creates the benchmark data with 4 different faults using 9 points and saving the fd results"""
     for fault in FAULTS:
         srf_file = str(SRF_LOCATION / "srfs" / f"{fault}_REL01.srf")
         srf_csv = SRF_LOCATION / "srfs" / f"{fault}_REL01.csv"
@@ -52,14 +32,8 @@ def test_directivity():
 
         fd, _ = directivity.compute_directivity_effects(srf_file, srf_csv, site_coords)
 
-        bench_data = pd.read_csv(
-            Path(__file__).parent / "bench_data" / f"{fault}_fd.csv", index_col=0
-        )
+        pd.DataFrame(fd).to_csv(Path(__file__).parent / f"{fault}_fd.csv")
 
-        results.append(test_data(fault, pd.DataFrame(fd), bench_data))
 
-    if np.sum(results) > 0:
-        raise AssertionError(
-            "Some of the benchmark tests failed, "
-            "check the output to determine which ones failed."
-        )
+if __name__ == "__main__":
+    create_benchmark_data()

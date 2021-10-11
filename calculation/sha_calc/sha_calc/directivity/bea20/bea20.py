@@ -51,11 +51,10 @@ def bea20(
     Period: float
         Used for specifying the period for a pSA IM
     rupture_type: float, optional
-        0 for rupture_type based on rake
+        0 for rupture_type based on rake (auto)
         1 for a strike slip
         2 for a oblique, reverse or normal
     """
-
     # If not specified, determine rupture category from Rake angle
     if rupture_type == 0:
         if (-30 <= Rake <= 30) or (-180 <= Rake <= -150) or (150 <= Rake <= 180):
@@ -73,15 +72,11 @@ def bea20(
     # Convert U to Ry
     # Reduce each positive and negative side by absolute value of Smax
     # Also remove negative numbers inbetween
-    upos, uneg = U >= 0, U < 0
-    Ry = np.zeros(U.size)
-    Ry[upos] = U[upos] - Smax2
-    Ry[uneg] = abs(U[uneg]) - abs(Smax1)
+    Ry = np.where(U >= 0, U - Smax2, np.abs(U) - abs(Smax1))
     Ry[Ry < 0] = 0
 
     # Calculate S2
-    if rupture_type == 2 and Rake < 0:
-        S = -S
+    S = -S if rupture_type == 2 and Rake < 0 else S
     Srake = S * math.cos(math.radians(Rake))
     D = max(D, 3)  # Gets the max value for D, 3 is the minimum
     S2 = np.sqrt(Srake ** 2 + D ** 2)
@@ -90,34 +85,27 @@ def bea20(
     if rupture_type == 1:
         fs2 = np.log(S2)
         fsCap = math.log(465)
-        fs2[fs2 > fsCap] = fsCap
     else:
-        fs2 = np.zeros(U.size)
-        spos, sneg = Srake >= 0, Srake < 0
-        fs2[spos] = np.log(S2[spos])
-        fs2[sneg] = np.log(D)
+        fs2 = np.where(Srake >= 0, np.log(S2), math.log(D))
         fsCap = math.log(188)
-        fs2[fs2 > fsCap] = fsCap
+    fs2[fs2 > fsCap] = fsCap
 
     # Angular predictor variables
-    T = np.asarray(T).copy()
     if rupture_type == 1:
-        theta = np.nan_to_num(np.arctan(np.divide(T, U)))
+        theta = np.nan_to_num(np.arctan(T / U))
         ftheta = abs(np.cos(2 * theta))
         fphi = np.ones(U.size)
     else:
         tpos, tneg = T > 0, T <= 0
         phi = np.zeros(U.size)
 
-        phi[tneg] = (
-            np.degrees(np.arctan(np.divide(abs(T[tneg]) + Tbot, Dbot))) + Dip - 90
-        )
+        phi[tneg] = np.degrees(np.arctan((np.abs(T[tneg]) + Tbot) / Dbot)) + Dip - 90
 
-        t1 = np.logical_and(tpos, T < Tbot)
-        phi[t1] = 90 - Dip - np.degrees(np.arctan(np.divide(Tbot - T[t1], Dbot)))
+        t1 = tpos & (T < Tbot)
+        phi[t1] = 90 - Dip - np.degrees(np.arctan((Tbot - T[t1]) / Dbot))
 
-        t2 = np.logical_and(tpos, T >= Tbot)
-        phi[t2] = 90 - Dip + np.degrees(np.arctan(np.divide(T[t2] - Tbot, Dbot)))
+        t2 = tpos & (T >= Tbot)
+        phi[t2] = 90 - Dip + np.degrees(np.arctan((T[t2] - Tbot) / Dbot))
 
         phi[phi > 45] = 45
         fphi = np.cos(2 * phi * np.pi / 180)
@@ -127,7 +115,7 @@ def bea20(
         T2[T2 < Tmin] = Tmin
         T2[tpos] = Tmin
 
-        omega = np.arctan(np.divide(T2, Ry))
+        omega = np.arctan(T2 / Ry)
         ftheta = np.nan_to_num(np.sin(omega), nan=1)
 
     # Distance taper
@@ -145,7 +133,7 @@ def bea20(
     AR = -4 * Rmax
     Footprint = R <= Rmax
     fdist = np.zeros(R.size)
-    fdist[Footprint] = 1 - np.exp(np.divide(AR, R[Footprint]) - np.divide(AR, Rmax))
+    fdist[Footprint] = 1 - np.exp(AR / R[Footprint] - AR / Rmax)
     fG = fs2 * ftheta * fphi
 
     # Calculate fD
@@ -173,8 +161,8 @@ def bea20(
     Tpeak = 10 ** (coefc[1] + coefc[0] * M)
 
     # Period dependent coefficients: a and b
-    x = np.log10(np.divide(Per, Tpeak))
-    b = bmax * np.exp(np.divide(-(x ** 2), 2 * SigG ** 2))
+    x = np.log10(Per / Tpeak)
+    b = bmax * np.exp((-(x ** 2)) / (2 * SigG ** 2))
     a = -b * fG0
 
     # fd and fdi

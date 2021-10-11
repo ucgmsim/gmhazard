@@ -25,7 +25,6 @@ def compute_directivity_effects(
     period: float, optional
         Float to indicate which period to extract from fD to get fDi
     """
-
     # Get rake, magnitude from srf_csv
     mag = pd.read_csv(srf_csv)["magnitude"][0]
     rake = pd.read_csv(srf_csv)["rake"][0]
@@ -52,7 +51,7 @@ def compute_directivity_effects(
     )
     s_max = (min(ry_end, ry_end2)[0], max(ry_end, ry_end2)[0])
 
-    # Gets the plane index of the hypocenter
+    # Gets the plane index of the hypocentre
     plane_index = 0
     for index, plane in enumerate(planes):
         if plane["dhyp"] == -999.99:
