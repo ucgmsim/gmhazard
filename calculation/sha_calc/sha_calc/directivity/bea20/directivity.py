@@ -36,8 +36,11 @@ def get_directivity_effects(
     points = srf.read_latlondepth(srf_file)
 
     # Customise the planes to set different hypocentres
-    n_hypo = 10
-    planes_list, planes_index = utils.set_hypocenters(n_hypo, planes, [0.5])
+    # n_hypo = 10
+    # planes_list, planes_index = utils.set_hypocenters(n_hypo, planes, [0.5])
+    n_hypo = 1
+    planes_list = [planes]
+    planes_index = [0]
 
     # Convert points to non dictionary format
     lon_lat_depth = np.asarray([[x["lon"], x["lat"], x["depth"]] for x in points])
@@ -93,31 +96,28 @@ def get_directivity_effects(
             mag, ry, rx, s_max, d, t_bot, d_bot, rake, dip, period
         )
 
-        s2 = other["S2"].reshape((100, 100))
-        f_s2 = predictor_functions["fs2"].reshape((100, 100))
-        f_theta = predictor_functions["ftheta"].reshape((100, 100))
-        f_g = predictor_functions["fG"].reshape((100, 100))
-        f_dist = predictor_functions["fdist"].reshape((100, 100))
-        fdi = fdi.reshape((100, 100))
+        # s2 = other["S2"].reshape((100, 100))
+        # f_s2 = predictor_functions["fs2"].reshape((100, 100))
+        # f_theta = predictor_functions["ftheta"].reshape((100, 100))
+        # f_g = predictor_functions["fG"].reshape((100, 100))
+        # f_dist = predictor_functions["fdist"].reshape((100, 100))
+        # fdi = fdi.reshape((100, 100))
 
-        hypo_lon, hypo_lat = srf.get_hypo(srf_file, custom_planes=utils.remove_plane_idx(planes))
-
-        # Plot each hypocenter adjustment
-        plot(
-            np.asarray([coord[0] for coord in sites]).reshape((100, 100)),
-            np.asarray([coord[1] for coord in sites]).reshape((100, 100)),
-            s2,
-            f_s2,
-            f_theta,
-            f_g,
-            f_dist,
-            fdi,
-            lon_lat_depth,
-            Path("/home/joel/local/AlpineK2T"),
-            hypo_lon,
-            hypo_lat,
-            True
-        )
+        # # Plot each hypocenter adjustment
+        # plot(
+        #     np.asarray([coord[0] for coord in sites]).reshape((100, 100)),
+        #     np.asarray([coord[1] for coord in sites]).reshape((100, 100)),
+        #     s2,
+        #     f_s2,
+        #     f_theta,
+        #     f_g,
+        #     f_dist,
+        #     fdi,
+        #     lon_lat_depth,
+        #     Path("/home/joel/local/AlpineK2T"),
+        #     index,
+        #     0
+        # )
 
         if fdi_average.size == 0:
             (
@@ -214,7 +214,6 @@ def directivity_plots(
     f_dist = predictor_functions["fdist"].reshape((100, 100))
     fdi = fdi.reshape((100, 100))
 
-    hypo_lon, hypo_lat = srf.get_hypo(srf_file)
 
     plot(
         x,
@@ -227,8 +226,8 @@ def directivity_plots(
         fdi,
         lon_lat_depth,
         output_dir,
-        hypo_lon,
-        hypo_lat,
+        20,
+        0,
     )
 
 
