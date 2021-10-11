@@ -9,10 +9,10 @@ from IM_calculation.source_site_dist import src_site_dist
 from sha_calc.directivity.bea20 import bea20, utils
 
 
-def get_directivity_effects(
+def compute_directivity_effects(
     srf_file: str, srf_csv: Path, sites: np.ndarray, period: float = 3.0
 ):
-    """Calculates directivity effects at the given sites and srf
+    """Computes directivity effects at the given sites with the given srf data
 
     Parameters
     ----------
@@ -50,7 +50,7 @@ def get_directivity_effects(
     rx_end2, ry_end2 = src_site_dist.calc_rx_ry_GC2(
         lon_lat_depth, planes, nominal_strike2, hypocentre_origin=True
     )
-    s_max = [min(ry_end, ry_end2)[0], max(ry_end, ry_end2)[0]]
+    s_max = (min(ry_end, ry_end2)[0], max(ry_end, ry_end2)[0])
 
     # Gets the plane index of the hypocenter
     plane_index = 0
