@@ -1,4 +1,4 @@
-# SeisTech - Intermediate API
+# GMHazard - Intermediate API
 
 ## Contents
 

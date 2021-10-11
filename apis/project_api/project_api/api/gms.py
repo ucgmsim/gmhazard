@@ -4,7 +4,7 @@ import tempfile
 import flask
 from flask_cors import cross_origin
 
-import seistech_utils as su
+import gmhazard_utils as su
 from project_api import constants as const
 from project_api import utils
 from project_api import server

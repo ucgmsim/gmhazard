@@ -6,7 +6,7 @@
 ## [20.11.1] - 2020-11-26 -- Renaming
 ### Changed
     - Renamed to coreAPI 
-	- Some refactoring of its util functions into the `seistech_utils` repo
+	- Some refactoring of its util functions into the `gmhazard_utils` repo
 
 ## [19.11.1] - 2019-11-20 -- Initial Version
 ### Changed

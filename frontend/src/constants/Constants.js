@@ -166,7 +166,7 @@ export const DEFAULT_MAPBOX_LAT = -43.521463221980085;
 export const DEFAULT_MAPBOX_LNG = 172.58361319646755;
 export const MAP_BOX_WIDTH = "66vw";
 export const MAP_BOX_HEIGHT = "70vh";
-// Needs to be changed once we (SeisTech) have an account with MapBox
+// Needs to be changed once we have a GMHazard account with MapBox
 export const MAP_BOX_TOKEN = process.env.REACT_APP_MAP_BOX_TOKEN;
 
 // For HazardForm

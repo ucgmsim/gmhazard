@@ -3,7 +3,7 @@
 version: "3.8"
 
 networks:
-  seistech_test:
+  gmhazard_test:
     driver: bridge
   backend_test:
     driver: bridge
@@ -58,7 +58,7 @@ services:
       - AUTH0_GRANT_TYPE=${AUTH0_GRANT_TYPE_TEST}
       - DB_SERVER=userdb_test
     networks:
-      - seistech_test
+      - gmhazard_test
       - backend_test
     depends_on:
       - userdb_test
@@ -85,7 +85,7 @@ services:
     stdin_open: true
     tty: true
     networks:
-      - seistech_test
+      - gmhazard_test
     expose:
       - ${FRONT_END_PORT_TEST}
     ports:

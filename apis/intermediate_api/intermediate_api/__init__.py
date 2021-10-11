@@ -9,7 +9,7 @@ from flask import Flask
 import intermediate_api.custom_sqlalchemy as cs
 from intermediate_api.custom_log_handler import MultiProcessSafeTimedRotatingFileHandler
 
-app = Flask("seistech_web")
+app = Flask("intermediate_api")
 CORS(app)
 
 logfile_dir = pathlib.Path(__file__).resolve().parent / "logs"
@@ -49,7 +49,9 @@ PROJECT_API_BASE = os.environ["PROJECT_API_BASE"]
 
 # Generate the projectAPI token
 PROJECT_API_TOKEN = "Bearer {}".format(
-    jwt.encode({"env": os.environ["ENV"]}, os.environ["PROJECT_API_SECRET"], algorithm="HS256")
+    jwt.encode(
+        {"env": os.environ["ENV"]}, os.environ["PROJECT_API_SECRET"], algorithm="HS256"
+    )
 )
 
 # See Circular Import section on here for some attempt at justification of this
