@@ -238,10 +238,10 @@ def plot_psha_psa(
     """
     for tect_type, im_models in const.MODELS_DICT.items():
         x_position = 0
-        # fig, ax = plt.subplots(
-        #     len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 13.5), dpi=300
-        # )
-        plt.figure(figsize=(16, 9))
+        fig, ax = plt.subplots(
+            len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 13.5), dpi=300
+        )
+        # plt.figure(figsize=(16, 9))
 
         for vs30 in vs30_values:
             y_position = 0
@@ -251,7 +251,7 @@ def plot_psha_psa(
                     # To match the color with global version
                     if model.endswith("NZ"):
                         color_index -= 1
-                    plt.plot(
+                    ax[x_position, y_position].plot(
                         period_values,
                         result_dict[tect_type][const.PSA_IM_NAME][vs30][mag][model],
                         label=model,
@@ -287,20 +287,20 @@ def plot_psha_psa(
                     )
                 )
 
-                plt.plot(
+                ax[x_position, y_position].plot(
                     period_values,
                     np.exp(average_medians),
                     color="black",
                     label="average medians",
                 )
-                plt.plot(
+                ax[x_position, y_position].plot(
                     period_values,
                     np.exp(np.add(average_medians, sigma_intermodel)),
                     color="black",
                     linestyle="--",
                     label="average medians + sigma intermodel",
                 )
-                plt.plot(
+                ax[x_position, y_position].plot(
                     period_values,
                     np.exp(np.subtract(average_medians, sigma_intermodel)),
                     color="black",
@@ -308,25 +308,29 @@ def plot_psha_psa(
                     label="average medians - sigma intermodel",
                 )
 
-                plt.title(f"SA versus T - Mw{mag}, Vs30-{vs30}")
-                plt.legend()
-                plt.xlabel("Period [sec]")
-                plt.ylabel("SA [g]")
-                plt.xscale("log")
-                plt.yscale("log")
+                ax[x_position, y_position].set_title(
+                    f"SA versus T - Mw{mag}, Vs30-{vs30}"
+                )
+                ax[x_position, y_position].xaxis.set_label_text("Period [sec]")
+                ax[x_position, y_position].yaxis.set_label_text("SA [g]")
+                ax[x_position, y_position].set_xscale("log")
+                ax[x_position, y_position].set_yscale("log")
                 # plt.xaxis.grid(True, which="both", linestyle="dotted")
                 # plt.yaxis.grid(True, which="both", linestyle="dotted")
 
-                plt.savefig(
-                    f"{plot_directory}/{tect_type}_{str(mag).replace('.', 'p')}_{str(vs30).replace('.', 'p')}_pSA_versus_T.png"
-                )
-                plt.clf()
-            #     y_position += 1
-            # x_position += 1
+                # plt.savefig(
+                #     f"{plot_directory}/{tect_type}_{str(mag).replace('.', 'p')}_{str(vs30).replace('.', 'p')}_pSA_versus_T.png"
+                # )
+                # plt.clf()
+                y_position += 1
+            x_position += 1
 
-        # fig.tight_layout()
-        # plt.savefig(f"{plot_directory}/{tect_type}_{}pSA_versus_T.png")
-        # plt.close()
+        fig.tight_layout()
+        plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", borderaxespad=0)
+        plt.savefig(
+            f"{plot_directory}/{tect_type}_pSA_versus_T.png", bbox_inches="tight"
+        )
+        plt.close()
 
 
 def plot_psha_median_psa(
