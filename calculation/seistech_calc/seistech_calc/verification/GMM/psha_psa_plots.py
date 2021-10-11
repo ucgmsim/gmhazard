@@ -254,7 +254,7 @@ def plot_psha_psa(
                     ax[x_position, y_position].plot(
                         period_values,
                         result_dict[tect_type][const.PSA_IM_NAME][vs30][mag][model],
-                        label=model,
+                        label=model if x_position == 0 and y_position == 0 else None,
                         color=const.DEFAULT_LABEL_COLOR[color_index],
                         linestyle="dashed" if model.endswith("NZ") else "solid",
                     )
@@ -291,21 +291,27 @@ def plot_psha_psa(
                     period_values,
                     np.exp(average_medians),
                     color="black",
-                    label="average medians",
+                    label="average medians"
+                    if x_position == 0 and y_position == 0
+                    else None,
                 )
                 ax[x_position, y_position].plot(
                     period_values,
                     np.exp(np.add(average_medians, sigma_intermodel)),
                     color="black",
                     linestyle="--",
-                    label="average medians + sigma intermodel",
+                    label="average medians + sigma intermodel"
+                    if x_position == 0 and y_position == 0
+                    else None,
                 )
                 ax[x_position, y_position].plot(
                     period_values,
                     np.exp(np.subtract(average_medians, sigma_intermodel)),
                     color="black",
                     linestyle="--",
-                    label="average medians - sigma intermodel",
+                    label="average medians - sigma intermodel"
+                    if x_position == 0 and y_position == 0
+                    else None,
                 )
 
                 ax[x_position, y_position].set_title(
@@ -325,11 +331,11 @@ def plot_psha_psa(
                 y_position += 1
             x_position += 1
 
+        fig.legend(loc=7)
         fig.tight_layout()
-        plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", borderaxespad=0)
-        plt.savefig(
-            f"{plot_directory}/{tect_type}_pSA_versus_T.png", bbox_inches="tight"
-        )
+        fig.subplots_adjust(right=0.75)
+        # plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", borderaxespad=0)
+        plt.savefig(f"{plot_directory}/{tect_type}_pSA_versus_T.png")
         plt.close()
 
 
