@@ -1,5 +1,5 @@
 {
-  "name": "seistech-web-app",
+  "name": "gmhazard-web-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,10 +11,7 @@
     "build:test": "env-cmd -f .env.test npm run build ",
     "build:staging": "env-cmd -f .env.staging npm run build ",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "deploy-dev": "node deploy-ftp-azure seistech-dev",
-    "deploy-test": "node deploy-ftp-azure seistech-test",
-    "deploy-prod": "node deploy-ftp-azure seistech-prod"
+    "eject": "react-scripts eject"
   },
   "dependencies": {
     "@auth0/auth0-spa-js": "^1.12.0",

@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Dict, Sequence
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 from . import project
 from . import psha
 from .celery import app

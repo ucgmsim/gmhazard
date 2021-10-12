@@ -30,30 +30,30 @@ def remove_plane_idx(planes: List):
     ]
 
 
-def set_hypocenters(n_hypo: int, planes: List, depth_method: List):
+def set_hypocentres(n_hypo: int, planes: List, depth_method: List):
     """
-    Creates a List of planes each with a different set hypocenter for directivity calculations
-    Sets n_hypo amount of hypocenters across the planes evenly
+    Creates a List of planes each with a different set hypocentre for directivity calculations
+    Sets n_hypo amount of hypocentres across the planes evenly
 
     Parameters
     ----------
     n_hypo: int
-        Number of hypocenters across strike to set
+        Number of hypocentres across strike to set
     planes: list
-        The planes to adjust and set the hypocenter on
+        The planes to adjust and set the hypocentre on
     depth_method: List
-        How deep the hypocenter is to be placed e.g. [0.5] would be every hypocenter at 50% depth
-        where as [0.33, 0.66] would be every 2nd hypocenter would have a depth of 66% and every other would have 33%
+        How deep the hypocentre is to be placed e.g. [0.5] would be every hypocentre at 50% depth
+        where as [0.33, 0.66] would be every 2nd hypocentre would have a depth of 66% and every other would have 33%
     """
 
-    # Gets the total length and removes any previous hypocenters
+    # Gets the total length and removes any previous hypocentres
     total_length = 0
     for plane in planes:
         total_length += plane["length"]
         plane["shyp"] = -999.9
         plane["dhyp"] = -999.9
 
-    # Works out the distances across the length of the fault for each hypocenter
+    # Works out the distances across the length of the fault for each hypocentre
     distances = [
         (total_length / n_hypo * x) - ((total_length / n_hypo) / 2)
         for x in range(1, n_hypo + 1)

@@ -2,7 +2,7 @@
 import argparse
 from pathlib import Path
 
-import seistech_utils as su
+import gmhazard_utils as su
 import project_api as pa
 
 

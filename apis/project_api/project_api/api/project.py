@@ -8,8 +8,8 @@ import pandas as pd
 import flask
 from flask_cors import cross_origin
 
-import seistech_utils as su
-import seistech_calc as sc
+import gmhazard_utils as su
+import gmhazard_calc as sc
 import project_gen as pg
 from project_api import utils
 from project_api import server
@@ -216,13 +216,13 @@ def create_new():
     server.app.logger.info(
         f"Triggering generation of new project {project_params['id']}"
     )
-    seistech_root_dir = Path(__file__).resolve().parent.parent.parent.parent
+    gmhazard_root_dir = Path(__file__).resolve().parent.parent.parent.parent
     pg.tasks.create_project_task.server.apply_async(
         queue="project_gen",
         args=[
             project_params,
             str(server.BASE_PROJECTS_DIR),
-            str(seistech_root_dir / "seistech_scripts/seistech_scripts/local"),
+            str(gmhazard_root_dir / "gmhazard_scripts/gmhazard_scripts/local"),
         ],
         kwargs={"new_project": True},
     )

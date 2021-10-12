@@ -4,7 +4,6 @@ setup(
     name="project_gen",
     version="21.8.1",
     packages=find_packages(),
-    url="https://github.com/ucgmsim/seistech",
-    description="SeisTech Project Data Generation Service",
+    url="https://github.com/ucgmsim/gmhazard",
+    description="GMHazard Project Data Generation Service",
 )
-

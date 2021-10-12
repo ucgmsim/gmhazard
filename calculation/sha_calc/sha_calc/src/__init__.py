@@ -4,7 +4,7 @@ from .hazard import hazard_single, hazard_curve
 from .exceptions import InputDataError
 from .nzs1170p5_spectra import nzs1170p5_spectra, get_return_period_factor
 from sha_calc.src.directivity.bea20.directivity import get_directivity_effects
-from sha_calc.src.directivity.bea20.utils import set_hypocenters, remove_plane_idx, calc_nominal_strike
+from sha_calc.src.directivity.bea20.utils import set_hypocentres, remove_plane_idx, calc_nominal_strike
 from sha_calc.src.im_component.im_component_ratio import get_component_ratio, get_computed_component_ratio
 
 from .gms import *
