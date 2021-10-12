@@ -16,9 +16,7 @@ def create_benchmark_data():
         srf_file = str(SRF_LOCATION / "srfs" / f"{fault}_REL01.srf")
         srf_csv = SRF_LOCATION / "srfs" / f"{fault}_REL01.csv"
 
-        points = srf.read_latlondepth(srf_file)
-
-        lon_lat_depth = np.asarray([[x["lon"], x["lat"], x["depth"]] for x in points])
+        lon_lat_depth = srf.read_srf_points(srf_file)
 
         lon_values = np.linspace(
             lon_lat_depth[:, 0].min() - 0.5, lon_lat_depth[:, 0].max() + 0.5, 3
@@ -30,7 +28,9 @@ def create_benchmark_data():
         x, y = np.meshgrid(lon_values, lat_values)
         site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
-        fd, _ = directivity.compute_directivity_effects(srf_file, srf_csv, site_coords)
+        fd, _, _, _, _, _ = directivity.compute_directivity_effects(
+            srf_file, srf_csv, site_coords
+        )
 
         pd.DataFrame(fd).to_csv(Path(__file__).parent / f"{fault}_fd.csv")
 

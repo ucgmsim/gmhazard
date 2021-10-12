@@ -32,17 +32,11 @@ def compute_directivity_effects(
 
     # Get planes and points from srf_file
     planes = srf.read_header(srf_file, idx=True)
-    points = srf.read_latlondepth(srf_file)
+    lon_lat_depth = srf.read_srf_points(srf_file)
 
     # Customise the planes to set different hypocentres
-    # n_hypo = 10
-    # planes_list, planes_index = utils.set_hypocenters(n_hypo, planes, [0.5])
-    n_hypo = 1
-    planes_list = [planes]
-    planes_index = [0]
-
-    # Convert points to non dictionary format
-    lon_lat_depth = np.asarray([[x["lon"], x["lat"], x["depth"]] for x in points])
+    n_hypo = 20  # TODO Update with best practice for hypocentre averaging
+    planes_list, planes_index = utils.set_hypocentres(n_hypo, planes, [1 / 3, 2 / 3])
 
     # Creating the average arrays
     (
@@ -95,29 +89,6 @@ def compute_directivity_effects(
             mag, ry, rx, s_max, d, t_bot, d_bot, rake, dip, period
         )
 
-        # s2 = other["S2"].reshape((100, 100))
-        # f_s2 = predictor_functions["fs2"].reshape((100, 100))
-        # f_theta = predictor_functions["ftheta"].reshape((100, 100))
-        # f_g = predictor_functions["fG"].reshape((100, 100))
-        # f_dist = predictor_functions["fdist"].reshape((100, 100))
-        # fdi = fdi.reshape((100, 100))
-
-        # # Plot each hypocenter adjustment
-        # plot(
-        #     np.asarray([coord[0] for coord in sites]).reshape((100, 100)),
-        #     np.asarray([coord[1] for coord in sites]).reshape((100, 100)),
-        #     s2,
-        #     f_s2,
-        #     f_theta,
-        #     f_g,
-        #     f_dist,
-        #     fdi,
-        #     lon_lat_depth,
-        #     Path("/home/joel/local/AlpineK2T"),
-        #     index,
-        #     0
-        # )
-
         if fdi_average.size == 0:
             (
                 fd_average,
@@ -135,46 +106,47 @@ def compute_directivity_effects(
                 other,
             )
         else:
-            (
-                fd_average,
-                fdi_average,
-                phi_red_average,
-                phi_redi_average,
-            ) = (
+            (fd_average, fdi_average, phi_red_average, phi_redi_average,) = (
                 np.add(fd_average, fd),
                 np.add(fdi_average, fdi),
                 np.add(phi_red_average, phi_red),
                 np.add(phi_redi_average, phi_redi),
             )
             for key, value in predictor_functions.items():
-                predictor_functions_average[key] = np.add(predictor_functions_average[key], predictor_functions[key])
+                predictor_functions_average[key] = np.add(
+                    predictor_functions_average[key], predictor_functions[key]
+                )
             for key, value in other.items():
                 other_average[key] = np.add(other_average[key], other[key])
 
-    (
-        fd_average,
-        fdi_average,
-        phi_red_average,
-        phi_redi_average,
-    ) = (
+    (fd_average, fdi_average, phi_red_average, phi_redi_average,) = (
         np.divide(fd_average, n_hypo),
         np.divide(fdi_average, n_hypo),
         np.divide(phi_red_average, n_hypo),
         np.divide(phi_redi_average, n_hypo),
     )
     for key, value in predictor_functions_average.items():
-        predictor_functions_average[key] = np.divide(predictor_functions_average[key], n_hypo)
+        predictor_functions_average[key] = np.divide(
+            predictor_functions_average[key], n_hypo
+        )
     for key, value in other_average.items():
         other_average[key] = np.divide(other_average[key], n_hypo)
 
-    return fd_average, fdi_average, phi_red_average, phi_redi_average, predictor_functions_average, other_average
+    return (
+        fd_average,
+        fdi_average,
+        phi_red_average,
+        phi_redi_average,
+        predictor_functions_average,
+        other_average,
+    )
 
 
 def directivity_plots(
     srf_file: str, srf_csv: Path, output_dir: Path, period: float = 3.0
 ):
     """
-    Creates 6 plots to show directivity effects at a given srf
+    Creates 6 plots to show total directivity effects at a given srf after hypocentre averaging
 
     Parameters
     ----------
@@ -188,9 +160,7 @@ def directivity_plots(
         Float to indicate which period to extract from fD to get fDi
     """
 
-    points = srf.read_latlondepth(srf_file)
-
-    lon_lat_depth = np.asarray([[x["lon"], x["lat"], x["depth"]] for x in points])
+    lon_lat_depth = srf.read_srf_points(srf_file)
 
     lon_values = np.linspace(
         lon_lat_depth[:, 0].min() - 0.5, lon_lat_depth[:, 0].max() + 0.5, 100
@@ -202,9 +172,14 @@ def directivity_plots(
     x, y = np.meshgrid(lon_values, lat_values)
     site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
-    fd, fdi, phi_red, phi_redi, predictor_functions, other = get_directivity_effects(
-        srf_file, srf_csv, site_coords, period
-    )
+    (
+        fd,
+        fdi,
+        phi_red,
+        phi_redi,
+        predictor_functions,
+        other,
+    ) = compute_directivity_effects(srf_file, srf_csv, site_coords, period)
 
     s2 = other["S2"].reshape((100, 100))
     f_s2 = predictor_functions["fs2"].reshape((100, 100))
@@ -213,8 +188,7 @@ def directivity_plots(
     f_dist = predictor_functions["fdist"].reshape((100, 100))
     fdi = fdi.reshape((100, 100))
 
-
-    plot(
+    validation_plot(
         x,
         y,
         s2,
@@ -225,12 +199,10 @@ def directivity_plots(
         fdi,
         lon_lat_depth,
         output_dir,
-        20,
-        0,
     )
 
 
-def plot(
+def validation_plot(
     x: np.ndarray,
     y: np.ndarray,
     s2: np.ndarray,
@@ -241,44 +213,50 @@ def plot(
     fdi: np.ndarray,
     lon_lat_depth: np.ndarray,
     output_dir: Path,
-    hypo_lon: float,
-    hypo_lat: float,
+    hypo_lon: float = None,
+    hypo_lat: float = None,
     show_hypo: bool = False,
 ):
     """
     Plots directivity values output of the bea20 model.
-    Extracted so it can be used for testing specific hypocentre scenarios.
 
     Parameters
     ----------
     x: np.ndarray
         Array of longitude values of sites
+        Dimension of n * m where n is number of sites across the x axis and m is the number of sites across the y axis
     y: np.ndarray
         Array of latitude values of sites
+        Dimension of n * m where n is number of sites across the x axis and m is the number of sites across the y axis
     s2: np.ndarray
         s2 output from the bea20 model for each site
+        Dimension of n * m where n is number of sites across the x axis and m is the number of sites across the y axis
     f_s2: np.ndarray
         f_s2 output from the bea20 model for each site
+        Dimension of n * m where n is number of sites across the x axis and m is the number of sites across the y axis
     f_theta: np.ndarray
         f_theta output from the bea20 model for each site
+        Dimension of n * m where n is number of sites across the x axis and m is the number of sites across the y axis
     f_g: np.ndarray
         f_g output from the bea20 model for each site
+        Dimension of n * m where n is number of sites across the x axis and m is the number of sites across the y axis
     f_dist: np.ndarray
         f_dist output from the bea20 model for each site
+        Dimension of n * m where n is number of sites across the x axis and m is the number of sites across the y axis
     fdi: np.ndarray
         fdi output from the bea20 model for each site
+        Dimension of n * m where n is number of sites across the x axis and m is the number of sites across the y axis
     lon_lat_depth: np.ndarray
         Each point of the srf fault in an array with the format [[lon, lat, depth],...]
     output_dir: Path
         Path to the location of the output plot directory
-    hypo_lon: float
+    hypo_lon: float, optional
         Longitude value of the hypocentre
-    hypo_lat: float
+    hypo_lat: float, optional
         Latitude value of the hypocentre
     show_hypo: bool, optional
         If true then will show the hypocentre on the plot
     """
-
     fig = plt.figure(figsize=(16, 10))
 
     ax1 = fig.add_subplot(2, 3, 1)
@@ -413,4 +391,4 @@ def plot(
     plt.colorbar(m, pad=0.01)
     ax6.set_title(r"$f_Di$")
 
-    fig.savefig(f"{output_dir}/directivity_plots{hypo_lon}.png")
+    fig.savefig(f"{output_dir}/directivity_validation_plot.png")
