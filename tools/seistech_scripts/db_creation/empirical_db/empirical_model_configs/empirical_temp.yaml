@@ -62,8 +62,8 @@ SUBDUCTION_SLAB:
   PGV:
     geom:
       - P_20_SS # These are only for shallow crustal in lieu of a more appropriate model
-      - AG_20_SS
-      - AG_20_SS_NZ
+      - K_20_SS
+      - K_20_SS_NZ
   PGA:
     geom:
       - ZA_06
@@ -88,8 +88,8 @@ SUBDUCTION_INTERFACE:
   PGV:
     geom:
       - P_20_SI # These are only for shallow crustal in lieu of a more appropriate model
-      - AG_20_SI
-      - AG_20_SI_NZ
+      - K_20_SI
+      - K_20_SI_NZ
   PGA:
     geom:
       - ZA_06

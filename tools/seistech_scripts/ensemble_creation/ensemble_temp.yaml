@@ -33,12 +33,12 @@ PGV:
                 CB_14: 0.2
                 CY_14: 0.2
         SUBDUCTION_INTERFACE:
-                P_20_SI: 0.666
-                AG_20_SI: 0.166
-                AG_20_SI_NZ: 0.166
+                P_20_SI: 0.5
+                K_20_SI: 0.25
+                K_20_SI_NZ: 0.25
         SUBDUCTION_SLAB:
-                P_20_SS: 0.5
-                AG_20_SS: 0.25
-                AG_20_SS_NZ: 0.25
+                P_20_SS: 0.32
+                K_20_SS: 0.34
+                K_20_SS_NZ: 0.34
         VOLCANIC:
                 Br_10: 1.0

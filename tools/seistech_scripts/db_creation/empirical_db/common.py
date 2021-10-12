@@ -21,13 +21,19 @@ from seistech_calc import dbs
 PERIOD = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.9, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]
 # fmt: on
 
+# TODO: Uncomment the following constant to be used.
+# IM_TYPE_LIST = [
+#     IMType.PGA,
+#     IMType.pSA,
+#     IMType.Ds595,
+#     IMType.Ds575,
+#     IMType.AI,
+#     IMType.CAV,
+#     IMType.PGV,
+# ]
 IM_TYPE_LIST = [
     IMType.PGA,
     IMType.pSA,
-    IMType.Ds595,
-    IMType.Ds575,
-    IMType.AI,
-    IMType.CAV,
     IMType.PGV,
 ]
 
