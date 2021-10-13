@@ -289,6 +289,8 @@ def get_im_data(
 
     # Compute and apply directivty effects
     # sha_calc.compute_directivity_effects()
+    ims = [IM.from_str(im) for im in im_data.filter(regex="^PGA$|^pSA_[0-9]+.[0-9]+$").columns]
+    sha_calc.compute_directivity_effects(branch, site_info, ims)
 
     if im_component != IMComponent.RotD50:
         if im_data_type is constants.IMDataType.parametric:

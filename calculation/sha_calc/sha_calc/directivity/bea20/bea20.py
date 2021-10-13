@@ -50,7 +50,7 @@ def bea20(
         The Dip of the fault at the hypocentre
     Period: float
         Used for specifying the period for a pSA IM
-    rupture_type: float, optional
+    rupture_type: int, optional
         0 for rupture_type based on rake (auto)
         1 for a strike slip
         2 for a oblique, reverse or normal

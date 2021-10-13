@@ -1,18 +1,20 @@
 import math
 from pathlib import Path
+from typing import List
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-import gmhazard_calc as gc
+from gmhazard_calc import gm_data, site, im
 from qcore import srf, nhm
 from IM_calculation.source_site_dist import src_site_dist
 from sha_calc.directivity.bea20 import bea20, utils
 
 
 def compute_directivity_effects(
-    srf_file: str, srf_csv: Path, sites: np.ndarray, period: float = 3.0
+    branch: gm_data.Branch, site_info: site.SiteInfo, ims: List[im.IM]
+    # srf_file: str, srf_csv: Path, sites: np.ndarray, period: float = 3.0
 ):
     """Computes directivity effects at the given sites with the given srf data
 
@@ -27,6 +29,12 @@ def compute_directivity_effects(
     period: float, optional
         Float to indicate which period to extract from fD to get fDi
     """
+    pre_process(branch, site_info, ims)
+
+    srf_csv = 0
+    srf_file = 0
+
+
     # Get rake, magnitude from srf_csv
     mag = pd.read_csv(srf_csv)["magnitude"][0]
     rake = pd.read_csv(srf_csv)["rake"][0]
@@ -143,10 +151,18 @@ def compute_directivity_effects(
     )
 
 
-def pre_process(branch: gc.gm_data.Branch, site_info: gc.site.SiteInfo, im: gc.im.IM):
+def pre_process(branch: gm_data.Branch, site_info: site.SiteInfo, ims: List[im.IM]):
     """
     Pre processing for computing directivity effects
     """
+    nhm_dict = nhm.load_nhm(branch.flt_erf_ffp)
+
+    site = np.asarray([[site_info.lon, site_info.lat]])
+
+    periods = [im.period if im.period is not None else 0 for im in ims]
+
+    # nhm_dict[]
+    planes, points = utils.get_fault_header_points(nhm_dict["AlpineK2T"])
 
 
 

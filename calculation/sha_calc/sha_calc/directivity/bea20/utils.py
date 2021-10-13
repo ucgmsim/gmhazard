@@ -1,6 +1,12 @@
-from typing import List
+from typing import List, Dict, Union
 
 import numpy as np
+
+from qcore import nhm, geo
+
+POINTS_PER_KILOMETER = (
+    1 / 0.1
+)  # 1km divided by distance between points (1km/0.1km gives 100m grid)
 
 
 def remove_plane_idx(planes: List):
@@ -98,3 +104,58 @@ def calc_nominal_strike(traces: np.ndarray):
         return np.asarray([trace_end]), np.asarray([trace_start])
     else:
         return np.asarray([trace_start]), np.asarray([trace_end])
+
+
+def get_fault_header_points(fault: nhm.NHMFault):
+    srf_points = []
+    srf_header: List[Dict[str, Union[int, float]]] = []
+    lon1, lat1 = fault.trace[0]
+    lon2, lat2 = fault.trace[1]
+    strike = geo.ll_bearing(lon1, lat1, lon2, lat2, midpoint=True)
+
+    if 180 > fault.dip_dir - strike >= 0:
+        # If the dipdir is not to the right of the strike, turn the fault around
+        indexes = range(len(fault.trace))
+    else:
+        indexes = range(len(fault.trace) - 1, -1, -1)
+
+    plane_offset = 0
+    for i, i2 in zip(indexes[:-1], indexes[1:]):
+        lon1, lat1 = fault.trace[i]
+        lon2, lat2 = fault.trace[i2]
+
+        strike = geo.ll_bearing(lon1, lat1, lon2, lat2, midpoint=True)
+        plane_point_distance = geo.ll_dist(lon1, lat1, lon2, lat2)
+
+        nstrike = round(plane_point_distance * POINTS_PER_KILOMETER)
+        strike_dist = plane_point_distance / nstrike
+
+        end_strike = geo.ll_bearing(lon1, lat1, lon2, lat2)
+        for j in range(nstrike):
+            top_lat, top_lon = geo.ll_shift(lat1, lon1, strike_dist * j, end_strike)
+            srf_points.append((top_lon, top_lat, fault.dtop))
+
+        height = fault.dbottom - fault.dtop
+
+        width = abs(height / np.tan(np.deg2rad(fault.dip)))
+        dip_dist = height / np.sin(np.deg2rad(fault.dip))
+
+        ndip = int(round(dip_dist * POINTS_PER_KILOMETER))
+        hdip_dist = width / ndip
+        vdip_dist = height / ndip
+
+        for j in range(1, ndip):
+            hdist = j * hdip_dist
+            vdist = j * vdip_dist + fault.dtop
+            for local_lon, local_lat, local_depth in srf_points[
+                plane_offset : plane_offset + nstrike
+            ]:
+                new_lat, new_lon = geo.ll_shift(
+                    local_lat, local_lon, hdist, fault.dip_dir
+                )
+                srf_points.append((new_lon, new_lat, vdist))
+
+        plane_offset += nstrike * ndip
+        srf_header.append({"nstrike": nstrike, "ndip": ndip, "strike": strike})
+
+    return srf_header, srf_points
