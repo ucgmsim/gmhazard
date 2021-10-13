@@ -1,4 +1,4 @@
-# SeisTech - Frontend
+# GMHazard - Frontend
 
 ## Contents
 

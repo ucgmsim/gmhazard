@@ -57,7 +57,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "scripts_dir",
         type=Path,
-        help="The path to the Seistech Scripts Local scripts folder",
+        help="The path to the GMHazard Scripts Local scripts folder",
     )
     # Distributed seismicity calculation needs 2 processes to run
     parser.add_argument(

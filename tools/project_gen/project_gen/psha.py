@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import celery
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 from . import tasks
 from . import utils
 

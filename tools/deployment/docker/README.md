@@ -1,4 +1,4 @@
-# SeisTech - Docker
+# GMHazard - Docker
 
 ## Contents
 

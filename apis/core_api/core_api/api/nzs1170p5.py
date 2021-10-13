@@ -5,8 +5,8 @@ import numpy as np
 from flask_cors import cross_origin
 from werkzeug.contrib.cache import BaseCache
 
-import seistech_calc as sc
-import seistech_utils as su
+import gmhazard_calc as sc
+import gmhazard_utils as su
 from core_api import server
 from core_api import constants as const
 from core_api import utils

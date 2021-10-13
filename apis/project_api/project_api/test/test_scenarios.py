@@ -1,4 +1,4 @@
-import seistech_utils.src.test as tu
+import gmhazard_utils.src.test as tu
 from project_api import constants
 
 
