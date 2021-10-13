@@ -287,6 +287,9 @@ def get_im_data(
     if im_data is None:
         return None
 
+    # Compute and apply directivty effects
+    # sha_calc.compute_directivity_effects()
+
     if im_component != IMComponent.RotD50:
         if im_data_type is constants.IMDataType.parametric:
             # Ensure we only perform component conversion on PGA or pSA IM's

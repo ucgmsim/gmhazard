@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from qcore import srf
+import gmhazard_calc as gc
+from qcore import srf, nhm
 from IM_calculation.source_site_dist import src_site_dist
 from sha_calc.directivity.bea20 import bea20, utils
 
@@ -140,6 +141,13 @@ def compute_directivity_effects(
         predictor_functions_average,
         other_average,
     )
+
+
+def pre_process(branch: gc.gm_data.Branch, site_info: gc.site.SiteInfo, im: gc.im.IM):
+    """
+    Pre processing for computing directivity effects
+    """
+
 
 
 def directivity_plots(
