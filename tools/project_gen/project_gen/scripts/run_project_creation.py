@@ -31,7 +31,7 @@ def main(
         projects_base_dir,
         scripts_dir,
         n_procs=n_procs,
-        new_project=False,
+        new_project=True,
         erf_dir=erf_dir,
         erf_pert_dir=erf_pert_dir,
         flt_erf_version=flt_erf_version,
