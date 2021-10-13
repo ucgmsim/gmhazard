@@ -55,9 +55,9 @@ def find_matching_dbs(db_list, model, tect_type, match_string, pert_str=""):
     return [
         db
         for db in db_list
-        if is_any_strings_in_string(db, tect_type)
-        and model in db
-        and f"{model}_{tect_type[0]}" in db
+        if is_any_strings_in_string(
+            db, [f"{model}_{cur_tect_type}" for cur_tect_type in tect_type]
+        )
         and match_string in db
         and pert_str in db
     ]
