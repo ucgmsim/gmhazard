@@ -66,13 +66,6 @@ if __name__ == "__main__":
         help="Number of processes to use - minimum is 2",
         default=2,
     )
-    # Discuss with team to add this parser, disable it for now
-    # parser.add_argument(
-    #     "--disable_new_project",
-    #     type=bool,
-    #     help="True for completely new project, False for only the results are computed",
-    #     default=True,
-    # )
     parser.add_argument(
         "--erf_dir", type=Path, help="Path to the ERF directory", default=None
     )
