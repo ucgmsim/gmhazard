@@ -1,4 +1,4 @@
-id: "temp_hazard_curve_two_sites_new_weights_six_ims"
+id: "temp_hazard_curve_two_sites_new_weights"
 locations:
   Christchurch_Hospital:
     name: "Christchurch Hospital"
