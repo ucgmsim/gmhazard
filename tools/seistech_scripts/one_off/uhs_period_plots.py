@@ -1,6 +1,6 @@
 """Generates UHS plots with different number of data points.
 The plots are used to determine the number of periods of SA we need/want for
-future UHS (seistech) plots.
+future UHS (gmhazard) plots.
 """
 import os
 

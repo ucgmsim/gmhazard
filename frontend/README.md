@@ -41,7 +41,7 @@ Open a terminal to do the following steps
 1. Change the directory to frontend
 
 ```shell
-cd /your_path/seistech/frontend
+cd /your_path/gmhazard/frontend
 ```
 
 2. Install packages

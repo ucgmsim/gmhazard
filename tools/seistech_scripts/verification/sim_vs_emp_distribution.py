@@ -12,8 +12,8 @@ station = "CCCC"
 im = "pSA_5.0"
 n_bins = 15
 
-non_para_imdb_ffp = "/nesi/nobackup/nesi00213/seistech/simulations/18p6/cs18p6_flt_new.h5"
-para_imdb_ffp = "/nesi/nobackup/nesi00213/seistech/empiricals/18p6_new/B10_flt.db"
+non_para_imdb_ffp = ""
+para_imdb_ffp = ""
 
 
 with sc.dbs.IMDBNonParametric(non_para_imdb_ffp) as db:
