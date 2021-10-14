@@ -11,7 +11,7 @@ from .ground_motion import non_parametric_gm_excd_prob, parametric_gm_excd_prob
 from .hazard import hazard_single, hazard_curve
 from .exceptions import InputDataError
 from .nzs1170p5_spectra import nzs1170p5_spectra, get_return_period_factor
-from sha_calc.directivity.bea20.directivity import compute_directivity_effects, directivity_plots
+from sha_calc.directivity.bea20.directivity import compute_directivity_single_hypo, compute_directivity_hypo_averaging
 from sha_calc.im_component.im_component_ratio import (
     get_component_ratio,
     get_computed_component_ratio,
