@@ -5,11 +5,7 @@ import numpy as np
 
 from qcore import srf
 from sha_calc.directivity.bea20.validation import plots
-from sha_calc.directivity.bea20.directivity import (
-    compute_directivity_effect,
-    directivity_pre_process,
-)
-from sha_calc.directivity.bea20 import utils
+from sha_calc.directivity.bea20.directivity import compute_directivity_srf_multi
 
 
 def hypo_average_plots(
@@ -42,47 +38,11 @@ def hypo_average_plots(
     x, y = np.meshgrid(lon_values, lat_values)
     site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
-    (
-        mag,
-        rake,
-        planes,
-        lon_lat_depth,
-        nominal_strike,
-        nominal_strike2,
-    ) = directivity_pre_process(srf_file, srf_csv)
+    fdi_average, fdi_array = compute_directivity_srf_multi(
+        srf_file, srf_csv, site_coords, period=period
+    )
 
-    # Customise the planes to set different hypocentres
-    n_hypo = 20  # TODO Update with best practice for hypocentre averaging
-    planes_list, planes_index = utils.set_hypocentres(n_hypo, planes, [1 / 3, 2 / 3])
-
-    # Creating the average array
-    fdi_average = []
-
-    for index, planes in enumerate(planes_list):
-        # Gets the plane index of the hypocentre
-        plane_index = planes_index[index]
-
-        (
-            fd,
-            fdi,
-            phi_red,
-            phi_redi,
-            predictor_functions,
-            other,
-        ) = compute_directivity_effect(
-            lon_lat_depth,
-            planes,
-            plane_index,
-            site_coords,
-            nominal_strike,
-            nominal_strike2,
-            mag,
-            rake,
-            period,
-        )
-
-        fdi_average.append(fdi)
-
+    for index, fdi in enumerate(fdi_array):
         plots.plot_fdi(
             x,
             y,
@@ -91,14 +51,10 @@ def hypo_average_plots(
             Path(f"{output_dir}/hypo_plot_{index}.png"),
         )
 
-    fdi_average = (np.mean(fdi_average, axis=0),)
-
-    fdi_average = fdi_average.reshape((100, 100))
-
     plots.plot_fdi(
         x,
         y,
-        fdi_average,
+        fdi_average.reshape((100, 100)),
         lon_lat_depth,
         Path(f"{output_dir}/hypo_average_plot.png"),
     )
