@@ -1,4 +1,4 @@
-import seistech_utils.src.test as tu
+import gmhazard_utils.src.test as tu
 from core_api import constants
 
 # NZS1170p5 Tests

@@ -21,6 +21,7 @@ def main(
     erf_dir: Path = None,
     erf_pert_dir: Path = None,
     flt_erf_version: str = "NHM",
+    setup_only: bool = False,
 ):
     with open(project_params_ffp, "r") as f:
         project_params = yaml.safe_load(f)
@@ -34,6 +35,7 @@ def main(
         erf_dir=erf_dir,
         erf_pert_dir=erf_pert_dir,
         flt_erf_version=flt_erf_version,
+        setup_only=setup_only,
     )
 
 
@@ -55,7 +57,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "scripts_dir",
         type=Path,
-        help="The path to the Seistech Scripts Local scripts folder",
+        help="The path to the GMHazard Scripts Local scripts folder",
     )
     # Distributed seismicity calculation needs 2 processes to run
     parser.add_argument(
@@ -68,7 +70,10 @@ if __name__ == "__main__":
         "--erf_dir", type=Path, help="Path to the ERF directory", default=None
     )
     parser.add_argument(
-        "--erf_pert_dir", type=Path, help="Path to the directory of pertubated ERFs", default=None
+        "--erf_pert_dir",
+        type=Path,
+        help="Path to the directory of pertubated ERFs",
+        default=None,
     )
     parser.add_argument(
         "--flt_erf_version",
@@ -76,6 +81,13 @@ if __name__ == "__main__":
         choices=list(pg.FLT_ERF_MAPPING.keys()),
         help="The ERF version to use",
         default="NHM_v21p8p1",
+    )
+    parser.add_argument(
+        "--setup_only",
+        action="store_true",
+        help="If set, only the config and DBs are generated, "
+        "but no results are computed",
+        default=False,
     )
     args = parser.parse_args()
 
@@ -90,4 +102,5 @@ if __name__ == "__main__":
         erf_dir=args.erf_dir,
         erf_pert_dir=args.erf_pert_dir,
         flt_erf_version=args.flt_erf_version,
+        setup_only=args.setup_only,
     )

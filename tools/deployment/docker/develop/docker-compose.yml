@@ -3,7 +3,7 @@
 version: "3.8"
 
 networks:
-  seistech_dev:
+  gmhazard_dev:
     driver: bridge
   backend_dev:
     driver: bridge
@@ -60,7 +60,7 @@ services:
       - SLACK_TOKEN=${SLACK_TOKEN_DEV}
       - SLACK_CHANNEL=${SLACK_CHANNEL_DEV}
     networks:
-      - seistech_dev
+      - gmhazard_dev
       - backend_dev
     depends_on:
       - userdb_dev
@@ -87,7 +87,7 @@ services:
     stdin_open: true
     tty: true
     networks:
-      - seistech_dev
+      - gmhazard_dev
     expose:
       - ${FRONT_END_PORT_DEV}
     ports:

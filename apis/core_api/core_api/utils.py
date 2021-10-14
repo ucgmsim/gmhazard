@@ -3,8 +3,8 @@ from typing import Dict, Sequence
 import numpy as np
 from werkzeug.contrib.cache import BaseCache
 
-import seistech_calc as sc
-import seistech_utils as su
+import gmhazard_calc as sc
+import gmhazard_utils as su
 from core_api import server
 
 

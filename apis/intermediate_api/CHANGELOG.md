@@ -1,6 +1,6 @@
 ## September 2, 2021
 
-### Tidy up Intermediate API and ReadMEs - ([PR #7](https://github.com/ucgmsim/seistech/pull/7))
+### Tidy up Intermediate API and ReadMEs - ([PR #7](https://github.com/ucgmsim/gmhazard/pull/7))
 
 - Rename Middleware to IntermediateAPI.
 - Upload `.env.example`.

@@ -6,7 +6,7 @@ import flask
 from jose import jwt
 from werkzeug.contrib.cache import FileSystemCache
 
-from seistech_utils import MultiProcessSafeTimedRotatingFileHandler
+from gmhazard_utils import MultiProcessSafeTimedRotatingFileHandler
 
 DOWNLOAD_URL_SECRET_KEY = os.getenv("CORE_API_DOWNLOAD_URL_SECRET_KEY")
 DOWNLOAD_URL_VALID_FOR = 24 * 60 * 60

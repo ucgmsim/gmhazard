@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from sha_calc.src.hazard import hazard_single, hazard_curve
+from sha_calc.hazard import hazard_single, hazard_curve
 
 
 def test_single_rupture():

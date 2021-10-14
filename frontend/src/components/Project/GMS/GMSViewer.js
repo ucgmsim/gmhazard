@@ -64,6 +64,7 @@ const GmsViewer = () => {
   const [causalParamBounds, setCausalParamBounds] = useState({});
   const [contributionDFData, setContributionDFData] = useState({});
   const [mwRrupBounds, setMwRrupBounds] = useState({});
+  const [disaggMeanValues, setDisaggMeanValues] = useState({});
 
   // For Select, dropdown
   const [specifiedIM, setSpecifiedIM] = useState([]);
@@ -246,6 +247,8 @@ const GmsViewer = () => {
                 )
               );
 
+              setDisaggMeanValues(GMSData["disagg_mean_values"]);
+
               setIsLoading(false);
             })
             .catch((error) => {
@@ -358,6 +361,7 @@ const GmsViewer = () => {
                   <GMSMwRrupPlot
                     metadata={computedGMS["selected_gms_metadata"]}
                     bounds={mwRrupBounds}
+                    meanValues={disaggMeanValues}
                   />
                 ) : specifiedMetadata.value === "mag" ? (
                   <GMSDisaggDistributionPlot

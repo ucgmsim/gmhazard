@@ -1,4 +1,4 @@
-import seistech_calc as sc
+import gmhazard_calc as sc
 
 # GM data endpoints
 ENSEMBLE_IDS_ENDPOINT = "/api/gm_data/ensemble/ids/get"

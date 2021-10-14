@@ -8,9 +8,8 @@ import git
 import pandas as pd
 import numpy as np
 import yaml
-from importlib.metadata import version
 
-import seistech_utils as su
+import gmhazard_utils as su
 import project_gen as pg
 from . import psha
 
@@ -26,7 +25,7 @@ FLT_ERF_MAPPING = {
 }
 
 def create_project(
-    project_params: Dict,
+    project_specs: Dict,
     projects_base_dir: Union[Path, str],
     scripts_dir: Union[Path, str],
     n_procs: int = 6,
@@ -34,7 +33,8 @@ def create_project(
     use_mp: bool = True,
     erf_dir: Path = None,
     erf_pert_dir: Path = None,
-    flt_erf_version: str = "NHM"
+    flt_erf_version: str = "NHM",
+    setup_only: bool = False,
 ):
     """
     Creates a new project, generates the required DBs,
@@ -45,9 +45,8 @@ def create_project(
 
     Parameters
     ----------
-    project_params: dictionary
-        The project parameters, see EXAMPLE_PROJECT_PARAMS
-        in constants.py for the format
+    project_specs: dictionary
+        The project specifications
     projects_base_dir: Path or string
         The base directory of the projects, above the
         version directories
@@ -67,11 +66,14 @@ def create_project(
          - NZ_FLTmodel_2010.txt
     erf_pert_dir: Path, optional
         Directory of the fault perturbed ERF files
-        Ignored unless n_perturbations > 1 (in project_params)
+        Ignored unless n_perturbations > 1 (in project_specs)
     use_mp: bool, optional
         If true then standard python multiprocessing will be
         used for PSHA result generation, otherwise celery
         will be used.
+    setup_only: bool, optional
+        If true, then only the config and DBs are generated, but
+        no results are computed
     """
     erf_dir = ERF_DIR if erf_dir is None else erf_dir
 
@@ -80,12 +82,11 @@ def create_project(
             Path(projects_base_dir),
             Path(scripts_dir),
         )
-        project_id = project_params["id"]
+        project_id = project_specs["id"]
 
-        n_perturbations = project_params.get("n_perturbations", 1)
+        n_perturbations = project_specs.get("n_perturbations", 1)
 
-        api_version = version("project_api")
-        version_str = f"v{api_version.replace('.', 'p')}"
+        _, version_str = su.utils.get_package_version("project_api")
         project_dir = projects_base_dir / version_str / project_id
         dbs_dir = project_dir / "dbs"
 
@@ -93,11 +94,11 @@ def create_project(
             # Setup the project structure
             setup_project(projects_base_dir, project_id)
 
-            if "im_components" not in project_params:
-                project_params["im_components"] = ["RotD50"]
+            if "im_components" not in project_specs:
+                project_specs["im_components"] = ["RotD50"]
 
             # Write the config
-            project_config = write_project_config(project_dir, project_params)
+            project_config = write_project_config(project_dir, project_specs)
 
             # Write the station location and vs30 file
             ll_ffp, vs30_ffp, z_ffp = write_station_details(
@@ -139,6 +140,9 @@ def create_project(
             n_perturbations=n_perturbations,
         )
 
+        if setup_only:
+            return
+
         # Generate the PSHA project data and GMS
         psha.gen_psha_project_data(project_dir, n_procs=n_procs, use_mp=use_mp)
         pg.gen_gms_project_data(project_dir, n_procs=n_procs)
@@ -155,8 +159,7 @@ def create_project(
 def setup_project(base_dir: Path, project_id: str):
     """Sets up the required directories and files for a project"""
     # Get the current projectAPI version
-    api_version = version("project_api")
-    version_str = f"v{api_version.replace('.', 'p')}"
+    _, version_str = su.utils.get_package_version("project_api")
 
     # Create the version folder
     (base_dir / version_str).mkdir(exist_ok=True, parents=False)
@@ -183,42 +186,40 @@ def setup_project(base_dir: Path, project_id: str):
     return project_dir
 
 
-def write_project_config(project_dir: Path, project_params: Dict):
-    """Writes the project parameters into the specified project config,
-    see EXAMPLE_PROJECT_PARAMS for the format of project_params"""
-
-    with open(project_dir / f"{project_params['id']}.yaml", "r") as f:
+def write_project_config(project_dir: Path, project_specs: Dict):
+    """Writes the project config"""
+    with open(project_dir / f"{project_specs['id']}.yaml", "r") as f:
         project_config = yaml.safe_load(f)
 
-        assert (
-            project_config["project_parameters"] is None
-        ), "Project parameters have already been set for this project"
-
-        project_config["project_parameters"] = {
-            "locations": {
-                cur_id: {
-                    "name": cur_config["name"],
-                    "lat": cur_config["lat"],
-                    "lon": cur_config["lon"],
-                    "vs30": cur_config["vs30"],
-                    "z1.0": cur_config.get("z1p0", [None] * len(cur_config["vs30"])),
-                    "z2.5": cur_config.get("z2p5", [None] * len(cur_config["vs30"])),
+        if project_specs.get("project_parameters") is not None:
+            print("Project parameters are already specified  set, skipping package type mapping")
+            project_config["project_parameters"] = project_specs["project_parameters"]
+        else:
+            project_config["project_parameters"] = {
+                "locations": {
+                    cur_id: {
+                        "name": cur_config["name"],
+                        "lat": cur_config["lat"],
+                        "lon": cur_config["lon"],
+                        "vs30": cur_config["vs30"],
+                        "z1.0": cur_config.get("z1p0", [None] * len(cur_config["vs30"])),
+                        "z2.5": cur_config.get("z2p5", [None] * len(cur_config["vs30"])),
+                    }
+                    for cur_id, cur_config in project_specs["locations"].items()
                 }
-                for cur_id, cur_config in project_params["locations"].items()
             }
-        }
 
-        # Get & apply the package mapping
-        with open(Path(__file__).parent / "package_mapping.yaml", "r") as f:
-            package_mapping = yaml.safe_load(f)
+            # Get & apply the package mapping
+            with open(Path(__file__).parent / "package_mapping.yaml", "r") as f:
+                package_mapping = yaml.safe_load(f)
 
-        project_config["project_parameters"] = {
-            **project_config["project_parameters"],
-            **package_mapping[project_params["package_type"]],
-            "im_components": project_params["im_components"],
-        }
+            project_config["project_parameters"] = {
+                **project_config["project_parameters"],
+                **package_mapping[project_specs["package_type"]],
+                "im_components": project_specs["im_components"],
+            }
 
-    with open(project_dir / f"{project_params['id']}.yaml", "w") as f:
+    with open(project_dir / f"{project_specs['id']}.yaml", "w") as f:
         yaml.safe_dump(project_config, f)
 
     return project_config["project_parameters"]

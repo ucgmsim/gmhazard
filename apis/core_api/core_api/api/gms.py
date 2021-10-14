@@ -10,8 +10,8 @@ import numpy as np
 from flask_cors import cross_origin
 from werkzeug.contrib.cache import BaseCache
 
-import seistech_calc as sc
-import seistech_utils as su
+import gmhazard_calc as sc
+import gmhazard_utils as su
 import sha_calc as sha_calc
 from core_api import server
 from core_api import constants as const
@@ -180,8 +180,15 @@ def download_gms_results(token):
     cached_data = cache.get(cache_key)
     if cached_data is not None:
         with tempfile.TemporaryDirectory() as tmp_dir:
-            zip_ffp = su.api.download_gms_result(
-                cached_data.gms_result, server.app, tmp_dir
+            # TODO: Find a way to deal with disaggregation data with Core API
+            # For instance, Projects already come with disaggregation data
+            # whereas, Core API, disaggregation data needs to be computed
+            zip_ffp, _ = su.api.create_gms_download_zip(
+                cached_data.gms_result,
+                tmp_dir,
+                disagg_data=None,
+                cs_param_bounds=None,
+                prefix=f"{cached_data.ensemble.name}",
             )
             return flask.send_file(
                 zip_ffp,

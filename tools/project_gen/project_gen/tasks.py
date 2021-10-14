@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Dict, Sequence
 
-import seistech_calc as sc
+import gmhazard_calc as sc
 from . import project
 from . import psha
 from .celery import app
@@ -55,4 +55,4 @@ def process_station_component_task(
     im_component: sc.im.IMComponent,
     output_dir: Path,
 ):
-    psha.process_station_component(ensemble, station_name, im_component, output_dir)
+    psha.process_station_scenarios(ensemble, station_name, im_component, output_dir)
