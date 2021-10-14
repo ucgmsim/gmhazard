@@ -28,7 +28,7 @@ def create_benchmark_data():
         x, y = np.meshgrid(lon_values, lat_values)
         site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
-        fd, _, _, _, _, _ = directivity.compute_directivity_effects(
+        fd, _, _, _, _, _ = directivity.compute_directivity_hypo_averaging(
             srf_file, srf_csv, site_coords
         )
 
