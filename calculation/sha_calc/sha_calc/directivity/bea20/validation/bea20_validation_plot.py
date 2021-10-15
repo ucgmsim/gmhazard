@@ -5,14 +5,14 @@ import numpy as np
 
 from qcore import srf
 from sha_calc.directivity.bea20.validation import plots
-from sha_calc.directivity.bea20.directivity import compute_directivity_single_hypo
+from sha_calc.directivity.bea20.directivity import compute_directivity_srf_single
 
 
 def bea20_directivity_plots(
     srf_file: str, srf_csv: Path, output_dir: Path, period: float = 3.0
 ):
     """
-    Creates 6 plots to show total directivity effects at a given srf after hypocentre averaging
+    Creates 6 plots to show total directivity effects at a given srf with a single hypocentre
 
     Parameters
     ----------
@@ -38,14 +38,13 @@ def bea20_directivity_plots(
     x, y = np.meshgrid(lon_values, lat_values)
     site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
-    (
+    fdi, (
         fd,
-        fdi,
         phi_red,
         phi_redi,
         predictor_functions,
         other,
-    ) = compute_directivity_single_hypo(srf_file, srf_csv, site_coords, period)
+    ) = compute_directivity_srf_single(srf_file, srf_csv, site_coords, period)
 
     s2 = other["S2"].reshape((100, 100))
     f_s2 = predictor_functions["fs2"].reshape((100, 100))

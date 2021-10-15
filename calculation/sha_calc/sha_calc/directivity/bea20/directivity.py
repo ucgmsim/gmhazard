@@ -10,7 +10,7 @@ from IM_calculation.source_site_dist import src_site_dist
 from sha_calc.directivity.bea20 import bea20, utils
 
 
-def compute_directivity_single_hypo(
+def compute_directivity_srf_single(
     srf_file: str, srf_csv: Path, sites: np.ndarray, period: float = 3.0
 ):
     """Computes directivity effects at the given sites with the given srf data for a single hypocentre
@@ -31,33 +31,24 @@ def compute_directivity_single_hypo(
         rake,
         planes,
         lon_lat_depth,
-        nominal_strike,
-        nominal_strike2,
-    ) = directivity_pre_process(srf_file, srf_csv)
+    ) = _srf_pre_process(srf_file, srf_csv)
 
-    # Gets the plane index of the hypocentre
-    plane_index = 0
-    for index, plane in enumerate(planes):
-        if plane["dhyp"] == -999.99:
-            plane_index = index
-            break
+    hyp_along_strike = 1
+    hyp_down_dip = 1
 
-    fd, fdi, phi_red, phi_redi, predictor_functions, other = compute_directivity_effect(
+    return compute_fault_directivity(
         lon_lat_depth,
         planes,
-        plane_index,
         sites,
-        nominal_strike,
-        nominal_strike2,
+        hyp_along_strike,
+        hyp_down_dip,
         mag,
         rake,
         period,
     )
 
-    return fdi
 
-
-def compute_directivity_hypo_averaging(
+def compute_directivity_srf_multi(
     srf_file: str, srf_csv: Path, sites: np.ndarray, period: float = 3.0
 ):
     """Computes directivity effects at the given sites with the given srf data using hypocentre averaging
@@ -78,51 +69,69 @@ def compute_directivity_hypo_averaging(
         rake,
         planes,
         lon_lat_depth,
-        nominal_strike,
-        nominal_strike2,
-    ) = directivity_pre_process(srf_file, srf_csv)
+    ) = _srf_pre_process(srf_file, srf_csv)
 
-    # Customise the planes to set different hypocentres
-    n_hypo = 20  # TODO Update with best practice for hypocentre averaging
-    planes_list, planes_index = utils.set_hypocentres(n_hypo, planes, [1 / 3, 2 / 3])
+    # TODO Update with best practice for hypocentre averaging
+    hyp_along_strike = 10
+    hyp_down_dip = 2
 
-    # Creating the average arrays
-    (
-        fd_average,
-        fdi_average,
-        phi_red_average,
-        phi_redi_average,
-        predictor_functions_average,
-        other_average,
-    ) = (
-        [],
-        [],
-        [],
-        [],
-        {"fG": [], "fdist": [], "ftheta": [], "fphi": [], "fs2": []},
-        {
-            "Per": [],
-            "Rmax": [],
-            "Footprint": [],
-            "Tpeak": [],
-            "fG0": [],
-            "bmax": [],
-            "S2": [],
-        },
+    return compute_fault_directivity(
+        lon_lat_depth,
+        planes,
+        sites,
+        hyp_along_strike,
+        hyp_down_dip,
+        mag,
+        rake,
+        period,
     )
 
-    for index, planes in enumerate(planes_list):
-        # Gets the plane index of the hypocentre
-        plane_index = planes_index[index]
 
-        (
-            fd,
-            fdi,
-            phi_red,
-            phi_redi,
-            predictor_functions,
-            other,
-        ) = compute_directivity_effect(
+def compute_fault_directivity(
+    lon_lat_depth: np.ndarray,
+    planes: List,
+    sites: np.ndarray,
+    hyp_along_strike: int,
+    hyp_down_dip: int,
+    mag: float,
+    rake: float,
+    period: float,
+):
+    """
+    Does the computation of directivity for a fault with any number of hypocentres.
+    Can compute regardless if data came from an srf or nhm file.
+
+    Parameters
+    ----------
+    lon_lat_depth: np.ndarray
+        Each point of the srf fault in an array with the format [[lon, lat, depth],...]
+    planes: List
+        List of the planes that make up the fault
+    sites: np.ndarray
+        Numpy array full of site lon/lat values [[lon, lat],...]
+    hyp_along_strike: int
+        Number of hypocentres across strike
+    hyp_down_dip: int
+        Number of hypocentres down dip
+    mag: float
+        The magnitude of the fault
+    rake: float
+        The rake of the fault
+    period: float
+        The period for fdi to extract from the bea20 models fd
+    """
+    nominal_strike, nominal_strike2 = utils.calc_nominal_strike(lon_lat_depth)
+
+    if hyp_down_dip == 1 and hyp_along_strike == 1:
+
+        # Gets the plane index of the hypocentre
+        plane_index = 0
+        for index, plane in enumerate(planes):
+            if plane["dhyp"] != -999.99:
+                plane_index = index
+                break
+
+        return _compute_directivity_effect(
             lon_lat_depth,
             planes,
             plane_index,
@@ -133,65 +142,39 @@ def compute_directivity_hypo_averaging(
             rake,
             period,
         )
+    else:
+        # Customise the planes to set different hypocentres
+        n_hypo = hyp_down_dip * hyp_along_strike
+        depths = [i / (hyp_down_dip + 1) for i in range(1, hyp_down_dip + 1)]
+        planes_list, planes_index = utils.set_hypocentres(n_hypo, planes, depths)
 
-        fd_average.append(fd)
-        fdi_average.append(fdi)
-        phi_red_average.append(phi_red)
-        phi_redi_average.append(phi_redi)
-        for key, value in predictor_functions.items():
-            predictor_functions_average[key].append(value)
-        for key, value in other.items():
-            other_average[key].append(value)
+        # Creating the array to store all fdi values
+        fdi_array = []
 
-    (fd_average, fdi_average, phi_red_average, phi_redi_average,) = (
-        np.mean(fd_average, axis=0),
-        np.mean(fdi_average, axis=0),
-        np.mean(phi_red_average, axis=0),
-        np.mean(phi_redi_average, axis=0),
-    )
-    for key, value in predictor_functions_average.items():
-        predictor_functions_average[key] = np.mean(
-            predictor_functions_average[key], axis=0
-        )
-    for key, value in other_average.items():
-        other_average[key] = np.mean(other_average[key], axis=0)
+        for index, planes in enumerate(planes_list):
+            # Gets the plane index of the hypocentre
+            plane_index = planes_index[index]
 
-    return (
-        fd_average,
-        fdi_average,
-        phi_red_average,
-        phi_redi_average,
-        predictor_functions_average,
-        other_average,
-    )
+            fdi, _ = _compute_directivity_effect(
+                lon_lat_depth,
+                planes,
+                plane_index,
+                sites,
+                nominal_strike,
+                nominal_strike2,
+                mag,
+                rake,
+                period,
+            )
 
+            fdi_array.append(fdi)
 
-def directivity_pre_process(srf_file: str, srf_csv: Path):
-    """
-    Does the pre processing steps for computing directivity such as getting the
-    magnitude, rake, planes and lon_lat_depth values.
+        fdi_average = np.mean(fdi_array, axis=0)
 
-    Parameters
-    ----------
-    srf_file: str
-        String of the ffp to the location of the srf file
-    srf_csv: Path
-        Path to the location of the srf csv file
-    """
-    # Get rake, magnitude from srf_csv
-    mag = pd.read_csv(srf_csv)["magnitude"][0]
-    rake = pd.read_csv(srf_csv)["rake"][0]
-
-    # Get planes and points from srf_file
-    planes = srf.read_header(srf_file, idx=True)
-    lon_lat_depth = srf.read_srf_points(srf_file)
-
-    nominal_strike, nominal_strike2 = utils.calc_nominal_strike(lon_lat_depth)
-
-    return mag, rake, planes, lon_lat_depth, nominal_strike, nominal_strike2
+        return fdi_average, fdi_array
 
 
-def compute_directivity_effect(
+def _compute_directivity_effect(
     lon_lat_depth: np.ndarray,
     planes: List,
     plane_index: int,
@@ -250,8 +233,31 @@ def compute_directivity_effect(
     d = (planes[plane_index]["dhyp"] - z_tor) / math.sin(math.radians(dip))
 
     # Use the bea20 model to work out directivity (fd) at the given sites
-    fd, fdi, phi_red, phi_redi, predictor_functions, other = bea20.bea20(
+    fd, fdi, phi_red, phi_redi, predictor_functions, other = bea20(
         mag, ry, rx, s_max, d, t_bot, d_bot, rake, dip, period
     )
 
-    return fd, fdi, phi_red, phi_redi, predictor_functions, other
+    return fdi, (fd, phi_red, phi_redi, predictor_functions, other)
+
+
+def _srf_pre_process(srf_file: str, srf_csv: Path):
+    """
+    Does the srf pre processing steps for computing directivity such as getting the
+    magnitude, rake, planes and lon_lat_depth values.
+
+    Parameters
+    ----------
+    srf_file: str
+        String of the ffp to the location of the srf file
+    srf_csv: Path
+        Path to the location of the srf csv file
+    """
+    # Get rake, magnitude from srf_csv
+    mag = pd.read_csv(srf_csv)["magnitude"][0]
+    rake = pd.read_csv(srf_csv)["rake"][0]
+
+    # Get planes and points from srf_file
+    planes = srf.read_header(srf_file, idx=True)
+    lon_lat_depth = srf.read_srf_points(srf_file)
+
+    return mag, rake, planes, lon_lat_depth
