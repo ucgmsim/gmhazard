@@ -24,6 +24,8 @@ FLT_ERF_MAPPING = {
     "CFM_v21p8p1": "CFM_v0_9_Akatore_mod_21p8p1",
 }
 
+EMPIRICAL_MODEL_CONFIG_VERSION = "21p10"
+
 
 def create_project(
     project_specs: Dict,
@@ -36,7 +38,7 @@ def create_project(
     erf_pert_dir: Path = None,
     flt_erf_version: str = "NHM",
     setup_only: bool = False,
-    empirical_model_config: str = "21p10.yaml",
+    empirical_model_config_version: str = EMPIRICAL_MODEL_CONFIG_VERSION,
 ):
     """
     Creates a new project, generates the required DBs,
@@ -76,9 +78,10 @@ def create_project(
     setup_only: bool, optional
         If true, then only the config and DBs are generated, but
         no results are computed
-    empirical_model_config: str, optional
-        The empirical model config to be used, default with the latest one
-        it can be specified in certain cases(E.g., test case)
+    empirical_model_config_version: str, optional
+        The version of the empirical model config to be used,
+        default with the latest one.
+        It can be specified in certain cases(E.g., test case)
     """
     erf_dir = ERF_DIR if erf_dir is None else erf_dir
 
@@ -116,7 +119,7 @@ def create_project(
                 / "db_creation"
                 / "empirical_db"
                 / "empirical_model_configs"
-                / empirical_model_config
+                / f"{empirical_model_config_version}.yaml"
             )
             generate_dbs(
                 dbs_dir,
@@ -143,6 +146,7 @@ def create_project(
             erf_pert_dir,
             flt_erf_version,
             n_perturbations=n_perturbations,
+            empirical_model_config_version=empirical_model_config_version,
         )
 
         if setup_only:
@@ -198,7 +202,7 @@ def write_project_config(project_dir: Path, project_specs: Dict):
 
         if project_specs.get("project_parameters") is not None:
             print(
-                "Project parameters are already specified  set, skipping package type mapping"
+                "Project parameters are already specified set, skipping package type mapping"
             )
             project_config["project_parameters"] = project_specs["project_parameters"]
         else:
@@ -401,6 +405,7 @@ def create_ensemble_config(
     erf_pert_dir: Path,
     flt_erf_version: str,
     n_perturbations: int = 1,
+    empirical_model_config_version: str = EMPIRICAL_MODEL_CONFIG_VERSION,
 ):
     """Creates the ensemble config for the project"""
     ens_filename = f"{empirical_version}_{project_id}"
@@ -419,7 +424,11 @@ def create_ensemble_config(
     su.ensemble_creation.create_ensemble(
         ens_filename,
         str(project_dir),
-        str(scripts_dir / "ensemble_creation/gmm_weights_21p10.yaml"),
+        str(
+            scripts_dir
+            / "ensemble_creation"
+            / f"gmm_weights_{empirical_model_config_version}.yaml"
+        ),
         str(dbs_dir / DS_SITE_SOURCE_DB_FILENAME),
         str(dbs_dir / FLT_SITE_SOURCE_DB_FILENAME),
         str(dbs_dir / f"{project_id}.ll"),

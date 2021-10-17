@@ -22,7 +22,7 @@ def main(
     erf_pert_dir: Path = None,
     flt_erf_version: str = "NHM",
     setup_only: bool = False,
-    empirical_model_config: str = "21p10.yaml",
+    empirical_model_config_version: str = pg.EMPIRICAL_MODEL_CONFIG_VERSION,
 ):
     with open(project_params_ffp, "r") as f:
         project_params = yaml.safe_load(f)
@@ -37,7 +37,7 @@ def main(
         erf_pert_dir=erf_pert_dir,
         flt_erf_version=flt_erf_version,
         setup_only=setup_only,
-        empirical_model_config=empirical_model_config,
+        empirical_model_config_version=empirical_model_config_version,
     )
 
 
@@ -92,10 +92,10 @@ if __name__ == "__main__":
         default=False,
     )
     parser.add_argument(
-        "--empirical_model_config",
+        "--empirical_model_config_version",
         type=str,
-        help="The empirical model config to use.",
-        default="21p10.yaml",
+        help="The version of the empirical model config to use.",
+        default=pg.EMPIRICAL_MODEL_CONFIG_VERSION,
     )
     args = parser.parse_args()
 
