@@ -22,6 +22,7 @@ def main(
     erf_pert_dir: Path = None,
     flt_erf_version: str = "NHM",
     setup_only: bool = False,
+    empirical_model_config: str = "21p10.yaml",
 ):
     with open(project_params_ffp, "r") as f:
         project_params = yaml.safe_load(f)
@@ -36,6 +37,7 @@ def main(
         erf_pert_dir=erf_pert_dir,
         flt_erf_version=flt_erf_version,
         setup_only=setup_only,
+        empirical_model_config=empirical_model_config,
     )
 
 
@@ -88,6 +90,12 @@ if __name__ == "__main__":
         help="If set, only the config and DBs are generated, "
         "but no results are computed",
         default=False,
+    )
+    parser.add_argument(
+        "--empirical_model_config",
+        type=str,
+        help="The empirical model config to use.",
+        default="21p10.yaml",
     )
     args = parser.parse_args()
 

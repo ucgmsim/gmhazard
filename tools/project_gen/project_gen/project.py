@@ -36,6 +36,7 @@ def create_project(
     erf_pert_dir: Path = None,
     flt_erf_version: str = "NHM",
     setup_only: bool = False,
+    empirical_model_config: str = "21p10.yaml",
 ):
     """
     Creates a new project, generates the required DBs,
@@ -75,6 +76,9 @@ def create_project(
     setup_only: bool, optional
         If true, then only the config and DBs are generated, but
         no results are computed
+    empirical_model_config: str, optional
+        The empirical model config to be used, default with the latest one
+        it can be specified for a certain cases(E.g., test case)
     """
     erf_dir = ERF_DIR if erf_dir is None else erf_dir
 
@@ -112,7 +116,7 @@ def create_project(
                 / "db_creation"
                 / "empirical_db"
                 / "empirical_model_configs"
-                / "21p10.yaml"
+                / empirical_model_config
             )
             generate_dbs(
                 dbs_dir,
