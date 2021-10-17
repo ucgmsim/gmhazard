@@ -78,7 +78,7 @@ def create_project(
         no results are computed
     empirical_model_config: str, optional
         The empirical model config to be used, default with the latest one
-        it can be specified for a certain cases(E.g., test case)
+        it can be specified in certain cases(E.g., test case)
     """
     erf_dir = ERF_DIR if erf_dir is None else erf_dir
 
