@@ -37,8 +37,8 @@ pga_psa:
     - pSA_6.0
     - pSA_7.5
     - pSA_10.0
-  disagg_return_periods: [ 25, 100, 150, 250, 500, 1000, 2500, 5000, 10000 ]
-  uhs_return_periods: [ 25, 100, 150, 250, 500, 1000, 2500, 5000, 10000 ]
+  disagg_return_periods: [25, 100, 150, 250, 500, 1000, 2500, 5000, 10000]
+  uhs_return_periods: [25, 100, 150, 250, 500, 1000, 2500, 5000, 10000]
   im_components: ["RotD50", "Larger"]
 
 pga_psa_gms:
@@ -133,7 +133,7 @@ pga_psa_gms:
       IMj: pSA_0.3
       exceedance: 0.01
       im_j: null
-      IMs: [ PGA, pSA, CAV, Ds595, Ds575 ]
+      IMs: [PGA, pSA, CAV, Ds595, Ds575]
       n_gms: 10
       dataset_id: nga_west_2
       n_replica: 10
@@ -141,7 +141,7 @@ pga_psa_gms:
       IMj: pSA_0.3
       exceedance: 0.002
       im_j: null
-      IMs: [ PGA, pSA, CAV, Ds595, Ds575 ]
+      IMs: [PGA, pSA, CAV, Ds595, Ds575]
       n_gms: 10
       dataset_id: nga_west_2
       n_replica: 10
@@ -149,7 +149,7 @@ pga_psa_gms:
       IMj: pSA_0.3
       exceedance: 0.0004
       im_j: null
-      IMs: [ PGA, pSA, CAV, Ds595, Ds575 ]
+      IMs: [PGA, pSA, CAV, Ds595, Ds575]
       n_gms: 10
       dataset_id: nga_west_2
       n_replica: 10
@@ -158,7 +158,7 @@ pga_psa_gms:
       IMj: pSA_3.0
       exceedance: 0.01
       im_j: null
-      IMs: [ PGA, pSA, CAV, Ds595, Ds575 ]
+      IMs: [PGA, pSA, CAV, Ds595, Ds575]
       n_gms: 10
       dataset_id: nga_west_2
       n_replica: 10
@@ -166,7 +166,7 @@ pga_psa_gms:
       IMj: pSA_3.0
       exceedance: 0.002
       im_j: null
-      IMs: [ PGA, pSA, CAV, Ds595, Ds575 ]
+      IMs: [PGA, pSA, CAV, Ds595, Ds575]
       n_gms: 10
       dataset_id: nga_west_2
       n_replica: 10
@@ -174,7 +174,7 @@ pga_psa_gms:
       IMj: pSA_3.0
       exceedance: 0.0004
       im_j: null
-      IMs: [ PGA, pSA, CAV, Ds595, Ds575 ]
+      IMs: [PGA, pSA, CAV, Ds595, Ds575]
       n_gms: 10
       dataset_id: nga_west_2
       n_replica: 10
@@ -213,8 +213,6 @@ pga_psa_rotd50:
     - pSA_6.0
     - pSA_7.5
     - pSA_10.0
-  disagg_return_periods: [ 25, 100, 150, 250, 500, 1000, 2500, 5000, 10000 ]
-  uhs_return_periods: [ 25, 100, 150, 250, 500, 1000, 2500, 5000, 10000 ]
+  disagg_return_periods: [25, 100, 150, 250, 500, 1000, 2500, 5000, 10000]
+  uhs_return_periods: [25, 100, 150, 250, 500, 1000, 2500, 5000, 10000]
   im_components: ["RotD50"]
-
-

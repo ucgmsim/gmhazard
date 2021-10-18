@@ -21,8 +21,21 @@ ERF_DIR = Path(os.getenv("ERF_DIR")) if "ERF_DIR" in os.environ else None
 
 FLT_ERF_MAPPING = {
     "NHM_v21p8p1": "NZ_FLTmodel_2010",
-    "CFM_v21p8p1": "CFM_v0_9_Akatore_mod_21p8p1"
+    "CFM_v21p8p1": "CFM_v0_9_Akatore_mod_21p8p1",
 }
+
+SCRIPTS_DIR = Path(__file__).resolve().parent.parent.parent / "gmhazard_scripts"
+MODEL_CONFIG_PATH = (
+    SCRIPTS_DIR
+    / "db_creation"
+    / "empirical_db"
+    / "empirical_model_configs"
+    / "21p10.yaml"
+)
+EMPIRICAL_WEIGHT_CONFIG_PATH = (
+    SCRIPTS_DIR / "ensemble_creation" / "gmm_weights_21p10.yaml"
+)
+
 
 def create_project(
     project_specs: Dict,
@@ -35,6 +48,8 @@ def create_project(
     erf_pert_dir: Path = None,
     flt_erf_version: str = "NHM",
     setup_only: bool = False,
+    model_config_ffp: Path = MODEL_CONFIG_PATH,
+    empirical_weight_config_ffp: Path = EMPIRICAL_WEIGHT_CONFIG_PATH,
 ):
     """
     Creates a new project, generates the required DBs,
@@ -74,6 +89,12 @@ def create_project(
     setup_only: bool, optional
         If true, then only the config and DBs are generated, but
         no results are computed
+    model_config_ffp: path, optional
+        Path to the model config file.
+    empirical_weight_config_ffp: path, optional
+        Path to the weights config file.
+        model_config_ffp and weights_config_ffp
+        can be specified in certain cases(E.g., test case)
     """
     erf_dir = ERF_DIR if erf_dir is None else erf_dir
 
@@ -106,13 +127,6 @@ def create_project(
             )
 
             # Generate the DBs
-            model_config_ffp = (
-                scripts_dir
-                / "db_creation"
-                / "empirical_db"
-                / "empirical_model_configs"
-                / "20p4.yaml"
-            )
             generate_dbs(
                 dbs_dir,
                 ll_ffp,
@@ -133,11 +147,11 @@ def create_project(
             project_dir,
             project_id,
             dbs_dir,
-            scripts_dir,
             erf_dir,
             erf_pert_dir,
             flt_erf_version,
             n_perturbations=n_perturbations,
+            empirical_weight_config_ffp=empirical_weight_config_ffp,
         )
 
         if setup_only:
@@ -192,7 +206,9 @@ def write_project_config(project_dir: Path, project_specs: Dict):
         project_config = yaml.safe_load(f)
 
         if project_specs.get("project_parameters") is not None:
-            print("Project parameters are already specified  set, skipping package type mapping")
+            print(
+                "Project parameters are already specified set, skipping package type mapping"
+            )
             project_config["project_parameters"] = project_specs["project_parameters"]
         else:
             project_config["project_parameters"] = {
@@ -202,8 +218,12 @@ def write_project_config(project_dir: Path, project_specs: Dict):
                         "lat": cur_config["lat"],
                         "lon": cur_config["lon"],
                         "vs30": cur_config["vs30"],
-                        "z1.0": cur_config.get("z1p0", [None] * len(cur_config["vs30"])),
-                        "z2.5": cur_config.get("z2p5", [None] * len(cur_config["vs30"])),
+                        "z1.0": cur_config.get(
+                            "z1p0", [None] * len(cur_config["vs30"])
+                        ),
+                        "z2.5": cur_config.get(
+                            "z2p5", [None] * len(cur_config["vs30"])
+                        ),
                     }
                     for cur_id, cur_config in project_specs["locations"].items()
                 }
@@ -318,7 +338,7 @@ def generate_dbs(
         "--z-file",
         str(z_ffp),
     ]
-    ds_timeout = (n_stations * (60 * 60)) / (min(n_procs - 1, n_stations))
+    ds_timeout = (n_stations * (60 * 60 * 5)) / (min(n_procs - 1, n_stations))
     print(f"Using a timeout of {ds_timeout} seconds")
     ds_imdbs_result = subprocess.run(
         ds_imdbs_cmd, capture_output=True, timeout=ds_timeout
@@ -348,14 +368,14 @@ def generate_dbs(
 
     if n_perturbations > 1:
         if erf_pert_dir is None or not (erf_pert_dir).exists():
-            raise Exception(f"A valid directory with the perturbed ERF files has to be specified.")
+            raise Exception(
+                f"A valid directory with the perturbed ERF files has to be specified."
+            )
 
     print("Generating fault IMDBs")
     for i in range(n_perturbations):
         if n_perturbations > 1:
-            erf_file = str(
-                erf_pert_dir / f"{flt_erf_base_fn}_pert{i:02}.txt"
-            )
+            erf_file = str(erf_pert_dir / f"{flt_erf_base_fn}_pert{i:02}.txt")
         else:
             erf_file = str(erf_dir / f"{flt_erf_base_fn}.txt")
         flt_db_dir = dbs_dir / "flt"
@@ -385,11 +405,11 @@ def create_ensemble_config(
     project_dir: Path,
     project_id: str,
     dbs_dir: Path,
-    scripts_dir: Path,
     erf_dir: Path,
     erf_pert_dir: Path,
     flt_erf_version: str,
     n_perturbations: int = 1,
+    empirical_weight_config_ffp: Path = EMPIRICAL_WEIGHT_CONFIG_PATH,
 ):
     """Creates the ensemble config for the project"""
     ens_filename = f"{empirical_version}_{project_id}"
@@ -400,9 +420,7 @@ def create_ensemble_config(
     if n_perturbations > 1:
         erf_ffps = [
             str(erf_ffp)
-            for erf_ffp in sorted(
-                erf_pert_dir.glob(f"{flt_erf_base_fn}_pert*.txt")
-            )
+            for erf_ffp in sorted(erf_pert_dir.glob(f"{flt_erf_base_fn}_pert*.txt"))
         ]
     else:
         erf_ffps = [str(erf_dir / f"{flt_erf_base_fn}.txt")]
@@ -410,7 +428,7 @@ def create_ensemble_config(
     su.ensemble_creation.create_ensemble(
         ens_filename,
         str(project_dir),
-        str(scripts_dir / "ensemble_creation/gmm_weights.yaml"),
+        str(empirical_weight_config_ffp),
         str(dbs_dir / DS_SITE_SOURCE_DB_FILENAME),
         str(dbs_dir / FLT_SITE_SOURCE_DB_FILENAME),
         str(dbs_dir / f"{project_id}.ll"),
