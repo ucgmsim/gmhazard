@@ -24,7 +24,17 @@ FLT_ERF_MAPPING = {
     "CFM_v21p8p1": "CFM_v0_9_Akatore_mod_21p8p1",
 }
 
-EMPIRICAL_MODEL_CONFIG_VERSION = "21p10"
+SCRIPTS_DIR = Path(__file__).resolve().parent.parent.parent / "gmhazard_scripts"
+MODEL_CONFIG_PATH = (
+    SCRIPTS_DIR
+    / "db_creation"
+    / "empirical_db"
+    / "empirical_model_configs"
+    / "21p10.yaml"
+)
+EMPIRICAL_WEIGHT_CONFIG_PATH = (
+    SCRIPTS_DIR / "ensemble_creation" / "gmm_weights_21p10.yaml"
+)
 
 
 def create_project(
@@ -38,7 +48,8 @@ def create_project(
     erf_pert_dir: Path = None,
     flt_erf_version: str = "NHM",
     setup_only: bool = False,
-    empirical_model_config_version: str = EMPIRICAL_MODEL_CONFIG_VERSION,
+    model_config_ffp: Path = MODEL_CONFIG_PATH,
+    empirical_weight_config_ffp: Path = EMPIRICAL_WEIGHT_CONFIG_PATH,
 ):
     """
     Creates a new project, generates the required DBs,
@@ -78,10 +89,12 @@ def create_project(
     setup_only: bool, optional
         If true, then only the config and DBs are generated, but
         no results are computed
-    empirical_model_config_version: str, optional
-        The version of the empirical model config to be used,
-        default with the latest one.
-        It can be specified in certain cases(E.g., test case)
+    model_config_ffp: path, optional
+        Path to the model config file.
+    empirical_weight_config_ffp: path, optional
+        Path to the weights config file.
+        model_config_ffp and weights_config_ffp
+        can be specified in certain cases(E.g., test case)
     """
     erf_dir = ERF_DIR if erf_dir is None else erf_dir
 
@@ -114,13 +127,6 @@ def create_project(
             )
 
             # Generate the DBs
-            model_config_ffp = (
-                scripts_dir
-                / "db_creation"
-                / "empirical_db"
-                / "empirical_model_configs"
-                / f"{empirical_model_config_version}.yaml"
-            )
             generate_dbs(
                 dbs_dir,
                 ll_ffp,
@@ -141,12 +147,11 @@ def create_project(
             project_dir,
             project_id,
             dbs_dir,
-            scripts_dir,
             erf_dir,
             erf_pert_dir,
             flt_erf_version,
             n_perturbations=n_perturbations,
-            empirical_model_config_version=empirical_model_config_version,
+            empirical_weight_config_ffp=empirical_weight_config_ffp,
         )
 
         if setup_only:
@@ -400,12 +405,11 @@ def create_ensemble_config(
     project_dir: Path,
     project_id: str,
     dbs_dir: Path,
-    scripts_dir: Path,
     erf_dir: Path,
     erf_pert_dir: Path,
     flt_erf_version: str,
     n_perturbations: int = 1,
-    empirical_model_config_version: str = EMPIRICAL_MODEL_CONFIG_VERSION,
+    empirical_weight_config_ffp: Path = EMPIRICAL_WEIGHT_CONFIG_PATH,
 ):
     """Creates the ensemble config for the project"""
     ens_filename = f"{empirical_version}_{project_id}"
@@ -424,11 +428,7 @@ def create_ensemble_config(
     su.ensemble_creation.create_ensemble(
         ens_filename,
         str(project_dir),
-        str(
-            scripts_dir
-            / "ensemble_creation"
-            / f"gmm_weights_{empirical_model_config_version}.yaml"
-        ),
+        str(empirical_weight_config_ffp),
         str(dbs_dir / DS_SITE_SOURCE_DB_FILENAME),
         str(dbs_dir / FLT_SITE_SOURCE_DB_FILENAME),
         str(dbs_dir / f"{project_id}.ll"),

@@ -22,7 +22,8 @@ def main(
     erf_pert_dir: Path = None,
     flt_erf_version: str = "NHM",
     setup_only: bool = False,
-    empirical_model_config_version: str = pg.EMPIRICAL_MODEL_CONFIG_VERSION,
+    model_config_ffp: Path = pg.MODEL_CONFIG_PATH,
+    empirical_weight_config_ffp: Path = pg.EMPIRICAL_WEIGHT_CONFIG_PATH,
 ):
     with open(project_params_ffp, "r") as f:
         project_params = yaml.safe_load(f)
@@ -37,7 +38,8 @@ def main(
         erf_pert_dir=erf_pert_dir,
         flt_erf_version=flt_erf_version,
         setup_only=setup_only,
-        empirical_model_config_version=empirical_model_config_version,
+        model_config_ffp=model_config_ffp,
+        empirical_weight_config_ffp=empirical_weight_config_ffp,
     )
 
 
@@ -92,10 +94,16 @@ if __name__ == "__main__":
         default=False,
     )
     parser.add_argument(
-        "--empirical_model_config_version",
-        type=str,
-        help="The version of the empirical model config to use.",
-        default=pg.EMPIRICAL_MODEL_CONFIG_VERSION,
+        "--model_config_ffp",
+        type=Path,
+        help="Path to the empirical model config file to use.",
+        default=pg.MODEL_CONFIG_PATH,
+    )
+    parser.add_argument(
+        "--empirical_weight_config_ffp",
+        type=Path,
+        help="Path to the GMM weights config file that matches with the empirical model config.",
+        default=pg.EMPIRICAL_WEIGHT_CONFIG_PATH,
     )
     args = parser.parse_args()
 
@@ -111,4 +119,6 @@ if __name__ == "__main__":
         erf_pert_dir=args.erf_pert_dir,
         flt_erf_version=args.flt_erf_version,
         setup_only=args.setup_only,
+        model_config_ffp=args.model_config_ffp,
+        empirical_weight_config_ffp=args.empirical_weight_config_ffp,
     )
