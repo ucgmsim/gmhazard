@@ -53,12 +53,7 @@ const App = () => {
                   component={Hazard}
                 />
 
-                <PrivateRoute
-                  path="/project"
-                  permission="project"
-                  exact
-                  component={Project}
-                />
+                <Route path="/project" exact component={Project} />
 
                 <PrivateRoute
                   path="/permission-config"
