@@ -260,9 +260,13 @@ const HazardViewerHazardCurve = () => {
               const responseData = await response.json();
 
               setHazardData(responseData);
-              setHazardNZS1170p5Data(
-                responseData["nzs1170p5_hazard"]["im_values"]
-              );
+              // NZS1170p5 only available for PGA and pSA IM
+              if (projectSelectedIM === "PGA" || projectSelectedIM === "pSA") {
+                setHazardNZS1170p5Data(
+                  responseData["nzs1170p5_hazard"]["im_values"]
+                );
+              }
+
               setMetadataParam({
                 "Project Name": projectId["label"],
                 "Project ID": projectId["value"],
@@ -315,7 +319,7 @@ const HazardViewerHazardCurve = () => {
                       responseData["nzs1170p5_hazard"]["soil_class"],
                   }));
                 }
-              } else {
+              } else if (projectSelectedIM === "pSA") {
                 /*
                   NZS1170p5 is available(Both Z Factor and Soil Class)
                   NZTA does not exist as IM is not PGA
