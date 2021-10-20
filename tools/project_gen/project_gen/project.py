@@ -313,6 +313,7 @@ def generate_dbs(
         str(ll_ffp),
         str(ds_site_source_db_ffp),
     ]
+    print(f"\tRunning command:\n{' '.join(calc_ds_distances_cmd)}")
     ds_distance_result = subprocess.run(calc_ds_distances_cmd, capture_output=True)
     print("STDOUT:\n" + ds_distance_result.stdout.decode())
     print("STDERR:\n" + ds_distance_result.stderr.decode() + "\n")
@@ -340,6 +341,7 @@ def generate_dbs(
     ]
     ds_timeout = (n_stations * (60 * 60 * 5)) / (min(n_procs - 1, n_stations))
     print(f"Using a timeout of {ds_timeout} seconds")
+    print(f"\tRunning command:\n{' '.join(ds_imdbs_cmd)}")
     ds_imdbs_result = subprocess.run(
         ds_imdbs_cmd, capture_output=True, timeout=ds_timeout
     )
@@ -361,6 +363,7 @@ def generate_dbs(
         str(erf_dir / f"{flt_erf_base_fn}.txt"),
         str(ll_ffp),
     ]
+    print(f"\tRunning command:\n{' '.join(calc_fault_distances_cmd)}")
     flt_distance_result = subprocess.run(calc_fault_distances_cmd, capture_output=True)
     print("STDOUT:\n" + flt_distance_result.stdout.decode())
     print("STDERR:\n" + flt_distance_result.stderr.decode())
@@ -394,6 +397,7 @@ def generate_dbs(
         ]
         if n_perturbations > 1:
             flt_imdbs_cmd.extend(["-s", f"pert_{i:02}"])
+        print(f"\tRunning command:\n{' '.join(flt_imdbs_cmd)}")
         flt_imdbs_result = subprocess.run(flt_imdbs_cmd, capture_output=True)
         print("STDOUT:\n" + flt_imdbs_result.stdout.decode())
         print("STDERR:\n" + flt_imdbs_result.stderr.decode())
