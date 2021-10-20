@@ -18,7 +18,7 @@ import {
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 
 const HazardViewerUHS = () => {
-  const { getTokenSilently } = useAuth0();
+  const { isAuthenticated, getTokenSilently } = useAuth0();
 
   const {
     projectId,
@@ -153,7 +153,76 @@ const HazardViewerUHS = () => {
       }
     };
 
-    loadUHSData();
+    const loadPublicUHSData = async () => {
+      if (projectUHSGetClick !== null) {
+        try {
+          setShowPlotUHS(false);
+          setShowSpinnerUHS(true);
+          setShowErrorMessage({ isError: false, errorCode: null });
+
+          await fetch(
+            CONSTANTS.INTERMEDIATE_API_URL +
+              CONSTANTS.PUBLIC_API_HAZARD_UHS_ENDPOINT +
+              APIQueryBuilder({
+                project_id: projectId["value"],
+                station_id: createStationID(
+                  projectLocationCode[projectLocation],
+                  projectVS30,
+                  projectZ1p0,
+                  projectZ2p5
+                ),
+                rp: `${getSelectedRP().join(",")}`,
+                im_component:
+                  projectSelectedIMComponent === null
+                    ? "RotD50"
+                    : projectSelectedIMComponent,
+              }),
+            {
+              signal: signal,
+            }
+          )
+            .then(handleErrors)
+            .then(async (response) => {
+              const responseData = await response.json();
+
+              setUHSData(
+                filterUHSData(responseData["uhs_results"], getSelectedRP())
+              );
+              setUHSNZS1170p5Data(
+                filterUHSData(responseData["nzs1170p5_uhs_df"], getSelectedRP())
+              );
+              setUHSBranchData(responseData["branch_uhs_results"]);
+              setDownloadToken(responseData["download_token"]);
+              setExtraInfo({
+                from: "project",
+                id: projectId,
+                location: projectLocation,
+                vs30: projectVS30,
+                selectedRPs: getSelectedRP(),
+              });
+
+              setShowSpinnerUHS(false);
+              setShowPlotUHS(true);
+            })
+            .catch((error) => {
+              if (error.name !== "AbortError") {
+                setShowSpinnerUHS(false);
+                setShowErrorMessage({ isError: true, errorCode: error });
+              }
+              console.log(error);
+            });
+        } catch (error) {
+          setShowSpinnerUHS(false);
+          setShowErrorMessage({ isError: false, errorCode: error });
+        }
+      }
+    };
+
+    if (isAuthenticated) {
+      loadUHSData();
+    } else {
+      loadPublicUHSData();
+    }
 
     return () => {
       abortController.abort();
