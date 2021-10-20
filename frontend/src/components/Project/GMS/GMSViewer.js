@@ -30,7 +30,7 @@ import {
 import { calculateGMSSpectra } from "utils/calculations/CalculateGMSSpectra";
 
 const GmsViewer = () => {
-  const { getTokenSilently } = useAuth0();
+  const { isAuthenticated, getTokenSilently } = useAuth0();
 
   const sanitizer = dompurify.sanitize;
 
@@ -266,7 +266,128 @@ const GmsViewer = () => {
         }
       }
     };
-    getGMSData();
+
+    const getPublicGMSData = async () => {
+      if (projectGMSGetClick !== null) {
+        try {
+          setShowErrorMessage({ isError: false, errorCode: null });
+          setIsLoading(true);
+
+          const gms_id = projectGMSIDs.find((GMSId) => {
+            return (
+              GMSId.includes(
+                `${projectGMSConditionIM}_${projectGMSSelectedIMPeriod.replace(
+                  ".",
+                  "p"
+                )}`
+              ) &&
+              GMSId.includes(
+                projectGMSExceedance.toString().replace(".", "p")
+              ) &&
+              GMSId.includes(
+                [
+                  ...new Set(
+                    projectGMSIMVector.replace(/[0-9]/g, "").split(", ")
+                  ),
+                ].join("_")
+              )
+            );
+          });
+
+          let queryString = APIQueryBuilder({
+            project_id: projectId["value"],
+            station_id: createStationID(
+              projectLocationCode[projectLocation],
+              projectVS30,
+              projectZ1p0,
+              projectZ2p5
+            ),
+            gms_id: gms_id,
+          });
+
+          await Promise.all([
+            fetch(
+              CONSTANTS.INTERMEDIATE_API_URL +
+                CONSTANTS.PUBLIC_API_GMS_ENDPOINT +
+                queryString,
+              {
+                signal: signal,
+              }
+            ),
+            fetch(
+              CONSTANTS.INTERMEDIATE_API_URL +
+                CONSTANTS.PUBLIC_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT +
+                queryString,
+              {
+                signal: signal,
+              }
+            ),
+          ])
+            .then(handleErrors)
+            .then(async ([computedGMS, defaultCausalParams]) => {
+              const GMSData = await computedGMS.json();
+              const defaultParams = await defaultCausalParams.json();
+
+              setComputedGMS(GMSData);
+              setGMSSpectraData(
+                calculateGMSSpectra(GMSData, projectGMSNumGMs[gms_id])
+              );
+              setIMVectors(GMSData["IMs"]);
+              setDownloadToken(GMSData["download_token"]);
+
+              // Min/Max values for CausalParamPlot
+              setCausalParamBounds({
+                mag: {
+                  min: defaultParams["mw_low"],
+                  max: defaultParams["mw_high"],
+                },
+                rrup: {
+                  min: defaultParams["rrup_low"],
+                  max: defaultParams["rrup_high"],
+                },
+                vs30: {
+                  min: defaultParams["vs30_low"],
+                  max: defaultParams["vs30_high"],
+                  vs30: projectVS30,
+                },
+              });
+              setContributionDFData(defaultParams["contribution_df"]);
+
+              // For MwRrup plot (Both MwRrup and available GMs)
+              setMwRrupBounds(
+                createBoundsCoords(
+                  defaultParams["rrup_low"],
+                  defaultParams["rrup_high"],
+                  defaultParams["mw_low"],
+                  defaultParams["mw_high"]
+                )
+              );
+
+              setDisaggMeanValues(GMSData["disagg_mean_values"]);
+
+              setIsLoading(false);
+            })
+            .catch((error) => {
+              if (error.name !== "AbortError") {
+                setIsLoading(false);
+                setShowErrorMessage({ isError: true, errorCode: error });
+              }
+
+              console.log(error);
+            });
+        } catch (error) {
+          setIsLoading(false);
+          setShowErrorMessage({ isError: true, errorCode: error });
+          console.log(error);
+        }
+      }
+    };
+
+    if (isAuthenticated) {
+      getGMSData();
+    } else {
+      getPublicGMSData();
+    }
 
     return () => {
       abortController.abort();
