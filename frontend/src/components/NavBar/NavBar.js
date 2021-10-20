@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 
-import { Navbar, Nav, NavLink, NavbarBrand } from "reactstrap";
-import { NavLink as RouterNavLink, Link } from "react-router-dom";
+import { Navbar, Nav, NavLink } from "reactstrap";
+import { NavLink as RouterNavLink } from "react-router-dom";
 
 import { useAuth0 } from "components/common/ReactAuth0SPA";
 import { GlobalContext } from "context";
@@ -9,7 +9,6 @@ import { GlobalContext } from "context";
 import { LogoutButton, LoginButton } from "components/NavBar";
 
 import "assets/style/NavBar.css";
-import GMHazardLogo from "assets/gmhazard_long_logo_simple.png";
 
 const MainNav = () => {
   const { hasPermission } = useContext(GlobalContext);
@@ -69,15 +68,6 @@ const NavBar = () => {
   return (
     <Navbar color="light" light expand="md" bg="dark">
       <div className="container-fluid max-width">
-        <NavbarBrand tag={Link} to={"/"}>
-          <img
-            src={GMHazardLogo}
-            alt=""
-            width="150"
-            className="nav-brand-logo"
-          />
-        </NavbarBrand>
-
         <MainNav />
 
         <AuthNav />
