@@ -1,7 +1,7 @@
 import subprocess
 import traceback
 import os
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Sequence
 from pathlib import Path
 
 import git
@@ -10,6 +10,7 @@ import numpy as np
 import yaml
 
 import gmhazard_utils as su
+import gmhazard_calc
 import project_gen as pg
 from . import psha
 
@@ -136,7 +137,8 @@ def create_project(
                 erf_dir,
                 erf_pert_dir,
                 flt_erf_version,
-                n_procs,
+                list({str(im.im_type) for im in gmhazard_calc.im.to_im_list(project_config["ims"])}),
+                n_procs=n_procs,
                 z_ffp=z_ffp,
                 n_perturbations=n_perturbations,
             )
@@ -295,6 +297,7 @@ def generate_dbs(
     erf_dir: Path,
     erf_pert_dir: Path,
     flt_erf_version: str,
+    im_types: Sequence[str],
     n_procs: int,
     z_ffp: Path = None,
     n_perturbations: int = 1,
@@ -313,7 +316,7 @@ def generate_dbs(
         str(ll_ffp),
         str(ds_site_source_db_ffp),
     ]
-    print(f"\tRunning command:\n{' '.join(calc_ds_distances_cmd)}")
+    print(f"Running command:\n\t{' '.join(calc_ds_distances_cmd)}")
     ds_distance_result = subprocess.run(calc_ds_distances_cmd, capture_output=True)
     print("STDOUT:\n" + ds_distance_result.stdout.decode())
     print("STDERR:\n" + ds_distance_result.stderr.decode() + "\n")
@@ -338,10 +341,12 @@ def generate_dbs(
         str(model_config_ffp),
         "--z-file",
         str(z_ffp),
+        "--im",
+        *im_types
     ]
     ds_timeout = (n_stations * (60 * 60 * 5)) / (min(n_procs - 1, n_stations))
     print(f"Using a timeout of {ds_timeout} seconds")
-    print(f"\tRunning command:\n{' '.join(ds_imdbs_cmd)}")
+    print(f"Running command:\n\t{' '.join(ds_imdbs_cmd)}")
     ds_imdbs_result = subprocess.run(
         ds_imdbs_cmd, capture_output=True, timeout=ds_timeout
     )
@@ -363,7 +368,7 @@ def generate_dbs(
         str(erf_dir / f"{flt_erf_base_fn}.txt"),
         str(ll_ffp),
     ]
-    print(f"\tRunning command:\n{' '.join(calc_fault_distances_cmd)}")
+    print(f"Running command:\n\t{' '.join(calc_fault_distances_cmd)}")
     flt_distance_result = subprocess.run(calc_fault_distances_cmd, capture_output=True)
     print("STDOUT:\n" + flt_distance_result.stdout.decode())
     print("STDERR:\n" + flt_distance_result.stderr.decode())
@@ -394,10 +399,12 @@ def generate_dbs(
             str(model_config_ffp),
             "--z-file",
             str(z_ffp),
+            "--im",
+            *im_types
         ]
         if n_perturbations > 1:
             flt_imdbs_cmd.extend(["-s", f"pert_{i:02}"])
-        print(f"\tRunning command:\n{' '.join(flt_imdbs_cmd)}")
+        print(f"Running command:\n\t{' '.join(flt_imdbs_cmd)}")
         flt_imdbs_result = subprocess.run(flt_imdbs_cmd, capture_output=True)
         print("STDOUT:\n" + flt_imdbs_result.stdout.decode())
         print("STDERR:\n" + flt_imdbs_result.stderr.decode())
