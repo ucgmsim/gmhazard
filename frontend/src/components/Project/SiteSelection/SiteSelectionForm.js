@@ -42,7 +42,7 @@ const SiteSelectionForm = () => {
     setProjectScenarioIMComponentOptions,
   } = useContext(GlobalContext);
 
-  const { getTokenSilently } = useAuth0();
+  const { isAuthenticated, getTokenSilently } = useAuth0();
 
   // For react-select (Dropdowns)
   const [projectIdOptions, setProjectIdOptions] = useState([]);
@@ -98,7 +98,33 @@ const SiteSelectionForm = () => {
       }
     };
 
-    getProjectID();
+    const getPublicProjectID = async () => {
+      try {
+        await fetch(
+          CONSTANTS.INTERMEDIATE_API_URL +
+            CONSTANTS.PUBLIC_API_PROJECT_IDS_ENDPOINT,
+          {
+            signal: signal,
+          }
+        )
+          .then(handleErrors)
+          .then(async (response) => {
+            const responseData = await response.json();
+            setProjectIdOptions(responseData);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    if (isAuthenticated) {
+      getProjectID();
+    } else {
+      getPublicProjectID();
+    }
 
     return () => {
       abortController.abort();
@@ -178,7 +204,9 @@ const SiteSelectionForm = () => {
               // Setting IMs
               setProjectIMs(sortIMs(Object.keys(responseIMData["ims"])));
               setProjectIMDict(responseIMData["ims"]);
-              setProjectScenarioIMComponentOptions(responseIMData["ims"]["pSA"]["components"]);
+              setProjectScenarioIMComponentOptions(
+                responseIMData["ims"]["pSA"]["components"]
+              );
 
               // Setting RPs
               setProjectDisagRPs(responseDisaggRPData["rps"]);
@@ -197,7 +225,85 @@ const SiteSelectionForm = () => {
       }
     };
 
-    getLocation();
+    const getPublicLocation = async () => {
+      if (localProjectId !== null) {
+        try {
+          let queryString = APIQueryBuilder({
+            project_id: localProjectId["value"],
+          });
+
+          await Promise.all([
+            fetch(
+              CONSTANTS.INTERMEDIATE_API_URL +
+                CONSTANTS.PUBLIC_API_SITES_ENDPOINT +
+                queryString,
+              {
+                signal: signal,
+              }
+            ),
+            fetch(
+              CONSTANTS.INTERMEDIATE_API_URL +
+                CONSTANTS.PUBLIC_API_IMS_ENDPOINT +
+                queryString,
+              {
+                signal: signal,
+              }
+            ),
+            fetch(
+              CONSTANTS.INTERMEDIATE_API_URL +
+                CONSTANTS.PUBLIC_API_HAZARD_DISAGG_RPS_ENDPOINT +
+                queryString,
+              {
+                signal: signal,
+              }
+            ),
+            fetch(
+              CONSTANTS.INTERMEDIATE_API_URL +
+                CONSTANTS.PUBLIC_API_HAZARD_UHS_RPS_ENDPOINT +
+                queryString,
+              {
+                signal: signal,
+              }
+            ),
+          ])
+            .then(handleErrors)
+            .then(async ([location, im, disaggRPs, uhsRPs]) => {
+              const responseLocationData = await location.json();
+              const responseIMData = await im.json();
+              const responseDisaggRPData = await disaggRPs.json();
+              const responseUHSRPData = await uhsRPs.json();
+
+              // Setting Locations
+              setLocalProjectLocations(responseLocationData);
+              // Setting IMs
+              setProjectIMs(sortIMs(Object.keys(responseIMData["ims"])));
+              setProjectIMDict(responseIMData["ims"]);
+              setProjectScenarioIMComponentOptions(
+                responseIMData["ims"]["pSA"]["components"]
+              );
+
+              // Setting RPs
+              setProjectDisagRPs(responseDisaggRPData["rps"]);
+              setProjectUHSRPs(responseUHSRPData["rps"]);
+              // Reset dropdowns
+              setLocalLocation(null);
+              setLocalVS30(null);
+              setLocalZs(null);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    };
+
+    if (isAuthenticated) {
+      getLocation();
+    } else {
+      getPublicLocation();
+    }
 
     return () => {
       abortController.abort();
@@ -329,7 +435,55 @@ const SiteSelectionForm = () => {
       }
     };
 
-    getGMSIDs();
+    const getPublicGMSIDs = async () => {
+      if (projectSiteSelectionGetClick !== null) {
+        try {
+          await fetch(
+            CONSTANTS.INTERMEDIATE_API_URL +
+              CONSTANTS.PUBLIC_API_GMS_RUNS_ENDPOINT +
+              APIQueryBuilder({
+                project_id: localProjectId["value"],
+              }),
+            {
+              signal: signal,
+            }
+          )
+            .then(handleErrors)
+            .then(async (response) => {
+              const responseData = await response.json();
+              const targetArr = Object.values(responseData);
+
+              setProjectGMSIDs(Object.keys(responseData));
+
+              const numGMs = {};
+              for (const [key, value] of Object.entries(responseData)) {
+                numGMs[key] = value["n_gms"];
+              }
+              setProjectGMSNumGMs(numGMs);
+
+              const splitIMs = splitIMPeriods(
+                getValuesFromArr(targetArr, "IM_j")
+              );
+              const periods = [...splitIMs["Periods"]];
+
+              setProjectGMSIMTypes(sortIMs([...new Set(splitIMs["IMs"])]));
+              setProjectGMSIMPeriods(periods.sort((a, b) => a - b));
+              setProjectGMSExceedances(
+                getValuesFromArr(targetArr, "exceedance")
+              );
+              setProjectGMSIMVectors(getValuesFromArr(targetArr, "IMs"));
+            });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    };
+
+    if (isAuthenticated) {
+      getGMSIDs();
+    } else {
+      getPublicGMSIDs();
+    }
 
     return () => {
       abortController.abort();

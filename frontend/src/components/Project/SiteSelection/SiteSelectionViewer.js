@@ -15,7 +15,7 @@ import {
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 
 const SiteSelectionViewer = () => {
-  const { getTokenSilently } = useAuth0();
+  const { isAuthenticated, getTokenSilently } = useAuth0();
 
   const {
     projectId,
@@ -104,7 +104,59 @@ const SiteSelectionViewer = () => {
         }
       }
     };
-    getMaps();
+
+    const getPublicMaps = async () => {
+      if (projectSiteSelectionGetClick !== null) {
+        try {
+          setShowImages(false);
+          setShowSpinner(true);
+          setShowErrorMessage({ isError: false, errorCode: null });
+
+          await fetch(
+            CONSTANTS.INTERMEDIATE_API_URL +
+              CONSTANTS.PUBLIC_API_MAPS_ENDPOINT +
+              APIQueryBuilder({
+                project_id: projectId["value"],
+                station_id: createStationID(
+                  projectLocationCode[projectLocation],
+                  projectVS30,
+                  projectZ1p0,
+                  projectZ2p5
+                ),
+              }),
+            {
+              signal: signal,
+            }
+          )
+            .then(handleErrors)
+            .then(async (response) => {
+              const responseData = await response.json();
+              setRegionalMap(responseData["context_plot"]);
+              setVS30Map(responseData["vs30_plot"]);
+              setShowSpinner(false);
+              setShowImages(true);
+            })
+            .catch((error) => {
+              if (error.name !== "AbortError") {
+                setShowSpinner(false);
+                setShowErrorMessage({ isError: true, errorCode: error });
+              }
+
+              console.log(error);
+            });
+        } catch (error) {
+          setShowSpinner(false);
+          setShowErrorMessage({ isError: true, errorCode: error });
+          console.log(error);
+        }
+      }
+    };
+
+    if (isAuthenticated) {
+      getMaps();
+    } else {
+      getPublicMaps();
+    }
 
     return () => {
       abortController.abort();
