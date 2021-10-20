@@ -16,7 +16,7 @@ import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 import "assets/style/ScenarioViewer.css";
 
 const ScenarioViewer = () => {
-  const { getTokenSilently } = useAuth0();
+  const { isAuthenticated, getTokenSilently } = useAuth0();
 
   const {
     projectId,
@@ -51,7 +51,7 @@ const ScenarioViewer = () => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const computeEnsembleScenario = async () => {
+    const getScenarioData = async () => {
       if (
         projectScenarioGetClick !== null &&
         projectSelectedScenarioIMComponent !== null
@@ -114,7 +114,69 @@ const ScenarioViewer = () => {
       }
     };
 
-    computeEnsembleScenario();
+    const getPublicScenarioData = async () => {
+      if (
+        projectScenarioGetClick !== null &&
+        projectSelectedScenarioIMComponent !== null
+      ) {
+        try {
+          setIsLoading(true);
+          setProjectScenarioData(null);
+          setShowErrorMessage({ isError: false, errorCode: null });
+
+          let queryString = APIQueryBuilder({
+            project_id: projectId["value"],
+            station_id: createStationID(
+              projectLocationCode[projectLocation],
+              projectVS30,
+              projectZ1p0,
+              projectZ2p5
+            ),
+            im_component: projectSelectedScenarioIMComponent,
+          });
+
+          await fetch(
+            CONSTANTS.INTERMEDIATE_API_URL +
+              CONSTANTS.PUBLIC_API_SCENARIOS_ENDPOINT +
+              queryString,
+            {
+              signal: signal,
+            }
+          )
+            .then(handleErrors)
+            .then(async (scenarioResponse) => {
+              const responseData = await scenarioResponse.json();
+              setProjectScenarioData(responseData);
+              setDownloadToken(responseData["download_token"]);
+
+              setExtraInfo({
+                from: "project",
+                id: projectId["value"],
+                location: projectLocation,
+                vs30: projectVS30,
+              });
+
+              setIsLoading(false);
+            })
+            .catch((error) => {
+              if (error.name !== "AbortError") {
+                setIsLoading(false);
+                setShowErrorMessage({ isError: true, errorCode: error });
+              }
+              console.log(error);
+            });
+        } catch (error) {
+          setIsLoading(false);
+          setShowErrorMessage({ isError: false, errorCode: error });
+        }
+      }
+    };
+
+    if (isAuthenticated) {
+      getScenarioData();
+    } else {
+      getPublicScenarioData();
+    }
 
     return () => {
       abortController.abort();
