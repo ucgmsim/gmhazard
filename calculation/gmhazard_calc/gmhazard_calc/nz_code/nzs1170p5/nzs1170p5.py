@@ -88,6 +88,8 @@ def run_ensemble_nzs1170p5(
         soil_class = get_soil_class(site_info.vs30)
 
     if im.im_type != IMType.PGA or not im.is_pSA():
+        print(im)
+        print(str(im))
         raise Exception("Invalid IM type specified, has to be either PGA or pSA")
     sa_period = 0 if im.im_type == IMType.PGA else im.period
 
