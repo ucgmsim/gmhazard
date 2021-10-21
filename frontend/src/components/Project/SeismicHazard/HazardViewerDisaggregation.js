@@ -227,7 +227,6 @@ const HazadViewerDisaggregation = () => {
     const getPublicDisaggData = async () => {
       if (projectDisaggGetClick !== null) {
         try {
-          const token = await getTokenSilently();
           setShowErrorMessage({ isError: false, errorCode: null });
 
           setShowSpinnerDisaggEpsilon(true);
@@ -474,7 +473,11 @@ const HazadViewerDisaggregation = () => {
       </Tabs>
       <DownloadButton
         disabled={!showContribTable}
-        downloadURL={CONSTANTS.PROJECT_API_HAZARD_DISAGG_DOWNLOAD_ENDPOINT}
+        downloadURL={
+          isAuthenticated
+            ? CONSTANTS.PROJECT_API_HAZARD_DISAGG_DOWNLOAD_ENDPOINT
+            : CONSTANTS.PUBLIC_API_HAZARD_DISAGG_DOWNLOAD_ENDPOINT
+        }
         downloadToken={{
           disagg_token: downloadToken,
         }}

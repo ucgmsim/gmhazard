@@ -449,7 +449,11 @@ const HazardViewerHazardCurve = () => {
 
       <DownloadButton
         disabled={!showPlotHazard}
-        downloadURL={CONSTANTS.PROJECT_API_HAZARD_CURVE_DOWNLOAD_ENDPOINT}
+        downloadURL={
+          isAuthenticated
+            ? CONSTANTS.PROJECT_API_HAZARD_CURVE_DOWNLOAD_ENDPOINT
+            : CONSTANTS.PUBLIC_API_HAZARD_CURVE_DOWNLOAD_ENDPOINT
+        }
         downloadToken={{
           hazard_token: downloadToken,
         }}
