@@ -29,21 +29,21 @@
 ACTIVE_SHALLOW:
   PGV:
     geom:
-      - Br_10 # Br_10 or BSSA_14 or CB_14 or CY_14 or ASK_14
+      - Br_10  # Br_10 or BSSA_14 or CB_14 or CY_14 or ASK_14
       - ASK_14
       - BSSA_14
       - CB_14
       - CY_14
   PGA:
     geom:
-      - Br_10 # ZA_06 or Br_10 or BSSA_14 or CB_14 or CY_14 or ASK_14
+      - Br_10  # ZA_06 or Br_10 or BSSA_14 or CB_14 or CY_14 or ASK_14
       - ASK_14
       - BSSA_14
       - CB_14
       - CY_14
   pSA:
     geom:
-      - Br_10 # ZA_06 or Br_10 or BSSA_14 or CB_14 or CY_14 or ASK_14
+      - Br_10  # ZA_06 or Br_10 or BSSA_14 or CB_14 or CY_14 or ASK_14
       - ASK_14
       - BSSA_14
       - CB_14
@@ -61,14 +61,14 @@ VOLCANIC:
 SUBDUCTION_SLAB:
   PGV:
     geom:
-      - P_20 # These are only for shallow crustal in lieu of a more appropriate model
+      - P_20
       - K_20
       - K_20_NZ
   PGA:
     geom:
       - ZA_06
       - BCH_16
-      - A_18 # ZA06 or BCH16
+      - A_18  # ZA06 or BCH16
       - P_20
       - AG_20
       - AG_20_NZ
@@ -78,7 +78,7 @@ SUBDUCTION_SLAB:
     geom:
       - ZA_06
       - BCH_16
-      - A_18 # ZA06 or BCH16
+      - A_18  # ZA06 or BCH16
       - P_20
       - AG_20
       - AG_20_NZ
@@ -87,14 +87,14 @@ SUBDUCTION_SLAB:
 SUBDUCTION_INTERFACE:
   PGV:
     geom:
-      - P_20 # These are only for shallow crustal in lieu of a more appropriate model
+      - P_20  # These are only for shallow crustal in lieu of a more appropriate model
       - K_20
       - K_20_NZ
   PGA:
     geom:
       - ZA_06
       - BCH_16
-      - A_18 # ZA06 or BCH16
+      - A_18  # ZA06 or BCH16
       - P_20
       - AG_20
       - AG_20_NZ
@@ -105,7 +105,7 @@ SUBDUCTION_INTERFACE:
     geom:
       - ZA_06
       - BCH_16
-      - A_18 # ZA06 or BCH16
+      - A_18  # ZA06 or BCH16
       - P_20
       - AG_20
       - AG_20_NZ
