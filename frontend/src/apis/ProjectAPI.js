@@ -105,3 +105,18 @@ export const getProjectHazardCurve = async (signal, token, queryString) => {
     }
   );
 };
+
+/* Project - Disaggregation Viewer */
+export const getProjectDisaggregation = async (signal, token, queryString) => {
+  return await fetch(
+    CONSTANTS.INTERMEDIATE_API_URL +
+      CONSTANTS.PROJECT_API_HAZARD_DISAGG_ENDPOINT +
+      queryString,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      signal: signal,
+    }
+  );
+};
