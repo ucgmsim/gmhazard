@@ -8,6 +8,16 @@ import * as CONSTANTS from "constants/Constants";
 
 import { CustomSelect, GuideTooltip } from "components/common";
 import {
+  getProjectID,
+  getProjectLocation,
+  getProjectGMSID,
+} from "apis/ProjectAPI";
+import {
+  getPublicProjectID,
+  getPublicProjectLocation,
+  getPublicProjectGMSID,
+} from "apis/PublicProjectAPI";
+import {
   handleErrors,
   sortIMs,
   renderSigfigs,
@@ -71,20 +81,11 @@ const SiteSelectionForm = () => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const getProjectID = async () => {
-      try {
+    if (isAuthenticated) {
+      (async () => {
         const token = await getTokenSilently();
 
-        await fetch(
-          CONSTANTS.INTERMEDIATE_API_URL +
-            CONSTANTS.PROJECT_API_PROJECT_IDS_ENDPOINT,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            signal: signal,
-          }
-        )
+        getProjectID(signal, token)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
@@ -93,37 +94,17 @@ const SiteSelectionForm = () => {
           .catch((error) => {
             console.log(error);
           });
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    const getPublicProjectID = async () => {
-      try {
-        await fetch(
-          CONSTANTS.INTERMEDIATE_API_URL +
-            CONSTANTS.PUBLIC_API_PROJECT_IDS_ENDPOINT,
-          {
-            signal: signal,
-          }
-        )
-          .then(handleErrors)
-          .then(async (response) => {
-            const responseData = await response.json();
-            setProjectIdOptions(responseData);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    if (isAuthenticated) {
-      getProjectID();
+      })();
     } else {
-      getPublicProjectID();
+      getPublicProjectID(signal)
+        .then(handleErrors)
+        .then(async (response) => {
+          const responseData = await response.json();
+          setProjectIdOptions(responseData);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
 
     return () => {
@@ -137,61 +118,16 @@ const SiteSelectionForm = () => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const getLocation = async () => {
-      if (localProjectId !== null) {
-        try {
+    if (localProjectId !== null) {
+      let queryString = APIQueryBuilder({
+        project_id: localProjectId["value"],
+      });
+
+      if (isAuthenticated) {
+        (async () => {
           const token = await getTokenSilently();
 
-          let queryString = APIQueryBuilder({
-            project_id: localProjectId["value"],
-          });
-
-          await Promise.all([
-            fetch(
-              CONSTANTS.INTERMEDIATE_API_URL +
-                CONSTANTS.PROJECT_API_SITES_ENDPOINT +
-                queryString,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                signal: signal,
-              }
-            ),
-            fetch(
-              CONSTANTS.INTERMEDIATE_API_URL +
-                CONSTANTS.PROJECT_API_IMS_ENDPOINT +
-                queryString,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                signal: signal,
-              }
-            ),
-            fetch(
-              CONSTANTS.INTERMEDIATE_API_URL +
-                CONSTANTS.PROJECT_API_HAZARD_DISAGG_RPS_ENDPOINT +
-                queryString,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                signal: signal,
-              }
-            ),
-            fetch(
-              CONSTANTS.INTERMEDIATE_API_URL +
-                CONSTANTS.PROJECT_API_HAZARD_UHS_RPS_ENDPOINT +
-                queryString,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                signal: signal,
-              }
-            ),
-          ])
+          getProjectLocation(signal, token, queryString)
             .then(handleErrors)
             .then(async ([location, im, disaggRPs, uhsRPs]) => {
               const responseLocationData = await location.json();
@@ -199,110 +135,37 @@ const SiteSelectionForm = () => {
               const responseDisaggRPData = await disaggRPs.json();
               const responseUHSRPData = await uhsRPs.json();
 
-              // Setting Locations
-              setLocalProjectLocations(responseLocationData);
-              // Setting IMs
-              setProjectIMs(sortIMs(Object.keys(responseIMData["ims"])));
-              setProjectIMDict(responseIMData["ims"]);
-              setProjectScenarioIMComponentOptions(
-                responseIMData["ims"]["pSA"]["components"]
+              updateDropdown(
+                responseLocationData,
+                responseIMData,
+                responseDisaggRPData,
+                responseUHSRPData
               );
-
-              // Setting RPs
-              setProjectDisagRPs(responseDisaggRPData["rps"]);
-              setProjectUHSRPs(responseUHSRPData["rps"]);
-              // Reset dropdowns
-              setLocalLocation(null);
-              setLocalVS30(null);
-              setLocalZs(null);
             })
             .catch((error) => {
               console.log(error);
             });
-        } catch (error) {
-          console.log(error);
-        }
-      }
-    };
+        })();
+      } else {
+        getPublicProjectLocation(signal, queryString)
+          .then(handleErrors)
+          .then(async ([location, im, disaggRPs, uhsRPs]) => {
+            const responseLocationData = await location.json();
+            const responseIMData = await im.json();
+            const responseDisaggRPData = await disaggRPs.json();
+            const responseUHSRPData = await uhsRPs.json();
 
-    const getPublicLocation = async () => {
-      if (localProjectId !== null) {
-        try {
-          let queryString = APIQueryBuilder({
-            project_id: localProjectId["value"],
+            updateDropdown(
+              responseLocationData,
+              responseIMData,
+              responseDisaggRPData,
+              responseUHSRPData
+            );
+          })
+          .catch((error) => {
+            console.log(error);
           });
-
-          await Promise.all([
-            fetch(
-              CONSTANTS.INTERMEDIATE_API_URL +
-                CONSTANTS.PUBLIC_API_SITES_ENDPOINT +
-                queryString,
-              {
-                signal: signal,
-              }
-            ),
-            fetch(
-              CONSTANTS.INTERMEDIATE_API_URL +
-                CONSTANTS.PUBLIC_API_IMS_ENDPOINT +
-                queryString,
-              {
-                signal: signal,
-              }
-            ),
-            fetch(
-              CONSTANTS.INTERMEDIATE_API_URL +
-                CONSTANTS.PUBLIC_API_HAZARD_DISAGG_RPS_ENDPOINT +
-                queryString,
-              {
-                signal: signal,
-              }
-            ),
-            fetch(
-              CONSTANTS.INTERMEDIATE_API_URL +
-                CONSTANTS.PUBLIC_API_HAZARD_UHS_RPS_ENDPOINT +
-                queryString,
-              {
-                signal: signal,
-              }
-            ),
-          ])
-            .then(handleErrors)
-            .then(async ([location, im, disaggRPs, uhsRPs]) => {
-              const responseLocationData = await location.json();
-              const responseIMData = await im.json();
-              const responseDisaggRPData = await disaggRPs.json();
-              const responseUHSRPData = await uhsRPs.json();
-
-              // Setting Locations
-              setLocalProjectLocations(responseLocationData);
-              // Setting IMs
-              setProjectIMs(sortIMs(Object.keys(responseIMData["ims"])));
-              setProjectIMDict(responseIMData["ims"]);
-              setProjectScenarioIMComponentOptions(
-                responseIMData["ims"]["pSA"]["components"]
-              );
-
-              // Setting RPs
-              setProjectDisagRPs(responseDisaggRPData["rps"]);
-              setProjectUHSRPs(responseUHSRPData["rps"]);
-              // Reset dropdowns
-              setLocalLocation(null);
-              setLocalVS30(null);
-              setLocalZs(null);
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        } catch (error) {
-          console.log(error);
-        }
       }
-    };
-
-    if (isAuthenticated) {
-      getLocation();
-    } else {
-      getPublicLocation();
     }
 
     return () => {
@@ -386,103 +249,35 @@ const SiteSelectionForm = () => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const getGMSIDs = async () => {
-      if (projectSiteSelectionGetClick !== null) {
-        try {
+    if (projectSiteSelectionGetClick !== null) {
+      let queryString = APIQueryBuilder({
+        project_id: localProjectId["value"],
+      });
+      if (isAuthenticated) {
+        (async () => {
           const token = await getTokenSilently();
 
-          await fetch(
-            CONSTANTS.INTERMEDIATE_API_URL +
-              CONSTANTS.PROJECT_API_GMS_RUNS_ENDPOINT +
-              APIQueryBuilder({
-                project_id: localProjectId["value"],
-              }),
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              signal: signal,
-            }
-          )
+          getProjectGMSID(signal, token, queryString)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
-              const targetArr = Object.values(responseData);
-
-              setProjectGMSIDs(Object.keys(responseData));
-
-              const numGMs = {};
-              for (const [key, value] of Object.entries(responseData)) {
-                numGMs[key] = value["n_gms"];
-              }
-              setProjectGMSNumGMs(numGMs);
-
-              const splitIMs = splitIMPeriods(
-                getValuesFromArr(targetArr, "IM_j")
-              );
-              const periods = [...splitIMs["Periods"]];
-
-              setProjectGMSIMTypes(sortIMs([...new Set(splitIMs["IMs"])]));
-              setProjectGMSIMPeriods(periods.sort((a, b) => a - b));
-              setProjectGMSExceedances(
-                getValuesFromArr(targetArr, "exceedance")
-              );
-              setProjectGMSIMVectors(getValuesFromArr(targetArr, "IMs"));
+              updateGMSDropdown(responseData);
+            })
+            .catch((error) => {
+              console.log(error);
             });
-        } catch (error) {
-          console.log(error);
-        }
+        })();
+      } else {
+        getPublicProjectGMSID(signal, queryString)
+          .then(handleErrors)
+          .then(async (response) => {
+            const responseData = await response.json();
+            updateGMSDropdown(responseData);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
-    };
-
-    const getPublicGMSIDs = async () => {
-      if (projectSiteSelectionGetClick !== null) {
-        try {
-          await fetch(
-            CONSTANTS.INTERMEDIATE_API_URL +
-              CONSTANTS.PUBLIC_API_GMS_RUNS_ENDPOINT +
-              APIQueryBuilder({
-                project_id: localProjectId["value"],
-              }),
-            {
-              signal: signal,
-            }
-          )
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-              const targetArr = Object.values(responseData);
-
-              setProjectGMSIDs(Object.keys(responseData));
-
-              const numGMs = {};
-              for (const [key, value] of Object.entries(responseData)) {
-                numGMs[key] = value["n_gms"];
-              }
-              setProjectGMSNumGMs(numGMs);
-
-              const splitIMs = splitIMPeriods(
-                getValuesFromArr(targetArr, "IM_j")
-              );
-              const periods = [...splitIMs["Periods"]];
-
-              setProjectGMSIMTypes(sortIMs([...new Set(splitIMs["IMs"])]));
-              setProjectGMSIMPeriods(periods.sort((a, b) => a - b));
-              setProjectGMSExceedances(
-                getValuesFromArr(targetArr, "exceedance")
-              );
-              setProjectGMSIMVectors(getValuesFromArr(targetArr, "IMs"));
-            });
-        } catch (error) {
-          console.log(error);
-        }
-      }
-    };
-
-    if (isAuthenticated) {
-      getGMSIDs();
-    } else {
-      getPublicGMSIDs();
     }
 
     return () => {
@@ -522,6 +317,43 @@ const SiteSelectionForm = () => {
       localVS30 === null ||
       localZs === null
     );
+  };
+
+  const updateDropdown = (locationData, imData, disaggRPData, uhsRPData) => {
+    // Setting Locations
+    setLocalProjectLocations(locationData);
+    // Setting IMs
+    setProjectIMs(sortIMs(Object.keys(imData["ims"])));
+    setProjectIMDict(imData["ims"]);
+    setProjectScenarioIMComponentOptions(imData["ims"]["pSA"]["components"]);
+
+    // Setting RPs
+    setProjectDisagRPs(disaggRPData["rps"]);
+    setProjectUHSRPs(uhsRPData["rps"]);
+    // Reset dropdowns
+    setLocalLocation(null);
+    setLocalVS30(null);
+    setLocalZs(null);
+  };
+
+  const updateGMSDropdown = (gmsData) => {
+    const targetArr = Object.values(gmsData);
+
+    setProjectGMSIDs(Object.keys(gmsData));
+
+    const numGMs = {};
+    for (const [key, value] of Object.entries(gmsData)) {
+      numGMs[key] = value["n_gms"];
+    }
+    setProjectGMSNumGMs(numGMs);
+
+    const splitIMs = splitIMPeriods(getValuesFromArr(targetArr, "IM_j"));
+    const periods = [...splitIMs["Periods"]];
+
+    setProjectGMSIMTypes(sortIMs([...new Set(splitIMs["IMs"])]));
+    setProjectGMSIMPeriods(periods.sort((a, b) => a - b));
+    setProjectGMSExceedances(getValuesFromArr(targetArr, "exceedance"));
+    setProjectGMSIMVectors(getValuesFromArr(targetArr, "IMs"));
   };
 
   return (
