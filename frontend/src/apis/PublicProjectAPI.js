@@ -69,3 +69,15 @@ export const getPublicProjectMaps = async (signal, queryString) => {
     }
   );
 };
+
+/* Project - Hazard Curve Viewer */
+export const getPublicProjectHazardCurve = async (signal, queryString) => {
+  return await fetch(
+    CONSTANTS.INTERMEDIATE_API_URL +
+      CONSTANTS.PUBLIC_API_HAZARD_ENDPOINT +
+      queryString,
+    {
+      signal: signal,
+    }
+  );
+};

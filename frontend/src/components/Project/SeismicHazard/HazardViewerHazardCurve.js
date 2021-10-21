@@ -15,6 +15,8 @@ import {
   HazardBranchPlot,
   HazardCurveMetadata,
 } from "components/common";
+import { getProjectHazardCurve } from "apis/ProjectAPI";
+import { getPublicProjectHazardCurve } from "apis/PublicProjectAPI";
 import {
   handleErrors,
   APIQueryBuilder,
@@ -93,283 +95,138 @@ const HazardViewerHazardCurve = () => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const getHazardCurve = async () => {
-      if (projectHazardCurveGetClick !== null) {
-        try {
-          setShowPlotHazard(false);
-          setShowSpinnerHazard(true);
-          setShowErrorMessage({ isError: false, errorCode: null });
+    if (projectHazardCurveGetClick !== null) {
+      setShowPlotHazard(false);
+      setShowSpinnerHazard(true);
+      setShowErrorMessage({ isError: false, errorCode: null });
 
+      let queryString = APIQueryBuilder({
+        project_id: projectId["value"],
+        station_id: createStationID(
+          projectLocationCode[projectLocation],
+          projectVS30,
+          projectZ1p0,
+          projectZ2p5
+        ),
+        im: combineIMwithPeriod(projectSelectedIM, projectSelectedIMPeriod),
+        im_component: projectSelectedIMComponent,
+      });
+
+      if (isAuthenticated) {
+        (async () => {
           const token = await getTokenSilently();
 
-          await fetch(
-            CONSTANTS.INTERMEDIATE_API_URL +
-              CONSTANTS.PROJECT_API_HAZARD_ENDPOINT +
-              APIQueryBuilder({
-                project_id: projectId["value"],
-                station_id: createStationID(
-                  projectLocationCode[projectLocation],
-                  projectVS30,
-                  projectZ1p0,
-                  projectZ2p5
-                ),
-                im: combineIMwithPeriod(
-                  projectSelectedIM,
-                  projectSelectedIMPeriod
-                ),
-                im_component: projectSelectedIMComponent,
-              }),
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              signal: signal,
-            }
-          )
+          getProjectHazardCurve(signal, token, queryString)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
-
-              setHazardData(responseData);
-              setHazardNZS1170p5Data(
-                responseData["nzs1170p5_hazard"]["im_values"]
-              );
-              setMetadataParam({
-                "Project Name": projectId["label"],
-                "Project ID": projectId["value"],
-                Location: projectLocation,
-                Latitude: projectLat,
-                Longitude: projectLng,
-                Vs30: `${projectVS30} m/s`,
-                "Intensity Measure": responseData["im"],
-              });
-              setExtraInfo({
-                from: "project",
-                id: projectId,
-                location: projectLocation,
-                vs30: projectVS30,
-                im: combineIMwithPeriod(
-                  projectSelectedIM,
-                  projectSelectedIMPeriod
-                ),
-              });
-
-              if (projectSelectedIM === "PGA") {
-                if (
-                  !Object.values(
-                    responseData["nzta_hazard"]["pga_values"]
-                  ).includes("nan")
-                ) {
-                  /*
-                    NZS1170p5 is available(Both Z Factor and Soil Class)
-                    NZTA is also valid (Only Soil Class)
-                  */
-                  setHazardNZTAData(responseData["nzta_hazard"]["pga_values"]);
-                  setMetadataParam((prevState) => ({
-                    ...prevState,
-                    "NZS1170.5 Z Factor": responseData["nzs1170p5_hazard"]["Z"],
-                    "NZS1170.5 Soil Class":
-                      responseData["nzs1170p5_hazard"]["soil_class"],
-                    "NZTA Soil Class":
-                      responseData["nzta_hazard"]["soil_class"],
-                  }));
-                } else {
-                  /*
-                    NZS1170p5 is available(Both Z Factor and Soil Class)
-                    NZTA is there but its NaN
-                  */
-                  setHazardNZTAData(null);
-                  setMetadataParam((prevState) => ({
-                    ...prevState,
-                    "NZS1170.5 Z Factor": responseData["nzs1170p5_hazard"]["Z"],
-                    "NZS1170.5 Soil Class":
-                      responseData["nzs1170p5_hazard"]["soil_class"],
-                  }));
-                }
-              } else {
-                /*
-                  NZS1170p5 is available(Both Z Factor and Soil Class)
-                  NZTA does not exist as IM is not PGA
-                */
-                setHazardNZTAData(null);
-                setMetadataParam((prevState) => ({
-                  ...prevState,
-                  "NZS1170.5 Z Factor": responseData["nzs1170p5_hazard"]["Z"],
-                  "NZS1170.5 Soil Class":
-                    responseData["nzs1170p5_hazard"]["soil_class"],
-                }));
-                if (projectSelectedIMComponent !== "Larger") {
-                  setMetadataParam((prevState) => ({
-                    ...prevState,
-                    Disclaimer:
-                      "NZ Code values have been converted from original Larger IM Component",
-                  }));
-                }
-              }
-              setPercentileData(responseData["percentiles"]);
-              setDownloadToken(responseData["download_token"]);
-              setShowSpinnerHazard(false);
-              setShowPlotHazard(true);
+              updateHazardData(responseData);
             })
             .catch((error) => {
               if (error.name !== "AbortError") {
                 setShowSpinnerHazard(false);
                 setShowErrorMessage({ isError: true, errorCode: error });
               }
-
               console.log(error);
             });
-        } catch (error) {
-          setShowSpinnerHazard(false);
-          setShowErrorMessage({ isError: true, errorCode: error });
-          console.log(error);
-        }
-      }
-    };
-
-    const getPublicHazardCurve = async () => {
-      if (projectHazardCurveGetClick !== null) {
-        try {
-          setShowPlotHazard(false);
-          setShowSpinnerHazard(true);
-          setShowErrorMessage({ isError: false, errorCode: null });
-
-          await fetch(
-            CONSTANTS.INTERMEDIATE_API_URL +
-              CONSTANTS.PUBLIC_API_HAZARD_ENDPOINT +
-              APIQueryBuilder({
-                project_id: projectId["value"],
-                station_id: createStationID(
-                  projectLocationCode[projectLocation],
-                  projectVS30,
-                  projectZ1p0,
-                  projectZ2p5
-                ),
-                im: combineIMwithPeriod(
-                  projectSelectedIM,
-                  projectSelectedIMPeriod
-                ),
-                im_component: projectSelectedIMComponent,
-              }),
-            {
-              signal: signal,
-            }
-          )
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-
-              setHazardData(responseData);
-              // NZS1170p5 only available for PGA and pSA IM
-              if (projectSelectedIM === "PGA" || projectSelectedIM === "pSA") {
-                setHazardNZS1170p5Data(
-                  responseData["nzs1170p5_hazard"]["im_values"]
-                );
-              }
-
-              setMetadataParam({
-                "Project Name": projectId["label"],
-                "Project ID": projectId["value"],
-                Location: projectLocation,
-                Latitude: projectLat,
-                Longitude: projectLng,
-                Vs30: `${projectVS30} m/s`,
-                "Intensity Measure": responseData["im"],
-              });
-              setExtraInfo({
-                from: "project",
-                id: projectId,
-                location: projectLocation,
-                vs30: projectVS30,
-                im: combineIMwithPeriod(
-                  projectSelectedIM,
-                  projectSelectedIMPeriod
-                ),
-              });
-
-              if (projectSelectedIM === "PGA") {
-                if (
-                  !Object.values(
-                    responseData["nzta_hazard"]["pga_values"]
-                  ).includes("nan")
-                ) {
-                  /*
-                    NZS1170p5 is available(Both Z Factor and Soil Class)
-                    NZTA is also valid (Only Soil Class)
-                  */
-                  setHazardNZTAData(responseData["nzta_hazard"]["pga_values"]);
-                  setMetadataParam((prevState) => ({
-                    ...prevState,
-                    "NZS1170.5 Z Factor": responseData["nzs1170p5_hazard"]["Z"],
-                    "NZS1170.5 Soil Class":
-                      responseData["nzs1170p5_hazard"]["soil_class"],
-                    "NZTA Soil Class":
-                      responseData["nzta_hazard"]["soil_class"],
-                  }));
-                } else {
-                  /*
-                    NZS1170p5 is available(Both Z Factor and Soil Class)
-                    NZTA is there but its NaN
-                  */
-                  setHazardNZTAData(null);
-                  setMetadataParam((prevState) => ({
-                    ...prevState,
-                    "NZS1170.5 Z Factor": responseData["nzs1170p5_hazard"]["Z"],
-                    "NZS1170.5 Soil Class":
-                      responseData["nzs1170p5_hazard"]["soil_class"],
-                  }));
-                }
-              } else if (projectSelectedIM === "pSA") {
-                /*
-                  NZS1170p5 is available(Both Z Factor and Soil Class)
-                  NZTA does not exist as IM is not PGA
-                */
-                setHazardNZTAData(null);
-                setMetadataParam((prevState) => ({
-                  ...prevState,
-                  "NZS1170.5 Z Factor": responseData["nzs1170p5_hazard"]["Z"],
-                  "NZS1170.5 Soil Class":
-                    responseData["nzs1170p5_hazard"]["soil_class"],
-                }));
-                if (projectSelectedIMComponent !== "Larger") {
-                  setMetadataParam((prevState) => ({
-                    ...prevState,
-                    Disclaimer:
-                      "NZ Code values have been converted from original Larger IM Component",
-                  }));
-                }
-              }
-              setPercentileData(responseData["percentiles"]);
-              setDownloadToken(responseData["download_token"]);
+        })();
+      } else {
+        getPublicProjectHazardCurve(signal, queryString)
+          .then(handleErrors)
+          .then(async (response) => {
+            const responseData = await response.json();
+            updateHazardData(responseData);
+          })
+          .catch((error) => {
+            if (error.name !== "AbortError") {
               setShowSpinnerHazard(false);
-              setShowPlotHazard(true);
-            })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                setShowSpinnerHazard(false);
-                setShowErrorMessage({ isError: true, errorCode: error });
-              }
-
-              console.log(error);
-            });
-        } catch (error) {
-          setShowSpinnerHazard(false);
-          setShowErrorMessage({ isError: true, errorCode: error });
-          console.log(error);
-        }
+              setShowErrorMessage({ isError: true, errorCode: error });
+            }
+            console.log(error);
+          });
       }
-    };
-
-    if (isAuthenticated) {
-      getHazardCurve();
-    } else {
-      getPublicHazardCurve();
     }
 
     return () => {
       abortController.abort();
     };
   }, [projectHazardCurveGetClick]);
+
+  const updateHazardData = (hazardData) => {
+    setHazardData(hazardData);
+    // NZS1170p5 only available for PGA and pSA IM
+    if (projectSelectedIM === "PGA" || projectSelectedIM === "pSA") {
+      setHazardNZS1170p5Data(hazardData["nzs1170p5_hazard"]["im_values"]);
+    }
+
+    setMetadataParam({
+      "Project Name": projectId["label"],
+      "Project ID": projectId["value"],
+      Location: projectLocation,
+      Latitude: projectLat,
+      Longitude: projectLng,
+      Vs30: `${projectVS30} m/s`,
+      "Intensity Measure": hazardData["im"],
+    });
+    setExtraInfo({
+      from: "project",
+      id: projectId,
+      location: projectLocation,
+      vs30: projectVS30,
+      im: combineIMwithPeriod(projectSelectedIM, projectSelectedIMPeriod),
+    });
+
+    if (projectSelectedIM === "PGA") {
+      if (
+        !Object.values(hazardData["nzta_hazard"]["pga_values"]).includes("nan")
+      ) {
+        /*
+        NZS1170p5 is available(Both Z Factor and Soil Class)
+        NZTA is also valid (Only Soil Class)
+        */
+        setHazardNZTAData(hazardData["nzta_hazard"]["pga_values"]);
+        setMetadataParam((prevState) => ({
+          ...prevState,
+          "NZS1170.5 Z Factor": hazardData["nzs1170p5_hazard"]["Z"],
+          "NZS1170.5 Soil Class": hazardData["nzs1170p5_hazard"]["soil_class"],
+          "NZTA Soil Class": hazardData["nzta_hazard"]["soil_class"],
+        }));
+      } else {
+        /*
+        NZS1170p5 is available(Both Z Factor and Soil Class)
+        NZTA is there but its NaN
+        */
+        setHazardNZTAData(null);
+        setMetadataParam((prevState) => ({
+          ...prevState,
+          "NZS1170.5 Z Factor": hazardData["nzs1170p5_hazard"]["Z"],
+          "NZS1170.5 Soil Class": hazardData["nzs1170p5_hazard"]["soil_class"],
+        }));
+      }
+    } else if (projectSelectedIM === "pSA") {
+      /*
+      NZS1170p5 is available(Both Z Factor and Soil Class)
+      NZTA does not exist as IM is not PGA
+      */
+      setHazardNZTAData(null);
+      setMetadataParam((prevState) => ({
+        ...prevState,
+        "NZS1170.5 Z Factor": hazardData["nzs1170p5_hazard"]["Z"],
+        "NZS1170.5 Soil Class": hazardData["nzs1170p5_hazard"]["soil_class"],
+      }));
+      if (projectSelectedIMComponent !== "Larger") {
+        setMetadataParam((prevState) => ({
+          ...prevState,
+          Disclaimer:
+            "NZ Code values have been converted from original Larger IM Component",
+        }));
+      }
+    }
+    setPercentileData(hazardData["percentiles"]);
+    setDownloadToken(hazardData["download_token"]);
+    setShowSpinnerHazard(false);
+    setShowPlotHazard(true);
+  };
 
   return (
     <div className="hazard-curve-viewer">

@@ -83,6 +83,24 @@ export const getProjectMaps = async (signal, token, queryString) => {
       CONSTANTS.PROJECT_API_MAPS_ENDPOINT +
       queryString,
     {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      signal: signal,
+    }
+  );
+};
+
+/* Project - Hazard Curve Viewer */
+export const getProjectHazardCurve = async (signal, token, queryString) => {
+  return await fetch(
+    CONSTANTS.INTERMEDIATE_API_URL +
+      CONSTANTS.PROJECT_API_HAZARD_ENDPOINT +
+      queryString,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
       signal: signal,
     }
   );
