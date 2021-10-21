@@ -21,19 +21,13 @@ from gmhazard_calc import dbs
 PERIOD = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.9, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]
 # fmt: on
 
-# IM_TYPE_LIST = [
-#     IMType.PGA,
-#     IMType.pSA,
-#     IMType.Ds595,
-#     IMType.Ds575,
-#     IMType.AI,
-#     IMType.CAV,
-#     IMType.PGV,
-# ]
-
 IM_TYPE_LIST = [
     IMType.PGA,
     IMType.pSA,
+    IMType.Ds595,
+    IMType.Ds575,
+    IMType.AI,
+    IMType.CAV,
     IMType.PGV,
 ]
 
@@ -128,8 +122,7 @@ def curate_im_list(tect_type_model_dict, model, periods):
         IMType[im]
         for tect_type, im_dict in tect_type_model_dict.items()
         for im, component_dict in im_dict.items()
-        for gmm in component_dict["rotd50"]
-        # for gmm in component_dict["geom"]
+        for gmm in component_dict["geom"]
         if tect_type in model and gmm in model
     ]
 
@@ -278,7 +271,7 @@ def calculate_emp_site(
 
         for im_type in im_types:
             GMMs = empirical_factory.determine_all_gmm(
-                fault, str(im_type), tect_type_model_dict, components="rotd50"
+                fault, str(im_type), tect_type_model_dict
             )
             for GMM, __comp in GMMs:
                 db_type = f"{GMM.name}_{fault.tect_type.name}"
