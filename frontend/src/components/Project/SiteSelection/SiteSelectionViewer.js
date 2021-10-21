@@ -12,6 +12,8 @@ import {
   ErrorMessage,
   ImageMap,
 } from "components/common";
+import { getProjectMaps } from "apis/ProjectAPI";
+import { getPublicProjectMaps } from "apis/PublicProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 
 const SiteSelectionViewer = () => {
@@ -53,115 +55,66 @@ const SiteSelectionViewer = () => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const getMaps = async () => {
-      if (projectSiteSelectionGetClick !== null) {
-        try {
-          setShowImages(false);
-          setShowSpinner(true);
-          setShowErrorMessage({ isError: false, errorCode: null });
+    if (projectSiteSelectionGetClick !== null) {
+      let queryString = APIQueryBuilder({
+        project_id: projectId["value"],
+        station_id: createStationID(
+          projectLocationCode[projectLocation],
+          projectVS30,
+          projectZ1p0,
+          projectZ2p5
+        ),
+      });
+      setShowImages(false);
+      setShowSpinner(true);
+      setShowErrorMessage({ isError: false, errorCode: null });
 
+      if (isAuthenticated) {
+        (async () => {
           const token = await getTokenSilently();
 
-          await fetch(
-            CONSTANTS.INTERMEDIATE_API_URL +
-              CONSTANTS.PROJECT_API_MAPS_ENDPOINT +
-              APIQueryBuilder({
-                project_id: projectId["value"],
-                station_id: createStationID(
-                  projectLocationCode[projectLocation],
-                  projectVS30,
-                  projectZ1p0,
-                  projectZ2p5
-                ),
-              }),
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              signal: signal,
-            }
-          )
+          getProjectMaps(signal, token, queryString)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
-              setRegionalMap(responseData["context_plot"]);
-              setVS30Map(responseData["vs30_plot"]);
-              setShowSpinner(false);
-              setShowImages(true);
+              updateMap(responseData);
             })
             .catch((error) => {
               if (error.name !== "AbortError") {
                 setShowSpinner(false);
                 setShowErrorMessage({ isError: true, errorCode: error });
               }
-
               console.log(error);
             });
-        } catch (error) {
-          setShowSpinner(false);
-          setShowErrorMessage({ isError: true, errorCode: error });
-          console.log(error);
-        }
-      }
-    };
-
-    const getPublicMaps = async () => {
-      if (projectSiteSelectionGetClick !== null) {
-        try {
-          setShowImages(false);
-          setShowSpinner(true);
-          setShowErrorMessage({ isError: false, errorCode: null });
-
-          await fetch(
-            CONSTANTS.INTERMEDIATE_API_URL +
-              CONSTANTS.PUBLIC_API_MAPS_ENDPOINT +
-              APIQueryBuilder({
-                project_id: projectId["value"],
-                station_id: createStationID(
-                  projectLocationCode[projectLocation],
-                  projectVS30,
-                  projectZ1p0,
-                  projectZ2p5
-                ),
-              }),
-            {
-              signal: signal,
-            }
-          )
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-              setRegionalMap(responseData["context_plot"]);
-              setVS30Map(responseData["vs30_plot"]);
+        })();
+      } else {
+        getPublicProjectMaps(signal, queryString)
+          .then(handleErrors)
+          .then(async (response) => {
+            const responseData = await response.json();
+            updateMap(responseData);
+          })
+          .catch((error) => {
+            if (error.name !== "AbortError") {
               setShowSpinner(false);
-              setShowImages(true);
-            })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                setShowSpinner(false);
-                setShowErrorMessage({ isError: true, errorCode: error });
-              }
-
-              console.log(error);
-            });
-        } catch (error) {
-          setShowSpinner(false);
-          setShowErrorMessage({ isError: true, errorCode: error });
-          console.log(error);
-        }
+              setShowErrorMessage({ isError: true, errorCode: error });
+            }
+            console.log(error);
+          });
       }
-    };
-
-    if (isAuthenticated) {
-      getMaps();
-    } else {
-      getPublicMaps();
     }
 
     return () => {
       abortController.abort();
     };
   }, [projectSiteSelectionGetClick]);
+
+  const updateMap = (mapData) => {
+    setRegionalMap(mapData["context_plot"]);
+    setVS30Map(mapData["vs30_plot"]);
+    setShowSpinner(false);
+    setShowImages(true);
+  };
 
   return (
     <Fragment>

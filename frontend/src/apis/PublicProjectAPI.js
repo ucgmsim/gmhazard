@@ -1,5 +1,6 @@
 import * as CONSTANTS from "constants/Constants";
 
+/* Project - Site Selection Form */
 export const getPublicProjectID = async (signal) => {
   return await fetch(
     CONSTANTS.INTERMEDIATE_API_URL + CONSTANTS.PUBLIC_API_PROJECT_IDS_ENDPOINT,
@@ -50,6 +51,18 @@ export const getPublicProjectGMSID = async (signal, queryString) => {
   return await fetch(
     CONSTANTS.INTERMEDIATE_API_URL +
       CONSTANTS.PUBLIC_API_GMS_RUNS_ENDPOINT +
+      queryString,
+    {
+      signal: signal,
+    }
+  );
+};
+
+/* Project - Site Selection Viewer */
+export const getPublicProjectMaps = async (signal, queryString) => {
+  return await fetch(
+    CONSTANTS.INTERMEDIATE_API_URL +
+      CONSTANTS.PUBLIC_API_MAPS_ENDPOINT +
       queryString,
     {
       signal: signal,
