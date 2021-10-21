@@ -93,3 +93,15 @@ export const getPublicProjectDisaggregation = async (signal, queryString) => {
     }
   );
 };
+
+/* Project - UHS Viewer */
+export const getPublicProjectUHS = async (signal, queryString) => {
+  return await fetch(
+    CONSTANTS.INTERMEDIATE_API_URL +
+      CONSTANTS.PUBLIC_API_HAZARD_UHS_ENDPOINT +
+      queryString,
+    {
+      signal: signal,
+    }
+  );
+};
