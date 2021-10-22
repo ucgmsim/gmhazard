@@ -4,6 +4,7 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+import time
 
 from qcore import srf
 from IM_calculation.source_site_dist import src_site_dist
@@ -96,6 +97,8 @@ def compute_fault_directivity(
     mag: float,
     rake: float,
     period: float,
+    return_fdi_array: bool = False,
+    fault_name: str = "Nothing",
 ):
     """
     Does the computation of directivity for a fault with any number of hypocentres.
@@ -119,22 +122,21 @@ def compute_fault_directivity(
         The rake of the fault
     period: float
         The period for fdi to extract from the bea20 models fd
+    return_fdi_array: bool, optional
+        Decides if all results from each hypocentre calculation is saved and returned
+        Default is False due to the high RAM requirement for higher hypocentre runs
     """
     nominal_strike, nominal_strike2 = utils.calc_nominal_strike(lon_lat_depth)
 
     if hyp_down_dip == 1 and hyp_along_strike == 1:
-
-        # Gets the plane index of the hypocentre
-        plane_index = 0
-        for index, plane in enumerate(planes):
-            if plane["dhyp"] != -999.99:
-                plane_index = index
-                break
+        planes_list, plane_index = utils.set_hypocentres(
+            1, 1, planes, utils.EventType.from_rake(rake)
+        )
 
         return _compute_directivity_effect(
             lon_lat_depth,
-            planes,
-            plane_index,
+            planes_list[0],
+            plane_index[0],
             sites,
             nominal_strike,
             nominal_strike2,
@@ -144,16 +146,21 @@ def compute_fault_directivity(
         )
     else:
         # Customise the planes to set different hypocentres
-        n_hypo = hyp_down_dip * hyp_along_strike
-        depths = [i / (hyp_down_dip + 1) for i in range(1, hyp_down_dip + 1)]
-        planes_list, planes_index = utils.set_hypocentres(n_hypo, planes, depths)
+        planes_list, planes_index = utils.set_hypocentres(
+            hyp_along_strike, hyp_down_dip, planes, utils.EventType.from_rake(rake), fault_name=fault_name
+        )
 
         # Creating the array to store all fdi values
-        fdi_array = []
+        if return_fdi_array:
+            fdi_array = []
+        else:
+            fdi_array = np.asarray([])
 
         for index, planes in enumerate(planes_list):
             # Gets the plane index of the hypocentre
             plane_index = planes_index[index]
+
+            print(f"Computing Directivity {fault_name} {index}/{hyp_along_strike * hyp_down_dip}")
 
             fdi, _ = _compute_directivity_effect(
                 lon_lat_depth,
@@ -167,11 +174,22 @@ def compute_fault_directivity(
                 period,
             )
 
-            fdi_array.append(fdi)
+            # Check if fdi_array is needed and if not then sum results to manage RAM better
+            if return_fdi_array:
+                fdi_array.append(fdi)
+            else:
+                if len(fdi_array) == 0:
+                    fdi_array = fdi
+                else:
+                    fdi_array = np.add(fdi_array, fdi)
 
-        fdi_average = np.mean(fdi_array, axis=0)
+        # Check if fdi_array is needed and if not then create mean from the summed results to manage RAM better
+        if return_fdi_array:
+            fdi_average = np.mean(fdi_array, axis=0)
+        else:
+            fdi_average = np.divide(fdi_array, hyp_down_dip * hyp_along_strike)
 
-        return fdi_average, fdi_array
+        return fdi_average, fdi_array  # Ignore fdi_array for now
 
 
 def _compute_directivity_effect(

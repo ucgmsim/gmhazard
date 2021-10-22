@@ -1,55 +1,44 @@
-from typing import List, Dict, Union
+from typing import List
+from enum import Enum
 
 import numpy as np
-
-from qcore import nhm, geo
-
-POINTS_PER_KILOMETER = (
-    1 / 0.1
-)  # 1km divided by distance between points (1km/0.1km gives 100m grid)
+from scipy import stats
+import pandas as pd
+import time
 
 
-def remove_plane_idx(planes: List):
-    """
-    Removes the idx from the plane
+class EventType(Enum):
+    """Event types for hypocentre distributions"""
+    STRIKE_SLIP = "STRIKE_SLIP"
+    DIP_SLIP = "DIP_SLIP"
+    ALL = "ALL"
 
-    Parameters
-    ----------
-    planes: List
-        List of planes to remove the idx dict format from
-    """
-    return [
-        (
-            float(plane["centre"][0]),
-            float(plane["centre"][1]),
-            int(plane["nstrike"]),
-            int(plane["ndip"]),
-            float(plane["length"]),
-            float(plane["width"]),
-            plane["strike"],
-            plane["dip"],
-            plane["dtop"],
-            plane["shyp"],
-            plane["dhyp"],
-        )
-        for plane in planes
-    ]
+    @classmethod
+    def from_rake(cls, rake: float):
+        """Converts a rake value to an event type"""
+        if -30 <= rake <= 30 or 150 <= rake <= 210:
+            return EventType.STRIKE_SLIP
+        elif 60 <= rake <= 120 or -120 <= rake <= -60:
+            return EventType.DIP_SLIP
+        else:
+            return EventType.ALL
 
 
-def set_hypocentres(n_hypo: int, planes: List, depth_method: List):
+def set_hypocentres(hypo_along_strike: int, hypo_down_dip: int, planes: List, event_type: EventType, fault_name: str = "Nothing"):
     """
     Creates a List of planes each with a different set hypocentre for directivity calculations
-    Sets n_hypo amount of hypocentres across the planes evenly
+    Sets a given amount of hypocentres along strike and down dip based on different distributions and the event type.
 
     Parameters
     ----------
-    n_hypo: int
+    hypo_along_strike: int
         Number of hypocentres across strike to set
+    hypo_down_dip: int
+        Number of hypocentres down dip to set
     planes: list
         The planes to adjust and set the hypocentre on
-    depth_method: List
-        How deep the hypocentre is to be placed e.g. [0.5] would be every hypocentre at 50% depth
-        where as [0.33, 0.66] would be every 2nd hypocentre would have a depth of 66% and every other would have 33%
+    event_type: EventType
+        The event type Strike_slip, dip_slip or all for determining the down dip distribution function
     """
 
     # Gets the total length and removes any previous hypocentres
@@ -59,13 +48,38 @@ def set_hypocentres(n_hypo: int, planes: List, depth_method: List):
         plane["shyp"] = -999.9
         plane["dhyp"] = -999.9
 
-    # Works out the distances across the length of the fault for each hypocentre
-    distances = [
-        (total_length / n_hypo * x) - ((total_length / n_hypo) / 2)
-        for x in range(1, n_hypo + 1)
-    ]
+    # Works out the distances across strike of the fault for each hypocentre
+    # Based on a normal distribution and truncated between 0 and 1
+    mean, std = 0.5, 0.23
+    strike_distribution = stats.norm(mean, std)
+    upper, lower = strike_distribution.cdf((1, 0))
+    dist_range = upper - lower
+    truncated_points = (np.random.uniform(0, 1, hypo_along_strike)) * dist_range + lower
+    truncated_distribution = strike_distribution.ppf(truncated_points)
+    distances = truncated_distribution * total_length
 
-    depth_index = 0
+    # Save the distribution TODO remove this
+    truncated_df = pd.DataFrame(truncated_distribution)
+    truncated_df.to_csv(f"/home/joel/local/directivity/distributions/Strike_Distribution_{fault_name}_{hypo_along_strike}.csv")
+
+    # Works out the depth method for down dip placement of hypocentres
+    # Based on Weilbull or Gamma distributions depending on the EventType
+    if event_type == EventType.DIP_SLIP:
+        distribution = stats.gamma(a=7.364, scale=0.072)
+    elif event_type == EventType.STRIKE_SLIP:
+        distribution = stats.weibull_min(scale=0.626, c=3.921)
+    else:
+        distribution = stats.weibull_min(scale=0.612, c=3.353)
+    # Truncate between 0 and 1 for hypocentre depth to ensure none exceed the boundaries
+    upper, lower = distribution.cdf((1, 0))
+    dist_range = upper - lower
+    truncated_points = (np.random.uniform(0, 1, hypo_down_dip)) * dist_range + lower
+    down_dip_distribution = distribution.ppf(truncated_points)
+
+    # Save the distribution TODO remove this
+    truncated_df = pd.DataFrame(down_dip_distribution)
+    truncated_df.to_csv(f"/home/joel/local/directivity/distributions/Down_Dip_Distribution_{fault_name}_{event_type}_{hypo_down_dip}.csv")
+
     planes_list = []
     planes_index = []
 
@@ -74,12 +88,13 @@ def set_hypocentres(n_hypo: int, planes: List, depth_method: List):
         planes_copy = [plane.copy() for plane in planes]
         for index, plane in enumerate(planes_copy):
             if current_length < distance < (current_length + plane["length"]):
-                plane["shyp"] = distance - (total_length / 2)
-                plane["dhyp"] = plane["width"] * depth_method[depth_index]
-                depth_index = (depth_index + 1) % len(depth_method)
-                planes_index.append(index)
+                for depth in down_dip_distribution:
+                    planes_depth_copy = [plane.copy() for plane in planes]
+                    planes_depth_copy[index]["shyp"] = distance - (total_length / 2)
+                    planes_depth_copy[index]["dhyp"] = plane["width"] * depth
+                    planes_index.append(index)
+                    planes_list.append(planes_depth_copy)
             current_length += plane["length"]
-        planes_list.append(planes_copy)
     return planes_list, planes_index
 
 
@@ -104,58 +119,3 @@ def calc_nominal_strike(traces: np.ndarray):
         return np.asarray([trace_end]), np.asarray([trace_start])
     else:
         return np.asarray([trace_start]), np.asarray([trace_end])
-
-
-def get_fault_header_points(fault: nhm.NHMFault):
-    srf_points = []
-    srf_header: List[Dict[str, Union[int, float]]] = []
-    lon1, lat1 = fault.trace[0]
-    lon2, lat2 = fault.trace[1]
-    strike = geo.ll_bearing(lon1, lat1, lon2, lat2, midpoint=True)
-
-    if 180 > fault.dip_dir - strike >= 0:
-        # If the dipdir is not to the right of the strike, turn the fault around
-        indexes = range(len(fault.trace))
-    else:
-        indexes = range(len(fault.trace) - 1, -1, -1)
-
-    plane_offset = 0
-    for i, i2 in zip(indexes[:-1], indexes[1:]):
-        lon1, lat1 = fault.trace[i]
-        lon2, lat2 = fault.trace[i2]
-
-        strike = geo.ll_bearing(lon1, lat1, lon2, lat2, midpoint=True)
-        plane_point_distance = geo.ll_dist(lon1, lat1, lon2, lat2)
-
-        nstrike = round(plane_point_distance * POINTS_PER_KILOMETER)
-        strike_dist = plane_point_distance / nstrike
-
-        end_strike = geo.ll_bearing(lon1, lat1, lon2, lat2)
-        for j in range(nstrike):
-            top_lat, top_lon = geo.ll_shift(lat1, lon1, strike_dist * j, end_strike)
-            srf_points.append((top_lon, top_lat, fault.dtop))
-
-        height = fault.dbottom - fault.dtop
-
-        width = abs(height / np.tan(np.deg2rad(fault.dip)))
-        dip_dist = height / np.sin(np.deg2rad(fault.dip))
-
-        ndip = int(round(dip_dist * POINTS_PER_KILOMETER))
-        hdip_dist = width / ndip
-        vdip_dist = height / ndip
-
-        for j in range(1, ndip):
-            hdist = j * hdip_dist
-            vdist = j * vdip_dist + fault.dtop
-            for local_lon, local_lat, local_depth in srf_points[
-                plane_offset : plane_offset + nstrike
-            ]:
-                new_lat, new_lon = geo.ll_shift(
-                    local_lat, local_lon, hdist, fault.dip_dir
-                )
-                srf_points.append((new_lon, new_lat, vdist))
-
-        plane_offset += nstrike * ndip
-        srf_header.append({"nstrike": nstrike, "ndip": ndip, "strike": strike})
-
-    return srf_header, srf_points

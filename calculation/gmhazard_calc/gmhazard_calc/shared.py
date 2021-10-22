@@ -13,6 +13,7 @@ from gmhazard_calc import constants
 from gmhazard_calc import rupture
 from gmhazard_calc import utils
 from gmhazard_calc import hazard
+from qcore import nhm
 
 
 def get_IM_params(
@@ -239,6 +240,15 @@ def get_gm_prob_df(
             columns={str(im): "mu", f"{im}_sigma": "sigma"}
         )
 
+        # Compute and apply directivty effects
+        # TODO Remove
+        nhm_dict = nhm.load_nhm(branch.flt_erf_ffp)
+        for key, fault in nhm_dict.items():
+            lon_lat_depth, planes = rupture.get_fault_header_points(fault)
+            site = np.asarray([[site_info.lon, site_info.lat]])
+            fdi, _ = sha_calc.bea20.compute_fault_directivity(lon_lat_depth, planes, site, 10, 2, fault.mw, fault.rake, im.period)
+            # Apply fdi to mu_data
+
         result_df = sha_calc.parametric_gm_excd_prob(im_levels, im_data,)
     # Non-parametric
     else:
@@ -286,11 +296,6 @@ def get_im_data(
     # No IM data for the specified branch and source type
     if im_data is None:
         return None
-
-    # Compute and apply directivty effects
-    # sha_calc.compute_directivity_effects()
-    ims = [IM.from_str(im) for im in im_data.filter(regex="^PGA$|^pSA_[0-9]+.[0-9]+$").columns]
-    sha_calc.compute_directivity_effects(branch, site_info, ims)
 
     if im_component != IMComponent.RotD50:
         if im_data_type is constants.IMDataType.parametric:
