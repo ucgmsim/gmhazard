@@ -11,6 +11,7 @@ DEFAULT_VERSION_NUMBER = "2"
 
 DATASETS_ENSEMBLE_LABEL = "datasets"
 
+TECT_TYPES = ["ACTIVE_SHALLOW", "SUBDUCTION_INTERFACE", "SUBDUCTION_SLAB"]
 
 def iterable_but_not_string(arg):
     """
@@ -151,7 +152,14 @@ def create_ensemble(
             }
             leaves = {}
 
-            db_match = list(zip(tect_types, branch))
+            db_match = []
+            original_db_match = list(zip(tect_types, branch))
+            for tect_type, model in original_db_match:
+                if tect_type == "SUBDUCTION":
+                    db_match.append(("SUBDUCTION_SLAB", model))
+                    db_match.append(("SUBDUCTION_INTERFACE", model))
+                else:
+                    db_match.append((tect_type, model))
 
             pert_str = f"pert_{pert_n:02}"
             for j, (tect_type, model) in enumerate(db_match):
@@ -177,7 +185,7 @@ def create_ensemble(
 
             branch_dict["leaves"] = leaves
             branch_dict["weight"] = calculate_branch_weight(
-                emp_weight_dict, db_match, im, n_perts
+                emp_weight_dict, original_db_match, im, n_perts
             )
 
             branch_name = f"branch_{i + 1:0{br_sig_figs}}_{'_'.join(branch)}"
