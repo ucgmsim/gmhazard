@@ -36,7 +36,7 @@ ACTIVE_SHALLOW:
       - CY_14
   PGA:
     geom:
-      - Br_10  # ZA_06 or Br_10 or BSSAs_14 or CB_14 or CY_14 or ASK_14
+      - Br_10  # ZA_06 or Br_10 or BSSA_14 or CB_14 or CY_14 or ASK_14
       - ASK_14
       - BSSA_14
       - CB_14
