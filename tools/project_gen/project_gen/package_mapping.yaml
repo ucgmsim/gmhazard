@@ -3,18 +3,6 @@ pga:
   disagg_return_periods: [25, 100, 500, 2500]
   uhs_return_periods: []
 
-pga_psa_pgv_temp:
-  ims:
-    - PGA
-    - PGV
-    - pSA_0.1
-    - pSA_1.0
-    - pSA_3.0
-    - pSA_7.5
-  disagg_return_periods: [25, 100]
-  uhs_return_periods: [25, 100]
-  im_components: ["RotD50", "Larger"]
-
 pga_psa:
   ims:
     - PGA
