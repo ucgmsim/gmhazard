@@ -380,7 +380,9 @@ const GmsViewer = () => {
       <DownloadButton
         disabled={invalidInputs()}
         downloadURL={
-          CONSTANTS.PROJECT_API_GMS_DOWNLOAD_ENDPOINT + "/" + downloadToken
+          isAuthenticated
+            ? CONSTANTS.PROJECT_API_GMS_DOWNLOAD_ENDPOINT + "/" + downloadToken
+            : CONSTANTS.PUBLIC_API_GMS_DOWNLOAD_ENDPOINT + "/" + downloadToken
         }
         fileName="Projects_Ground_Motion_Selection.zip"
       />
