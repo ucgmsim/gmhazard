@@ -69,7 +69,7 @@ def hypo_average_plots(
 
     x, y = np.meshgrid(lon_values, lat_values)
     site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
-    fdi_average, fdi_array = sha_calc.bea20.compute_fault_directivity(lon_lat_depth, planes, site_coords, 10, 2, fault.mw, fault.rake, im.period)
+    fdi_average, fdi_array = sha_calc.bea20.compute_fault_directivity(lon_lat_depth, planes, site_coords, 10, 2, fault.mw, fault.rake, [im.period])
 
     for index, fdi in enumerate(fdi_array):
         plots.plot_fdi(

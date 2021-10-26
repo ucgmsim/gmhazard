@@ -9,10 +9,11 @@ import time
 from qcore import srf
 from IM_calculation.source_site_dist import src_site_dist
 from sha_calc.directivity.bea20 import bea20, utils
+from gmhazard_calc.constants import DEFAULT_PSA_PERIODS
 
 
 def compute_directivity_srf_single(
-    srf_file: str, srf_csv: Path, sites: np.ndarray, period: float = 3.0
+    srf_file: str, srf_csv: Path, sites: np.ndarray, periods: List[float] = DEFAULT_PSA_PERIODS
 ):
     """Computes directivity effects at the given sites with the given srf data for a single hypocentre
 
@@ -24,8 +25,9 @@ def compute_directivity_srf_single(
         Path to the location of the srf csv file
     sites: np.ndarray
         Numpy array full of site lon/lat values [[lon, lat],...]
-    period: float, optional
-        Float to indicate which period to extract from fD to get fDi
+    periods: List[float], optional
+        The periods to calculate for the bea20 model's fD
+        If not set then will be all the default pSA periods for GMHazard
     """
     (
         mag,
@@ -45,12 +47,12 @@ def compute_directivity_srf_single(
         hyp_down_dip,
         mag,
         rake,
-        period,
+        periods=periods,
     )
 
 
 def compute_directivity_srf_multi(
-    srf_file: str, srf_csv: Path, sites: np.ndarray, period: float = 3.0
+    srf_file: str, srf_csv: Path, sites: np.ndarray, periods: List[float] = DEFAULT_PSA_PERIODS
 ):
     """Computes directivity effects at the given sites with the given srf data using hypocentre averaging
 
@@ -62,8 +64,9 @@ def compute_directivity_srf_multi(
         Path to the location of the srf csv file
     sites: np.ndarray
         Numpy array full of site lon/lat values [[lon, lat],...]
-    period: float, optional
-        Float to indicate which period to extract from fD to get fDi
+    periods: List[float], optional
+        The periods to calculate for the bea20 model's fD
+        If not set then will be all the default pSA periods for GMHazard
     """
     (
         mag,
@@ -84,7 +87,7 @@ def compute_directivity_srf_multi(
         hyp_down_dip,
         mag,
         rake,
-        period,
+        periods=periods,
     )
 
 
@@ -96,7 +99,7 @@ def compute_fault_directivity(
     hyp_down_dip: int,
     mag: float,
     rake: float,
-    period: float,
+    periods: List[float] = DEFAULT_PSA_PERIODS,
     return_fdi_array: bool = False,
     fault_name: str = "Nothing",
 ):
@@ -120,8 +123,9 @@ def compute_fault_directivity(
         The magnitude of the fault
     rake: float
         The rake of the fault
-    period: float
-        The period for fdi to extract from the bea20 models fd
+    periods: List[float], optional
+        The periods to calculate for the bea20 model's fD
+        If not set then will be all the default pSA periods for GMHazard
     return_fdi_array: bool, optional
         Decides if all results from each hypocentre calculation is saved and returned
         Default is False due to the high RAM requirement for higher hypocentre runs
@@ -142,7 +146,7 @@ def compute_fault_directivity(
             nominal_strike2,
             mag,
             rake,
-            period,
+            periods,
         )
     else:
         # Customise the planes to set different hypocentres
@@ -160,7 +164,7 @@ def compute_fault_directivity(
             # Gets the plane index of the hypocentre
             plane_index = planes_index[index]
 
-            print(f"Computing Directivity {fault_name} {index}/{hyp_along_strike * hyp_down_dip}")
+            print(f"Computing Directivity {fault_name} {index+1}/{hyp_along_strike * hyp_down_dip}")
 
             fdi, _ = _compute_directivity_effect(
                 lon_lat_depth,
@@ -171,7 +175,7 @@ def compute_fault_directivity(
                 nominal_strike2,
                 mag,
                 rake,
-                period,
+                periods,
             )
 
             # Check if fdi_array is needed and if not then sum results to manage RAM better
@@ -201,7 +205,7 @@ def _compute_directivity_effect(
     nominal_strike2: np.ndarray,
     mag: float,
     rake: float,
-    period: float,
+    periods: List[float],
 ):
     """
     Does the computation of directivity and GC2 given a set of planes with a set hypocentre.
@@ -224,8 +228,8 @@ def _compute_directivity_effect(
         The magnitude of the fault
     rake: float
         The rake of the fault
-    period: float
-        The period for fdi to extract from the bea20 models fd
+    periods: List[float]
+        The periods to calculate for the bea20 model's fD
     """
     # Calculate rx ry from GC2
     rx, ry = src_site_dist.calc_rx_ry_GC2(
@@ -251,11 +255,11 @@ def _compute_directivity_effect(
     d = (planes[plane_index]["dhyp"] - z_tor) / math.sin(math.radians(dip))
 
     # Use the bea20 model to work out directivity (fd) at the given sites
-    fd, fdi, phi_red, phi_redi, predictor_functions, other = bea20(
-        mag, ry, rx, s_max, d, t_bot, d_bot, rake, dip, period
+    fd, phi_red, predictor_functions, other = bea20(
+        mag, ry, rx, s_max, d, t_bot, d_bot, rake, dip, np.asarray(periods)
     )
 
-    return fdi, (fd, phi_red, phi_redi, predictor_functions, other)
+    return fd, (phi_red, predictor_functions, other)
 
 
 def _srf_pre_process(srf_file: str, srf_csv: Path):

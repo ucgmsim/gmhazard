@@ -15,7 +15,7 @@ def bea20(
     Dbot: float,
     Rake: float,
     Dip: float,
-    Period: float,
+    Periods: np.ndarray,
     rupture_type: int = 0,
 ):
     """
@@ -48,8 +48,8 @@ def bea20(
         The Rake of the fault
     Dip: float
         The Dip of the fault at the hypocentre
-    Period: float
-        Used for specifying the period for a pSA IM
+    Periods: np.ndarray
+        Numpy array of periods to calculate fD for
     rupture_type: int, optional
         0 for rupture_type based on rake (auto)
         1 for a strike slip
@@ -139,7 +139,6 @@ def bea20(
     # Calculate fD
 
     # Constants
-    Per = np.logspace(-2, 1, 1000)
     coefb = [-0.0336, 0.5469]  # mag dependence of bmax
     coefc = [0.2858, -1.2090]  # mag scaling of Tpeak
     coefd1 = [0.9928, -4.8300]  # mag dependence of fG0 for SOF=1
@@ -161,14 +160,12 @@ def bea20(
     Tpeak = 10 ** (coefc[1] + coefc[0] * M)
 
     # Period dependent coefficients: a and b
-    x = np.log10(Per / Tpeak)
+    x = np.log10(Periods / Tpeak)
     b = bmax * np.exp((-(x ** 2)) / (2 * SigG ** 2))
     a = -b * fG0
 
-    # fd and fdi
+    # Calculate fD
     fD = (a + fG[:, np.newaxis] * b) * fdist[:, np.newaxis]
-    ti = np.argmin(np.abs(Per - Period))
-    fDi = fD[:, ti]
 
     PhiPer = [0.01, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1, 1.5, 2, 3, 4, 5, 7.5, 10]
     e1 = [
@@ -188,12 +185,11 @@ def bea20(
         0.188,
         0.199,
     ]
-    e1interp = np.interp(np.log(Per), np.log(PhiPer), e1)
+    e1interp = np.interp(np.log(Periods), np.log(PhiPer), e1)
 
-    # phired and phiredi
+    # phired
     PhiRed = np.matlib.repmat(e1interp, len(fD), 1)
     PhiRed[np.invert(Footprint), :] = 0
-    PhiRedi = PhiRed[:, ti]
 
     predictor_functions = {
         "fG": fG,
@@ -203,7 +199,7 @@ def bea20(
         "fs2": fs2,
     }
     other = {
-        "Per": Per,
+        "Periods": Periods,
         "Rmax": Rmax,
         "Footprint": Footprint,
         "Tpeak": Tpeak,
@@ -212,4 +208,4 @@ def bea20(
         "S2": S2,
     }
 
-    return fD, fDi, PhiRed, PhiRedi, predictor_functions, other
+    return fD, PhiRed, predictor_functions, other

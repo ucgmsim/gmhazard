@@ -164,8 +164,7 @@ def plot_fdi(
     """
     fig, (ax1) = plt.subplots(1, 1, figsize=(21, 13.5), dpi=144)
 
-    m = ax1.contourf(x, y, np.exp(fdi), cmap="bwr", levels=11)
-    ax1.contour(x, y, np.exp(fdi), colors="k", linewidths=0.3, levels=11)
+    c = ax1.pcolormesh(x, y, np.exp(fdi), cmap='bwr')
     ax1.scatter(
         lon_lat_depth[:, 0][::2],
         lon_lat_depth[:, 1][::2],
@@ -173,7 +172,7 @@ def plot_fdi(
         label="srf points",
         s=1.0,
     )
-    plt.colorbar(m, pad=0.01)
+    plt.colorbar(c)
     ax1.set_title(title)
 
     fig.savefig(f"{output_ffp}")

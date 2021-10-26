@@ -38,20 +38,18 @@ def bea20_directivity_plots(
     x, y = np.meshgrid(lon_values, lat_values)
     site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
-    fdi, (
-        fd,
+    fd, (
         phi_red,
-        phi_redi,
         predictor_functions,
         other,
-    ) = compute_directivity_srf_single(srf_file, srf_csv, site_coords, period)
+    ) = compute_directivity_srf_single(srf_file, srf_csv, site_coords, [3])
 
     s2 = other["S2"].reshape((100, 100))
     f_s2 = predictor_functions["fs2"].reshape((100, 100))
     f_theta = predictor_functions["ftheta"].reshape((100, 100))
     f_g = predictor_functions["fG"].reshape((100, 100))
     f_dist = predictor_functions["fdist"].reshape((100, 100))
-    fdi = fdi.reshape((100, 100))
+    fd = fd.reshape((100, 100))
 
     plots.validation_plot(
         x,
@@ -61,7 +59,7 @@ def bea20_directivity_plots(
         f_theta,
         f_g,
         f_dist,
-        fdi,
+        fd,
         lon_lat_depth,
         output_dir,
     )
