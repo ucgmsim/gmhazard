@@ -73,34 +73,22 @@ const SiteSelectionViewer = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectMaps(signal, token, queryString)
+          getProjectMaps(queryString, token, signal)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
               updateMap(responseData);
             })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                setShowSpinner(false);
-                setShowErrorMessage({ isError: true, errorCode: error });
-              }
-              console.log(error);
-            });
+            .catch((error) => catchError(error));
         })();
       } else {
-        getPublicProjectMaps(signal, queryString)
+        getPublicProjectMaps(queryString, signal)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
             updateMap(responseData);
           })
-          .catch((error) => {
-            if (error.name !== "AbortError") {
-              setShowSpinner(false);
-              setShowErrorMessage({ isError: true, errorCode: error });
-            }
-            console.log(error);
-          });
+          .catch((error) => catchError(error));
       }
     }
 
@@ -114,6 +102,14 @@ const SiteSelectionViewer = () => {
     setVS30Map(mapData["vs30_plot"]);
     setShowSpinner(false);
     setShowImages(true);
+  };
+
+  const catchError = (error) => {
+    if (error.name !== "AbortError") {
+      setShowSpinner(false);
+      setShowErrorMessage({ isError: true, errorCode: error });
+    }
+    console.log(error);
   };
 
   return (

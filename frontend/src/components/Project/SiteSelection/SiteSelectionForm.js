@@ -85,15 +85,13 @@ const SiteSelectionForm = () => {
       (async () => {
         const token = await getTokenSilently();
 
-        getProjectID(signal, token)
+        getProjectID(token, signal)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
             setProjectIdOptions(responseData);
           })
-          .catch((error) => {
-            console.log(error);
-          });
+          .catch((error) => console.log(error));
       })();
     } else {
       getPublicProjectID(signal)
@@ -102,9 +100,7 @@ const SiteSelectionForm = () => {
           const responseData = await response.json();
           setProjectIdOptions(responseData);
         })
-        .catch((error) => {
-          console.log(error);
-        });
+        .catch((error) => console.log(error));
     }
 
     return () => {
@@ -127,7 +123,7 @@ const SiteSelectionForm = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectLocation(signal, token, queryString)
+          getProjectLocation(queryString, token, signal)
             .then(handleErrors)
             .then(async ([location, im, disaggRPs, uhsRPs]) => {
               const responseLocationData = await location.json();
@@ -142,12 +138,10 @@ const SiteSelectionForm = () => {
                 responseUHSRPData
               );
             })
-            .catch((error) => {
-              console.log(error);
-            });
+            .catch((error) => console.log(error));
         })();
       } else {
-        getPublicProjectLocation(signal, queryString)
+        getPublicProjectLocation(queryString, signal)
           .then(handleErrors)
           .then(async ([location, im, disaggRPs, uhsRPs]) => {
             const responseLocationData = await location.json();
@@ -162,9 +156,7 @@ const SiteSelectionForm = () => {
               responseUHSRPData
             );
           })
-          .catch((error) => {
-            console.log(error);
-          });
+          .catch((error) => console.log(error));
       }
     }
 
@@ -257,26 +249,22 @@ const SiteSelectionForm = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectGMSID(signal, token, queryString)
+          getProjectGMSID(queryString, token, signal)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
               updateGMSDropdown(responseData);
             })
-            .catch((error) => {
-              console.log(error);
-            });
+            .catch((error) => console.log(error));
         })();
       } else {
-        getPublicProjectGMSID(signal, queryString)
+        getPublicProjectGMSID(queryString, signal)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
             updateGMSDropdown(responseData);
           })
-          .catch((error) => {
-            console.log(error);
-          });
+          .catch((error) => console.log(error));
       }
     }
 

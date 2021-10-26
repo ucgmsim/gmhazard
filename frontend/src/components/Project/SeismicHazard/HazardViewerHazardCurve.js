@@ -116,34 +116,22 @@ const HazardViewerHazardCurve = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectHazardCurve(signal, token, queryString)
+          getProjectHazardCurve(queryString, token, signal)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
               updateHazardData(responseData);
             })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                setShowSpinnerHazard(false);
-                setShowErrorMessage({ isError: true, errorCode: error });
-              }
-              console.log(error);
-            });
+            .catch((error) => catchError(error));
         })();
       } else {
-        getPublicProjectHazardCurve(signal, queryString)
+        getPublicProjectHazardCurve(queryString, signal)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
             updateHazardData(responseData);
           })
-          .catch((error) => {
-            if (error.name !== "AbortError") {
-              setShowSpinnerHazard(false);
-              setShowErrorMessage({ isError: true, errorCode: error });
-            }
-            console.log(error);
-          });
+          .catch((error) => catchError(error));
       }
     }
 
@@ -226,6 +214,14 @@ const HazardViewerHazardCurve = () => {
     setDownloadToken(hazardData["download_token"]);
     setShowSpinnerHazard(false);
     setShowPlotHazard(true);
+  };
+
+  const catchError = (error) => {
+    if (error.name !== "AbortError") {
+      setShowSpinnerHazard(false);
+      setShowErrorMessage({ isError: true, errorCode: error });
+    }
+    console.log(error);
   };
 
   return (

@@ -109,34 +109,22 @@ const HazardViewerUHS = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectUHS(signal, token, queryString)
+          getProjectUHS(queryString, token, signal)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
               updateUHSData(responseData);
             })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                setShowSpinnerUHS(false);
-                setShowErrorMessage({ isError: true, errorCode: error });
-              }
-              console.log(error);
-            });
+            .catch((error) => catchError(error));
         })();
       } else {
-        getPublicProjectUHS(signal, queryString)
+        getPublicProjectUHS(queryString, signal)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
             updateUHSData(responseData);
           })
-          .catch((error) => {
-            if (error.name !== "AbortError") {
-              setShowSpinnerUHS(false);
-              setShowErrorMessage({ isError: true, errorCode: error });
-            }
-            console.log(error);
-          });
+          .catch((error) => catchError(error));
       }
     }
 
@@ -186,6 +174,14 @@ const HazardViewerUHS = () => {
 
     setShowSpinnerUHS(false);
     setShowPlotUHS(true);
+  };
+
+  const catchError = (error) => {
+    if (error.name !== "AbortError") {
+      setShowSpinnerUHS(false);
+      setShowErrorMessage({ isError: true, errorCode: error });
+    }
+    console.log(error);
   };
 
   return (

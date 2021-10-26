@@ -76,34 +76,22 @@ const ScenarioViewer = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectScenario(signal, token, queryString)
+          getProjectScenario(queryString, token, signal)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
               updateScenarioData(responseData);
             })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                setIsLoading(false);
-                setShowErrorMessage({ isError: true, errorCode: error });
-              }
-              console.log(error);
-            });
+            .catch((error) => catchError(error));
         })();
       } else {
-        getPublicProjectScenario(signal, queryString)
+        getPublicProjectScenario(queryString, signal)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
             updateScenarioData(responseData);
           })
-          .catch((error) => {
-            if (error.name !== "AbortError") {
-              setIsLoading(false);
-              setShowErrorMessage({ isError: true, errorCode: error });
-            }
-            console.log(error);
-          });
+          .catch((error) => catchError(error));
       }
     }
 
@@ -130,6 +118,14 @@ const ScenarioViewer = () => {
     });
 
     setIsLoading(false);
+  };
+
+  const catchError = (error) => {
+    if (error.name !== "AbortError") {
+      setIsLoading(false);
+      setShowErrorMessage({ isError: true, errorCode: error });
+    }
+    console.log(error);
   };
 
   return (

@@ -136,40 +136,22 @@ const HazadViewerDisaggregation = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectDisaggregation(signal, token, queryString)
+          getProjectDisaggregation(queryString, token, signal)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
               updateDisaggData(responseData);
             })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                setShowSpinnerContribTable(false);
-                setShowSpinnerDisaggEpsilon(false);
-                setShowSpinnerDisaggFault(false);
-
-                setShowErrorMessage({ isError: true, errorCode: error });
-              }
-              console.log(error);
-            });
+            .catch((error) => catchError(error));
         })();
       } else {
-        getPublicProjectDisaggregation(signal, queryString)
+        getPublicProjectDisaggregation(queryString, signal)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
             updateDisaggData(responseData);
           })
-          .catch((error) => {
-            if (error.name !== "AbortError") {
-              setShowSpinnerContribTable(false);
-              setShowSpinnerDisaggEpsilon(false);
-              setShowSpinnerDisaggFault(false);
-
-              setShowErrorMessage({ isError: true, errorCode: error });
-            }
-            console.log(error);
-          });
+          .catch((error) => catchError(error));
       }
     }
 
@@ -197,8 +179,6 @@ const HazadViewerDisaggregation = () => {
   const updateDisaggData = (disaggData) => {
     setDownloadToken(disaggData["download_token"]);
 
-    setShowSpinnerDisaggEpsilon(false);
-
     const srcDisaggPlot = disaggData["gmt_plot_src"];
     const epsDisaggPlot = disaggData["gmt_plot_eps"];
 
@@ -208,13 +188,10 @@ const HazadViewerDisaggregation = () => {
     });
 
     setShowSpinnerDisaggEpsilon(false);
-
     setShowSpinnerDisaggFault(false);
-
     setShowSpinnerContribTable(false);
 
     setShowPlotDisaggEpsilon(true);
-
     setShowPlotDisaggFault(true);
 
     setShowContribTable(true);
@@ -246,6 +223,17 @@ const HazadViewerDisaggregation = () => {
 
     setDisaggMeanData(disaggData["disagg_data"]);
     setDisaggContributionData(data);
+  };
+
+  const catchError = (error) => {
+    if (error.name !== "AbortError") {
+      setShowSpinnerContribTable(false);
+      setShowSpinnerDisaggEpsilon(false);
+      setShowSpinnerDisaggFault(false);
+
+      setShowErrorMessage({ isError: true, errorCode: error });
+    }
+    console.log(error);
   };
 
   return (
