@@ -112,9 +112,7 @@ def proxy_to_api(
             api_destination + route + querystring, headers={"Authorization": api_token},
         )
 
-    response = flask.Response(resp.content, resp.status_code, mimetype=content_type)
-
-    return response
+    return flask.Response(resp.content, resp.status_code, mimetype=content_type)
 
 
 def run_project_crosscheck(db_user_projects, public_projects, project_api_projects):
