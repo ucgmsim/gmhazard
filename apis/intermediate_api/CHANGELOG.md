@@ -1,3 +1,11 @@
+## October 27, 2021
+
+### Remove Authentication for the Projects tab - ([PR #23](https://github.com/ucgmsim/gmhazard/pull/23))
+
+- Removed authentication requirements for the Project tab
+  - Any private projects will still require authentication to access.
+  - PublicAPI proxy is created to hit the ProjectAPI with no Auth0 authentication required.
+
 ## September 2, 2021
 
 ### Tidy up Intermediate API and ReadMEs - ([PR #7](https://github.com/ucgmsim/gmhazard/pull/7))
