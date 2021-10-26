@@ -285,7 +285,7 @@ export const SCENARIO_VIEWER_GUIDE_INSTRUCTION = [
 export const PROJECT_SITE_SELECTION_GUIDE_MSG =
   "Please do the following steps to see images.";
 export const PROJECT_SITE_SELECTION_INSTRUCTION = [
-  "Choose the Project ID.",
+  "Choose the Project.",
   "Choose the Location.",
   "Choose the Vs30.",
   "Choose the Z1.0 | Z2.5.",

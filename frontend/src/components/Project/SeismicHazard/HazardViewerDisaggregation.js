@@ -14,6 +14,8 @@ import {
   ErrorMessage,
   ContributionTable,
 } from "components/common";
+import { getProjectDisaggregation } from "apis/ProjectAPI";
+import { getPublicProjectDisaggregation } from "apis/PublicProjectAPI";
 import {
   APIQueryBuilder,
   handleErrors,
@@ -104,246 +106,53 @@ const HazadViewerDisaggregation = () => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const getDisaggData = async () => {
-      if (projectDisaggGetClick !== null) {
-        try {
+    if (projectDisaggGetClick !== null) {
+      setShowErrorMessage({ isError: false, errorCode: null });
+
+      setShowSpinnerDisaggEpsilon(true);
+
+      setShowSpinnerDisaggFault(true);
+
+      setShowPlotDisaggEpsilon(false);
+      setShowPlotDisaggFault(false);
+
+      setShowContribTable(false);
+      setShowSpinnerContribTable(true);
+
+      let queryString = APIQueryBuilder({
+        project_id: projectId["value"],
+        station_id: createStationID(
+          projectLocationCode[projectLocation],
+          projectVS30,
+          projectZ1p0,
+          projectZ2p5
+        ),
+        im: combineIMwithPeriod(projectSelectedIM, projectSelectedIMPeriod),
+        rp: projectSelectedDisagRP,
+        im_component: projectSelectedIMComponent,
+      });
+
+      if (isAuthenticated) {
+        (async () => {
           const token = await getTokenSilently();
-          setShowErrorMessage({ isError: false, errorCode: null });
 
-          setShowSpinnerDisaggEpsilon(true);
-
-          setShowSpinnerDisaggFault(true);
-
-          setShowPlotDisaggEpsilon(false);
-          setShowPlotDisaggFault(false);
-
-          setShowContribTable(false);
-          setShowSpinnerContribTable(true);
-
-          await fetch(
-            CONSTANTS.INTERMEDIATE_API_URL +
-              CONSTANTS.PROJECT_API_HAZARD_DISAGG_ENDPOINT +
-              APIQueryBuilder({
-                project_id: projectId["value"],
-                station_id: createStationID(
-                  projectLocationCode[projectLocation],
-                  projectVS30,
-                  projectZ1p0,
-                  projectZ2p5
-                ),
-                im: combineIMwithPeriod(
-                  projectSelectedIM,
-                  projectSelectedIMPeriod
-                ),
-                rp: projectSelectedDisagRP,
-                im_component: projectSelectedIMComponent,
-              }),
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              signal: signal,
-            }
-          )
+          getProjectDisaggregation(queryString, token, signal)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
-
-              setDownloadToken(responseData["download_token"]);
-
-              setShowSpinnerDisaggEpsilon(false);
-
-              const srcDisaggPlot = responseData["gmt_plot_src"];
-              const epsDisaggPlot = responseData["gmt_plot_eps"];
-
-              setDisaggPlotData({
-                src: srcDisaggPlot,
-                eps: epsDisaggPlot,
-              });
-
-              setShowSpinnerDisaggEpsilon(false);
-
-              setShowSpinnerDisaggFault(false);
-
-              setShowSpinnerContribTable(false);
-
-              setShowPlotDisaggEpsilon(true);
-
-              setShowPlotDisaggFault(true);
-
-              setShowContribTable(true);
-
-              const disaggTotalData =
-                responseData["disagg_data"]["total_contribution"];
-
-              const extraInfo = responseData["extra_info"];
-              try {
-                extraInfo.rupture_name["distributed_seismicity"] =
-                  "Distributed Seismicity";
-              } catch (err) {
-                console.log(err.message);
-              }
-
-              const data = Array.from(Object.keys(disaggTotalData), (key) => {
-                return [
-                  key,
-                  extraInfo.rupture_name[key],
-                  disaggTotalData[key],
-                  extraInfo.annual_rec_prob[key],
-                  extraInfo.magnitude[key],
-                  extraInfo.rrup[key],
-                ];
-              });
-
-              data.sort((entry1, entry2) => {
-                return entry1[2] > entry2[2] ? -1 : 1;
-              });
-
-              setDisaggMeanData(responseData["disagg_data"]);
-              setDisaggContributionData(data);
+              updateDisaggData(responseData);
             })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                setShowSpinnerContribTable(false);
-                setShowSpinnerDisaggEpsilon(false);
-                setShowSpinnerDisaggFault(false);
-
-                setShowErrorMessage({ isError: true, errorCode: error });
-              }
-
-              console.log(error);
-            });
-        } catch (error) {
-          setShowSpinnerContribTable(false);
-          setShowSpinnerDisaggEpsilon(false);
-          setShowSpinnerDisaggFault(false);
-
-          setShowErrorMessage({ isError: true, errorCode: error });
-          console.log(error);
-        }
+            .catch((error) => catchError(error));
+        })();
+      } else {
+        getPublicProjectDisaggregation(queryString, signal)
+          .then(handleErrors)
+          .then(async (response) => {
+            const responseData = await response.json();
+            updateDisaggData(responseData);
+          })
+          .catch((error) => catchError(error));
       }
-    };
-
-    const getPublicDisaggData = async () => {
-      if (projectDisaggGetClick !== null) {
-        try {
-          setShowErrorMessage({ isError: false, errorCode: null });
-
-          setShowSpinnerDisaggEpsilon(true);
-
-          setShowSpinnerDisaggFault(true);
-
-          setShowPlotDisaggEpsilon(false);
-          setShowPlotDisaggFault(false);
-
-          setShowContribTable(false);
-          setShowSpinnerContribTable(true);
-
-          await fetch(
-            CONSTANTS.INTERMEDIATE_API_URL +
-              CONSTANTS.PUBLIC_API_HAZARD_DISAGG_ENDPOINT +
-              APIQueryBuilder({
-                project_id: projectId["value"],
-                station_id: createStationID(
-                  projectLocationCode[projectLocation],
-                  projectVS30,
-                  projectZ1p0,
-                  projectZ2p5
-                ),
-                im: combineIMwithPeriod(
-                  projectSelectedIM,
-                  projectSelectedIMPeriod
-                ),
-                rp: projectSelectedDisagRP,
-                im_component: projectSelectedIMComponent,
-              }),
-            {
-              signal: signal,
-            }
-          )
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-
-              setDownloadToken(responseData["download_token"]);
-
-              setShowSpinnerDisaggEpsilon(false);
-
-              const srcDisaggPlot = responseData["gmt_plot_src"];
-              const epsDisaggPlot = responseData["gmt_plot_eps"];
-
-              setDisaggPlotData({
-                src: srcDisaggPlot,
-                eps: epsDisaggPlot,
-              });
-
-              setShowSpinnerDisaggEpsilon(false);
-
-              setShowSpinnerDisaggFault(false);
-
-              setShowSpinnerContribTable(false);
-
-              setShowPlotDisaggEpsilon(true);
-
-              setShowPlotDisaggFault(true);
-
-              setShowContribTable(true);
-
-              const disaggTotalData =
-                responseData["disagg_data"]["total_contribution"];
-
-              const extraInfo = responseData["extra_info"];
-              try {
-                extraInfo.rupture_name["distributed_seismicity"] =
-                  "Distributed Seismicity";
-              } catch (err) {
-                console.log(err.message);
-              }
-
-              const data = Array.from(Object.keys(disaggTotalData), (key) => {
-                return [
-                  key,
-                  extraInfo.rupture_name[key],
-                  disaggTotalData[key],
-                  extraInfo.annual_rec_prob[key],
-                  extraInfo.magnitude[key],
-                  extraInfo.rrup[key],
-                ];
-              });
-
-              data.sort((entry1, entry2) => {
-                return entry1[2] > entry2[2] ? -1 : 1;
-              });
-
-              setDisaggMeanData(responseData["disagg_data"]);
-              setDisaggContributionData(data);
-            })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                setShowSpinnerContribTable(false);
-                setShowSpinnerDisaggEpsilon(false);
-                setShowSpinnerDisaggFault(false);
-
-                setShowErrorMessage({ isError: true, errorCode: error });
-              }
-
-              console.log(error);
-            });
-        } catch (error) {
-          setShowSpinnerContribTable(false);
-          setShowSpinnerDisaggEpsilon(false);
-          setShowSpinnerDisaggFault(false);
-
-          setShowErrorMessage({ isError: true, errorCode: error });
-          console.log(error);
-        }
-      }
-    };
-
-    if (isAuthenticated) {
-      getDisaggData();
-    } else {
-      getPublicDisaggData();
     }
 
     return () => {
@@ -365,6 +174,66 @@ const HazadViewerDisaggregation = () => {
     }
 
     setToggleText(rowsToggled ? "Show Less..." : "Show More...");
+  };
+
+  const updateDisaggData = (disaggData) => {
+    setDownloadToken(disaggData["download_token"]);
+
+    const srcDisaggPlot = disaggData["gmt_plot_src"];
+    const epsDisaggPlot = disaggData["gmt_plot_eps"];
+
+    setDisaggPlotData({
+      src: srcDisaggPlot,
+      eps: epsDisaggPlot,
+    });
+
+    setShowSpinnerDisaggEpsilon(false);
+    setShowSpinnerDisaggFault(false);
+    setShowSpinnerContribTable(false);
+
+    setShowPlotDisaggEpsilon(true);
+    setShowPlotDisaggFault(true);
+
+    setShowContribTable(true);
+
+    const disaggTotalData = disaggData["disagg_data"]["total_contribution"];
+
+    const extraInfo = disaggData["extra_info"];
+    try {
+      extraInfo.rupture_name["distributed_seismicity"] =
+        "Distributed Seismicity";
+    } catch (err) {
+      console.log(err.message);
+    }
+
+    const data = Array.from(Object.keys(disaggTotalData), (key) => {
+      return [
+        key,
+        extraInfo.rupture_name[key],
+        disaggTotalData[key],
+        extraInfo.annual_rec_prob[key],
+        extraInfo.magnitude[key],
+        extraInfo.rrup[key],
+      ];
+    });
+
+    data.sort((entry1, entry2) => {
+      return entry1[2] > entry2[2] ? -1 : 1;
+    });
+
+    setDisaggMeanData(disaggData["disagg_data"]);
+    setDisaggContributionData(data);
+  };
+
+  const catchError = (error) => {
+    if (error.name !== "AbortError") {
+      setShowSpinnerContribTable(false);
+      setShowSpinnerDisaggEpsilon(false);
+      setShowSpinnerDisaggFault(false);
+
+      setShowErrorMessage({ isError: true, errorCode: error });
+    }
+    console.log(error);
   };
 
   return (
