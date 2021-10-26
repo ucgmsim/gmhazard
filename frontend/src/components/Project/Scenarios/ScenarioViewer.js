@@ -11,6 +11,8 @@ import {
   ErrorMessage,
   ScenarioPlot,
 } from "components/common";
+import { getProjectScenario } from "apis/ProjectAPI";
+import { getPublicProjectScenario } from "apis/PublicProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 
 import "assets/style/ScenarioViewer.css";
@@ -51,54 +53,34 @@ const ScenarioViewer = () => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const getScenarioData = async () => {
-      if (
-        projectScenarioGetClick !== null &&
-        projectSelectedScenarioIMComponent !== null
-      ) {
-        try {
+    if (
+      projectScenarioGetClick !== null &&
+      projectSelectedScenarioIMComponent !== null
+    ) {
+      setIsLoading(true);
+      setProjectScenarioData(null);
+      setShowErrorMessage({ isError: false, errorCode: null });
+
+      let queryString = APIQueryBuilder({
+        project_id: projectId["value"],
+        station_id: createStationID(
+          projectLocationCode[projectLocation],
+          projectVS30,
+          projectZ1p0,
+          projectZ2p5
+        ),
+        im_component: projectSelectedScenarioIMComponent,
+      });
+
+      if (isAuthenticated) {
+        (async () => {
           const token = await getTokenSilently();
 
-          setIsLoading(true);
-          setProjectScenarioData(null);
-          setShowErrorMessage({ isError: false, errorCode: null });
-
-          let queryString = APIQueryBuilder({
-            project_id: projectId["value"],
-            station_id: createStationID(
-              projectLocationCode[projectLocation],
-              projectVS30,
-              projectZ1p0,
-              projectZ2p5
-            ),
-            im_component: projectSelectedScenarioIMComponent,
-          });
-
-          await fetch(
-            CONSTANTS.INTERMEDIATE_API_URL +
-              CONSTANTS.PROJECT_API_SCENARIOS_ENDPOINT +
-              queryString,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              signal: signal,
-            }
-          )
+          getProjectScenario(signal, token, queryString)
             .then(handleErrors)
-            .then(async (scenarioResponse) => {
-              const responseData = await scenarioResponse.json();
-              setProjectScenarioData(responseData);
-              setDownloadToken(responseData["download_token"]);
-
-              setExtraInfo({
-                from: "project",
-                id: projectId["value"],
-                location: projectLocation,
-                vs30: projectVS30,
-              });
-
-              setIsLoading(false);
+            .then(async (response) => {
+              const responseData = await response.json();
+              updateScenarioData(responseData);
             })
             .catch((error) => {
               if (error.name !== "AbortError") {
@@ -107,75 +89,22 @@ const ScenarioViewer = () => {
               }
               console.log(error);
             });
-        } catch (error) {
-          setIsLoading(false);
-          setShowErrorMessage({ isError: false, errorCode: error });
-        }
-      }
-    };
-
-    const getPublicScenarioData = async () => {
-      if (
-        projectScenarioGetClick !== null &&
-        projectSelectedScenarioIMComponent !== null
-      ) {
-        try {
-          setIsLoading(true);
-          setProjectScenarioData(null);
-          setShowErrorMessage({ isError: false, errorCode: null });
-
-          let queryString = APIQueryBuilder({
-            project_id: projectId["value"],
-            station_id: createStationID(
-              projectLocationCode[projectLocation],
-              projectVS30,
-              projectZ1p0,
-              projectZ2p5
-            ),
-            im_component: projectSelectedScenarioIMComponent,
-          });
-
-          await fetch(
-            CONSTANTS.INTERMEDIATE_API_URL +
-              CONSTANTS.PUBLIC_API_SCENARIOS_ENDPOINT +
-              queryString,
-            {
-              signal: signal,
-            }
-          )
-            .then(handleErrors)
-            .then(async (scenarioResponse) => {
-              const responseData = await scenarioResponse.json();
-              setProjectScenarioData(responseData);
-              setDownloadToken(responseData["download_token"]);
-
-              setExtraInfo({
-                from: "project",
-                id: projectId["value"],
-                location: projectLocation,
-                vs30: projectVS30,
-              });
-
+        })();
+      } else {
+        getPublicProjectScenario(signal, queryString)
+          .then(handleErrors)
+          .then(async (response) => {
+            const responseData = await response.json();
+            updateScenarioData(responseData);
+          })
+          .catch((error) => {
+            if (error.name !== "AbortError") {
               setIsLoading(false);
-            })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                setIsLoading(false);
-                setShowErrorMessage({ isError: true, errorCode: error });
-              }
-              console.log(error);
-            });
-        } catch (error) {
-          setIsLoading(false);
-          setShowErrorMessage({ isError: false, errorCode: error });
-        }
+              setShowErrorMessage({ isError: true, errorCode: error });
+            }
+            console.log(error);
+          });
       }
-    };
-
-    if (isAuthenticated) {
-      getScenarioData();
-    } else {
-      getPublicScenarioData();
     }
 
     return () => {
@@ -188,6 +117,20 @@ const ScenarioViewer = () => {
     setProjectScenarioGetClick(null);
     setShowErrorMessage({ isError: false, errorCode: null });
   }, [projectId, projectVS30, projectLocation, projectZ1p0, projectZ2p5]);
+
+  const updateScenarioData = (data) => {
+    setProjectScenarioData(data);
+    setDownloadToken(data["download_token"]);
+
+    setExtraInfo({
+      from: "project",
+      id: projectId["value"],
+      location: projectLocation,
+      vs30: projectVS30,
+    });
+
+    setIsLoading(false);
+  };
 
   return (
     <div className="scenario-viewer">
@@ -214,7 +157,11 @@ const ScenarioViewer = () => {
               extra={extraInfo}
             />
             <DownloadButton
-              downloadURL={CONSTANTS.PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT}
+              downloadURL={
+                isAuthenticated
+                  ? CONSTANTS.PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT
+                  : CONSTANTS.PUBLIC_API_SCENARIOS_DOWNLOAD_ENDPOINT
+              }
               downloadToken={{
                 scenario_token: downloadToken,
               }}
