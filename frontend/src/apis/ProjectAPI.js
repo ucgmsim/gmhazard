@@ -121,9 +121,35 @@ export const getProjectUHS = (queryString, token, signal) => {
   );
 };
 
-/* Project - GMS to be added */
+/* Project - GMS Viewer */
+export const getProjectGMS = async (queryString, token, signal) => {
+  return await Promise.all([
+    fetch(
+      CONSTANTS.INTERMEDIATE_API_URL +
+        CONSTANTS.PROJECT_API_GMS_ENDPOINT +
+        queryString,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        signal: signal,
+      }
+    ),
+    fetch(
+      CONSTANTS.INTERMEDIATE_API_URL +
+        CONSTANTS.PROJECT_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT +
+        queryString,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        signal: signal,
+      }
+    ),
+  ]);
+};
 
-/* Project - Scenario */
+/* Project - Scenario Viewer */
 export const getProjectScenario = (queryString, token, signal) => {
   return projectAPIRequest(
     CONSTANTS.INTERMEDIATE_API_URL +

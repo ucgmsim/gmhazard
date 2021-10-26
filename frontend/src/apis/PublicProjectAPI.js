@@ -100,7 +100,27 @@ export const getPublicProjectUHS = (queryString, signal) => {
   );
 };
 
-/* Project - GMS to be added */
+/* Project - GMS Viewer */
+export const getPublicProjectGMS = async (queryString, signal) => {
+  return await Promise.all([
+    fetch(
+      CONSTANTS.INTERMEDIATE_API_URL +
+        CONSTANTS.PUBLIC_API_GMS_ENDPOINT +
+        queryString,
+      {
+        signal: signal,
+      }
+    ),
+    fetch(
+      CONSTANTS.INTERMEDIATE_API_URL +
+        CONSTANTS.PUBLIC_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT +
+        queryString,
+      {
+        signal: signal,
+      }
+    ),
+  ]);
+};
 
 /* Project - Scenario */
 export const getPublicProjectScenario = (queryString, signal) => {
