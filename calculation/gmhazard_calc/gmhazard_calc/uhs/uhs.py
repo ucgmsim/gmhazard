@@ -12,7 +12,7 @@ from gmhazard_calc import exceptions
 from gmhazard_calc.nz_code import nzs1170p5
 from gmhazard_calc.im import IM, IMType, IMComponent
 from .UHSResult import BaseUHSResult, EnsembleUHSResult, BranchUHSResult
-from gmhazard_calc.constants import DEFAULT_PSA_PERIODS
+from sha_calc.constants import DEFAULT_PSA_PERIODS
 
 
 def run_ensemble_uhs(

@@ -7,7 +7,7 @@ from qcore import srf
 from sha_calc.directivity.bea20 import directivity
 
 FAULTS = ["AlpineK2T", "Ashley", "Browning", "Hossack"]
-SRF_LOCATION = Path("/mnt/mantle_data/seistech")  # TODO Change to virtual srfs
+SRF_LOCATION = Path("/mnt/mantle_data/seistech")
 
 
 def create_benchmark_data():
@@ -28,7 +28,7 @@ def create_benchmark_data():
         x, y = np.meshgrid(lon_values, lat_values)
         site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
-        fd, _, _, _, _, _ = directivity.compute_directivity_hypo_averaging(
+        fd, _ = directivity.compute_directivity_srf_multi(
             srf_file, srf_csv, site_coords
         )
 

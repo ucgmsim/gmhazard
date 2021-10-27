@@ -110,8 +110,8 @@ def set_hypocentres(hypo_along_strike: int, hypo_down_dip: int, planes: List, ev
     distances = truncated_distribution * total_length
 
     # Save the distribution TODO remove this
-    truncated_df = pd.DataFrame(truncated_distribution)
-    truncated_df.to_csv(f"/home/joel/local/directivity/distributions2/Strike_Distribution_{fault_name}_{hypo_along_strike}.csv")
+    # truncated_df = pd.DataFrame(truncated_distribution)
+    # truncated_df.to_csv(f"/home/joel/local/directivity/distributions2/Strike_Distribution_{fault_name}_{hypo_along_strike}.csv")
 
     # Works out the depth method for down dip placement of hypocentres
     # Based on Weilbull or Gamma distributions depending on the EventType
@@ -128,8 +128,8 @@ def set_hypocentres(hypo_along_strike: int, hypo_down_dip: int, planes: List, ev
     down_dip_distribution = distribution.ppf(truncated_points)
 
     # Save the distribution TODO remove this
-    truncated_df = pd.DataFrame(down_dip_distribution)
-    truncated_df.to_csv(f"/home/joel/local/directivity/distributions2/Down_Dip_Distribution_{fault_name}_{event_type}_{hypo_down_dip}.csv")
+    # truncated_df = pd.DataFrame(down_dip_distribution)
+    # truncated_df.to_csv(f"/home/joel/local/directivity/distributions2/Down_Dip_Distribution_{fault_name}_{event_type}_{hypo_down_dip}.csv")
 
     planes_list = []
     planes_index = []

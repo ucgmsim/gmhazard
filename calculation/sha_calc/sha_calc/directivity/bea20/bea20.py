@@ -164,7 +164,7 @@ def bea20(
     b = bmax * np.exp((-(x ** 2)) / (2 * SigG ** 2))
     a = -b * fG0
 
-    # Calculate fD
+    # No longer calculating fdi, instead compute for all Periods listed
     fD = (a + fG[:, np.newaxis] * b) * fdist[:, np.newaxis]
 
     PhiPer = [0.01, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1, 1.5, 2, 3, 4, 5, 7.5, 10]
@@ -187,7 +187,7 @@ def bea20(
     ]
     e1interp = np.interp(np.log(Periods), np.log(PhiPer), e1)
 
-    # phired
+    # No longer calculating phiredi, instead compute phired for all Periods listed
     PhiRed = np.matlib.repmat(e1interp, len(fD), 1)
     PhiRed[np.invert(Footprint), :] = 0
 

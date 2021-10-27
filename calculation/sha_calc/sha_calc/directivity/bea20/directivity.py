@@ -9,7 +9,7 @@ import time
 from qcore import srf
 from IM_calculation.source_site_dist import src_site_dist
 from sha_calc.directivity.bea20 import bea20, utils
-from gmhazard_calc.constants import DEFAULT_PSA_PERIODS
+from sha_calc.constants import DEFAULT_PSA_PERIODS
 
 
 def compute_directivity_srf_single(
