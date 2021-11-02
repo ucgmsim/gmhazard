@@ -2,7 +2,7 @@
   "name": "gmhazard-web-app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "/gmhazard",
+  "homepage": ".",
   "scripts": {
     "start": "PORT=${PORT} react-scripts start -- --node-flags --max-old-space-size=1024",
     "start:dev": "REACT_APP_GIT_SHA=`git rev-parse --short HEAD` REACT_APP_BUILD_DATE=$(date +%Y-%m-%d)-$(date +%T) PORT=5100 env-cmd -f .env.dev react-scripts start --max-old-space-size=1024",
