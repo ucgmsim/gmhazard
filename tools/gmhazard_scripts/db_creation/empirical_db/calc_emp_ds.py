@@ -79,7 +79,7 @@ def calculate_ds(
 
             # Determine number of MP processes to use per site
             n_mp_proc = math.ceil(size / n_rows) if size > n_rows else 1
-            print(n_mp_proc, size, n_rows)
+            print(print(f"Using {n_mp_proc} MP processes per station"))
 
             i = 0
             results = []
