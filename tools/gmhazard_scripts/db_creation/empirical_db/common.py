@@ -1,9 +1,9 @@
 """
 This file contains functions used by both calc_emp_ds.py and calculate_emp_flt.py
 """
-
 import os
 import time
+import multiprocessing as mp
 
 import numpy as np
 import pandas as pd
@@ -177,6 +177,80 @@ def get_max_dist_zfac_scaled(site):
     return max((max(DIST) - MAX_RJB) * (0.3 - z_factor) / 0.2, 0) + MAX_RJB
 
 
+def __process_rupture(
+    rupture,
+    site,
+    rupture_df,
+    im_types,
+    tect_type_model_dict,
+    psa_periods,
+    keep_sigma_components,
+    fault_im_result_dict,
+):
+    """Helper MP function for calculate_emp_site"""
+    rupture_name = rupture.rupture_name
+    fault = Fault(
+        Mw=rupture.mag,
+        hdepth=rupture.dbot,
+        zbot=rupture.dbot,
+        ztor=rupture.dtop,
+        dip=rupture.dip,
+        rake=rupture.rake,
+        tect_type=classdef.TectType[rupture.tect_type],
+    )
+
+    site.Rjb = rupture["rjb"]
+    site.Rrup = rupture["rrup"]
+    # Currently 0 as Rtvz calculation is done in the empirical engine
+    site.Rtvz = 0  # rupture["rtvz"]
+    site.fpeak = np.array([12])
+    rx = rupture["rx"]
+    site.Rx = 0 if np.isnan(rx) else rx
+    ry = rupture["ry"]
+    site.Ry = 0 if np.isnan(ry) else ry
+
+    rupture_id = rupture_df[
+        rupture_df["rupture_name"] == rupture_name
+    ].index.values.item()
+
+    for im_type in im_types:
+        GMMs = empirical_factory.determine_all_gmm(
+            fault, str(im_type), tect_type_model_dict
+        )
+        for GMM, __comp in GMMs:
+            db_type = f"{GMM.name}_{fault.tect_type.name}"
+            values = empirical_factory.compute_gmm(
+                fault,
+                site,
+                GMM,
+                str(im_type),
+                psa_periods if im_type is IMType.pSA else None,
+            )
+            if not im_type is IMType.pSA:
+                values = [values]
+            for i, value in enumerate(values):
+                full_im_name = (
+                    IM(im_type, period=psa_periods[i])
+                    if im_type is IMType.pSA
+                    else IM(im_type)
+                )
+                mean = np.log(value[0])
+                stdev, sigma_inter, sigma_intra = value[1]
+
+                fault_im_result_dict[db_type][str(full_im_name)] = mean
+                if keep_sigma_components:
+                    fault_im_result_dict[db_type][
+                        f"{full_im_name}_sigma_inter"
+                    ] = sigma_inter
+                    fault_im_result_dict[db_type][
+                        f"{full_im_name}_sigma_intra"
+                    ] = sigma_intra
+                else:
+                    fault_im_result_dict[db_type][f"{full_im_name}_sigma"] = stdev
+
+    return rupture_id, fault_im_result_dict
+
+
 def calculate_emp_site(
     im_types,
     psa_periods,
@@ -194,6 +268,7 @@ def calculate_emp_site(
     dist_filter_by_mag=False,
     return_vals=False,
     keep_sigma_components=False,
+    n_procs: int = 1,
 ):
     """
     Calculates (and writes) all empirical values for all ruptures in nhm_data at a given site.
@@ -215,9 +290,6 @@ def calculate_emp_site(
                         writer MPI paradigm
     :return: if return vals is set - a Dictionary of dataframes are returned
     """
-    im_result_dict = {key: {} for key in imdb_dict.keys()}
-    im_result_df_dict = {key: {} for key in imdb_dict.keys()}
-
     # Sets Z1.0 and Z2.5 to None if NaN
     z1p0 = None if z1p0 is None or np.isnan(float(z1p0)) else z1p0
     z2p5 = None if z1p0 is None or np.isnan(float(z2p5)) else z2p5
@@ -241,71 +313,30 @@ def calculate_emp_site(
         max_dist = max_rjb
     matching_df = matching_df[matching_df["rjb"] < max_dist]
 
-    for index, row in matching_df.iterrows():
-        rupture_name = row.rupture_name
-        fault = Fault(
-            Mw=row.mag,
-            hdepth=row.dbot,
-            zbot=row.dbot,
-            ztor=row.dtop,
-            dip=row.dip,
-            rake=row.rake,
-            tect_type=classdef.TectType[row.tect_type],
+    with mp.Pool(n_procs) as p:
+        results = p.starmap(
+            __process_rupture,
+            [
+                (
+                    rupture,
+                    site,
+                    rupture_df,
+                    im_types,
+                    tect_type_model_dict,
+                    psa_periods,
+                    keep_sigma_components,
+                    {key: {} for key in imdb_dict.keys()},
+                )
+                for index, rupture in matching_df.iterrows()
+            ],
         )
 
-        site.Rjb = row["rjb"]
-        site.Rrup = row["rrup"]
-        # Currently 0 as Rtvz calculation is done in the empirical engine
-        site.Rtvz = 0  # row["rtvz"]
-        site.fpeak = np.array([12])
-        rx = row["rx"]
-        site.Rx = 0 if np.isnan(rx) else rx
-        ry = row["ry"]
-        site.Ry = 0 if np.isnan(ry) else ry
+    im_result_dict = {key: {} for key in imdb_dict.keys()}
+    for cur_rupture_id, cur_fault_im_dict in results:
+        for cur_gmm, cur_im_dict in cur_fault_im_dict.items():
+            im_result_dict[cur_gmm][cur_rupture_id] = cur_im_dict
 
-        rupture_id = rupture_df[
-            rupture_df["rupture_name"] == rupture_name
-        ].index.values.item()
-
-        fault_im_result_dict = {key: {} for key in imdb_dict.keys()}
-
-        for im_type in im_types:
-            GMMs = empirical_factory.determine_all_gmm(
-                fault, str(im_type), tect_type_model_dict
-            )
-            for GMM, __comp in GMMs:
-                db_type = f"{GMM.name}_{fault.tect_type.name}"
-                values = empirical_factory.compute_gmm(
-                    fault,
-                    site,
-                    GMM,
-                    str(im_type),
-                    psa_periods if im_type is IMType.pSA else None,
-                )
-                if not im_type is IMType.pSA:
-                    values = [values]
-                for i, value in enumerate(values):
-                    full_im_name = (
-                        IM(im_type, period=psa_periods[i])
-                        if im_type is IMType.pSA
-                        else IM(im_type)
-                    )
-                    mean = np.log(value[0])
-                    stdev, sigma_inter, sigma_intra = value[1]
-
-                    fault_im_result_dict[db_type][str(full_im_name)] = mean
-                    if keep_sigma_components:
-                        fault_im_result_dict[db_type][
-                            f"{full_im_name}_sigma_inter"
-                        ] = sigma_inter
-                        fault_im_result_dict[db_type][
-                            f"{full_im_name}_sigma_intra"
-                        ] = sigma_intra
-                    else:
-                        fault_im_result_dict[db_type][f"{full_im_name}_sigma"] = stdev
-        for imdb_key in imdb_dict.keys():
-            im_result_dict[imdb_key][rupture_id] = fault_im_result_dict[imdb_key]
-
+    im_result_df_dict = {key: {} for key in imdb_dict.keys()}
     for imdb_key in imdb_dict.keys():
         im_result_df_dict[imdb_key] = pd.DataFrame.from_dict(
             im_result_dict[imdb_key], orient="index"
