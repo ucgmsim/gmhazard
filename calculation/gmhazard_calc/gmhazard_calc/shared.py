@@ -242,12 +242,11 @@ def get_gm_prob_df(
 
         # Compute and apply directivty effects
         # TODO Remove
-        nhm_dict = nhm.load_nhm(branch.flt_erf_ffp)
-        for key, fault in nhm_dict.items():
-            lon_lat_depth, planes = rupture.get_fault_header_points(fault)
-            site = np.asarray([[site_info.lon, site_info.lat]])
-            fdi, _ = sha_calc.bea20.compute_fault_directivity(lon_lat_depth, planes, site, 10, 2, fault.mw, fault.rake, im.period)
-            # Apply fdi to mu_data
+        # nhm_dict = nhm.load_nhm(branch.flt_erf_ffp)
+        # for key, fault in nhm_dict.items():
+        #     lon_lat_depth, planes = rupture.get_fault_header_points(fault)
+        #     site = np.asarray([[site_info.lon, site_info.lat]])
+        #     fdi, _ = sha_calc.bea20.compute_fault_directivity(lon_lat_depth, planes, site, 10, 2, fault.mw, fault.rake, im.period)
 
         result_df = sha_calc.parametric_gm_excd_prob(im_levels, im_data,)
     # Non-parametric

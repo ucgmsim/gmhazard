@@ -8,15 +8,6 @@ from sha_calc.directivity.bea20.validation import plots
 from sha_calc.directivity.bea20.directivity import compute_directivity_srf_multi
 
 
-import gmhazard_calc
-from gmhazard_calc.im import IM, IMType
-import time
-import gmhazard_calc.rupture as rupture
-import sha_calc
-from qcore import nhm
-import numpy as np
-from sha_calc.directivity.bea20.validation.plots import plot_fdi
-
 def hypo_average_plots(
     srf_file: str, srf_csv: Path, output_dir: Path, period: float = 3.0
 ):
@@ -35,31 +26,8 @@ def hypo_average_plots(
         Float to indicate which period to extract from fD to get fDi
     """
 
-    # lon_lat_depth = srf.read_srf_points(srf_file)
-    #
-    # lon_values = np.linspace(
-    #     lon_lat_depth[:, 0].min() - 0.5, lon_lat_depth[:, 0].max() + 0.5, 100
-    # )
-    # lat_values = np.linspace(
-    #     lon_lat_depth[:, 1].min() - 0.5, lon_lat_depth[:, 1].max() + 0.5, 100
-    # )
-    #
-    # x, y = np.meshgrid(lon_values, lat_values)
-    # site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
-    #
-    # fdi_average, fdi_array = compute_directivity_srf_multi(
-    #     srf_file, srf_csv, site_coords, period=period
-    # )
+    lon_lat_depth = srf.read_srf_points(srf_file)
 
-    im = IM(IMType.pSA, period=3.0)
-    ens = gmhazard_calc.gm_data.Ensemble("v20p5emp")
-    branch = ens.get_im_ensemble(im.im_type).branches[0]
-
-    nhm_dict = nhm.load_nhm(branch.flt_erf_ffp)
-
-    # for key, fault in nhm_dict.items():
-    fault = nhm_dict["AlpineK2T"]
-    planes, lon_lat_depth = rupture.get_fault_header_points(fault)
     lon_values = np.linspace(
         lon_lat_depth[:, 0].min() - 0.5, lon_lat_depth[:, 0].max() + 0.5, 100
     )
@@ -69,7 +37,30 @@ def hypo_average_plots(
 
     x, y = np.meshgrid(lon_values, lat_values)
     site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
-    fdi_average, fdi_array = sha_calc.bea20.compute_fault_directivity(lon_lat_depth, planes, site_coords, 10, 2, fault.mw, fault.rake, [im.period])
+
+    fdi_average, fdi_array, _ = compute_directivity_srf_multi(
+        srf_file, srf_csv, site_coords, periods=[period]
+    )
+
+    # im = IM(IMType.pSA, period=3.0)
+    # ens = gmhazard_calc.gm_data.Ensemble("v20p5emp")
+    # branch = ens.get_im_ensemble(im.im_type).branches[0]
+    #
+    # nhm_dict = nhm.load_nhm(branch.flt_erf_ffp)
+    #
+    # # for key, fault in nhm_dict.items():
+    # fault = nhm_dict["AlpineK2T"]
+    # planes, lon_lat_depth = rupture.get_fault_header_points(fault)
+    # lon_values = np.linspace(
+    #     lon_lat_depth[:, 0].min() - 0.5, lon_lat_depth[:, 0].max() + 0.5, 100
+    # )
+    # lat_values = np.linspace(
+    #     lon_lat_depth[:, 1].min() - 0.5, lon_lat_depth[:, 1].max() + 0.5, 100
+    # )
+    #
+    # x, y = np.meshgrid(lon_values, lat_values)
+    # site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
+    # fdi_average, fdi_array = sha_calc.bea20.compute_fault_directivity(lon_lat_depth, planes, site_coords, 10, 2, fault.mw, fault.rake, [im.period])
 
     for index, fdi in enumerate(fdi_array):
         plots.plot_fdi(

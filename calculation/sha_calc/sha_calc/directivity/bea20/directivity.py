@@ -156,9 +156,11 @@ def compute_fault_directivity(
 
         # Creating the array to store all fdi values
         if return_fdi_array:
-            fdi_array = []
+            fdi_array = np.zeros((hyp_along_strike * hyp_down_dip, 10000, 1))
+            phired_array = np.zeros((hyp_along_strike * hyp_down_dip, 10000, 1))
         else:
             fdi_array = np.asarray([])
+            phired_array = np.asarray([])
 
         for index, planes in enumerate(planes_list):
             # Gets the plane index of the hypocentre
@@ -166,7 +168,7 @@ def compute_fault_directivity(
 
             print(f"Computing Directivity {fault_name} {index+1}/{hyp_along_strike * hyp_down_dip}")
 
-            fdi, _ = _compute_directivity_effect(
+            fdi, (phi_red, predictor_functions, other) = _compute_directivity_effect(
                 lon_lat_depth,
                 planes,
                 plane_index,
@@ -180,20 +182,25 @@ def compute_fault_directivity(
 
             # Check if fdi_array is needed and if not then sum results to manage RAM better
             if return_fdi_array:
-                fdi_array.append(fdi)
+                fdi_array[index] = fdi
+                phired_array[index] = phi_red
             else:
                 if len(fdi_array) == 0:
                     fdi_array = fdi
+                    phired_array = phi_red
                 else:
                     fdi_array = np.add(fdi_array, fdi)
+                    phired_array = np.add(phired_array, phi_red)
 
         # Check if fdi_array is needed and if not then create mean from the summed results to manage RAM better
         if return_fdi_array:
             fdi_average = np.mean(fdi_array, axis=0)
+            phired_average = np.mean(phired_array, axis=0)
         else:
             fdi_average = np.divide(fdi_array, hyp_down_dip * hyp_along_strike)
+            phired_average = np.divide(phired_array, hyp_down_dip * hyp_along_strike)
 
-        return fdi_average, fdi_array  # Ignore fdi_array for now
+        return fdi_average, fdi_array, phired_average  # Ignore fdi_array for now
 
 
 def _compute_directivity_effect(
