@@ -211,7 +211,9 @@ def write_disagg_download_data(
     disagg_df = disagg_data.total_contributions_df.merge(
         metadata_df, how="left", left_index=True, right_index=True
     )
-
+    disagg_df.loc[
+        "distributed_seismicity", "rupture_name"
+    ] = "distributed_seismicity"
     disagg_df.loc[
         :,
         [
@@ -302,7 +304,7 @@ def write_disagg_download_data(
         with eps_plot_ffp.open(mode="wb") as f:
             f.write(eps_plot_data)
 
-    return disagg_data_ffp, meta_data_ffp, mean_values_ffp, src_plot_ffp, eps_plot_ffp
+    return disagg_data_ffp, meta_data_ffp, mean_values_ffp, src_plot_ffp, eps_plot_ffp, disagg_agg_data_ffp
 
 
 def create_disagg_download_zip(
