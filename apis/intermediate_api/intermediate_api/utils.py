@@ -127,7 +127,10 @@ def proxy_to_core_api(
 
         return flask.Response(resp.content, resp.status_code, mimetype=content_type)
     else:
-        return flask.jsonify({"Warning": "You do not have permission to access."})
+        return (
+            flask.jsonify({"Warning": "You do not have permission to access."}),
+            const.UNAUTHORIZED_CODE,
+        )
 
 
 def proxy_to_project_api(
@@ -199,7 +202,7 @@ def proxy_to_project_api(
         return flask.Response(resp.content, resp.status_code, mimetype=content_type)
     else:
         return (
-            flask.jsonify({"Warning": "Something is not right"}),
+            flask.jsonify({"Warning": "You do not have permission to access."}),
             const.UNAUTHORIZED_CODE,
         )
 
