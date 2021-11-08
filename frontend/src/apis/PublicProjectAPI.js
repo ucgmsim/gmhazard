@@ -9,7 +9,7 @@ const publicProjectAPIRequest = async (url, signal) => {
 /* Project - Site Selection Form */
 export const getPublicProjectID = (signal) => {
   return publicProjectAPIRequest(
-    CONSTANTS.INTERMEDIATE_API_URL + CONSTANTS.PUBLIC_API_PROJECT_IDS_ENDPOINT,
+    CONSTANTS.INTERMEDIATE_API_URL + CONSTANTS.PROJECT_API_PROJECT_IDS_ENDPOINT,
     signal
   );
 };
@@ -18,7 +18,7 @@ export const getPublicProjectLocation = async (queryString, signal) => {
   return await Promise.all([
     fetch(
       CONSTANTS.INTERMEDIATE_API_URL +
-        CONSTANTS.PUBLIC_API_SITES_ENDPOINT +
+        CONSTANTS.PROJECT_API_SITES_ENDPOINT +
         queryString,
       {
         signal: signal,
@@ -26,7 +26,7 @@ export const getPublicProjectLocation = async (queryString, signal) => {
     ),
     fetch(
       CONSTANTS.INTERMEDIATE_API_URL +
-        CONSTANTS.PUBLIC_API_IMS_ENDPOINT +
+        CONSTANTS.PROJECT_API_IMS_ENDPOINT +
         queryString,
       {
         signal: signal,
@@ -34,7 +34,7 @@ export const getPublicProjectLocation = async (queryString, signal) => {
     ),
     fetch(
       CONSTANTS.INTERMEDIATE_API_URL +
-        CONSTANTS.PUBLIC_API_HAZARD_DISAGG_RPS_ENDPOINT +
+        CONSTANTS.PROJECT_API_HAZARD_DISAGG_RPS_ENDPOINT +
         queryString,
       {
         signal: signal,
@@ -42,7 +42,7 @@ export const getPublicProjectLocation = async (queryString, signal) => {
     ),
     fetch(
       CONSTANTS.INTERMEDIATE_API_URL +
-        CONSTANTS.PUBLIC_API_HAZARD_UHS_RPS_ENDPOINT +
+        CONSTANTS.PROJECT_API_HAZARD_UHS_RPS_ENDPOINT +
         queryString,
       {
         signal: signal,
@@ -54,7 +54,7 @@ export const getPublicProjectLocation = async (queryString, signal) => {
 export const getPublicProjectGMSID = (queryString, signal) => {
   return publicProjectAPIRequest(
     CONSTANTS.INTERMEDIATE_API_URL +
-      CONSTANTS.PUBLIC_API_GMS_RUNS_ENDPOINT +
+      CONSTANTS.PROJECT_API_GMS_RUNS_ENDPOINT +
       queryString,
     signal
   );
@@ -64,7 +64,7 @@ export const getPublicProjectGMSID = (queryString, signal) => {
 export const getPublicProjectMaps = (queryString, signal) => {
   return publicProjectAPIRequest(
     CONSTANTS.INTERMEDIATE_API_URL +
-      CONSTANTS.PUBLIC_API_MAPS_ENDPOINT +
+      CONSTANTS.PROJECT_API_MAPS_ENDPOINT +
       queryString,
     signal
   );
@@ -74,7 +74,7 @@ export const getPublicProjectMaps = (queryString, signal) => {
 export const getPublicProjectHazardCurve = (queryString, signal) => {
   return publicProjectAPIRequest(
     CONSTANTS.INTERMEDIATE_API_URL +
-      CONSTANTS.PUBLIC_API_HAZARD_ENDPOINT +
+      CONSTANTS.PROJECT_API_HAZARD_ENDPOINT +
       queryString,
     signal
   );
@@ -84,7 +84,7 @@ export const getPublicProjectHazardCurve = (queryString, signal) => {
 export const getPublicProjectDisaggregation = (queryString, signal) => {
   return publicProjectAPIRequest(
     CONSTANTS.INTERMEDIATE_API_URL +
-      CONSTANTS.PUBLIC_API_HAZARD_DISAGG_ENDPOINT +
+      CONSTANTS.PROJECT_API_HAZARD_DISAGG_ENDPOINT +
       queryString,
     signal
   );
@@ -94,7 +94,7 @@ export const getPublicProjectDisaggregation = (queryString, signal) => {
 export const getPublicProjectUHS = (queryString, signal) => {
   return publicProjectAPIRequest(
     CONSTANTS.INTERMEDIATE_API_URL +
-      CONSTANTS.PUBLIC_API_HAZARD_UHS_ENDPOINT +
+      CONSTANTS.PROJECT_API_HAZARD_UHS_ENDPOINT +
       queryString,
     signal
   );
@@ -105,7 +105,7 @@ export const getPublicProjectGMS = async (queryString, signal) => {
   return await Promise.all([
     fetch(
       CONSTANTS.INTERMEDIATE_API_URL +
-        CONSTANTS.PUBLIC_API_GMS_ENDPOINT +
+        CONSTANTS.PROJECT_API_GMS_ENDPOINT +
         queryString,
       {
         signal: signal,
@@ -113,7 +113,7 @@ export const getPublicProjectGMS = async (queryString, signal) => {
     ),
     fetch(
       CONSTANTS.INTERMEDIATE_API_URL +
-        CONSTANTS.PUBLIC_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT +
+        CONSTANTS.PROJECT_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT +
         queryString,
       {
         signal: signal,
@@ -126,7 +126,7 @@ export const getPublicProjectGMS = async (queryString, signal) => {
 export const getPublicProjectScenario = (queryString, signal) => {
   return publicProjectAPIRequest(
     CONSTANTS.INTERMEDIATE_API_URL +
-      CONSTANTS.PUBLIC_API_SCENARIOS_ENDPOINT +
+      CONSTANTS.PROJECT_API_SCENARIOS_ENDPOINT +
       queryString,
     signal
   );

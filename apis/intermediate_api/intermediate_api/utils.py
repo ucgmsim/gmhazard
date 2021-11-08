@@ -39,6 +39,7 @@ def proxy_to_api(
     methods,
     api_destination: str,
     api_token: str,
+    authorized: bool,
     data: dict = None,
     user_id: str = None,
     action: str = None,
@@ -57,6 +58,9 @@ def proxy_to_api(
         To determine the destination, either the CoreAPI or ProjectAPI
     api_token: string
         Special token to pass the CoreAPI/ProjectAPI's authorization check
+    authorized: boolean
+        True if it the request is with Auth0 token which is for private
+        otherwise, public access
     data: dictionary
         BODY to send, instead of decoding inside this function, get it as a parameter.
     user_id: string
@@ -97,9 +101,13 @@ def proxy_to_api(
                 },
             )
 
+    access_level = "private" if authorized else "public"
+
     if methods == "POST":
         resp = requests.post(
-            api_destination + route, data=data, headers={"Authorization": api_token},
+            api_destination + route,
+            data=data,
+            headers={"Authorization": api_token, "Access-Level": access_level},
         )
 
     elif methods == "GET":
@@ -109,7 +117,8 @@ def proxy_to_api(
             querystring = "?" + querystring
 
         resp = requests.get(
-            api_destination + route + querystring, headers={"Authorization": api_token},
+            api_destination + route + querystring,
+            headers={"Authorization": api_token, "Access-Level": access_level},
         )
 
     return flask.Response(resp.content, resp.status_code, mimetype=content_type)

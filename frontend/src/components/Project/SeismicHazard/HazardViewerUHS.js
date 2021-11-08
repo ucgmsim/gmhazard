@@ -286,11 +286,7 @@ const HazardViewerUHS = () => {
 
       <DownloadButton
         disabled={!showPlotUHS}
-        downloadURL={
-          isAuthenticated
-            ? CONSTANTS.PROJECT_API_HAZARD_UHS_DOWNLOAD_ENDPOINT
-            : CONSTANTS.PUBLIC_API_HAZARD_UHS_DOWNLOAD_ENDPOINT
-        }
+        downloadURL={CONSTANTS.PROJECT_API_HAZARD_UHS_DOWNLOAD_ENDPOINT}
         downloadToken={{
           uhs_token: downloadToken,
         }}

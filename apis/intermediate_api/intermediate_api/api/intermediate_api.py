@@ -14,7 +14,7 @@ import intermediate_api.constants as const
 @app.route(const.INTERMEDIATE_API_AUTH0_USER_INFO_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def get_auth0_user_key_info():
+def get_auth0_user_key_info(auth):
     """Getting users permission on their first launch
 
     At the same time, also update the users_permissions table
@@ -40,7 +40,7 @@ def get_auth0_user_key_info():
 # Edit User
 @app.route(const.INTERMEDIATE_API_AUTH0_USERS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
-def get_auth0_users():
+def get_auth0_users(auth):
     """Fetching all the existing users from the Auth0
     These will be used for User dropdown in the Permission Config
 
@@ -58,7 +58,7 @@ def get_auth0_users():
 @app.route(const.INTERMEDIATE_API_ALL_PRIVATE_PROJECTS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def get_private_projects():
+def get_private_projects(auth):
     """Fetching all private projects from the Project table"""
     app.logger.info(
         f"Received request at {const.INTERMEDIATE_API_ALL_PRIVATE_PROJECTS_ENDPOINT}"
@@ -67,7 +67,6 @@ def get_private_projects():
 
 
 @app.route(const.INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
 @decorators.endpoint_exception_handler
 def get_public_projects():
     """Fetching all public projects from the Project table"""
@@ -80,7 +79,7 @@ def get_public_projects():
 @app.route(const.INTERMEDIATE_API_USER_PROJECTS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def get_user_allowed_projects():
+def get_user_allowed_projects(auth):
     """Fetching all the projects that are already allowed to a user
     Will be used for allowed Private Projects dropdown
     """
@@ -96,7 +95,7 @@ def get_user_allowed_projects():
 @app.route(const.INTERMEDIATE_API_USER_ALLOCATE_PROJECTS_ENDPOINT, methods=["POST"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def allocate_projects_to_user():
+def allocate_projects_to_user(auth):
     """Allocate the chosen project(s) to the chosen user."""
     app.logger.info(
         f"Received request at {const.INTERMEDIATE_API_USER_ALLOCATE_PROJECTS_ENDPOINT}"
@@ -115,7 +114,7 @@ def allocate_projects_to_user():
 @app.route(const.INTERMEDIATE_API_USER_REMOVE_PROJECTS_ENDPOINT, methods=["POST"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def remove_projects_from_user():
+def remove_projects_from_user(auth):
     """Remove the chosen project(s) from the chosen user."""
     app.logger.info(
         f"Received request at {const.INTERMEDIATE_API_USER_REMOVE_PROJECTS_ENDPOINT}"
@@ -134,7 +133,7 @@ def remove_projects_from_user():
 @app.route(const.INTERMEDIATE_API_ALL_USERS_PROJECTS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def get_all_users_projects():
+def get_all_users_projects(auth):
     """Pull every assigned project for all users from Users_Projects table"""
     app.logger.info(
         f"Received request at {const.INTERMEDIATE_API_ALL_USERS_PROJECTS_ENDPOINT}"
@@ -146,7 +145,7 @@ def get_all_users_projects():
 @app.route(const.INTERMEDIATE_API_ALL_PERMISSIONS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def get_all_permissions():
+def get_all_permissions(auth):
     """Pull all possible access permission (Auth0_Permission table)"""
     app.logger.info(
         f"Received request at {const.INTERMEDIATE_API_ALL_PERMISSIONS_ENDPOINT}"
@@ -157,7 +156,7 @@ def get_all_permissions():
 @app.route(const.INTERMEDIATE_API_ALL_USERS_PERMISSIONS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def get_all_users_permissions():
+def get_all_users_permissions(auth):
     """Pull every assigned access permission for all uesrs from Users_Permissions table"""
     app.logger.info(
         f"Received request at {const.INTERMEDIATE_API_ALL_USERS_PERMISSIONS_ENDPOINT}"
@@ -169,7 +168,7 @@ def get_all_users_permissions():
 @app.route(const.INTERMEDIATE_API_CREATE_PROJECT_ENDPOINT, methods=["POST"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def create_project():
+def create_project(auth):
     """Create new project(s)"""
     app.logger.info(
         f"Received request at {const.INTERMEDIATE_API_CREATE_PROJECT_ENDPOINT}"
@@ -193,6 +192,7 @@ def create_project():
             "POST",
             PROJECT_API_BASE,
             PROJECT_API_TOKEN,
+            auth,
             data=json.dumps(data),
             user_id=auth0.get_user_id(),
             action="Project Creation - Triggering project generation",
