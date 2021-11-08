@@ -186,7 +186,7 @@ def create_project(auth):
             const.CONFLICT_CODE,
         )
     else:
-        response_code = utils.proxy_to_api(
+        response_code = utils.proxy_to_core_api(
             request,
             const.PROJECT_CREATE_NEW_ENDPOINT,
             "POST",

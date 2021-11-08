@@ -18,7 +18,7 @@ def public_get_available_project_ids():
 
 @app.route(const.PUBLIC_API_SITES_ENDPOINT, methods=["GET"])
 def public_get_project_sites():
-    return utils.proxy_to_api(
+    return utils.proxy_to_core_api(
         request,
         const.PROJECT_SITES_ENDPOINT,
         "GET",
@@ -29,14 +29,14 @@ def public_get_project_sites():
 
 @app.route(const.PUBLIC_API_IMS_ENDPOINT, methods=["GET"])
 def public_get_project_ims():
-    return utils.proxy_to_api(
+    return utils.proxy_to_core_api(
         request, const.PROJECT_IMS_ENDPOINT, "GET", PROJECT_API_BASE, PROJECT_API_TOKEN
     )
 
 
 @app.route(const.PUBLIC_API_MAPS_ENDPOINT, methods=["GET"])
 def public_get_project_maps():
-    return utils.proxy_to_api(
+    return utils.proxy_to_core_api(
         request,
         const.PROJECT_CONTEXT_MAPS_ENDPOINT,
         "GET",
@@ -48,7 +48,7 @@ def public_get_project_maps():
 # Seismic Hazard
 @app.route(const.PUBLIC_API_HAZARD_ENDPOINT, methods=["GET"])
 def public_get_project_hazard():
-    return utils.proxy_to_api(
+    return utils.proxy_to_core_api(
         request,
         const.PROJECT_HAZARD_ENDPOINT,
         "GET",
@@ -59,7 +59,7 @@ def public_get_project_hazard():
 
 @app.route(const.PUBLIC_API_HAZARD_DISAGG_ENDPOINT, methods=["GET"])
 def public_get_project_disagg():
-    return utils.proxy_to_api(
+    return utils.proxy_to_core_api(
         request,
         const.PROJECT_DISAGG_ENDPOINT,
         "GET",
@@ -70,7 +70,7 @@ def public_get_project_disagg():
 
 @app.route(const.PUBLIC_API_HAZARD_DISAGG_RPS_ENDPOINT, methods=["GET"])
 def public_get_project_disagg_rps():
-    return utils.proxy_to_api(
+    return utils.proxy_to_core_api(
         request,
         const.PROJECT_DISAGG_RPS_ENDPOINT,
         "GET",
@@ -81,7 +81,7 @@ def public_get_project_disagg_rps():
 
 @app.route(const.PUBLIC_API_HAZARD_UHS_RPS_ENDPOINT, methods=["GET"])
 def public_get_project_uhs_rps():
-    return utils.proxy_to_api(
+    return utils.proxy_to_core_api(
         request,
         const.PROJECT_UHS_RPS_ENDPOINT,
         "GET",
@@ -92,14 +92,14 @@ def public_get_project_uhs_rps():
 
 @app.route(const.PUBLIC_API_HAZARD_UHS_ENDPOINT, methods=["GET"])
 def public_get_project_uhs():
-    return utils.proxy_to_api(
+    return utils.proxy_to_core_api(
         request, const.PROJECT_UHS_ENDPOINT, "GET", PROJECT_API_BASE, PROJECT_API_TOKEN,
     )
 
 
 @app.route(const.PUBLIC_API_GMS_RUNS_ENDPOINT, methods=["GET"])
 def public_get_gms_runs():
-    return utils.proxy_to_api(
+    return utils.proxy_to_core_api(
         request,
         const.PROJECT_GMS_RUNS_ENDPOINT,
         "GET",
@@ -110,14 +110,14 @@ def public_get_gms_runs():
 
 @app.route(const.PUBLIC_API_GMS_ENDPOINT, methods=["GET"])
 def public_get_ensemble_gms():
-    return utils.proxy_to_api(
+    return utils.proxy_to_core_api(
         request, const.PROJECT_GMS_ENDPOINT, "GET", PROJECT_API_BASE, PROJECT_API_TOKEN,
     )
 
 
 @app.route(const.PUBLIC_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT, methods=["GET"])
 def public_get_gms_default_causal_params():
-    response = utils.proxy_to_api(
+    response = utils.proxy_to_core_api(
         request,
         const.PROJECT_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT,
         "GET",
@@ -150,7 +150,7 @@ def public_get_gms_default_causal_params():
 
 @app.route(const.PUBLIC_API_SCENARIOS_ENDPOINT, methods=["GET"])
 def public_get_ensemble_scenarios():
-    return utils.proxy_to_api(
+    return utils.proxy_to_core_api(
         request,
         const.PROJECT_SCENARIO_ENDPOINT,
         "GET",
@@ -162,7 +162,7 @@ def public_get_ensemble_scenarios():
 # PROJECT DOWNLOAD
 @app.route(const.PUBLIC_API_HAZARD_CURVE_DOWNLOAD_ENDPOINT, methods=["GET"])
 def public_project_api_download_hazard():
-    project_response = utils.proxy_to_api(
+    project_response = utils.proxy_to_core_api(
         request,
         const.PROJECT_HAZARD_DOWNLOAD_ENDPOINT,
         "GET",
@@ -176,7 +176,7 @@ def public_project_api_download_hazard():
 
 @app.route(const.PUBLIC_API_HAZARD_DISAGG_DOWNLOAD_ENDPOINT, methods=["GET"])
 def public_project_api_download_disagg():
-    project_response = utils.proxy_to_api(
+    project_response = utils.proxy_to_core_api(
         request,
         const.PROJECT_DISAGG_DOWNLOAD_ENDPOINT,
         "GET",
@@ -190,7 +190,7 @@ def public_project_api_download_disagg():
 
 @app.route(const.PUBLIC_API_HAZARD_UHS_DOWNLOAD_ENDPOINT, methods=["GET"])
 def public_project_api_download_uhs():
-    project_response = utils.proxy_to_api(
+    project_response = utils.proxy_to_core_api(
         request,
         const.PROJECT_UHS_DOWNLOAD_ENDPOINT,
         "GET",
@@ -204,7 +204,7 @@ def public_project_api_download_uhs():
 
 @app.route(f"{const.PROJECT_API_GMS_DOWNLOAD_ENDPOINT}/<token>", methods=["GET"])
 def public_project_api_download_gms(token):
-    project_response = utils.proxy_to_api(
+    project_response = utils.proxy_to_core_api(
         request,
         const.PROJECT_GMS_DOWNLOAD_ENDPOINT + "/" + token,
         "GET",
@@ -218,7 +218,7 @@ def public_project_api_download_gms(token):
 
 @app.route(f"{const.PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT}", methods=["GET"])
 def public_project_api_download_scenario():
-    project_response = utils.proxy_to_api(
+    project_response = utils.proxy_to_core_api(
         request,
         const.PROJECT_SCENARIO_DOWNLOAD_ENDPOINT,
         "GET",
