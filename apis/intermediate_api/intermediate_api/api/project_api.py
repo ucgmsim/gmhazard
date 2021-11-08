@@ -10,14 +10,9 @@ import intermediate_api.api.intermediate_api as intermediate_api
 
 
 # Site Selection
-def get_available_projects(auth):
-    return utils.proxy_to_api(
-        request,
-        const.PROJECT_IDS_ENDPOINT,
-        "GET",
-        PROJECT_API_BASE,
-        PROJECT_API_TOKEN,
-        auth,
+def get_available_projects():
+    return utils.proxy_to_project_api(
+        request, const.PROJECT_IDS_ENDPOINT, PROJECT_API_BASE, PROJECT_API_TOKEN,
     ).get_json()
 
 
@@ -27,25 +22,23 @@ def get_available_projects(auth):
 def get_available_project_ids(auth):
     if auth:
         user_id = auth0.get_user_id()
-
         return utils.run_project_crosscheck(
             db.get_user_project_permission(user_id),
             intermediate_api.get_public_projects().get_json(),
-            get_available_projects(auth)["ids"],
+            get_available_projects()["ids"],
         )
     else:
         return utils.run_project_crosscheck(
-            {}, db.get_projects("public"), get_available_projects(auth)["ids"],
+            {}, db.get_projects("public"), get_available_projects()["ids"],
         )
 
 
 @app.route(const.PROJECT_API_SITES_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_sites(auth):
-    return utils.proxy_to_api(
+    return utils.proxy_to_project_api(
         request,
         const.PROJECT_SITES_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -55,23 +48,17 @@ def get_project_sites(auth):
 @app.route(const.PROJECT_API_IMS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_ims(auth):
-    return utils.proxy_to_api(
-        request,
-        const.PROJECT_IMS_ENDPOINT,
-        "GET",
-        PROJECT_API_BASE,
-        PROJECT_API_TOKEN,
-        auth,
+    return utils.proxy_to_project_api(
+        request, const.PROJECT_IMS_ENDPOINT, PROJECT_API_BASE, PROJECT_API_TOKEN, auth,
     )
 
 
 @app.route(const.PROJECT_API_MAPS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_maps(auth):
-    return utils.proxy_to_api(
+    return utils.proxy_to_project_api(
         request,
         const.PROJECT_CONTEXT_MAPS_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -84,10 +71,9 @@ def get_project_maps(auth):
 @app.route(const.PROJECT_API_HAZARD_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_hazard(auth):
-    return utils.proxy_to_api(
+    return utils.proxy_to_project_api(
         request,
         const.PROJECT_HAZARD_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -99,10 +85,9 @@ def get_project_hazard(auth):
 @app.route(const.PROJECT_API_HAZARD_DISAGG_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_disagg(auth):
-    return utils.proxy_to_api(
+    return utils.proxy_to_project_api(
         request,
         const.PROJECT_DISAGG_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -114,10 +99,9 @@ def get_project_disagg(auth):
 @app.route(const.PROJECT_API_HAZARD_DISAGG_RPS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_disagg_rps(auth):
-    return utils.proxy_to_api(
+    return utils.proxy_to_project_api(
         request,
         const.PROJECT_DISAGG_RPS_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -127,10 +111,9 @@ def get_project_disagg_rps(auth):
 @app.route(const.PROJECT_API_HAZARD_UHS_RPS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_uhs_rps(auth):
-    return utils.proxy_to_api(
+    return utils.proxy_to_project_api(
         request,
         const.PROJECT_UHS_RPS_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -140,10 +123,9 @@ def get_project_uhs_rps(auth):
 @app.route(const.PROJECT_API_HAZARD_UHS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_uhs(auth):
-    return utils.proxy_to_api(
+    return utils.proxy_to_project_api(
         request,
         const.PROJECT_UHS_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -155,10 +137,9 @@ def get_project_uhs(auth):
 @app.route(const.PROJECT_API_GMS_RUNS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_gms_runs(auth):
-    return utils.proxy_to_api(
+    return utils.proxy_to_project_api(
         request,
         const.PROJECT_GMS_RUNS_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -168,10 +149,9 @@ def get_gms_runs(auth):
 @app.route(const.PROJECT_API_GMS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_ensemble_gms(auth):
-    return utils.proxy_to_api(
+    return utils.proxy_to_project_api(
         request,
         const.PROJECT_GMS_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -183,10 +163,9 @@ def get_ensemble_gms(auth):
 @app.route(const.PROJECT_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_gms_default_causal_params(auth):
-    response = utils.proxy_to_api(
+    response = utils.proxy_to_project_api(
         request,
         const.PROJECT_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -220,10 +199,9 @@ def get_gms_default_causal_params(auth):
 @app.route(const.PROJECT_API_SCENARIOS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_ensemble_scenarios(auth):
-    return utils.proxy_to_api(
+    return utils.proxy_to_project_api(
         request,
         const.PROJECT_SCENARIO_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -236,11 +214,9 @@ def get_ensemble_scenarios(auth):
 @app.route(const.PROJECT_API_HAZARD_CURVE_DOWNLOAD_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def project_api_download_hazard(auth):
-    print(auth)
-    project_response = utils.proxy_to_api(
+    project_response = utils.proxy_to_project_api(
         request,
         const.PROJECT_HAZARD_DOWNLOAD_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -255,10 +231,9 @@ def project_api_download_hazard(auth):
 @app.route(const.PROJECT_API_HAZARD_DISAGG_DOWNLOAD_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def project_api_download_disagg(auth):
-    project_response = utils.proxy_to_api(
+    project_response = utils.proxy_to_project_api(
         request,
         const.PROJECT_DISAGG_DOWNLOAD_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -273,10 +248,9 @@ def project_api_download_disagg(auth):
 @app.route(const.PROJECT_API_HAZARD_UHS_DOWNLOAD_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def project_api_download_uhs(auth):
-    project_response = utils.proxy_to_api(
+    project_response = utils.proxy_to_project_api(
         request,
         const.PROJECT_UHS_DOWNLOAD_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -291,10 +265,9 @@ def project_api_download_uhs(auth):
 @app.route(f"{const.PROJECT_API_GMS_DOWNLOAD_ENDPOINT}/<token>", methods=["GET"])
 @decorators.requires_auth
 def project_api_download_gms(auth, token):
-    project_response = utils.proxy_to_api(
+    project_response = utils.proxy_to_project_api(
         request,
         const.PROJECT_GMS_DOWNLOAD_ENDPOINT + "/" + token,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,
@@ -309,10 +282,9 @@ def project_api_download_gms(auth, token):
 @app.route(f"{const.PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT}", methods=["GET"])
 @decorators.requires_auth
 def project_api_download_scenario(auth):
-    project_response = utils.proxy_to_api(
+    project_response = utils.proxy_to_project_api(
         request,
         const.PROJECT_SCENARIO_DOWNLOAD_ENDPOINT,
-        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         auth,

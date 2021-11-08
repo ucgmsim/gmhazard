@@ -56,9 +56,4 @@ PROJECT_API_TOKEN = "Bearer {}".format(
 
 # See Circular Import section on here for some attempt at justification of this
 # https://flask.palletsprojects.com/en/1.1.x/patterns/packages/
-from intermediate_api.api import (
-    core_api,
-    project_api,
-    intermediate_api,
-    public_project_api,
-)
+from intermediate_api.api import core_api, project_api, intermediate_api

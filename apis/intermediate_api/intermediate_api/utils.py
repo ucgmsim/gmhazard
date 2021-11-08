@@ -11,6 +11,7 @@ from slack_sdk.errors import SlackApiError
 from intermediate_api import app
 import intermediate_api.db as db
 import intermediate_api.decorators as decorators
+import intermediate_api.constants as const
 
 DOWNLOAD_URL_SECRET_KEY_CORE = os.environ["DOWNLOAD_URL_SECRET_KEY_CORE_API"]
 DOWNLOAD_URL_SECRET_KEY_PROJECT = os.environ["DOWNLOAD_URL_SECRET_KEY_PROJECT_API"]
@@ -132,7 +133,6 @@ def proxy_to_core_api(
 def proxy_to_project_api(
     request,
     route,
-    methods,
     api_destination: str,
     api_token: str,
     authorized: bool = False,
@@ -147,8 +147,6 @@ def proxy_to_project_api(
     request: object
     route: string
         URL path to Core/Project API
-    methods: string
-        GET/POST methods
     api_destination: string
         To determine the destination, either the CoreAPI or ProjectAPI
     api_token: string
@@ -184,8 +182,14 @@ def proxy_to_project_api(
 
     # Every call that is not getting a list of project ids, have an argument with project_id
     project_id = request.args.get("project_id")
-    # Authroized and requested project id is in the Project table
-    # Not authroized but requested project id is in the Project table with Public access_level
+    # One exception with download as it only has token which contains the project id information
+    if "/download" in route:
+        project_id = get_token_payload(
+            list(request.args.to_dict().values())[0], DOWNLOAD_URL_SECRET_KEY_PROJECT
+        ).get("project_id")
+
+    # Authorized and requested project id is in the Project table
+    # Not authorized but requested project id is in the Project table with Public access_level
     if (authorized and project_id in db.get_projects()) or (
         not authorized and project_id in db.get_projects("public")
     ):
@@ -194,7 +198,10 @@ def proxy_to_project_api(
         )
         return flask.Response(resp.content, resp.status_code, mimetype=content_type)
     else:
-        return flask.jsonify({"Warning": "Something is not right"}, 500)
+        return (
+            flask.jsonify({"Warning": "Something is not right"}),
+            const.UNAUTHORIZED_CODE,
+        )
 
 
 def run_project_crosscheck(db_user_projects, public_projects, project_api_projects):
