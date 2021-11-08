@@ -13,7 +13,6 @@ import {
   ImageMap,
 } from "components/common";
 import { getProjectMaps } from "apis/ProjectAPI";
-import { getPublicProjectMaps } from "apis/PublicProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 
 const SiteSelectionViewer = () => {
@@ -73,7 +72,7 @@ const SiteSelectionViewer = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectMaps(queryString, token, signal)
+          getProjectMaps(queryString, signal, token)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
@@ -82,7 +81,7 @@ const SiteSelectionViewer = () => {
             .catch((error) => catchError(error));
         })();
       } else {
-        getPublicProjectMaps(queryString, signal)
+        getProjectMaps(queryString, signal)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();

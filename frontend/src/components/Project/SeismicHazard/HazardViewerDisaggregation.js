@@ -15,7 +15,6 @@ import {
   ContributionTable,
 } from "components/common";
 import { getProjectDisaggregation } from "apis/ProjectAPI";
-import { getPublicProjectDisaggregation } from "apis/PublicProjectAPI";
 import {
   APIQueryBuilder,
   handleErrors,
@@ -136,7 +135,7 @@ const HazadViewerDisaggregation = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectDisaggregation(queryString, token, signal)
+          getProjectDisaggregation(queryString, signal, token)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
@@ -145,7 +144,7 @@ const HazadViewerDisaggregation = () => {
             .catch((error) => catchError(error));
         })();
       } else {
-        getPublicProjectDisaggregation(queryString, signal)
+        getProjectDisaggregation(queryString, signal)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();

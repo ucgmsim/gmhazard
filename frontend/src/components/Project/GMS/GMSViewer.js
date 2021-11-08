@@ -20,7 +20,6 @@ import {
   GMSCausalParamPlot,
 } from "components/common";
 import { getProjectGMS } from "apis/ProjectAPI";
-import { getPublicProjectGMS } from "apis/PublicProjectAPI";
 import {
   handleErrors,
   GMSIMLabelConverter,
@@ -181,7 +180,7 @@ const GmsViewer = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectGMS(queryString, token, signal)
+          getProjectGMS(queryString, signal, token)
             .then(handleErrors)
             .then(async ([gms, defaultCausalParam]) => {
               const gmsData = await gms.json();
@@ -192,7 +191,7 @@ const GmsViewer = () => {
             .catch((error) => catchError(error));
         })();
       } else {
-        getPublicProjectGMS(queryString, signal)
+        getProjectGMS(queryString, signal)
           .then(handleErrors)
           .then(async ([gms, defaultCausalParam]) => {
             const gmsData = await gms.json();

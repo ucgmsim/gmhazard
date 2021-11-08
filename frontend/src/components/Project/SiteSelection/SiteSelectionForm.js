@@ -13,11 +13,6 @@ import {
   getProjectGMSID,
 } from "apis/ProjectAPI";
 import {
-  getPublicProjectID,
-  getPublicProjectLocation,
-  getPublicProjectGMSID,
-} from "apis/PublicProjectAPI";
-import {
   handleErrors,
   sortIMs,
   renderSigfigs,
@@ -85,7 +80,7 @@ const SiteSelectionForm = () => {
       (async () => {
         const token = await getTokenSilently();
 
-        getProjectID(token, signal)
+        getProjectID(signal, token)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
@@ -94,7 +89,7 @@ const SiteSelectionForm = () => {
           .catch((error) => console.log(error));
       })();
     } else {
-      getPublicProjectID(signal)
+      getProjectID(signal)
         .then(handleErrors)
         .then(async (response) => {
           const responseData = await response.json();
@@ -123,7 +118,7 @@ const SiteSelectionForm = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectLocation(queryString, token, signal)
+          getProjectLocation(queryString, signal, token)
             .then(handleErrors)
             .then(async ([location, im, disaggRPs, uhsRPs]) => {
               const responseLocationData = await location.json();
@@ -141,7 +136,7 @@ const SiteSelectionForm = () => {
             .catch((error) => console.log(error));
         })();
       } else {
-        getPublicProjectLocation(queryString, signal)
+        getProjectLocation(queryString, signal)
           .then(handleErrors)
           .then(async ([location, im, disaggRPs, uhsRPs]) => {
             const responseLocationData = await location.json();
@@ -249,7 +244,7 @@ const SiteSelectionForm = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectGMSID(queryString, token, signal)
+          getProjectGMSID(queryString, signal, token)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
@@ -258,7 +253,7 @@ const SiteSelectionForm = () => {
             .catch((error) => console.log(error));
         })();
       } else {
-        getPublicProjectGMSID(queryString, signal)
+        getProjectGMSID(queryString, signal)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();

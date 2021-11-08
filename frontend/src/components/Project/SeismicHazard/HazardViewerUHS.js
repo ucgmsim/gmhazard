@@ -16,7 +16,6 @@ import {
   ErrorMessage,
 } from "components/common";
 import { getProjectUHS } from "apis/ProjectAPI";
-import { getPublicProjectUHS } from "apis/PublicProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 
 const HazardViewerUHS = () => {
@@ -109,7 +108,7 @@ const HazardViewerUHS = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectUHS(queryString, token, signal)
+          getProjectUHS(queryString, signal, token)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
@@ -118,7 +117,7 @@ const HazardViewerUHS = () => {
             .catch((error) => catchError(error));
         })();
       } else {
-        getPublicProjectUHS(queryString, signal)
+        getProjectUHS(queryString, signal)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();

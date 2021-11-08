@@ -16,7 +16,6 @@ import {
   HazardCurveMetadata,
 } from "components/common";
 import { getProjectHazardCurve } from "apis/ProjectAPI";
-import { getPublicProjectHazardCurve } from "apis/PublicProjectAPI";
 import {
   handleErrors,
   APIQueryBuilder,
@@ -116,7 +115,7 @@ const HazardViewerHazardCurve = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectHazardCurve(queryString, token, signal)
+          getProjectHazardCurve(queryString, signal, token)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
@@ -125,7 +124,7 @@ const HazardViewerHazardCurve = () => {
             .catch((error) => catchError(error));
         })();
       } else {
-        getPublicProjectHazardCurve(queryString, signal)
+        getProjectHazardCurve(queryString, signal)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();

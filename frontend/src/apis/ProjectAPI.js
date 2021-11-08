@@ -1,24 +1,29 @@
 import * as CONSTANTS from "constants/Constants";
 
-const projectAPIRequest = async (url, token, signal) => {
-  return await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+const projectAPIRequest = async (url, signal, token) => {
+  let options = {
     signal: signal,
-  });
+  };
+
+  if (token) {
+    options["headers"] = {
+      Authorization: `Bearer ${token}`,
+    };
+  }
+
+  return await fetch(url, options);
 };
 
 /* Project - Site Selection Form */
-export const getProjectID = (token, signal) => {
+export const getProjectID = (signal, token = null) => {
   return projectAPIRequest(
     CONSTANTS.INTERMEDIATE_API_URL + CONSTANTS.PROJECT_API_PROJECT_IDS_ENDPOINT,
-    token,
-    signal
+    signal,
+    token
   );
 };
 
-export const getProjectLocation = async (queryString, token, signal) => {
+export const getProjectLocation = async (queryString, signal, token = null) => {
   return await Promise.all([
     fetch(
       CONSTANTS.INTERMEDIATE_API_URL +
@@ -67,62 +72,62 @@ export const getProjectLocation = async (queryString, token, signal) => {
   ]);
 };
 
-export const getProjectGMSID = (queryString, token, signal) => {
+export const getProjectGMSID = (queryString, signal, token = null) => {
   return projectAPIRequest(
     CONSTANTS.INTERMEDIATE_API_URL +
       CONSTANTS.PROJECT_API_GMS_RUNS_ENDPOINT +
       queryString,
-    token,
-    signal
+    signal,
+    token
   );
 };
 
 /* Project - Site Selection Viewer */
-export const getProjectMaps = (queryString, token, signal) => {
+export const getProjectMaps = (queryString, signal, token = null) => {
   return projectAPIRequest(
     CONSTANTS.INTERMEDIATE_API_URL +
       CONSTANTS.PROJECT_API_MAPS_ENDPOINT +
       queryString,
-    token,
-    signal
+    signal,
+    token
   );
 };
 
 /* Project - Hazard Curve Viewer */
-export const getProjectHazardCurve = (queryString, token, signal) => {
+export const getProjectHazardCurve = (queryString, signal, token = null) => {
   return projectAPIRequest(
     CONSTANTS.INTERMEDIATE_API_URL +
       CONSTANTS.PROJECT_API_HAZARD_ENDPOINT +
       queryString,
-    token,
-    signal
+    signal,
+    token
   );
 };
 
 /* Project - Disaggregation Viewer */
-export const getProjectDisaggregation = (queryString, token, signal) => {
+export const getProjectDisaggregation = (queryString, signal, token = null) => {
   return projectAPIRequest(
     CONSTANTS.INTERMEDIATE_API_URL +
       CONSTANTS.PROJECT_API_HAZARD_DISAGG_ENDPOINT +
       queryString,
-    token,
-    signal
+    signal,
+    token
   );
 };
 
 /* Project - UHS Viewer */
-export const getProjectUHS = (queryString, token, signal) => {
+export const getProjectUHS = (queryString, signal, token = null) => {
   return projectAPIRequest(
     CONSTANTS.INTERMEDIATE_API_URL +
       CONSTANTS.PROJECT_API_HAZARD_UHS_ENDPOINT +
       queryString,
-    token,
-    signal
+    signal,
+    token
   );
 };
 
 /* Project - GMS Viewer */
-export const getProjectGMS = async (queryString, token, signal) => {
+export const getProjectGMS = async (queryString, signal, token = null) => {
   return await Promise.all([
     fetch(
       CONSTANTS.INTERMEDIATE_API_URL +
@@ -150,12 +155,12 @@ export const getProjectGMS = async (queryString, token, signal) => {
 };
 
 /* Project - Scenario Viewer */
-export const getProjectScenario = (queryString, token, signal) => {
+export const getProjectScenario = (queryString, signal, token = null) => {
   return projectAPIRequest(
     CONSTANTS.INTERMEDIATE_API_URL +
       CONSTANTS.PROJECT_API_SCENARIOS_ENDPOINT +
       queryString,
-    token,
-    signal
+    signal,
+    token
   );
 };

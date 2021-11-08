@@ -12,7 +12,6 @@ import {
   ScenarioPlot,
 } from "components/common";
 import { getProjectScenario } from "apis/ProjectAPI";
-import { getPublicProjectScenario } from "apis/PublicProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 
 import "assets/style/ScenarioViewer.css";
@@ -76,7 +75,7 @@ const ScenarioViewer = () => {
         (async () => {
           const token = await getTokenSilently();
 
-          getProjectScenario(queryString, token, signal)
+          getProjectScenario(queryString, signal, token)
             .then(handleErrors)
             .then(async (response) => {
               const responseData = await response.json();
@@ -85,7 +84,7 @@ const ScenarioViewer = () => {
             .catch((error) => catchError(error));
         })();
       } else {
-        getPublicProjectScenario(queryString, signal)
+        getProjectScenario(queryString, signal)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
