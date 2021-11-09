@@ -99,7 +99,8 @@ const HazardViewerHazardCurve = () => {
       setShowSpinnerHazard(true);
       setShowErrorMessage({ isError: false, errorCode: null });
 
-      let queryString = APIQueryBuilder({
+      let token = null;
+      const queryString = APIQueryBuilder({
         project_id: projectId["value"],
         station_id: createStationID(
           projectLocationCode[projectLocation],
@@ -111,27 +112,17 @@ const HazardViewerHazardCurve = () => {
         im_component: projectSelectedIMComponent,
       });
 
-      if (isAuthenticated) {
-        (async () => {
-          const token = await getTokenSilently();
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-          getProjectHazardCurve(queryString, signal, token)
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-              updateHazardData(responseData);
-            })
-            .catch((error) => catchError(error));
-        })();
-      } else {
-        getProjectHazardCurve(queryString, signal)
+        getProjectHazardCurve(queryString, signal, token)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
             updateHazardData(responseData);
           })
           .catch((error) => catchError(error));
-      }
+      })();
     }
 
     return () => {

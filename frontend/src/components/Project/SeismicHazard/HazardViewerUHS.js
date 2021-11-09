@@ -89,7 +89,8 @@ const HazardViewerUHS = () => {
       setShowSpinnerUHS(true);
       setShowErrorMessage({ isError: false, errorCode: null });
 
-      let queryString = APIQueryBuilder({
+      let token = null;
+      const queryString = APIQueryBuilder({
         project_id: projectId["value"],
         station_id: createStationID(
           projectLocationCode[projectLocation],
@@ -104,27 +105,18 @@ const HazardViewerUHS = () => {
             : projectSelectedIMComponent,
       });
 
-      if (isAuthenticated) {
-        (async () => {
-          const token = await getTokenSilently();
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-          getProjectUHS(queryString, signal, token)
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-              updateUHSData(responseData);
-            })
-            .catch((error) => catchError(error));
-        })();
-      } else {
-        getProjectUHS(queryString, signal)
+        getProjectUHS(queryString, signal, token)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
+
             updateUHSData(responseData);
           })
           .catch((error) => catchError(error));
-      }
+      })();
     }
 
     return () => {

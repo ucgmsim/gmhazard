@@ -68,35 +68,28 @@ const SiteSelectionForm = () => {
 
   // Getting Project IDs
   useEffect(() => {
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+
     // Reset those to default to disable tabs
     setProjectId(null);
     setProjectLocation(null);
     setProjectVS30(null);
 
-    const abortController = new AbortController();
-    const signal = abortController.signal;
+    let token = null;
 
-    if (isAuthenticated) {
-      (async () => {
-        const token = await getTokenSilently();
+    (async () => {
+      if (isAuthenticated) token = await getTokenSilently();
 
-        getProjectID(signal, token)
-          .then(handleErrors)
-          .then(async (response) => {
-            const responseData = await response.json();
-            setProjectIdOptions(responseData);
-          })
-          .catch((error) => console.log(error));
-      })();
-    } else {
-      getProjectID(signal)
+      getProjectID(signal, token)
         .then(handleErrors)
         .then(async (response) => {
           const responseData = await response.json();
+
           setProjectIdOptions(responseData);
         })
         .catch((error) => console.log(error));
-    }
+    })();
 
     return () => {
       abortController.abort();
@@ -110,33 +103,15 @@ const SiteSelectionForm = () => {
     const signal = abortController.signal;
 
     if (localProjectId !== null) {
-      let queryString = APIQueryBuilder({
+      let token = null;
+      const queryString = APIQueryBuilder({
         project_id: localProjectId["value"],
       });
 
-      if (isAuthenticated) {
-        (async () => {
-          const token = await getTokenSilently();
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-          getProjectLocation(queryString, signal, token)
-            .then(handleErrors)
-            .then(async ([location, im, disaggRPs, uhsRPs]) => {
-              const responseLocationData = await location.json();
-              const responseIMData = await im.json();
-              const responseDisaggRPData = await disaggRPs.json();
-              const responseUHSRPData = await uhsRPs.json();
-
-              updateDropdown(
-                responseLocationData,
-                responseIMData,
-                responseDisaggRPData,
-                responseUHSRPData
-              );
-            })
-            .catch((error) => console.log(error));
-        })();
-      } else {
-        getProjectLocation(queryString, signal)
+        getProjectLocation(queryString, signal, token)
           .then(handleErrors)
           .then(async ([location, im, disaggRPs, uhsRPs]) => {
             const responseLocationData = await location.json();
@@ -152,7 +127,7 @@ const SiteSelectionForm = () => {
             );
           })
           .catch((error) => console.log(error));
-      }
+      })();
     }
 
     return () => {
@@ -237,30 +212,23 @@ const SiteSelectionForm = () => {
     const signal = abortController.signal;
 
     if (projectSiteSelectionGetClick !== null) {
-      let queryString = APIQueryBuilder({
+      let token = null;
+      const queryString = APIQueryBuilder({
         project_id: localProjectId["value"],
       });
-      if (isAuthenticated) {
-        (async () => {
-          const token = await getTokenSilently();
 
-          getProjectGMSID(queryString, signal, token)
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-              updateGMSDropdown(responseData);
-            })
-            .catch((error) => console.log(error));
-        })();
-      } else {
-        getProjectGMSID(queryString, signal)
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
+
+        getProjectGMSID(queryString, signal, token)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
+
             updateGMSDropdown(responseData);
           })
           .catch((error) => console.log(error));
-      }
+      })();
     }
 
     return () => {

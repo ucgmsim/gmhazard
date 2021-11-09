@@ -60,7 +60,8 @@ const ScenarioViewer = () => {
       setProjectScenarioData(null);
       setShowErrorMessage({ isError: false, errorCode: null });
 
-      let queryString = APIQueryBuilder({
+      let token = null;
+      const queryString = APIQueryBuilder({
         project_id: projectId["value"],
         station_id: createStationID(
           projectLocationCode[projectLocation],
@@ -71,27 +72,17 @@ const ScenarioViewer = () => {
         im_component: projectSelectedScenarioIMComponent,
       });
 
-      if (isAuthenticated) {
-        (async () => {
-          const token = await getTokenSilently();
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-          getProjectScenario(queryString, signal, token)
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-              updateScenarioData(responseData);
-            })
-            .catch((error) => catchError(error));
-        })();
-      } else {
-        getProjectScenario(queryString, signal)
+        getProjectScenario(queryString, signal, token)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
             updateScenarioData(responseData);
           })
           .catch((error) => catchError(error));
-      }
+      })();
     }
 
     return () => {

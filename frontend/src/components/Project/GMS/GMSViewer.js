@@ -148,6 +148,7 @@ const GmsViewer = () => {
       setShowErrorMessage({ isError: false, errorCode: null });
       setIsLoading(true);
 
+      let token = null;
       const gms_id = projectGMSIDs.find((GMSId) => {
         return (
           GMSId.includes(
@@ -164,8 +165,7 @@ const GmsViewer = () => {
           )
         );
       });
-
-      let queryString = APIQueryBuilder({
+      const queryString = APIQueryBuilder({
         project_id: projectId["value"],
         station_id: createStationID(
           projectLocationCode[projectLocation],
@@ -176,22 +176,10 @@ const GmsViewer = () => {
         gms_id: gms_id,
       });
 
-      if (isAuthenticated) {
-        (async () => {
-          const token = await getTokenSilently();
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-          getProjectGMS(queryString, signal, token)
-            .then(handleErrors)
-            .then(async ([gms, defaultCausalParam]) => {
-              const gmsData = await gms.json();
-              const defaultCausalParamData = await defaultCausalParam.json();
-
-              updateGMSPlots(gmsData, defaultCausalParamData, gms_id);
-            })
-            .catch((error) => catchError(error));
-        })();
-      } else {
-        getProjectGMS(queryString, signal)
+        getProjectGMS(queryString, signal, token)
           .then(handleErrors)
           .then(async ([gms, defaultCausalParam]) => {
             const gmsData = await gms.json();
@@ -200,7 +188,7 @@ const GmsViewer = () => {
             updateGMSPlots(gmsData, defaultCausalParamData, gms_id);
           })
           .catch((error) => catchError(error));
-      }
+      })();
     }
 
     return () => {

@@ -118,7 +118,8 @@ const HazadViewerDisaggregation = () => {
       setShowContribTable(false);
       setShowSpinnerContribTable(true);
 
-      let queryString = APIQueryBuilder({
+      let token = null;
+      const queryString = APIQueryBuilder({
         project_id: projectId["value"],
         station_id: createStationID(
           projectLocationCode[projectLocation],
@@ -131,27 +132,17 @@ const HazadViewerDisaggregation = () => {
         im_component: projectSelectedIMComponent,
       });
 
-      if (isAuthenticated) {
-        (async () => {
-          const token = await getTokenSilently();
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-          getProjectDisaggregation(queryString, signal, token)
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-              updateDisaggData(responseData);
-            })
-            .catch((error) => catchError(error));
-        })();
-      } else {
-        getProjectDisaggregation(queryString, signal)
+        getProjectDisaggregation(queryString, signal, token)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
             updateDisaggData(responseData);
           })
           .catch((error) => catchError(error));
-      }
+      })();
     }
 
     return () => {
