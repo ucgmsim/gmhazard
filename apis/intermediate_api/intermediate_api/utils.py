@@ -157,8 +157,6 @@ def proxy_to_project_api(
     authorized: boolean
         True if it the request is with Auth0 token which is for private
         otherwise, public access
-    data: dictionary
-        BODY to send, instead of decoding inside this function, get it as a parameter.
     user_id: string
         Determining the user
     action: string
