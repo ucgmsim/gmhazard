@@ -52,7 +52,6 @@ def records_user_activity(request, action, api_destination, user_id):
             db.write_request_details(
                 user_id, action, {key: value for key, value in payload.items()},
             )
-
     else:
         db.write_request_details(
             user_id,
