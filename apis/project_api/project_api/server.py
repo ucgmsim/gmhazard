@@ -50,7 +50,6 @@ def handle_auth_error(ex):
 def get_token_auth_header():
     """Obtains the Access Token from the Authorization Header"""
     auth = flask.request.headers.get("Authorization", None)
-    access_level = flask.request.headers.get("Access-Level", "public")
     if not auth:
         raise AuthError(
             {
@@ -84,7 +83,7 @@ def get_token_auth_header():
         )
 
     token = parts[1]
-    return token, access_level
+    return token
 
 
 def requires_auth(f):
@@ -92,7 +91,7 @@ def requires_auth(f):
 
     @wraps(f)
     def decorated(*args, **kwargs):
-        token, access_level = get_token_auth_header()
+        token = get_token_auth_header()
         try:
             jwt.decode(token, PROJECT_API_SECRET_KEY)
         except jwt.ExpiredSignatureError:
