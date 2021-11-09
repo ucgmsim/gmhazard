@@ -355,6 +355,7 @@ def get_default_causal_params(auth):
 
 # GMS
 @app.route(const.CORE_API_GMS_DATASETS_ENDPOINT, methods=["GET"])
+@decorators.requires_auth
 def get_gm_datasets(auth):
     return utils.proxy_to_core_api(
         request,
@@ -367,6 +368,7 @@ def get_gm_datasets(auth):
 
 
 @app.route(const.CORE_API_GMS_IMS_ENDPOINT_ENDPOINT, methods=["GET"])
+@decorators.requires_auth
 def get_gms_available_ims(auth):
     return utils.proxy_to_core_api(
         request, const.GMS_IMS_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN, auth
@@ -375,6 +377,7 @@ def get_gms_available_ims(auth):
 
 # Scenarios
 @app.route(const.CORE_API_SCENARIOS_ENDPOINT, methods=["GET"])
+@decorators.requires_auth
 def get_scenario(auth):
     return utils.proxy_to_core_api(
         request,
@@ -446,7 +449,7 @@ def core_api_download_uhs(auth):
 
 @app.route(f"{const.CORE_API_GMS_DOWNLOAD_ENDPOINT}/<token>", methods=["GET"])
 @decorators.requires_auth
-def core_api_download_gms(token):
+def core_api_download_gms(auth, token):
     core_response = utils.proxy_to_core_api(
         request,
         const.ENSEMBLE_GMS_DOWNLOAD_ENDPOINT + "/" + token,
