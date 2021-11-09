@@ -3,6 +3,7 @@ from enum import Enum
 
 import numpy as np
 from scipy import stats
+from scipy.stats import qmc
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
@@ -56,15 +57,15 @@ def set_hypocentres(
         plane["shyp"] = -999.9
         plane["dhyp"] = -999.9
 
-    # return monte_carlo_distribution(hypo_along_strike, hypo_down_dip, planes, event_type, fault_name, total_length)
+    return monte_carlo_distribution(hypo_along_strike, hypo_down_dip, planes, event_type, fault_name, total_length)
 
     # return monte_carlo_grid(
     #     hypo_along_strike, hypo_down_dip, planes, event_type, fault_name, total_length
     # )
-
-    return latin_hypercube(
-        hypo_along_strike, hypo_down_dip, planes, event_type, fault_name, total_length
-    )
+    #
+    # return latin_hypercube(
+    #     hypo_along_strike, hypo_down_dip, planes, event_type, fault_name, total_length
+    # )
 
 
 def calc_nominal_strike(traces: np.ndarray):
@@ -142,13 +143,13 @@ def monte_carlo_distribution(
                 planes_list.append(planes_copy)
             current_length += plane["length"]
 
-    pd.DataFrame(truncated_strike).to_csv(
-        f"/home/joel/local/directivity/monte_carlo/dist/Strike_Distribution_{fault_name}_{hypo_along_strike}.csv"
-    )
-
-    pd.DataFrame(truncated_down_dip).to_csv(
-        f"/home/joel/local/directivity/monte_carlo/dist/Down_Dip_Distribution_{fault_name}_{event_type}_{hypo_down_dip}.csv"
-    )
+    # pd.DataFrame(truncated_strike).to_csv(
+    #     f"/mnt/mantle_data/joel_scratch/directivity/baseline/dist/Strike_Distribution_{fault_name}_{hypo_along_strike}.csv"
+    # )
+    #
+    # pd.DataFrame(truncated_down_dip).to_csv(
+    #     f"/mnt/mantle_data/joel_scratch/directivity/baseline/dist/Down_Dip_Distribution_{fault_name}_{event_type}_{hypo_down_dip}.csv"
+    # )
 
     return planes_list, planes_index
 
@@ -281,13 +282,13 @@ def latin_hypercube(
     lhd[:, 1] = down_dip_distribution.ppf(lhd[:, 1])
 
     # Save the distribution
-    lhd_df = pd.DataFrame(lhd)
-    lhd_df.to_csv(f"/home/joel/local/directivity/test/{fault_name}_{n_hypo}.csv")
-    plot_searchspace(
-        lhd,
-        f"Latin Hypercube Distribution {n_hypo} Hypocentres",
-        f"{fault_name}_{n_hypo}_distribution",
-    )
+    # lhd_df = pd.DataFrame(lhd)
+    # lhd_df.to_csv(f"/home/joel/local/directivity/test/{fault_name}_{n_hypo}.csv")
+    # plot_searchspace(
+    #     lhd,
+    #     f"Latin Hypercube Distribution {n_hypo} Hypocentres",
+    #     f"{fault_name}_{n_hypo}_distribution",
+    # )
 
     planes_list = []
     planes_index = []

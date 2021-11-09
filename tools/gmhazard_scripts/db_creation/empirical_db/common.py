@@ -194,6 +194,7 @@ def calculate_emp_site(
     dist_filter_by_mag=False,
     return_vals=False,
     keep_sigma_components=False,
+    use_directivity=True,
 ):
     """
     Calculates (and writes) all empirical values for all ruptures in nhm_data at a given site.
@@ -213,6 +214,7 @@ def calculate_emp_site(
     :param tect_type_model_dict_ffp: the relation between tectonic type and which empirical model(s) to use
     :param return_vals: flag to return the values instead of writing them to the DB - specifically for the single
                         writer MPI paradigm
+    :param use_directivity: flag to apply the directivity effect to each of the fault calculations. Applies only is pSA
     :return: if return vals is set - a Dictionary of dataframes are returned
     """
     im_result_dict = {key: {} for key in imdb_dict.keys()}
@@ -284,6 +286,12 @@ def calculate_emp_site(
                 )
                 if not im_type is IMType.pSA:
                     values = [values]
+                elif use_directivity:
+                    # nhm_dict = nhm.load_nhm(branch.flt_erf_ffp)
+                    # fault = nhm_dict[fault_name]
+                    print("TESTing")
+                    # planes, lon_lat_depth = rupture.get_fault_header_points(fault)
+                    # sha_calc.directivity.bea20.directivity.compute_fault_directivity(lon_lat_depth,planes, [[]])
                 for i, value in enumerate(values):
                     full_im_name = (
                         IM(im_type, period=psa_periods[i])
