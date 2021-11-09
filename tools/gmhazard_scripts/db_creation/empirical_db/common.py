@@ -180,7 +180,6 @@ def get_max_dist_zfac_scaled(site):
 def __process_rupture(
     rupture,
     site,
-    rupture_df,
     im_types,
     tect_type_model_dict,
     psa_periods,
@@ -188,7 +187,6 @@ def __process_rupture(
     fault_im_result_dict,
 ):
     """Helper MP function for calculate_emp_site"""
-    rupture_name = rupture.rupture_name
     fault = Fault(
         Mw=rupture.mag,
         hdepth=rupture.dbot,
@@ -208,10 +206,6 @@ def __process_rupture(
     site.Rx = 0 if np.isnan(rx) else rx
     ry = rupture["ry"]
     site.Ry = 0 if np.isnan(ry) else ry
-
-    rupture_id = rupture_df[
-        rupture_df["rupture_name"] == rupture_name
-    ].index.values.item()
 
     for im_type in im_types:
         GMMs = empirical_factory.determine_all_gmm(
@@ -248,7 +242,7 @@ def __process_rupture(
                 else:
                     fault_im_result_dict[db_type][f"{full_im_name}_sigma"] = stdev
 
-    return rupture_id, fault_im_result_dict
+    return rupture.rupture_name, fault_im_result_dict
 
 
 def calculate_emp_site(
@@ -320,19 +314,21 @@ def calculate_emp_site(
                 (
                     rupture,
                     site,
-                    rupture_df,
                     im_types,
                     tect_type_model_dict,
                     psa_periods,
                     keep_sigma_components,
                     {key: {} for key in imdb_dict.keys()},
                 )
-                for index, rupture in matching_df.iterrows()
+                for index, rupture in matching_df.iloc[:10].iterrows()
             ],
         )
 
     im_result_dict = {key: {} for key in imdb_dict.keys()}
-    for cur_rupture_id, cur_fault_im_dict in results:
+    for cur_rupture_name, cur_fault_im_dict in results:
+        cur_rupture_id = rupture_df[
+            rupture_df["rupture_name"] == cur_rupture_name
+        ].index.values.item()
         for cur_gmm, cur_im_dict in cur_fault_im_dict.items():
             im_result_dict[cur_gmm][cur_rupture_id] = cur_im_dict
 
