@@ -320,7 +320,7 @@ def calculate_emp_site(
                     keep_sigma_components,
                     {key: {} for key in imdb_dict.keys()},
                 )
-                for index, rupture in matching_df.iloc[:10].iterrows()
+                for index, rupture in matching_df.iterrows()
             ],
         )
 
