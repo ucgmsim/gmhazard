@@ -74,9 +74,9 @@ def requires_auth(f):
                     )
 
                 _request_ctx_stack.top.current_user = payload
-                return f(*args, **kwargs, auth=True)
+                return f(*args, **kwargs, is_authenticated=True)
         except:
-            return f(*args, **kwargs, auth=False)
+            return f(*args, **kwargs, is_authenticated=False)
 
     return decorated
 

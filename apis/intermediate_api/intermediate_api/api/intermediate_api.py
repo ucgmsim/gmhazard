@@ -14,14 +14,14 @@ import intermediate_api.constants as const
 @app.route(const.INTERMEDIATE_API_AUTH0_USER_INFO_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def get_auth0_user_key_info(auth):
+def get_auth0_user_key_info(is_authenticated):
     """Getting users permission on their first launch
 
     At the same time, also update the users_permissions table
     as we want to keep the users_permissions table up to date
     for the dashboards.
     """
-    if auth:
+    if is_authenticated:
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_AUTH0_USER_INFO_ENDPOINT}"
         )
@@ -46,7 +46,7 @@ def get_auth0_user_key_info(auth):
 # Edit User
 @app.route(const.INTERMEDIATE_API_AUTH0_USERS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
-def get_auth0_users(auth):
+def get_auth0_users(is_authenticated):
     """Fetching all the existing users from the Auth0
     These will be used for User dropdown in the Permission Config
 
@@ -54,7 +54,7 @@ def get_auth0_users(auth):
     setting user permission to users that don't
     exist in the DB yet
     """
-    if auth:
+    if is_authenticated:
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_AUTH0_USERS_ENDPOINT}"
         )
@@ -70,9 +70,9 @@ def get_auth0_users(auth):
 @app.route(const.INTERMEDIATE_API_ALL_PRIVATE_PROJECTS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def get_private_projects(auth):
+def get_private_projects(is_authenticated):
     """Fetching all private projects from the Project table"""
-    if auth:
+    if is_authenticated:
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_ALL_PRIVATE_PROJECTS_ENDPOINT}"
         )
@@ -97,11 +97,11 @@ def get_public_projects():
 @app.route(const.INTERMEDIATE_API_USER_PROJECTS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def get_user_allowed_projects(auth):
+def get_user_allowed_projects(is_authenticated):
     """Fetching all the projects that are already allowed to a user
     Will be used for allowed Private Projects dropdown
     """
-    if auth:
+    if is_authenticated:
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_USER_PROJECTS_ENDPOINT}"
         )
@@ -119,9 +119,9 @@ def get_user_allowed_projects(auth):
 @app.route(const.INTERMEDIATE_API_USER_ALLOCATE_PROJECTS_ENDPOINT, methods=["POST"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def allocate_projects_to_user(auth):
+def allocate_projects_to_user(is_authenticated):
     """Allocate the chosen project(s) to the chosen user."""
-    if auth:
+    if is_authenticated:
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_USER_ALLOCATE_PROJECTS_ENDPOINT}"
         )
@@ -144,9 +144,9 @@ def allocate_projects_to_user(auth):
 @app.route(const.INTERMEDIATE_API_USER_REMOVE_PROJECTS_ENDPOINT, methods=["POST"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def remove_projects_from_user(auth):
+def remove_projects_from_user(is_authenticated):
     """Remove the chosen project(s) from the chosen user."""
-    if auth:
+    if is_authenticated:
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_USER_REMOVE_PROJECTS_ENDPOINT}"
         )
@@ -169,9 +169,9 @@ def remove_projects_from_user(auth):
 @app.route(const.INTERMEDIATE_API_ALL_USERS_PROJECTS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def get_all_users_projects(auth):
+def get_all_users_projects(is_authenticated):
     """Pull every assigned project for all users from Users_Projects table"""
-    if auth:
+    if is_authenticated:
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_ALL_USERS_PROJECTS_ENDPOINT}"
         )
@@ -187,9 +187,9 @@ def get_all_users_projects(auth):
 @app.route(const.INTERMEDIATE_API_ALL_PERMISSIONS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def get_all_permissions(auth):
+def get_all_permissions(is_authenticated):
     """Pull all possible access permission (Auth0_Permission table)"""
-    if auth:
+    if is_authenticated:
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_ALL_PERMISSIONS_ENDPOINT}"
         )
@@ -204,9 +204,9 @@ def get_all_permissions(auth):
 @app.route(const.INTERMEDIATE_API_ALL_USERS_PERMISSIONS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def get_all_users_permissions(auth):
+def get_all_users_permissions(is_authenticated):
     """Pull every assigned access permission for all uesrs from Users_Permissions table"""
-    if auth:
+    if is_authenticated:
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_ALL_USERS_PERMISSIONS_ENDPOINT}"
         )
@@ -222,9 +222,9 @@ def get_all_users_permissions(auth):
 @app.route(const.INTERMEDIATE_API_CREATE_PROJECT_ENDPOINT, methods=["POST"])
 @decorators.requires_auth
 @decorators.endpoint_exception_handler
-def create_project(auth):
+def create_project(is_authenticated):
     """Create new project(s)"""
-    if auth:
+    if is_authenticated:
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_CREATE_PROJECT_ENDPOINT}"
         )
@@ -247,7 +247,7 @@ def create_project(auth):
                 "POST",
                 PROJECT_API_BASE,
                 PROJECT_API_TOKEN,
-                auth,
+                is_authenticated,
                 data=json.dumps(data),
                 user_id=auth0.get_user_id(),
                 action="Project Creation - Triggering project generation",
