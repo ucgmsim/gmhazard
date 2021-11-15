@@ -25,68 +25,56 @@ CORE_API_TOKEN = "Bearer {}".format(
 @app.route(const.CORE_API_ENSEMBLE_IDS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_ensemble_ids(is_authenticated):
-    return utils.proxy_to_core_api(
-        request, const.ENSEMBLE_IDS_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN, is_authenticated
+    return utils.proxy_to_api(
+        request, const.ENSEMBLE_IDS_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN,
     )
 
 
 @app.route(const.CORE_API_IMS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_im_ids(is_authenticated):
-    return utils.proxy_to_core_api(
-        request, const.ENSEMBLE_IMS_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN, is_authenticated
+    return utils.proxy_to_api(
+        request, const.ENSEMBLE_IMS_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN,
     )
 
 
 @app.route(const.CORE_API_CONTEXT_MAP_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_context_map(is_authenticated):
-    return utils.proxy_to_core_api(
-        request,
-        const.SITE_CONTEXT_MAP_ENDPOINT,
-        "GET",
-        CORE_API_BASE,
-        CORE_API_TOKEN,
-        is_authenticated,
+    return utils.proxy_to_api(
+        request, const.SITE_CONTEXT_MAP_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN,
     )
 
 
 @app.route(const.CORE_API_VS30_MAP_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_vs30_map(is_authenticated):
-    return utils.proxy_to_core_api(
-        request,
-        const.SITE_VS30_MAP_ENDPOINT,
-        "GET",
-        CORE_API_BASE,
-        CORE_API_TOKEN,
-        is_authenticated,
+    return utils.proxy_to_api(
+        request, const.SITE_VS30_MAP_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN,
     )
 
 
 @app.route(const.CORE_API_VS30_SOIL_CLASS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_soil_class_from_vs30(is_authenticated):
-    return utils.proxy_to_core_api(
+    return utils.proxy_to_api(
         request,
         const.SITE_VS30_SOIL_CLASS_ENDPOINT,
         "GET",
         CORE_API_BASE,
         CORE_API_TOKEN,
-        is_authenticated,
     )
 
 
 @app.route(const.CORE_API_STATION_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_station(is_authenticated):
-    return utils.proxy_to_core_api(
+    return utils.proxy_to_api(
         request,
         const.SITE_LOCATION_ENDPOINT,
         "GET",
         CORE_API_BASE,
         CORE_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id(),
         action="Hazard Analysis - Set Station",
     )
@@ -97,13 +85,12 @@ def get_station(is_authenticated):
 @decorators.requires_auth
 def get_hazard(is_authenticated):
     if auth0.requires_permission("hazard:hazard"):
-        return utils.proxy_to_core_api(
+        return utils.proxy_to_api(
             request,
             const.ENSEMBLE_HAZARD_ENDPOINT,
             "GET",
             CORE_API_BASE,
             CORE_API_TOKEN,
-            is_authenticated,
             user_id=auth0.get_user_id(),
             action="Hazard Analysis - Hazard Curve Compute",
         )
@@ -120,13 +107,12 @@ def get_hazard(is_authenticated):
 @decorators.requires_auth
 def get_hazard_nzs1170p5(is_authenticated):
     if auth0.requires_permission("hazard:hazard"):
-        return utils.proxy_to_core_api(
+        return utils.proxy_to_api(
             request,
             const.NZS1170p5_HAZARD_ENDPOINT,
             "GET",
             CORE_API_BASE,
             CORE_API_TOKEN,
-            is_authenticated,
             user_id=auth0.get_user_id(),
             action="Hazard Analysis - Hazard NZS1170p5 Compute",
         )
@@ -143,13 +129,8 @@ def get_hazard_nzs1170p5(is_authenticated):
 @decorators.requires_auth
 def get_nzs1170p5_soil_class(is_authenticated):
     if auth0.requires_permission("hazard:hazard"):
-        return utils.proxy_to_core_api(
-            request,
-            const.NZS1170p5_SOIL_CLASS,
-            "GET",
-            CORE_API_BASE,
-            CORE_API_TOKEN,
-            is_authenticated,
+        return utils.proxy_to_api(
+            request, const.NZS1170p5_SOIL_CLASS, "GET", CORE_API_BASE, CORE_API_TOKEN,
         )
     raise auth0.AuthError(
         {
@@ -164,13 +145,12 @@ def get_nzs1170p5_soil_class(is_authenticated):
 @decorators.requires_auth
 def get_nzs1170p5_default_params(is_authenticated):
     if auth0.requires_permission("hazard:hazard"):
-        return utils.proxy_to_core_api(
+        return utils.proxy_to_api(
             request,
             const.NZS1170p5_DEFAULT_PARAMS_ENDPOINT,
             "GET",
             CORE_API_BASE,
             CORE_API_TOKEN,
-            is_authenticated,
         )
     raise auth0.AuthError(
         {
@@ -185,13 +165,12 @@ def get_nzs1170p5_default_params(is_authenticated):
 @decorators.requires_auth
 def get_hazard_nzta(is_authenticated):
     if auth0.requires_permission("hazard:hazard"):
-        return utils.proxy_to_core_api(
+        return utils.proxy_to_api(
             request,
             const.NZTA_HAZARD_ENDPOINT,
             "GET",
             CORE_API_BASE,
             CORE_API_TOKEN,
-            is_authenticated,
             user_id=auth0.get_user_id(),
             action="Hazard Analysis - Hazard NZTA Compute",
         )
@@ -208,8 +187,8 @@ def get_hazard_nzta(is_authenticated):
 @decorators.requires_auth
 def get_nzta_soil_class(is_authenticated):
     if auth0.requires_permission("hazard:hazard"):
-        return utils.proxy_to_core_api(
-            request, const.NZTA_SOIL_CLASS, "GET", CORE_API_BASE, CORE_API_TOKEN, is_authenticated,
+        return utils.proxy_to_api(
+            request, const.NZTA_SOIL_CLASS, "GET", CORE_API_BASE, CORE_API_TOKEN,
         )
     raise auth0.AuthError(
         {
@@ -224,13 +203,12 @@ def get_nzta_soil_class(is_authenticated):
 @decorators.requires_auth
 def get_nzta_default_params(is_authenticated):
     if auth0.requires_permission("hazard:hazard"):
-        return utils.proxy_to_core_api(
+        return utils.proxy_to_api(
             request,
             const.NZTA_DEFAULT_PARAMS_ENDPOINT,
             "GET",
             CORE_API_BASE,
             CORE_API_TOKEN,
-            is_authenticated,
         )
     raise auth0.AuthError(
         {
@@ -245,13 +223,12 @@ def get_nzta_default_params(is_authenticated):
 @decorators.requires_auth
 def get_disagg(is_authenticated):
     if auth0.requires_permission("hazard:disagg"):
-        return utils.proxy_to_core_api(
+        return utils.proxy_to_api(
             request,
             const.ENSEMBLE_DISAGG_ENDPOINT,
             "GET",
             CORE_API_BASE,
             CORE_API_TOKEN,
-            is_authenticated,
             user_id=auth0.get_user_id(),
             action="Hazard Analysis - Disaggregation Compute",
         )
@@ -268,13 +245,12 @@ def get_disagg(is_authenticated):
 @decorators.requires_auth
 def get_uhs(is_authenticated):
     if auth0.requires_permission("hazard:uhs"):
-        return utils.proxy_to_core_api(
+        return utils.proxy_to_api(
             request,
             const.ENSEMBLE_UHS_ENDPOINT,
             "GET",
             CORE_API_BASE,
             CORE_API_TOKEN,
-            is_authenticated,
             user_id=auth0.get_user_id(),
             action="Hazard Analysis - UHS Compute",
         )
@@ -291,13 +267,12 @@ def get_uhs(is_authenticated):
 @decorators.requires_auth
 def get_uhs_nzs1170p5(is_authenticated):
     if auth0.requires_permission("hazard:hazard"):
-        return utils.proxy_to_core_api(
+        return utils.proxy_to_api(
             request,
             const.NZS1170p5_UHS_ENDPOINT,
             "GET",
             CORE_API_BASE,
             CORE_API_TOKEN,
-            is_authenticated,
             user_id=auth0.get_user_id(),
             action="Hazard Analysis - UHS NZS1170p5 Compute",
         )
@@ -314,13 +289,12 @@ def get_uhs_nzs1170p5(is_authenticated):
 @app.route(const.CORE_API_GMS_ENDPOINT, methods=["POST"])
 @decorators.requires_auth
 def compute_ensemble_gms(is_authenticated):
-    return utils.proxy_to_core_api(
+    return utils.proxy_to_api(
         request,
         const.ENSEMBLE_GMS_COMPUTE_ENDPOINT,
         "POST",
         CORE_API_BASE,
         CORE_API_TOKEN,
-        is_authenticated,
         data=request.data.decode(),
         user_id=auth0.get_user_id(),
         action="Hazard Analysis - GMS Compute",
@@ -330,26 +304,24 @@ def compute_ensemble_gms(is_authenticated):
 @app.route(const.CORE_API_GMS_DEFAULT_IM_WEIGHTS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_default_im_weights(is_authenticated):
-    return utils.proxy_to_core_api(
+    return utils.proxy_to_api(
         request,
         const.GMS_DEFAULT_IM_WEIGHTS_ENDPOINT,
         "GET",
         CORE_API_BASE,
         CORE_API_TOKEN,
-        is_authenticated,
     )
 
 
 @app.route(const.CORE_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_default_causal_params(is_authenticated):
-    return utils.proxy_to_core_api(
+    return utils.proxy_to_api(
         request,
         const.GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT,
         "GET",
         CORE_API_BASE,
         CORE_API_TOKEN,
-        is_authenticated,
     )
 
 
@@ -357,21 +329,16 @@ def get_default_causal_params(is_authenticated):
 @app.route(const.CORE_API_GMS_DATASETS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_gm_datasets(is_authenticated):
-    return utils.proxy_to_core_api(
-        request,
-        const.GMS_GM_DATASETS_ENDPOINT,
-        "GET",
-        CORE_API_BASE,
-        CORE_API_TOKEN,
-        is_authenticated,
+    return utils.proxy_to_api(
+        request, const.GMS_GM_DATASETS_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN,
     )
 
 
 @app.route(const.CORE_API_GMS_IMS_ENDPOINT_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_gms_available_ims(is_authenticated):
-    return utils.proxy_to_core_api(
-        request, const.GMS_IMS_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN, is_authenticated
+    return utils.proxy_to_api(
+        request, const.GMS_IMS_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN,
     )
 
 
@@ -379,13 +346,12 @@ def get_gms_available_ims(is_authenticated):
 @app.route(const.CORE_API_SCENARIOS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_scenario(is_authenticated):
-    return utils.proxy_to_core_api(
+    return utils.proxy_to_api(
         request,
         const.ENSEMBLE_SCENARIO_ENDPOINT,
         "GET",
         CORE_API_BASE,
         CORE_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id(),
         action="Hazard Analysis - Scenarios Get",
     )
@@ -396,13 +362,12 @@ def get_scenario(is_authenticated):
 @app.route(const.CORE_API_HAZARD_CURVE_DOWNLOAD_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def core_api_download_hazard(is_authenticated):
-    core_response = utils.proxy_to_core_api(
+    core_response = utils.proxy_to_api(
         request,
         const.ENSEMBLE_HAZARD_DOWNLOAD_ENDPOINT,
         "GET",
         CORE_API_BASE,
         CORE_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id(),
         action="Hazard Analysis - Hazard Download",
         content_type="application/zip",
@@ -414,13 +379,12 @@ def core_api_download_hazard(is_authenticated):
 @app.route(const.CORE_API_HAZARD_DISAGG_DOWNLOAD_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def core_api_download_disagg(is_authenticated):
-    core_response = utils.proxy_to_core_api(
+    core_response = utils.proxy_to_api(
         request,
         const.ENSEMBLE_DISAGG_DOWNLOAD_ENDPOINT,
         "GET",
         CORE_API_BASE,
         CORE_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id(),
         action="Hazard Analysis - Disaggregation Download",
         content_type="application/zip",
@@ -432,13 +396,12 @@ def core_api_download_disagg(is_authenticated):
 @app.route(const.CORE_API_HAZARD_UHS_DOWNLOAD_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def core_api_download_uhs(is_authenticated):
-    core_response = utils.proxy_to_core_api(
+    core_response = utils.proxy_to_api(
         request,
         const.ENSEMBLE_UHS_DOWNLOAD_ENDPOINT,
         "GET",
         CORE_API_BASE,
         CORE_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id(),
         action="Hazard Analysis - UHS Download",
         content_type="application/zip",
@@ -450,13 +413,12 @@ def core_api_download_uhs(is_authenticated):
 @app.route(f"{const.CORE_API_GMS_DOWNLOAD_ENDPOINT}/<token>", methods=["GET"])
 @decorators.requires_auth
 def core_api_download_gms(is_authenticated, token):
-    core_response = utils.proxy_to_core_api(
+    core_response = utils.proxy_to_api(
         request,
         const.ENSEMBLE_GMS_DOWNLOAD_ENDPOINT + "/" + token,
         "GET",
         CORE_API_BASE,
         CORE_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id(),
         action="Hazard Analysis - GMS Download",
         content_type="application/zip",
@@ -468,13 +430,12 @@ def core_api_download_gms(is_authenticated, token):
 @app.route(f"{const.CORE_API_SCENARIOS_DOWNLOAD_ENDPOINT}", methods=["GET"])
 @decorators.requires_auth
 def core_api_download_scenario(is_authenticated):
-    core_response = utils.proxy_to_core_api(
+    core_response = utils.proxy_to_api(
         request,
         const.ENSEMBLE_SCENARIO_DOWNLOAD_ENDPOINT,
         "GET",
         CORE_API_BASE,
         CORE_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id(),
         action="Hazard Analysis - Scenarios Download",
         content_type="application/zip",

@@ -11,8 +11,8 @@ import intermediate_api.api.intermediate_api as intermediate_api
 
 # Site Selection
 def get_available_projects():
-    return utils.proxy_to_project_api(
-        request, const.PROJECT_IDS_ENDPOINT, PROJECT_API_BASE, PROJECT_API_TOKEN,
+    return utils.proxy_to_api(
+        request, const.PROJECT_IDS_ENDPOINT, "GET", PROJECT_API_BASE, PROJECT_API_TOKEN,
     ).get_json()
 
 
@@ -36,32 +36,32 @@ def get_available_project_ids(is_authenticated):
 @app.route(const.PROJECT_API_SITES_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_sites(is_authenticated):
-    return utils.proxy_to_project_api(
+    return utils.proxy_to_api(
         request,
         const.PROJECT_SITES_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
     )
 
 
 @app.route(const.PROJECT_API_IMS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_ims(is_authenticated):
-    return utils.proxy_to_project_api(
-        request, const.PROJECT_IMS_ENDPOINT, PROJECT_API_BASE, PROJECT_API_TOKEN, is_authenticated,
+    return utils.proxy_to_api(
+        request, const.PROJECT_IMS_ENDPOINT, "GET", PROJECT_API_BASE, PROJECT_API_TOKEN,
     )
 
 
 @app.route(const.PROJECT_API_MAPS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_maps(is_authenticated):
-    return utils.proxy_to_project_api(
+    return utils.proxy_to_api(
         request,
         const.PROJECT_CONTEXT_MAPS_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id() if is_authenticated else None,
         action="Project - Site Selection Get" if is_authenticated else None,
     )
@@ -71,12 +71,12 @@ def get_project_maps(is_authenticated):
 @app.route(const.PROJECT_API_HAZARD_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_hazard(is_authenticated):
-    return utils.proxy_to_project_api(
+    return utils.proxy_to_api(
         request,
         const.PROJECT_HAZARD_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id() if is_authenticated else None,
         action="Project - Hazard Compute" if is_authenticated else None,
     )
@@ -85,12 +85,12 @@ def get_project_hazard(is_authenticated):
 @app.route(const.PROJECT_API_HAZARD_DISAGG_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_disagg(is_authenticated):
-    return utils.proxy_to_project_api(
+    return utils.proxy_to_api(
         request,
         const.PROJECT_DISAGG_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id() if is_authenticated else None,
         action="Project - Disaggregation Compute" if is_authenticated else None,
     )
@@ -99,36 +99,36 @@ def get_project_disagg(is_authenticated):
 @app.route(const.PROJECT_API_HAZARD_DISAGG_RPS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_disagg_rps(is_authenticated):
-    return utils.proxy_to_project_api(
+    return utils.proxy_to_api(
         request,
         const.PROJECT_DISAGG_RPS_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
     )
 
 
 @app.route(const.PROJECT_API_HAZARD_UHS_RPS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_uhs_rps(is_authenticated):
-    return utils.proxy_to_project_api(
+    return utils.proxy_to_api(
         request,
         const.PROJECT_UHS_RPS_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
     )
 
 
 @app.route(const.PROJECT_API_HAZARD_UHS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_project_uhs(is_authenticated):
-    return utils.proxy_to_project_api(
+    return utils.proxy_to_api(
         request,
         const.PROJECT_UHS_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id() if is_authenticated else None,
         action="Project - UHS Compute" if is_authenticated else None,
     )
@@ -137,24 +137,24 @@ def get_project_uhs(is_authenticated):
 @app.route(const.PROJECT_API_GMS_RUNS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_gms_runs(is_authenticated):
-    return utils.proxy_to_project_api(
+    return utils.proxy_to_api(
         request,
         const.PROJECT_GMS_RUNS_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
     )
 
 
 @app.route(const.PROJECT_API_GMS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_ensemble_gms(is_authenticated):
-    return utils.proxy_to_project_api(
+    return utils.proxy_to_api(
         request,
         const.PROJECT_GMS_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id() if is_authenticated else None,
         action="Project - GMS Compute" if is_authenticated else None,
     )
@@ -163,12 +163,12 @@ def get_ensemble_gms(is_authenticated):
 @app.route(const.PROJECT_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_gms_default_causal_params(is_authenticated):
-    response = utils.proxy_to_project_api(
+    response = utils.proxy_to_api(
         request,
         const.PROJECT_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id() if is_authenticated else None,
         action="Project - GMS Get Default Causal Params" if is_authenticated else None,
     )
@@ -199,12 +199,12 @@ def get_gms_default_causal_params(is_authenticated):
 @app.route(const.PROJECT_API_SCENARIOS_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def get_ensemble_scenarios(is_authenticated):
-    return utils.proxy_to_project_api(
+    return utils.proxy_to_api(
         request,
         const.PROJECT_SCENARIO_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id() if is_authenticated else None,
         action="Project - Scenarios Get" if is_authenticated else None,
     )
@@ -214,12 +214,12 @@ def get_ensemble_scenarios(is_authenticated):
 @app.route(const.PROJECT_API_HAZARD_CURVE_DOWNLOAD_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def project_api_download_hazard(is_authenticated):
-    project_response = utils.proxy_to_project_api(
+    project_response = utils.proxy_to_api(
         request,
         const.PROJECT_HAZARD_DOWNLOAD_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id() if is_authenticated else None,
         action="Project - Hazard Download" if is_authenticated else None,
         content_type="application/zip",
@@ -231,12 +231,12 @@ def project_api_download_hazard(is_authenticated):
 @app.route(const.PROJECT_API_HAZARD_DISAGG_DOWNLOAD_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def project_api_download_disagg(is_authenticated):
-    project_response = utils.proxy_to_project_api(
+    project_response = utils.proxy_to_api(
         request,
         const.PROJECT_DISAGG_DOWNLOAD_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id() if is_authenticated else None,
         action="Project - Disaggregation Download" if is_authenticated else None,
         content_type="application/zip",
@@ -248,12 +248,12 @@ def project_api_download_disagg(is_authenticated):
 @app.route(const.PROJECT_API_HAZARD_UHS_DOWNLOAD_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
 def project_api_download_uhs(is_authenticated):
-    project_response = utils.proxy_to_project_api(
+    project_response = utils.proxy_to_api(
         request,
         const.PROJECT_UHS_DOWNLOAD_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id() if is_authenticated else None,
         action="Project - UHS Download" if is_authenticated else None,
         content_type="application/zip",
@@ -265,12 +265,11 @@ def project_api_download_uhs(is_authenticated):
 @app.route(f"{const.PROJECT_API_GMS_DOWNLOAD_ENDPOINT}/<token>", methods=["GET"])
 @decorators.requires_auth
 def project_api_download_gms(is_authenticated, token):
-    project_response = utils.proxy_to_project_api(
+    project_response = utils.proxy_to_api(
         request,
         const.PROJECT_GMS_DOWNLOAD_ENDPOINT + "/" + token,
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id() if is_authenticated else None,
         action="Project - GMS Download" if is_authenticated else None,
         content_type="application/zip",
@@ -282,12 +281,12 @@ def project_api_download_gms(is_authenticated, token):
 @app.route(f"{const.PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT}", methods=["GET"])
 @decorators.requires_auth
 def project_api_download_scenario(is_authenticated):
-    project_response = utils.proxy_to_project_api(
+    project_response = utils.proxy_to_api(
         request,
         const.PROJECT_SCENARIO_DOWNLOAD_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
-        is_authenticated,
         user_id=auth0.get_user_id(),
         action="Project - Scenario Download",
         content_type="application/zip",

@@ -64,20 +64,19 @@ def records_user_activity(request, action, api_destination, user_id):
         )
 
 
-def proxy_to_core_api(
+@decorators.endpoint_exception_handler
+def proxy_to_api(
     request,
     route,
     methods,
     api_destination: str,
     api_token: str,
-    authorized: bool,
     data: dict = None,
     user_id: str = None,
     action: str = None,
     content_type: str = "application/json",
 ):
     """IntermediateAPI - Handling the communication between Frontend and Core/Project API.
-
     Parameters
     ----------
     request: object
@@ -89,9 +88,6 @@ def proxy_to_core_api(
         To determine the destination, either the CoreAPI or ProjectAPI
     api_token: string
         Special token to pass the CoreAPI/ProjectAPI's authorization check
-    authorized: boolean
-        True if it the request is with Auth0 token which is for private
-        otherwise, public access
     data: dictionary
         BODY to send, instead of decoding inside this function, get it as a parameter.
     user_id: string
@@ -102,106 +98,52 @@ def proxy_to_core_api(
         Entry-header field indicates the media type of the entity-body sent to the recipient.
         The default media type is application/json
     """
-    if authorized:
-        if action and user_id:
-            records_user_activity(request, action, api_destination, user_id)
-
-        if methods == "POST":
-            resp = requests.post(
-                api_destination + route,
-                data=data,
-                headers={"Authorization": api_token},
-            )
-
-        elif methods == "GET":
-            querystring = request.query_string.decode("utf-8")
-
-            if querystring:
-                querystring = "?" + querystring
-
-            resp = requests.get(
-                api_destination + route + querystring,
-                headers={"Authorization": api_token},
-            )
-
-        return flask.Response(resp.content, resp.status_code, mimetype=content_type)
-    else:
-        return (
-            flask.jsonify({"Warning": "You do not have permission to access."}),
-            const.UNAUTHORIZED_CODE,
-        )
-
-
-def proxy_to_project_api(
-    request,
-    route,
-    api_destination: str,
-    api_token: str,
-    authorized: bool = False,
-    user_id: str = None,
-    action: str = None,
-    content_type: str = "application/json",
-):
-    """IntermediateAPI - Handling the communication between Frontend and Core/Project API.
-
-    Parameters
-    ----------
-    request: object
-    route: string
-        URL path to Core/Project API
-    api_destination: string
-        To determine the destination, either the CoreAPI or ProjectAPI
-    api_token: string
-        Special token to pass the CoreAPI/ProjectAPI's authorization check
-    authorized: boolean
-        True if it the request is with Auth0 token which is for private
-        otherwise, public access
-    user_id: string
-        Determining the user
-    action: string
-        To find out what user is performing
-    content_type: string
-        Entry-header field indicates the media type of the entity-body sent to the recipient.
-        The default media type is application/json
-    """
     if action and user_id:
-        records_user_activity(request, action, api_destination, user_id)
+        if "Download" in action:
+            secret_key = (
+                DOWNLOAD_URL_SECRET_KEY_CORE
+                if "psha-core" in api_destination or "10022" in api_destination
+                else DOWNLOAD_URL_SECRET_KEY_PROJECT
+            )
 
-    querystring = request.query_string.decode("utf-8")
+            decoded_payloads = {
+                key: get_token_payload(value, secret_key)
+                for key, value in request.args.to_dict().items()
+            }
 
-    if querystring:
-        querystring = "?" + querystring
+            # Only user's inputs
+            for payload in decoded_payloads.values():
+                db.write_request_details(
+                    user_id, action, {key: value for key, value in payload.items()},
+                )
 
-    # Getting a list of project ids - authentication check is done within
-    # get_available_project_ids with project table
-    if querystring == "" and not authorized:
+        else:
+            db.write_request_details(
+                user_id,
+                action,
+                {
+                    key: value
+                    for key, value in request.args.to_dict().items()
+                    if "token" not in key
+                },
+            )
+
+    if methods == "POST":
+        resp = requests.post(
+            api_destination + route, data=data, headers={"Authorization": api_token},
+        )
+
+    elif methods == "GET":
+        querystring = request.query_string.decode("utf-8")
+
+        if querystring:
+            querystring = "?" + querystring
+
         resp = requests.get(
             api_destination + route + querystring, headers={"Authorization": api_token},
         )
-        return flask.Response(resp.content, resp.status_code, mimetype=content_type)
 
-    # Every call that is not getting a list of project ids, have an argument with project_id
-    project_id = request.args.get("project_id")
-    # One exception with download as it only has token which contains the project id information
-    if "/download" in route:
-        project_id = get_token_payload(
-            list(request.args.to_dict().values())[0], DOWNLOAD_URL_SECRET_KEY_PROJECT
-        ).get("project_id")
-
-    # Authorized and requested project id is in the Project table
-    # Not authorized but requested project id is in the Project table with Public access_level
-    if (authorized and project_id in db.get_projects()) or (
-        not authorized and project_id in db.get_projects("public")
-    ):
-        resp = requests.get(
-            api_destination + route + querystring, headers={"Authorization": api_token},
-        )
-        return flask.Response(resp.content, resp.status_code, mimetype=content_type)
-    else:
-        return (
-            flask.jsonify({"Warning": "You do not have permission to access."}),
-            const.UNAUTHORIZED_CODE,
-        )
+    return flask.Response(resp.content, resp.status_code, mimetype=content_type)
 
 
 def run_project_crosscheck(db_user_projects, public_projects, project_api_projects):
