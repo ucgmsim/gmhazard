@@ -17,7 +17,7 @@ def get_available_projects():
 
 
 @app.route(const.PROJECT_API_PROJECT_IDS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 @decorators.endpoint_exception_handler
 def get_available_project_ids(is_authenticated):
     if is_authenticated:
@@ -34,7 +34,7 @@ def get_available_project_ids(is_authenticated):
 
 
 @app.route(const.PROJECT_API_SITES_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def get_project_sites(is_authenticated):
     return utils.proxy_to_api(
         request,
@@ -46,7 +46,7 @@ def get_project_sites(is_authenticated):
 
 
 @app.route(const.PROJECT_API_IMS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def get_project_ims(is_authenticated):
     return utils.proxy_to_api(
         request, const.PROJECT_IMS_ENDPOINT, "GET", PROJECT_API_BASE, PROJECT_API_TOKEN,
@@ -54,7 +54,7 @@ def get_project_ims(is_authenticated):
 
 
 @app.route(const.PROJECT_API_MAPS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def get_project_maps(is_authenticated):
     return utils.proxy_to_api(
         request,
@@ -69,7 +69,7 @@ def get_project_maps(is_authenticated):
 
 # Seismic Hazard
 @app.route(const.PROJECT_API_HAZARD_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def get_project_hazard(is_authenticated):
     return utils.proxy_to_api(
         request,
@@ -83,7 +83,7 @@ def get_project_hazard(is_authenticated):
 
 
 @app.route(const.PROJECT_API_HAZARD_DISAGG_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def get_project_disagg(is_authenticated):
     return utils.proxy_to_api(
         request,
@@ -97,7 +97,7 @@ def get_project_disagg(is_authenticated):
 
 
 @app.route(const.PROJECT_API_HAZARD_DISAGG_RPS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def get_project_disagg_rps(is_authenticated):
     return utils.proxy_to_api(
         request,
@@ -109,7 +109,7 @@ def get_project_disagg_rps(is_authenticated):
 
 
 @app.route(const.PROJECT_API_HAZARD_UHS_RPS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def get_project_uhs_rps(is_authenticated):
     return utils.proxy_to_api(
         request,
@@ -121,7 +121,7 @@ def get_project_uhs_rps(is_authenticated):
 
 
 @app.route(const.PROJECT_API_HAZARD_UHS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def get_project_uhs(is_authenticated):
     return utils.proxy_to_api(
         request,
@@ -135,7 +135,7 @@ def get_project_uhs(is_authenticated):
 
 
 @app.route(const.PROJECT_API_GMS_RUNS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def get_gms_runs(is_authenticated):
     return utils.proxy_to_api(
         request,
@@ -147,7 +147,7 @@ def get_gms_runs(is_authenticated):
 
 
 @app.route(const.PROJECT_API_GMS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def get_ensemble_gms(is_authenticated):
     return utils.proxy_to_api(
         request,
@@ -161,7 +161,7 @@ def get_ensemble_gms(is_authenticated):
 
 
 @app.route(const.PROJECT_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def get_gms_default_causal_params(is_authenticated):
     response = utils.proxy_to_api(
         request,
@@ -197,7 +197,7 @@ def get_gms_default_causal_params(is_authenticated):
 
 
 @app.route(const.PROJECT_API_SCENARIOS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def get_ensemble_scenarios(is_authenticated):
     return utils.proxy_to_api(
         request,
@@ -212,7 +212,7 @@ def get_ensemble_scenarios(is_authenticated):
 
 # PROJECT DOWNLOAD
 @app.route(const.PROJECT_API_HAZARD_CURVE_DOWNLOAD_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def project_api_download_hazard(is_authenticated):
     project_response = utils.proxy_to_api(
         request,
@@ -229,7 +229,7 @@ def project_api_download_hazard(is_authenticated):
 
 
 @app.route(const.PROJECT_API_HAZARD_DISAGG_DOWNLOAD_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def project_api_download_disagg(is_authenticated):
     project_response = utils.proxy_to_api(
         request,
@@ -246,7 +246,7 @@ def project_api_download_disagg(is_authenticated):
 
 
 @app.route(const.PROJECT_API_HAZARD_UHS_DOWNLOAD_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def project_api_download_uhs(is_authenticated):
     project_response = utils.proxy_to_api(
         request,
@@ -263,7 +263,7 @@ def project_api_download_uhs(is_authenticated):
 
 
 @app.route(f"{const.PROJECT_API_GMS_DOWNLOAD_ENDPOINT}/<token>", methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def project_api_download_gms(is_authenticated, token):
     project_response = utils.proxy_to_api(
         request,
@@ -279,7 +279,7 @@ def project_api_download_gms(is_authenticated, token):
 
 
 @app.route(f"{const.PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT}", methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def project_api_download_scenario(is_authenticated):
     project_response = utils.proxy_to_api(
         request,
