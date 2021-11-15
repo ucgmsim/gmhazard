@@ -11,7 +11,7 @@ import intermediate_api.constants as const
 def has_project_permission(is_authenticated):
     """Check if the requested project id is valid.
     Those with authentication, check both private and public projects.
-    Those without authentication, check only the public projects.
+    Those without authentication, check public projects only.
 
     Parameters
     ----------
