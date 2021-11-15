@@ -163,3 +163,7 @@ def requires_permission(required_permission):
         return required_permission in token_permissions
 
     return False
+
+
+def is_admin():
+    return requires_permission("admin")
