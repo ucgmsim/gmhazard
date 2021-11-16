@@ -25,7 +25,7 @@ CORE_API_TOKEN = "Bearer {}".format(
 @app.route(const.CORE_API_ENSEMBLE_IDS_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
 def get_ensemble_ids(is_authenticated):
-    if is_authenticated:
+    if is_authenticated and auth0.requires_permission("hazard"):
         return utils.proxy_to_api(
             request, const.ENSEMBLE_IDS_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN,
         )
@@ -42,7 +42,7 @@ def get_ensemble_ids(is_authenticated):
 @app.route(const.CORE_API_IMS_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
 def get_im_ids(is_authenticated):
-    if is_authenticated:
+    if is_authenticated and auth0.requires_permission("hazard"):
         return utils.proxy_to_api(
             request, const.ENSEMBLE_IMS_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN,
         )
@@ -59,7 +59,7 @@ def get_im_ids(is_authenticated):
 @app.route(const.CORE_API_CONTEXT_MAP_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
 def get_context_map(is_authenticated):
-    if is_authenticated:
+    if is_authenticated and auth0.requires_permission("hazard"):
         return utils.proxy_to_api(
             request,
             const.SITE_CONTEXT_MAP_ENDPOINT,
@@ -80,7 +80,7 @@ def get_context_map(is_authenticated):
 @app.route(const.CORE_API_VS30_MAP_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
 def get_vs30_map(is_authenticated):
-    if is_authenticated:
+    if is_authenticated and auth0.requires_permission("hazard"):
         return utils.proxy_to_api(
             request, const.SITE_VS30_MAP_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN,
         )
@@ -97,7 +97,7 @@ def get_vs30_map(is_authenticated):
 @app.route(const.CORE_API_VS30_SOIL_CLASS_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
 def get_soil_class_from_vs30(is_authenticated):
-    if is_authenticated:
+    if is_authenticated and auth0.requires_permission("hazard"):
         return utils.proxy_to_api(
             request,
             const.SITE_VS30_SOIL_CLASS_ENDPOINT,
@@ -118,7 +118,7 @@ def get_soil_class_from_vs30(is_authenticated):
 @app.route(const.CORE_API_STATION_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
 def get_station(is_authenticated):
-    if is_authenticated:
+    if is_authenticated and auth0.requires_permission("hazard"):
         return utils.proxy_to_api(
             request,
             const.SITE_LOCATION_ENDPOINT,
@@ -333,7 +333,7 @@ def get_uhs(is_authenticated):
 @app.route(const.CORE_API_HAZARD_UHS_NZS1170P5_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
 def get_uhs_nzs1170p5(is_authenticated):
-    if is_authenticated and auth0.requires_permission("hazard:hazard"):
+    if is_authenticated and auth0.requires_permission("hazard:uhs"):
         return utils.proxy_to_api(
             request,
             const.NZS1170p5_UHS_ENDPOINT,
