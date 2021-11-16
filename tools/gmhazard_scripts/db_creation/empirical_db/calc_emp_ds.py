@@ -4,6 +4,7 @@
 Writes to multiple empirical DB depending on the config
 """
 import argparse
+import math
 import time
 import threading
 
@@ -75,6 +76,11 @@ def calculate_ds(
             nslaves = size - 1
             n_rows = len(work)
             print(f"{n_rows} stations to compute")
+
+            # Determine number of MP processes to use per site
+            n_mp_proc = math.ceil(size / n_rows) if size > n_rows else 1
+            print(f"Using {n_mp_proc} MP processes per station")
+
             i = 0
             results = []
             writer = threading.Thread(
@@ -86,7 +92,7 @@ def calculate_ds(
 
                 # next job - gives work before storing data
                 if i < n_rows:
-                    msg = (i, n_rows, work.iloc[i])
+                    msg = (i, n_rows, work.iloc[i], n_mp_proc)
                     comm.send(obj=msg, dest=slave_id)
                     i += 1
                 else:
@@ -111,7 +117,7 @@ def calculate_ds(
         else:
             value = (None, None)
             s_time = time.perf_counter()
-            for i, n_rows, site in iter(
+            for i, n_rows, site, n_mp_proc in iter(
                 lambda: comm.sendrecv(value, dest=master), StopIteration
             ):
                 comm_time = time.perf_counter() - s_time
@@ -138,6 +144,7 @@ def calculate_ds(
                             max_dist,
                             dist_filter_by_mag=True,
                             return_vals=True,
+                            n_procs=n_mp_proc
                         ),
                         site.name,
                     )
