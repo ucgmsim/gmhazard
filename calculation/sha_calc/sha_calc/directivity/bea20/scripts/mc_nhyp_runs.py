@@ -33,7 +33,7 @@ grid_space = 100
 faults = ["Ashley", "AlpineK2T", "AlfMakuri", "ArielNorth", "Swedge1", "Wairau"]
 nhyps = [5, 15, 30, 50, 100]
 combo = [(fault, strike, 1) for strike in nhyps for fault in faults]
-n_procs = 2
+n_procs = 30
 
 
 def perform_mp_directivity(combo):
