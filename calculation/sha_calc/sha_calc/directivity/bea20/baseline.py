@@ -29,9 +29,10 @@ hypo_along_strike = 200
 hypo_down_dip = 100
 nhm_dict = nhm.load_nhm(branch.flt_erf_ffp)
 grid_space = 100
-faults = list(nhm_dict.keys())
+# faults = list(nhm_dict.keys())
+faults = ["Ashley", "AlpineK2T", "AlfMakuri", "ArielNorth", "Swedge1", "Wairau"]
 
-n_procs = 20
+n_procs = 30
 
 def perform_mp_directivity(fault_name):
     print(f"Computing for {fault_name}")
@@ -75,12 +76,12 @@ def perform_mp_directivity(fault_name):
         y,
         fdi,
         lon_lat_depth,
-        Path(f"/mnt/mantle_data/joel_scratch/directivity/baseline/plots/{fault_name}_{nhyp}_mu.png"),
+        Path(f"/mnt/mantle_data/joel_scratch/directivity/new_baseline/plots/{fault_name}_{nhyp}_mu.png"),
         title,
     )
-    np.save(f"/mnt/mantle_data/joel_scratch/directivity/baseline/{fault_name}_{nhyp}_fd_array.npy", np.exp(fdi_array))
-    np.save(f"/mnt/mantle_data/joel_scratch/directivity/baseline/{fault_name}_{nhyp}_fd.npy", np.exp(fdi))
-    np.save(f"/mnt/mantle_data/joel_scratch/directivity/baseline/{fault_name}_{nhyp}_phi_red.npy", np.exp(phi_red))
+    np.save(f"/mnt/mantle_data/joel_scratch/directivity/new_baseline/{fault_name}_{nhyp}_fd_array.npy", np.exp(fdi_array))
+    np.save(f"/mnt/mantle_data/joel_scratch/directivity/new_baseline/{fault_name}_{nhyp}_fd.npy", np.exp(fdi))
+    np.save(f"/mnt/mantle_data/joel_scratch/directivity/new_baseline/{fault_name}_{nhyp}_phi_red.npy", np.exp(phi_red))
 
 
 if __name__ == '__main__':

@@ -259,7 +259,7 @@ def _compute_directivity_effect(
     t_bot = z_tor / math.tan(math.radians(dip)) + planes[0]["width"] * math.cos(
         math.radians(dip)
     )
-    d = (planes[plane_index]["dhyp"] - z_tor) / math.sin(math.radians(dip))
+    d = planes[plane_index]["dhyp"]
 
     # Use the bea20 model to work out directivity (fd) at the given sites
     fd, phi_red, predictor_functions, other = bea20(
