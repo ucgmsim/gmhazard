@@ -57,15 +57,15 @@ def set_hypocentres(
         plane["shyp"] = -999.9
         plane["dhyp"] = -999.9
 
-    return monte_carlo_distribution(hypo_along_strike, hypo_down_dip, planes, event_type, fault_name, total_length)
+    # return monte_carlo_distribution(hypo_along_strike, hypo_down_dip, planes, event_type, fault_name, total_length)
 
     # return monte_carlo_grid(
     #     hypo_along_strike, hypo_down_dip, planes, event_type, fault_name, total_length
     # )
     #
-    # return latin_hypercube(
-    #     hypo_along_strike, hypo_down_dip, planes, event_type, fault_name, total_length
-    # )
+    return latin_hypercube(
+        hypo_along_strike, hypo_down_dip, planes, event_type, fault_name, total_length
+    )
 
 
 def calc_nominal_strike(traces: np.ndarray):

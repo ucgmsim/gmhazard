@@ -200,7 +200,7 @@ def compute_fault_directivity(
             fdi_average = np.divide(fdi_array, hyp_down_dip * hyp_along_strike)
             phired_average = np.divide(phired_array, hyp_down_dip * hyp_along_strike)
 
-        return fdi_average, fdi_array, phired_average  # Ignore fdi_array for now
+        return fdi_average, fdi_array, phired_average
 
 
 def _compute_directivity_effect(
