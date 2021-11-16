@@ -61,7 +61,7 @@ VOLCANIC:
 SUBDUCTION_SLAB:
   PGV:
     geom:
-      - P_20  # These are only for shallow crustal in lieu of a more appropriate model
+      - P_20
       - K_20
       - K_20_NZ
   PGA:
