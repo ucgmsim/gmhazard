@@ -1,6 +1,7 @@
 Flask
 Flask-Cors
 Flask-SQLAlchemy
+itsdangerous
 numpy
 PyMySQL
 python-jose
