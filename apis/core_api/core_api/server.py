@@ -4,7 +4,7 @@ from functools import wraps
 
 import flask
 from jose import jwt
-from werkzeug.contrib.cache import FileSystemCache
+from flask_caching import Cache
 
 from gmhazard_utils import MultiProcessSafeTimedRotatingFileHandler
 
@@ -31,9 +31,14 @@ app.logger.propagate = False
 app.logger.addHandler(TRFhandler)
 logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
-cache = FileSystemCache("./cache", threshold=5, default_timeout=24 * 60 * 60)
+cache_config = {
+    "CACHE_TYPE": "FileSystemCache",
+    "CACHE_DIR": "./cache",
+    "CACHE_THRESHOLD": 10,
+    "CACHE_DEFAULT_TIMEOUT": 24 * 60 * 60,
+}
+cache = Cache(app, config=cache_config)
 cache.clear()
-app.extensions["cache"] = cache
 
 
 # Error handler

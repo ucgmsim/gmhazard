@@ -8,7 +8,7 @@ import flask
 import pandas as pd
 import numpy as np
 from flask_cors import cross_origin
-from werkzeug.contrib.cache import BaseCache
+from flask_caching import Cache
 
 import gmhazard_calc as sc
 import gmhazard_utils as su
@@ -113,7 +113,7 @@ def compute_ensemble_GMS():
     }
     """
     server.app.logger.info(f"Received request at {const.ENSEMBLE_GMS_COMPUTE_ENDPOINT}")
-    cache = flask.current_app.extensions["cache"]
+    cache = server.cache
 
     # Check required parameters are specified
     params = json.loads(flask.request.data.decode())
@@ -174,7 +174,7 @@ def download_gms_results(token):
     server.app.logger.info(
         f"Received request at {const.ENSEMBLE_GMS_DOWNLOAD_ENDPOINT}"
     )
-    cache = flask.current_app.extensions["cache"]
+    cache = server.cache
     cache_key = su.api.get_token_payload(token, server.DOWNLOAD_URL_SECRET_KEY)["key"]
 
     cached_data = cache.get(cache_key)
@@ -231,11 +231,7 @@ def get_default_IM_weights():
     )
 
     (IM_j, IMs), _ = su.api.get_check_keys(
-        flask.request.args,
-        (
-            ("IM_j", sc.im.IM.from_str),
-            "IMs",
-        ),
+        flask.request.args, (("IM_j", sc.im.IM.from_str), "IMs",),
     )
 
     server.app.logger.debug(f"Request parameters {IM_j}, {IMs}")
@@ -348,7 +344,7 @@ def get_gm_datasets():
     )
 
 
-def _get_gms(params: Dict[str, Any], cache: BaseCache):
+def _get_gms(params: Dict[str, Any], cache: Cache):
     git_version = su.api.get_repo_version()
 
     # Load the required parameters
@@ -413,13 +409,7 @@ def _get_gms(params: Dict[str, Any], cache: BaseCache):
     cache.set(
         cache_key,
         GMSCacheData(
-            params,
-            ensemble,
-            site_info,
-            gm_dataset,
-            gms_result,
-            meta_df,
-            ks_bounds,
+            params, ensemble, site_info, gm_dataset, gms_result, meta_df, ks_bounds,
         ),
     )
 

@@ -6,7 +6,7 @@ from typing import Tuple, Union
 import flask
 import pandas as pd
 from flask_cors import cross_origin
-from werkzeug.contrib.cache import BaseCache
+from flask_caching import Cache
 
 import gmhazard_calc as sc
 import gmhazard_utils as su
@@ -57,24 +57,15 @@ def get_ensemble_disagg():
     URL parameters: ensemble_id, station, im, exceedance
     """
     server.app.logger.info(f"Received request at {const.ENSEMBLE_DISAGG_ENDPOINT}")
-    cache = flask.current_app.extensions["cache"]
+    cache = server.cache
 
     (
-        (
-            ensemble_id,
-            station,
-            im,
-            exceedance,
-        ),
+        (ensemble_id, station, im, exceedance,),
         optional_params_dict,
     ) = su.api.get_check_keys(
         flask.request.args,
         ("ensemble_id", "station", "im", "exceedance"),
-        (
-            ("gmt_plot", bool, False),
-            ("vs30", float),
-            ("im_component", str, "RotD50"),
-        ),
+        (("gmt_plot", bool, False), ("vs30", float), ("im_component", str, "RotD50"),),
     )
 
     gmt_plots = optional_params_dict["gmt_plot"]
@@ -138,7 +129,7 @@ def download_ens_disagg():
     server.app.logger.info(
         f"Received request at {const.ENSEMBLE_DISAGG_DOWNLOAD_ENDPOINT}"
     )
-    cache = flask.current_app.extensions["cache"]
+    cache = server.cache
 
     # Retrieve parameters from the token
     disagg_token, *_ = su.api.get_check_keys(flask.request.args, ("disagg_token",))
@@ -201,12 +192,7 @@ def get_full_disagg():
     server.app.logger.info(f"Received request at {const.ENSEMBLE_FULL_DISAGG_ENDPOINT}")
 
     (
-        (
-            ensemble_id,
-            station,
-            im,
-            exceedance,
-        ),
+        (ensemble_id, station, im, exceedance,),
         optional_values_dict,
     ) = su.api.get_check_keys(
         flask.request.args,
@@ -252,7 +238,7 @@ def _get_disagg(
     station: str,
     im: sc.im.IM,
     exceedance: str,
-    cache: BaseCache,
+    cache: Cache,
     gmt_plots: bool = False,
     user_vs30: float = None,
 ) -> Tuple[
@@ -332,7 +318,7 @@ def _get_disagg(
                 with p.open(mode="rb") as f:
                     eps_plot_data = f.read()
 
-        if not cache.has(cache_key):
+        if not cache.get(cache_key):
             server.app.logger.debug(
                 f"Adding disagg result to cache using key - {cache_key}"
             )

@@ -5,6 +5,7 @@ import pathlib
 from jose import jwt
 from flask_cors import CORS
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 
 import intermediate_api.custom_sqlalchemy as cs
 from intermediate_api.custom_log_handler import MultiProcessSafeTimedRotatingFileHandler
@@ -42,7 +43,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://{0}:{1}@{2}/{3}".format
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db = cs.CustomSQLALchemy(app)
+db = SQLAlchemy(app)
 
 # For Project API with ENV
 PROJECT_API_BASE = os.environ["PROJECT_API_BASE"]

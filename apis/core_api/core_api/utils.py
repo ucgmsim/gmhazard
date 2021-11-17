@@ -1,7 +1,7 @@
 from typing import Dict, Sequence
 
 import numpy as np
-from werkzeug.contrib.cache import BaseCache
+from flask_caching import Cache
 
 import gmhazard_calc as sc
 import gmhazard_utils as su
@@ -107,7 +107,7 @@ def get_nzs1170p5_uhs(
     station: str,
     exceedances: str,
     optional_args: Dict,
-    cache: BaseCache,
+    cache: Cache,
     user_vs30: float = None,
 ):
     exceedances = np.asarray(list(map(float, exceedances.split(","))))
@@ -151,7 +151,7 @@ def get_nzta_result(
     ensemble_id: str,
     station: str,
     soil_class: sc.NZTASoilClass,
-    cache: BaseCache,
+    cache: Cache,
     user_vs30: float = None,
     im_component: sc.im.IMComponent = sc.im.IMComponent.RotD50,
 ):
