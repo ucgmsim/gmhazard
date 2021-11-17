@@ -93,7 +93,7 @@ def test_get_gms_download_missing_token():
     response = tu.send_test_request(
         constants.PROJECT_GMS_DOWNLOAD_ENDPOINT, api="PROJECT"
     )
-    tu.response_checks(response, [], [], 404, "text/html")
+    tu.response_checks(response, [], [], 404, "text/html; charset=utf-8")
 
 
 def test_get_gms_default_casual_parameters(config):
