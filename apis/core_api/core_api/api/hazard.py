@@ -85,7 +85,6 @@ def get_ensemble_hazard():
                 "calc_percentiles": calc_percentiles,
             },
             server.DOWNLOAD_URL_SECRET_KEY,
-            server.DOWNLOAD_URL_VALID_FOR,
         ),
     )
 

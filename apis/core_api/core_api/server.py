@@ -9,7 +9,6 @@ from flask_caching import Cache
 from gmhazard_utils import MultiProcessSafeTimedRotatingFileHandler
 
 DOWNLOAD_URL_SECRET_KEY = os.getenv("CORE_API_DOWNLOAD_URL_SECRET_KEY")
-DOWNLOAD_URL_VALID_FOR = 24 * 60 * 60
 CORE_API_SECRET_KEY = os.getenv("CORE_API_SECRET")
 
 app = flask.Flask("core_api")

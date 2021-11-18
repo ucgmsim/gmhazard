@@ -86,7 +86,6 @@ def get_ensemble_uhs():
                     "im_component": str(im_component),
                 },
                 server.DOWNLOAD_URL_SECRET_KEY,
-                server.DOWNLOAD_URL_VALID_FOR,
             ),
         )
     )

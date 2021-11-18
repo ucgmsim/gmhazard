@@ -87,7 +87,6 @@ def get_nzs1170p5_hazard():
                     **{key: str(value) for key, value in optional_values_dict.items()},
                 },
                 server.DOWNLOAD_URL_SECRET_KEY,
-                server.DOWNLOAD_URL_VALID_FOR,
             ),
         }
     )
@@ -145,7 +144,6 @@ def get_nzs1170p5_uhs():
                     **{key: str(value) for key, value in optional_args.items()},
                 },
                 server.DOWNLOAD_URL_SECRET_KEY,
-                server.DOWNLOAD_URL_VALID_FOR,
             ),
         }
     )

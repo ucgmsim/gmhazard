@@ -53,7 +53,6 @@ def get_ensemble_scenario():
                     "im_component": str(im_component),
                 },
                 server.DOWNLOAD_URL_SECRET_KEY,
-                server.DOWNLOAD_URL_VALID_FOR,
             ),
         )
     )
@@ -96,9 +95,7 @@ def download_ens_scenario():
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_ffp = su.api.create_scenario_download_zip(
-            ensemble_scenario,
-            tmp_dir,
-            prefix=f"{project_id}",
+            ensemble_scenario, tmp_dir, prefix=f"{project_id}",
         )
 
         return flask.send_file(

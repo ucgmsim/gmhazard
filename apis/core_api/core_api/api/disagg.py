@@ -116,7 +116,6 @@ def get_ensemble_disagg():
                     "user_vs30": user_vs30,
                 },
                 server.DOWNLOAD_URL_SECRET_KEY,
-                server.DOWNLOAD_URL_VALID_FOR,
             ),
         )
     )

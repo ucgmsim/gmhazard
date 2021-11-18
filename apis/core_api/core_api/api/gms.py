@@ -157,9 +157,7 @@ def compute_ensemble_GMS():
         su.api.get_ensemble_gms(
             gms_result,
             download_token=su.api.get_download_token(
-                {"key": cache_key},
-                server.DOWNLOAD_URL_SECRET_KEY,
-                server.DOWNLOAD_URL_VALID_FOR,
+                {"key": cache_key}, server.DOWNLOAD_URL_SECRET_KEY,
             ),
             disagg_data=disagg_result,
             site=str(site_info),
