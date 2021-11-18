@@ -7,7 +7,6 @@ from flask_cors import CORS
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-import intermediate_api.custom_sqlalchemy as cs
 from intermediate_api.custom_log_handler import MultiProcessSafeTimedRotatingFileHandler
 
 app = Flask("intermediate_api")

@@ -1,10 +1,8 @@
 import base64
 import tempfile
 import json
-import multiprocessing as mp
 from pathlib import Path
 
-import pandas as pd
 import flask
 from flask_cors import cross_origin
 

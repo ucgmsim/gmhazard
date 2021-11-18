@@ -31,6 +31,7 @@ DOWNLOAD_URL_SECRET_KEY = os.getenv("PROJECT_API_DOWNLOAD_URL_SECRET_KEY")
 PROJECT_API_SECRET_KEY = os.getenv("PROJECT_API_SECRET")
 BASE_PROJECTS_DIR = Path(os.getenv("BASE_PROJECTS_DIR"))
 
+
 # Error handler
 class AuthError(Exception):
     def __init__(self, error, status_code):
