@@ -1,3 +1,10 @@
+## [20.11.3] - 2021-11-18 -- Update Flask and itsdangerous packages
+### Changed
+    - Support Flask 2.x.x
+        - werkzeug cache is no longer supported, changed to flask-caching
+    - Support itsdangerous 2.x.x
+        - TimedJSONWebSignatureSerializer is deprecated
+        - Replaced with URLSafeTimedSerializer
 ## [20.11.2] - 2021-01-06 -- NaN fix
 ### Changed
 	- For NZCode return nan values as "nan" to make results json compatible

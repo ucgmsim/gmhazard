@@ -28,9 +28,9 @@ app.logger.addHandler(TRFhandler)
 logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
 DOWNLOAD_URL_SECRET_KEY = os.getenv("PROJECT_API_DOWNLOAD_URL_SECRET_KEY")
-DOWNLOAD_URL_VALID_FOR = 24 * 60
 PROJECT_API_SECRET_KEY = os.getenv("PROJECT_API_SECRET")
 BASE_PROJECTS_DIR = Path(os.getenv("BASE_PROJECTS_DIR"))
+
 
 # Error handler
 class AuthError(Exception):

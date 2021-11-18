@@ -11,14 +11,26 @@ import flask
 import itsdangerous
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+from itsdangerous.url_safe import URLSafeTimedSerializer
 
 import gmhazard_calc as sc
+
+DOWNLOAD_URL_VALID_FOR = 24 * 60 * 60
+SALT = os.environ["SALT"]
 
 
 class MissingKeyError(Exception):
     def __init__(self, key):
         self.error_code = 400
         self.error_msg = f"Request is missing parameter: {key}"
+
+
+class ExpiredTokenError(Exception):
+    pass
+
+
+class InvalidTokenError(Exception):
+    pass
 
 
 def endpoint_exception_handling(app):
@@ -168,27 +180,23 @@ def get_check_keys(
     return values, optional_values_dict
 
 
-def get_download_token(
-    params: Dict[str, object], secret_key: str, expiration_time: float
-):
+def get_download_token(params: Dict[str, object], secret_key: str):
     """Creates a temporary url for downloading of data
 
     All params specified are encoded into the url and can be
     retrieved when the urls is hit"""
-    s = itsdangerous.TimedJSONWebSignatureSerializer(
-        secret_key, expires_in=expiration_time
-    )
+    s = URLSafeTimedSerializer(secret_key=secret_key, salt=SALT)
+    token = s.dumps(params)
 
-    token = s.dumps(params).decode("utf-8")
     return token
 
 
 def get_token_payload(token: str, secret_key: str):
     """Retrieves the parameters from an encoded url"""
-    s = itsdangerous.TimedJSONWebSignatureSerializer(secret_key)
+    s = URLSafeTimedSerializer(secret_key=secret_key, salt=SALT)
 
     try:
-        payload = s.loads(token)
+        payload = s.loads(token, max_age=DOWNLOAD_URL_VALID_FOR)
     except itsdangerous.exc.SignatureExpired as e:
         raise ExpiredTokenError()
     except Exception as e:
