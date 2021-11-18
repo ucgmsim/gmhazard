@@ -13,6 +13,7 @@ DATASETS_ENSEMBLE_LABEL = "datasets"
 
 TECT_TYPES = ["ACTIVE_SHALLOW", "SUBDUCTION_INTERFACE", "SUBDUCTION_SLAB"]
 
+
 def iterable_but_not_string(arg):
     """
     :param arg: object
