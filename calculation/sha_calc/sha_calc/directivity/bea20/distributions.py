@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
-from EventType import EventType
+from sha_calc.directivity.bea20.EventType import EventType
 
 
 def monte_carlo_distribution(

@@ -1,8 +1,8 @@
 from typing import List
 
 import numpy as np
-from EventType import EventType
-import distributions
+from sha_calc.directivity.bea20.EventType import EventType
+from sha_calc.directivity.bea20 import distributions
 
 
 def set_hypocentres(

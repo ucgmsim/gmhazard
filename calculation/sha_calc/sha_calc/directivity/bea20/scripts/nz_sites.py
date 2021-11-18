@@ -11,7 +11,9 @@ nhm_dict, _, im, grid_space, _ = common.default_variables()
 fault_name = "Wairau"
 nhyps = [5, 15, 30, 50, 100, 1000]
 
-site_names = sample(list(np.load("/home/joel/local/directivity/wairau_stations.npy")), 1000)
+site_names = sample(
+    list(np.load("/home/joel/local/directivity/wairau_stations.npy")), 1000
+)
 
 stat_file = "/mnt/mantle_data/seistech/sites/18p6/non_uniform_whole_nz_with_real_stations-hh400_v18p6_land.ll"
 stat_df = load_station_file(stat_file)
@@ -25,7 +27,9 @@ for x in nhyps:
 df = pd.DataFrame(index=site_names, columns=column_values)
 
 # PREP
-fault, _, planes, lon_lat_depth, _, _ = common.load_fault_info(fault_name, nhm_dict, grid_space)
+fault, _, planes, lon_lat_depth, _, _ = common.load_fault_info(
+    fault_name, nhm_dict, grid_space
+)
 
 df = df.sort_index(ascending=False)
 

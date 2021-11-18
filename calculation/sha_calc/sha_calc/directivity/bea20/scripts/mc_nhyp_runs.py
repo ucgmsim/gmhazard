@@ -19,7 +19,9 @@ def perform_mp_directivity(combo):
     nhyp = hypo_along_strike * hypo_down_dip
     print(f"Computing for {fault_name} {nhyp}")
 
-    fault, site_coords, planes, lon_lat_depth, x, y = common.load_fault_info(fault_name, nhm_dict, grid_space)
+    fault, site_coords, planes, lon_lat_depth, x, y = common.load_fault_info(
+        fault_name, nhm_dict, grid_space
+    )
 
     repeats = 100
 
@@ -52,15 +54,26 @@ def perform_mp_directivity(combo):
         y,
         fdi_average,
         lon_lat_depth,
-        Path(f"/mnt/mantle_data/joel_scratch/directivity/latin_mc/plots/{fault_name}_{nhyp}.png"),
+        Path(
+            f"/mnt/mantle_data/joel_scratch/directivity/latin_mc/plots/{fault_name}_{nhyp}.png"
+        ),
         title,
     )
-    np.save(f"/mnt/mantle_data/joel_scratch/directivity/latin_mc/{fault_name}_{nhyp}_fd_mc_hypo_array.npy", np.exp(total_fd_array))
-    np.save(f"/mnt/mantle_data/joel_scratch/directivity/latin_mc/{fault_name}_{nhyp}_fd_mc.npy", np.exp(total_fd))
-    np.save(f"/mnt/mantle_data/joel_scratch/directivity/latin_mc/{fault_name}_{nhyp}_fd_average.npy", np.exp(fdi_average))
+    np.save(
+        f"/mnt/mantle_data/joel_scratch/directivity/latin_mc/{fault_name}_{nhyp}_fd_mc_hypo_array.npy",
+        np.exp(total_fd_array),
+    )
+    np.save(
+        f"/mnt/mantle_data/joel_scratch/directivity/latin_mc/{fault_name}_{nhyp}_fd_mc.npy",
+        np.exp(total_fd),
+    )
+    np.save(
+        f"/mnt/mantle_data/joel_scratch/directivity/latin_mc/{fault_name}_{nhyp}_fd_average.npy",
+        np.exp(fdi_average),
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     start_time = time.time()
 
     pool = mp.Pool(n_procs)
