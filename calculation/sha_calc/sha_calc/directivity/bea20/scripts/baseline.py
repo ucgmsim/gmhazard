@@ -1,60 +1,27 @@
-import pandas as pd
+import time
 import multiprocessing as mp
-
-from sha_calc.directivity.bea20.validation.plots import plot_fdi
 from pathlib import Path
 
-import gmhazard_calc
-from gmhazard_calc.im import IM, IMType
-import time
-import gmhazard_calc.rupture as rupture
-import sha_calc
-from qcore import nhm
 import numpy as np
-from scipy import stats
-import matplotlib.pyplot as plt
-from sha_calc.directivity.bea20.utils import EventType
-from sha_calc.directivity.bea20 import bea20, utils
-import os
-import subprocess
-import sys
 
+import sha_calc
+from sha_calc.directivity.bea20.validation.plots import plot_fdi
+import gmhazard_calc.rupture as rupture
+import common
 
-im = IM(IMType.pSA, period=3.0)
-ens = gmhazard_calc.gm_data.Ensemble("v20p5emp")
-branch = ens.get_im_ensemble(im.im_type).branches[0]
-
+# Constant / Adjustable variables
+nhm_dict, faults, im, grid_space, _ = common.default_variables()
 nhyp = 20000
 hypo_along_strike = 200
 hypo_down_dip = 100
-nhm_dict = nhm.load_nhm(branch.flt_erf_ffp)
-grid_space = 100
-# faults = list(nhm_dict.keys())
-faults = ["Ashley", "AlpineK2T", "AlfMakuri", "ArielNorth", "Swedge1", "Wairau"]
-
 n_procs = 30
+
 
 def perform_mp_directivity(fault_name):
     print(f"Computing for {fault_name}")
 
-    # PREP
-    fault = nhm_dict[fault_name]
-    planes, lon_lat_depth = rupture.get_fault_header_points(fault)
+    fault, site_coords, planes, lon_lat_depth, x, y = common.load_fault_info(fault_name, nhm_dict, grid_space)
 
-    lon_values = np.linspace(
-        lon_lat_depth[:, 0].min() - 0.5, lon_lat_depth[:, 0].max() + 0.5, grid_space
-    )
-    lat_values = np.linspace(
-        lon_lat_depth[:, 1].min() - 0.5, lon_lat_depth[:, 1].max() + 0.5, grid_space
-    )
-
-    x, y = np.meshgrid(lon_values, lat_values)
-    site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
-
-    # MODEL
-    fdi, _ = None, None
-    del fdi
-    del _
     fdi, fdi_array, phi_red = sha_calc.bea20.compute_fault_directivity(
         lon_lat_depth,
         planes,
