@@ -1,3 +1,5 @@
+from functools import wraps
+
 from flask import jsonify, request, Response
 
 from intermediate_api import app, PROJECT_API_BASE, PROJECT_API_TOKEN
@@ -8,39 +10,52 @@ import intermediate_api.auth0 as auth0
 import intermediate_api.constants as const
 
 
-def has_project_permission(is_authenticated):
+def has_project_permission(f):
     """Check if the requested project id is valid.
     Those with authentication, check both private and public projects.
     Those without authentication, check public projects only.
-
-    Parameters
-    ----------
-    is_authenticated: bool
     """
-    project_id = request.args.get("project_id")
-    if project_id is not None:
-        if is_authenticated:
-            user_id = auth0.get_user_id()
-            # Authenticated users can access to both private and public projects
-            allowed_projects = utils.run_project_crosscheck(
-                db.get_user_project_permission(user_id),
-                db.get_projects("public"),
-                get_available_projects()["ids"],
-            )
-            return True if project_id in allowed_projects else False
+
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        is_authenticated = kwargs["is_authenticated"]
+        project_id = request.args.get("project_id")
+        is_authorized = False
+        if project_id is not None:
+            if is_authenticated:
+                user_id = auth0.get_user_id()
+                # Authenticated users can access to both private and public projects
+                allowed_projects = utils.run_project_crosscheck(
+                    db.get_user_project_permission(user_id),
+                    db.get_projects("public"),
+                    get_available_projects()["ids"],
+                )
+                if project_id in allowed_projects:
+                    is_authorized = True
+                return f(*args, **kwargs, is_authorized=is_authorized)
+            else:
+                public_projects = utils.run_project_crosscheck(
+                    {},
+                    db.get_projects("public"),
+                    get_available_projects()["ids"],
+                )
+                if project_id in public_projects:
+                    is_authorized = True
+                return f(*args, **kwargs, is_authorized=is_authorized)
         else:
-            public_projects = utils.run_project_crosscheck(
-                {}, db.get_projects("public"), get_available_projects()["ids"],
-            )
-            return True if project_id in public_projects else False
-    else:
-        return False
+            return f(*args, **kwargs, is_authorized=is_authorized)
+
+    return decorated
 
 
 # Site Selection
 def get_available_projects():
     return utils.proxy_to_api(
-        request, const.PROJECT_IDS_ENDPOINT, "GET", PROJECT_API_BASE, PROJECT_API_TOKEN,
+        request,
+        const.PROJECT_IDS_ENDPOINT,
+        "GET",
+        PROJECT_API_BASE,
+        PROJECT_API_TOKEN,
     ).get_json()
 
 
@@ -57,14 +72,18 @@ def get_available_project_ids(is_authenticated):
         )
     else:
         return utils.run_project_crosscheck(
-            {}, db.get_projects("public"), get_available_projects()["ids"],
+            {},
+            db.get_projects("public"),
+            get_available_projects()["ids"],
         )
 
 
 @app.route(const.PROJECT_API_SITES_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
-def get_project_sites(is_authenticated):
-    if has_project_permission(is_authenticated):
+@has_project_permission
+def get_project_sites(*args, **kwargs):
+    is_authorized = kwargs["is_authorized"]
+    if is_authorized:
         return utils.proxy_to_api(
             request,
             const.PROJECT_SITES_ENDPOINT,
@@ -84,8 +103,10 @@ def get_project_sites(is_authenticated):
 
 @app.route(const.PROJECT_API_IMS_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
-def get_project_ims(is_authenticated):
-    if has_project_permission(is_authenticated):
+@has_project_permission
+def get_project_ims(*args, **kwargs):
+    is_authorized = kwargs["is_authorized"]
+    if is_authorized:
         return utils.proxy_to_api(
             request,
             const.PROJECT_IMS_ENDPOINT,
@@ -105,8 +126,13 @@ def get_project_ims(is_authenticated):
 
 @app.route(const.PROJECT_API_MAPS_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
-def get_project_maps(is_authenticated):
-    if has_project_permission(is_authenticated):
+@has_project_permission
+def get_project_maps(*args, **kwargs):
+    is_authorized, is_authenticated = (
+        kwargs["is_authorized"],
+        kwargs["is_authenticated"],
+    )
+    if is_authorized:
         return utils.proxy_to_api(
             request,
             const.PROJECT_CONTEXT_MAPS_ENDPOINT,
@@ -129,8 +155,13 @@ def get_project_maps(is_authenticated):
 # Seismic Hazard
 @app.route(const.PROJECT_API_HAZARD_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
-def get_project_hazard(is_authenticated):
-    if has_project_permission(is_authenticated):
+@has_project_permission
+def get_project_hazard(*args, **kwargs):
+    is_authorized, is_authenticated = (
+        kwargs["is_authorized"],
+        kwargs["is_authenticated"],
+    )
+    if is_authorized:
         return utils.proxy_to_api(
             request,
             const.PROJECT_HAZARD_ENDPOINT,
@@ -152,8 +183,13 @@ def get_project_hazard(is_authenticated):
 
 @app.route(const.PROJECT_API_HAZARD_DISAGG_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
-def get_project_disagg(is_authenticated):
-    if has_project_permission(is_authenticated):
+@has_project_permission
+def get_project_disagg(*args, **kwargs):
+    is_authorized, is_authenticated = (
+        kwargs["is_authorized"],
+        kwargs["is_authenticated"],
+    )
+    if is_authorized:
         return utils.proxy_to_api(
             request,
             const.PROJECT_DISAGG_ENDPOINT,
@@ -175,8 +211,10 @@ def get_project_disagg(is_authenticated):
 
 @app.route(const.PROJECT_API_HAZARD_DISAGG_RPS_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
-def get_project_disagg_rps(is_authenticated):
-    if has_project_permission(is_authenticated):
+@has_project_permission
+def get_project_disagg_rps(*args, **kwargs):
+    is_authorized = kwargs["is_authorized"]
+    if is_authorized:
         return utils.proxy_to_api(
             request,
             const.PROJECT_DISAGG_RPS_ENDPOINT,
@@ -196,8 +234,10 @@ def get_project_disagg_rps(is_authenticated):
 
 @app.route(const.PROJECT_API_HAZARD_UHS_RPS_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
-def get_project_uhs_rps(is_authenticated):
-    if has_project_permission(is_authenticated):
+@has_project_permission
+def get_project_uhs_rps(*args, **kwargs):
+    is_authorized = kwargs["is_authorized"]
+    if is_authorized:
         return utils.proxy_to_api(
             request,
             const.PROJECT_UHS_RPS_ENDPOINT,
@@ -217,8 +257,13 @@ def get_project_uhs_rps(is_authenticated):
 
 @app.route(const.PROJECT_API_HAZARD_UHS_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
-def get_project_uhs(is_authenticated):
-    if has_project_permission(is_authenticated):
+@has_project_permission
+def get_project_uhs(*args, **kwargs):
+    is_authorized, is_authenticated = (
+        kwargs["is_authorized"],
+        kwargs["is_authenticated"],
+    )
+    if is_authorized:
         return utils.proxy_to_api(
             request,
             const.PROJECT_UHS_ENDPOINT,
@@ -240,8 +285,10 @@ def get_project_uhs(is_authenticated):
 
 @app.route(const.PROJECT_API_GMS_RUNS_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
-def get_gms_runs(is_authenticated):
-    if has_project_permission(is_authenticated):
+@has_project_permission
+def get_gms_runs(*args, **kwargs):
+    is_authorized = kwargs["is_authorized"]
+    if is_authorized:
         return utils.proxy_to_api(
             request,
             const.PROJECT_GMS_RUNS_ENDPOINT,
@@ -261,8 +308,13 @@ def get_gms_runs(is_authenticated):
 
 @app.route(const.PROJECT_API_GMS_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
-def get_ensemble_gms(is_authenticated):
-    if has_project_permission(is_authenticated):
+@has_project_permission
+def get_ensemble_gms(*args, **kwargs):
+    is_authorized, is_authenticated = (
+        kwargs["is_authorized"],
+        kwargs["is_authenticated"],
+    )
+    if is_authorized:
         return utils.proxy_to_api(
             request,
             const.PROJECT_GMS_ENDPOINT,
@@ -284,8 +336,13 @@ def get_ensemble_gms(is_authenticated):
 
 @app.route(const.PROJECT_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
-def get_gms_default_causal_params(is_authenticated):
-    if has_project_permission(is_authenticated):
+@has_project_permission
+def get_gms_default_causal_params(*args, **kwargs):
+    is_authorized, is_authenticated = (
+        kwargs["is_authorized"],
+        kwargs["is_authenticated"],
+    )
+    if is_authorized:
         response = utils.proxy_to_api(
             request,
             const.PROJECT_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT,
@@ -332,8 +389,13 @@ def get_gms_default_causal_params(is_authenticated):
 
 @app.route(const.PROJECT_API_SCENARIOS_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
-def get_ensemble_scenarios(is_authenticated):
-    if has_project_permission(is_authenticated):
+@has_project_permission
+def get_ensemble_scenarios(*args, **kwargs):
+    is_authorized, is_authenticated = (
+        kwargs["is_authorized"],
+        kwargs["is_authenticated"],
+    )
+    if is_authorized:
         return utils.proxy_to_api(
             request,
             const.PROJECT_SCENARIO_ENDPOINT,
