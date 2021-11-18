@@ -15,8 +15,8 @@ from itsdangerous.url_safe import URLSafeTimedSerializer
 
 import gmhazard_calc as sc
 
-SALT = os.environ["SALT"]
 DOWNLOAD_URL_VALID_FOR = 24 * 60 * 60
+SALT = os.environ["SALT"]
 
 
 class MissingKeyError(Exception):
