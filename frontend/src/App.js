@@ -57,7 +57,7 @@ const App = () => {
 
                 <PrivateRoute
                   path="/permission-config"
-                  permission="psha-admin"
+                  permission="admin"
                   exact
                   component={PermissionConfig}
                 />
