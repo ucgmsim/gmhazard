@@ -12,7 +12,7 @@ import intermediate_api.constants as const
 
 
 @app.route(const.INTERMEDIATE_API_AUTH0_USER_INFO_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 @decorators.endpoint_exception_handler
 def get_auth0_user_key_info(is_authenticated):
     """Getting users permission on their first launch
@@ -36,16 +36,13 @@ def get_auth0_user_key_info(is_authenticated):
         db.update_user_access_permission(user_id, permission_list)
 
         return jsonify({"permissions": permission_list, "id": user_id})
-
-    return (
-        jsonify({"Warning": "You do not have permission to access."}),
-        const.UNAUTHORIZED_CODE,
-    )
+    else:
+        raise auth0.AuthError()
 
 
 # Edit User
 @app.route(const.INTERMEDIATE_API_AUTH0_USERS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 def get_auth0_users(is_authenticated):
     """Fetching all the existing users from the Auth0
     These will be used for User dropdown in the Permission Config
@@ -54,54 +51,52 @@ def get_auth0_users(is_authenticated):
     setting user permission to users that don't
     exist in the DB yet
     """
-    if is_authenticated:
+    if is_authenticated and auth0.is_admin():
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_AUTH0_USERS_ENDPOINT}"
         )
         response, status_code = auth0.get_users()
         return jsonify(response), status_code
-
-    return (
-        jsonify({"Warning": "You do not have permission to access."}),
-        const.UNAUTHORIZED_CODE,
-    )
+    else:
+        raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_ALL_PRIVATE_PROJECTS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 @decorators.endpoint_exception_handler
 def get_private_projects(is_authenticated):
     """Fetching all private projects from the Project table"""
-    if is_authenticated:
+    if is_authenticated and auth0.is_admin():
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_ALL_PRIVATE_PROJECTS_ENDPOINT}"
         )
         return jsonify(db.get_projects("private"))
-
-    return (
-        jsonify({"Warning": "You do not have permission to access."}),
-        const.UNAUTHORIZED_CODE,
-    )
+    else:
+        raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT, methods=["GET"])
+@decorators.get_authentication
 @decorators.endpoint_exception_handler
-def get_public_projects():
+def get_public_projects(is_authenticated):
     """Fetching all public projects from the Project table"""
-    app.logger.info(
-        f"Received request at {const.INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT}"
-    )
-    return jsonify(db.get_projects("public"))
+    if is_authenticated and auth0.is_admin():
+        app.logger.info(
+            f"Received request at {const.INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT}"
+        )
+        return jsonify(db.get_projects("public"))
+    else:
+        raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_USER_PROJECTS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 @decorators.endpoint_exception_handler
 def get_user_allowed_projects(is_authenticated):
     """Fetching all the projects that are already allowed to a user
     Will be used for allowed Private Projects dropdown
     """
-    if is_authenticated:
+    if is_authenticated and auth0.is_admin():
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_USER_PROJECTS_ENDPOINT}"
         )
@@ -109,19 +104,16 @@ def get_user_allowed_projects(is_authenticated):
         user_id = request.args.to_dict()["user_id"]
 
         return jsonify(db.get_user_project_permission(user_id))
-
-    return (
-        jsonify({"Warning": "You do not have permission to access."}),
-        const.UNAUTHORIZED_CODE,
-    )
+    else:
+        raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_USER_ALLOCATE_PROJECTS_ENDPOINT, methods=["POST"])
-@decorators.requires_auth
+@decorators.get_authentication
 @decorators.endpoint_exception_handler
 def allocate_projects_to_user(is_authenticated):
     """Allocate the chosen project(s) to the chosen user."""
-    if is_authenticated:
+    if is_authenticated and auth0.is_admin():
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_USER_ALLOCATE_PROJECTS_ENDPOINT}"
         )
@@ -134,19 +126,16 @@ def allocate_projects_to_user(is_authenticated):
         db.allocate_projects_to_user(user_id, project_list)
 
         return Response(status=const.OK_CODE)
-
-    return (
-        jsonify({"Warning": "You do not have permission to access."}),
-        const.UNAUTHORIZED_CODE,
-    )
+    else:
+        raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_USER_REMOVE_PROJECTS_ENDPOINT, methods=["POST"])
-@decorators.requires_auth
+@decorators.get_authentication
 @decorators.endpoint_exception_handler
 def remove_projects_from_user(is_authenticated):
     """Remove the chosen project(s) from the chosen user."""
-    if is_authenticated:
+    if is_authenticated and auth0.is_admin():
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_USER_REMOVE_PROJECTS_ENDPOINT}"
         )
@@ -159,72 +148,60 @@ def remove_projects_from_user(is_authenticated):
         db.remove_projects_from_user(user_id, project_list)
 
         return Response(status=const.OK_CODE)
-
-    return (
-        jsonify({"Warning": "You do not have permission to access."}),
-        const.UNAUTHORIZED_CODE,
-    )
+    else:
+        raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_ALL_USERS_PROJECTS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 @decorators.endpoint_exception_handler
 def get_all_users_projects(is_authenticated):
     """Pull every assigned project for all users from Users_Projects table"""
-    if is_authenticated:
+    if is_authenticated and auth0.is_admin():
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_ALL_USERS_PROJECTS_ENDPOINT}"
         )
         auth0_users, _ = auth0.get_users()
         return db.get_all_users_project_permissions(auth0_users)
-
-    return (
-        jsonify({"Warning": "You do not have permission to access."}),
-        const.UNAUTHORIZED_CODE,
-    )
+    else:
+        raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_ALL_PERMISSIONS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 @decorators.endpoint_exception_handler
 def get_all_permissions(is_authenticated):
     """Pull all possible access permission (Auth0_Permission table)"""
-    if is_authenticated:
+    if is_authenticated and auth0.is_admin():
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_ALL_PERMISSIONS_ENDPOINT}"
         )
         return jsonify({"all_permissions": db.get_all_permissions_for_dashboard()})
-
-    return (
-        jsonify({"Warning": "You do not have permission to access."}),
-        const.UNAUTHORIZED_CODE,
-    )
+    else:
+        raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_ALL_USERS_PERMISSIONS_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
+@decorators.get_authentication
 @decorators.endpoint_exception_handler
 def get_all_users_permissions(is_authenticated):
     """Pull every assigned access permission for all uesrs from Users_Permissions table"""
-    if is_authenticated:
+    if is_authenticated and auth0.is_admin():
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_ALL_USERS_PERMISSIONS_ENDPOINT}"
         )
         auth0_users, _ = auth0.get_users()
         return db.get_all_users_permissions(auth0_users)
-
-    return (
-        jsonify({"Warning": "You do not have permission to access."}),
-        const.UNAUTHORIZED_CODE,
-    )
+    else:
+        raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_CREATE_PROJECT_ENDPOINT, methods=["POST"])
-@decorators.requires_auth
+@decorators.get_authentication
 @decorators.endpoint_exception_handler
 def create_project(is_authenticated):
     """Create new project(s)"""
-    if is_authenticated:
+    if is_authenticated and auth0.is_admin():
         app.logger.info(
             f"Received request at {const.INTERMEDIATE_API_CREATE_PROJECT_ENDPOINT}"
         )
@@ -261,8 +238,5 @@ def create_project(is_authenticated):
                     jsonify({"project_created": False}),
                     response_code,
                 )
-
-    return (
-        jsonify({"Warning": "You do not have permission to access."}),
-        const.UNAUTHORIZED_CODE,
-    )
+    else:
+        raise auth0.AuthError()

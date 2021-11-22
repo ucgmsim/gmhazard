@@ -11,7 +11,6 @@ from slack_sdk.errors import SlackApiError
 from intermediate_api import app
 import intermediate_api.db as db
 import intermediate_api.decorators as decorators
-import intermediate_api.constants as const
 
 DOWNLOAD_URL_SECRET_KEY_CORE = os.environ["DOWNLOAD_URL_SECRET_KEY_CORE_API"]
 DOWNLOAD_URL_SECRET_KEY_PROJECT = os.environ["DOWNLOAD_URL_SECRET_KEY_PROJECT_API"]
