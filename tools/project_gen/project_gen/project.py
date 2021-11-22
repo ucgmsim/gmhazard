@@ -1,7 +1,7 @@
 import subprocess
 import traceback
 import os
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Sequence
 from pathlib import Path
 
 import git
@@ -10,10 +10,11 @@ import numpy as np
 import yaml
 
 import gmhazard_utils as su
+import gmhazard_calc
 import project_gen as pg
 from . import psha
 
-EMPIRICAL_VERSION = "v20p5emp"
+EMPIRICAL_VERSION = "v21p10emp"
 FLT_SITE_SOURCE_DB_FILENAME = "flt_site_source.db"
 DS_SITE_SOURCE_DB_FILENAME = "ds_site_source.db"
 
@@ -21,8 +22,21 @@ ERF_DIR = Path(os.getenv("ERF_DIR")) if "ERF_DIR" in os.environ else None
 
 FLT_ERF_MAPPING = {
     "NHM_v21p8p1": "NZ_FLTmodel_2010",
-    "CFM_v21p8p1": "CFM_v0_9_Akatore_mod_21p8p1"
+    "CFM_v21p8p1": "CFM_v0_9_Akatore_mod_21p8p1",
 }
+
+SCRIPTS_DIR = Path(__file__).resolve().parent.parent.parent / "gmhazard_scripts"
+MODEL_CONFIG_PATH = (
+    SCRIPTS_DIR
+    / "db_creation"
+    / "empirical_db"
+    / "empirical_model_configs"
+    / "21p10.yaml"
+)
+EMPIRICAL_WEIGHT_CONFIG_PATH = (
+    SCRIPTS_DIR / "ensemble_creation" / "gmm_weights_21p10.yaml"
+)
+
 
 def create_project(
     project_specs: Dict,
@@ -35,6 +49,8 @@ def create_project(
     erf_pert_dir: Path = None,
     flt_erf_version: str = "NHM",
     setup_only: bool = False,
+    model_config_ffp: Path = MODEL_CONFIG_PATH,
+    empirical_weight_config_ffp: Path = EMPIRICAL_WEIGHT_CONFIG_PATH,
 ):
     """
     Creates a new project, generates the required DBs,
@@ -74,6 +90,12 @@ def create_project(
     setup_only: bool, optional
         If true, then only the config and DBs are generated, but
         no results are computed
+    model_config_ffp: path, optional
+        Path to the model config file.
+    empirical_weight_config_ffp: path, optional
+        Path to the weights config file.
+        model_config_ffp and weights_config_ffp
+        can be specified in certain cases(E.g., test case)
     """
     erf_dir = ERF_DIR if erf_dir is None else erf_dir
 
@@ -106,13 +128,6 @@ def create_project(
             )
 
             # Generate the DBs
-            model_config_ffp = (
-                scripts_dir
-                / "db_creation"
-                / "empirical_db"
-                / "empirical_model_configs"
-                / "20p4.yaml"
-            )
             generate_dbs(
                 dbs_dir,
                 ll_ffp,
@@ -122,7 +137,8 @@ def create_project(
                 erf_dir,
                 erf_pert_dir,
                 flt_erf_version,
-                n_procs,
+                list({str(im.im_type) for im in gmhazard_calc.im.to_im_list(project_config["ims"])}),
+                n_procs=n_procs,
                 z_ffp=z_ffp,
                 n_perturbations=n_perturbations,
             )
@@ -133,11 +149,11 @@ def create_project(
             project_dir,
             project_id,
             dbs_dir,
-            scripts_dir,
             erf_dir,
             erf_pert_dir,
             flt_erf_version,
             n_perturbations=n_perturbations,
+            empirical_weight_config_ffp=empirical_weight_config_ffp,
         )
 
         if setup_only:
@@ -166,6 +182,9 @@ def setup_project(base_dir: Path, project_id: str):
 
     # Create the project folder
     project_dir = base_dir / version_str / project_id
+    if project_dir.exists():
+        print("Project dir already exists, skipping setup")
+        return
     project_dir.mkdir(exist_ok=False, parents=False)
 
     # Create empty project definition file
@@ -188,11 +207,14 @@ def setup_project(base_dir: Path, project_id: str):
 
 def write_project_config(project_dir: Path, project_specs: Dict):
     """Writes the project config"""
-    with open(project_dir / f"{project_specs['id']}.yaml", "r") as f:
+    project_config_ffp = project_dir / f"{project_specs['id']}.yaml"
+    with open(project_config_ffp, "r") as f:
         project_config = yaml.safe_load(f)
 
         if project_specs.get("project_parameters") is not None:
-            print("Project parameters are already specified  set, skipping package type mapping")
+            print(
+                "Project parameters are already specified set, skipping package type mapping"
+            )
             project_config["project_parameters"] = project_specs["project_parameters"]
         else:
             project_config["project_parameters"] = {
@@ -202,8 +224,12 @@ def write_project_config(project_dir: Path, project_specs: Dict):
                         "lat": cur_config["lat"],
                         "lon": cur_config["lon"],
                         "vs30": cur_config["vs30"],
-                        "z1.0": cur_config.get("z1p0", [None] * len(cur_config["vs30"])),
-                        "z2.5": cur_config.get("z2p5", [None] * len(cur_config["vs30"])),
+                        "z1.0": cur_config.get(
+                            "z1p0", [None] * len(cur_config["vs30"])
+                        ),
+                        "z2.5": cur_config.get(
+                            "z2p5", [None] * len(cur_config["vs30"])
+                        ),
                     }
                     for cur_id, cur_config in project_specs["locations"].items()
                 }
@@ -255,13 +281,16 @@ def write_station_details(locations: Dict, dbs_dir: Path, project_id: str):
             )
 
     ll_ffp = dbs_dir / f"{project_id}.ll"
-    write_file_data([3, 2, 0], stations_details, ll_ffp)
+    if not ll_ffp.exists():
+        write_file_data([3, 2, 0], stations_details, ll_ffp)
 
     vs30_ffp = dbs_dir / f"{project_id}.vs30"
-    write_file_data([0, 1], stations_details, vs30_ffp)
+    if not vs30_ffp.exists():
+        write_file_data([0, 1], stations_details, vs30_ffp)
 
     z_ffp = dbs_dir / f"{project_id}.z"
-    write_file_data([0, 4, 5], stations_details, z_ffp)
+    if not z_ffp.exists():
+        write_file_data([0, 4, 5], stations_details, z_ffp)
 
     return ll_ffp, vs30_ffp, z_ffp
 
@@ -275,6 +304,7 @@ def generate_dbs(
     erf_dir: Path,
     erf_pert_dir: Path,
     flt_erf_version: str,
+    im_types: Sequence[str],
     n_procs: int,
     z_ffp: Path = None,
     n_perturbations: int = 1,
@@ -285,99 +315,119 @@ def generate_dbs(
 
     print("Generating DS distance db")
     ds_site_source_db_ffp = dbs_dir / DS_SITE_SOURCE_DB_FILENAME
-    empirical_db_scripts_dir = scripts_dir / "db_creation" / "empirical_db"
-    calc_ds_distances_cmd = [
-        "python",
-        str(empirical_db_scripts_dir / "calc_distances_ds.py"),
-        str(erf_dir / "NZBCK2015_Chch50yearsAftershock_OpenSHA_modType4.txt"),
-        str(ll_ffp),
-        str(ds_site_source_db_ffp),
-    ]
-    ds_distance_result = subprocess.run(calc_ds_distances_cmd, capture_output=True)
-    print("STDOUT:\n" + ds_distance_result.stdout.decode())
-    print("STDERR:\n" + ds_distance_result.stderr.decode() + "\n")
-    assert (
-        ds_distance_result.returncode == 0
-    ), "Distributed Seismicity site-source DB generation failed"
+    if ds_site_source_db_ffp.exists():
+        print("DS distance DB already exists, skipping")
+    else:
+        empirical_db_scripts_dir = scripts_dir / "db_creation" / "empirical_db"
+        calc_ds_distances_cmd = [
+            "python",
+            str(empirical_db_scripts_dir / "calc_distances_ds.py"),
+            str(erf_dir / "NZBCK2015_Chch50yearsAftershock_OpenSHA_modType4.txt"),
+            str(ll_ffp),
+            str(ds_site_source_db_ffp),
+        ]
+        print(f"Running command:\n\t{' '.join(calc_ds_distances_cmd)}")
+        ds_distance_result = subprocess.run(calc_ds_distances_cmd, capture_output=True)
+        print("STDOUT:\n" + ds_distance_result.stdout.decode())
+        print("STDERR:\n" + ds_distance_result.stderr.decode() + "\n")
+        assert (
+            ds_distance_result.returncode == 0
+        ), "Distributed Seismicity site-source DB generation failed"
 
     print("Generating DS IMDBs")
     ds_db_dir = dbs_dir / "ds"
-    ds_db_dir.mkdir(exist_ok=True)
-    ds_imdbs_cmd = [
-        "mpirun",
-        "-np",
-        str(n_procs),
-        "python",
-        str(empirical_db_scripts_dir / "calc_emp_ds.py"),
-        str(erf_dir / "NZBCK2015_Chch50yearsAftershock_OpenSHA_modType4.txt"),
-        str(ds_site_source_db_ffp),
-        str(vs30_ffp),
-        str(ds_db_dir),
-        "--model-dict",
-        str(model_config_ffp),
-        "--z-file",
-        str(z_ffp),
-    ]
-    ds_timeout = (n_stations * (60 * 60)) / (min(n_procs - 1, n_stations))
-    print(f"Using a timeout of {ds_timeout} seconds")
-    ds_imdbs_result = subprocess.run(
-        ds_imdbs_cmd, capture_output=True, timeout=ds_timeout
-    )
-    print("STDOUT:\n" + ds_imdbs_result.stdout.decode())
-    print("STDERR:\n" + ds_imdbs_result.stderr.decode())
-    assert (
-        ds_imdbs_result.returncode == 0
-    ), "Distributed Seismicity IMDB generation failed"
+    if ds_db_dir.exists():
+        print("DS IMDB folder already exists, skipping")
+    else:
+        ds_db_dir.mkdir(exist_ok=True)
+        ds_imdbs_cmd = [
+            "mpirun",
+            "-np",
+            str(n_procs),
+            "python",
+            str(empirical_db_scripts_dir / "calc_emp_ds.py"),
+            str(erf_dir / "NZBCK2015_Chch50yearsAftershock_OpenSHA_modType4.txt"),
+            str(ds_site_source_db_ffp),
+            str(vs30_ffp),
+            str(ds_db_dir),
+            "--model-dict",
+            str(model_config_ffp),
+            "--z-file",
+            str(z_ffp),
+            "--im",
+            *im_types
+        ]
+        ds_timeout = (n_stations * (60 * 60 * 5)) / (min(n_procs - 1, n_stations))
+        print(f"Using a timeout of {ds_timeout} seconds")
+        print(f"Running command:\n\t{' '.join(ds_imdbs_cmd)}")
+        ds_imdbs_result = subprocess.run(
+            ds_imdbs_cmd, capture_output=True, timeout=ds_timeout
+        )
+        print("STDOUT:\n" + ds_imdbs_result.stdout.decode())
+        print("STDERR:\n" + ds_imdbs_result.stderr.decode())
+        assert (
+            ds_imdbs_result.returncode == 0
+        ), "Distributed Seismicity IMDB generation failed"
 
     flt_erf_base_fn = FLT_ERF_MAPPING[flt_erf_version]
 
     print("Generating fault distance db")
     flt_site_source_db_ffp = dbs_dir / FLT_SITE_SOURCE_DB_FILENAME
-    calc_fault_distances_cmd = [
-        "python",
-        str(empirical_db_scripts_dir / "calc_distances_flt.py"),
-        flt_site_source_db_ffp,
-        "--nhm_file",
-        str(erf_dir / f"{flt_erf_base_fn}.txt"),
-        str(ll_ffp),
-    ]
-    flt_distance_result = subprocess.run(calc_fault_distances_cmd, capture_output=True)
-    print("STDOUT:\n" + flt_distance_result.stdout.decode())
-    print("STDERR:\n" + flt_distance_result.stderr.decode())
-    assert flt_distance_result.returncode == 0, "Fault site-source DB generation failed"
+    if flt_site_source_db_ffp.exists():
+        print("Fault distance DB already exists, skipping")
+    else:
+        calc_fault_distances_cmd = [
+            "python",
+            str(empirical_db_scripts_dir / "calc_distances_flt.py"),
+            str(flt_site_source_db_ffp),
+            "--nhm_file",
+            str(erf_dir / f"{flt_erf_base_fn}.txt"),
+            str(ll_ffp),
+        ]
+        print(f"Running command:\n\t{' '.join(calc_fault_distances_cmd)}")
+        flt_distance_result = subprocess.run(calc_fault_distances_cmd, capture_output=True)
+        print("STDOUT:\n" + flt_distance_result.stdout.decode())
+        print("STDERR:\n" + flt_distance_result.stderr.decode())
+        assert flt_distance_result.returncode == 0, "Fault site-source DB generation failed"
 
     if n_perturbations > 1:
         if erf_pert_dir is None or not (erf_pert_dir).exists():
-            raise Exception(f"A valid directory with the perturbed ERF files has to be specified.")
+            raise Exception(
+                f"A valid directory with the perturbed ERF files has to be specified."
+            )
 
     print("Generating fault IMDBs")
-    for i in range(n_perturbations):
-        if n_perturbations > 1:
-            erf_file = str(
-                erf_pert_dir / f"{flt_erf_base_fn}_pert{i:02}.txt"
-            )
-        else:
-            erf_file = str(erf_dir / f"{flt_erf_base_fn}.txt")
-        flt_db_dir = dbs_dir / "flt"
+    flt_db_dir = dbs_dir / "flt"
+    if flt_db_dir.exists():
+        print("Fault IMDB folder already exists, skipping")
+    else:
         flt_db_dir.mkdir(exist_ok=True)
-        flt_imdbs_cmd = [
-            "python",
-            str(empirical_db_scripts_dir / "calc_emp_flt.py"),
-            erf_file,
-            str(flt_site_source_db_ffp),
-            str(vs30_ffp),
-            str(flt_db_dir),
-            "--model-dict",
-            str(model_config_ffp),
-            "--z-file",
-            str(z_ffp),
-        ]
-        if n_perturbations > 1:
-            flt_imdbs_cmd.extend(["-s", f"pert_{i:02}"])
-        flt_imdbs_result = subprocess.run(flt_imdbs_cmd, capture_output=True)
-        print("STDOUT:\n" + flt_imdbs_result.stdout.decode())
-        print("STDERR:\n" + flt_imdbs_result.stderr.decode())
-        assert flt_imdbs_result.returncode == 0, "Fault IMDB generation failed"
+        for i in range(n_perturbations):
+            if n_perturbations > 1:
+                erf_file = str(erf_pert_dir / f"{flt_erf_base_fn}_pert{i:02}.txt")
+            else:
+                erf_file = str(erf_dir / f"{flt_erf_base_fn}.txt")
+            flt_imdbs_cmd = [
+                "python",
+                str(empirical_db_scripts_dir / "calc_emp_flt.py"),
+                erf_file,
+                str(flt_site_source_db_ffp),
+                str(vs30_ffp),
+                str(flt_db_dir),
+                "--model-dict",
+                str(model_config_ffp),
+                "--z-file",
+                str(z_ffp),
+                "--im",
+                *im_types
+            ]
+            if n_perturbations > 1:
+                flt_imdbs_cmd.extend(["-s", f"pert_{i:02}"])
+            print(f"Running command, {i + 1}/{n_perturbations}:\n\t{' '.join(flt_imdbs_cmd)}")
+            flt_imdbs_result = subprocess.run(flt_imdbs_cmd, capture_output=True)
+            print("STDOUT:\n" + flt_imdbs_result.stdout.decode())
+            print("STDERR:\n" + flt_imdbs_result.stderr.decode())
+            assert flt_imdbs_result.returncode == 0, "Fault IMDB generation failed"
 
 
 def create_ensemble_config(
@@ -385,11 +435,11 @@ def create_ensemble_config(
     project_dir: Path,
     project_id: str,
     dbs_dir: Path,
-    scripts_dir: Path,
     erf_dir: Path,
     erf_pert_dir: Path,
     flt_erf_version: str,
     n_perturbations: int = 1,
+    empirical_weight_config_ffp: Path = EMPIRICAL_WEIGHT_CONFIG_PATH,
 ):
     """Creates the ensemble config for the project"""
     ens_filename = f"{empirical_version}_{project_id}"
@@ -400,9 +450,7 @@ def create_ensemble_config(
     if n_perturbations > 1:
         erf_ffps = [
             str(erf_ffp)
-            for erf_ffp in sorted(
-                erf_pert_dir.glob(f"{flt_erf_base_fn}_pert*.txt")
-            )
+            for erf_ffp in sorted(erf_pert_dir.glob(f"{flt_erf_base_fn}_pert*.txt"))
         ]
     else:
         erf_ffps = [str(erf_dir / f"{flt_erf_base_fn}.txt")]
@@ -410,7 +458,7 @@ def create_ensemble_config(
     su.ensemble_creation.create_ensemble(
         ens_filename,
         str(project_dir),
-        str(scripts_dir / "ensemble_creation/gmm_weights.yaml"),
+        str(empirical_weight_config_ffp),
         str(dbs_dir / DS_SITE_SOURCE_DB_FILENAME),
         str(dbs_dir / FLT_SITE_SOURCE_DB_FILENAME),
         str(dbs_dir / f"{project_id}.ll"),

@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 import flask
 import numpy as np
-from werkzeug.contrib.cache import BaseCache
+from flask_caching import Cache
 from flask_cors import cross_origin
 
 import gmhazard_calc as sc
@@ -41,7 +41,7 @@ def get_ensemble_uhs():
     Optional parameters: calc_percentiles
     """
     server.app.logger.info(f"Received request at {const.ENSEMBLE_UHS_ENDPOINT}")
-    cache = flask.current_app.extensions["cache"]
+    cache = server.cache
 
     (ensemble_id, station, exceedances), optional_kwargs = su.api.get_check_keys(
         flask.request.args,
@@ -86,7 +86,6 @@ def get_ensemble_uhs():
                     "im_component": str(im_component),
                 },
                 server.DOWNLOAD_URL_SECRET_KEY,
-                server.DOWNLOAD_URL_VALID_FOR,
             ),
         )
     )
@@ -104,7 +103,7 @@ def download_ensemble_uhs():
     server.app.logger.info(
         f"Received request at {const.ENSEMBLE_UHS_DOWNLOAD_ENDPOINT}"
     )
-    cache = flask.current_app.extensions["cache"]
+    cache = server.cache
 
     (uhs_token, nzs1170p5_token), _ = su.api.get_check_keys(
         flask.request.args, ("uhs_token", "nzs1170p5_hazard_token")
@@ -167,11 +166,13 @@ def _get_uhs(
     ensemble_id: str,
     station: str,
     exceedances: str,
-    cache: BaseCache,
+    cache: Cache,
     calc_percentiles: bool = False,
     user_vs30: float = None,
     im_component: sc.im.IMComponent = sc.im.IMComponent.RotD50,
-) -> Tuple[sc.gm_data.Ensemble, sc.site.SiteInfo, List[sc.uhs.EnsembleUHSResult],]:
+) -> Tuple[
+    sc.gm_data.Ensemble, sc.site.SiteInfo, List[sc.uhs.EnsembleUHSResult],
+]:
     git_version = su.api.get_repo_version()
     exceedances = np.asarray(list(map(float, exceedances.split(","))))
 

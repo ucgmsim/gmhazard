@@ -3,7 +3,7 @@ from typing import Tuple, Dict
 
 import flask
 from flask_cors import cross_origin
-from werkzeug.contrib.cache import BaseCache
+from flask_caching import Cache
 
 import gmhazard_calc as sc
 import gmhazard_utils as su
@@ -28,12 +28,7 @@ class HazardCachedData(su.api.BaseCacheData):
 
     def __iter__(self):
         return iter(
-            (
-                self.ensemble,
-                self.site_info,
-                self.ensemble_hazard,
-                self.branches_hazard,
-            )
+            (self.ensemble, self.site_info, self.ensemble_hazard, self.branches_hazard,)
         )
 
 
@@ -50,16 +45,12 @@ def get_ensemble_hazard():
     Optional parameters: calc_percentiles, vs30
     """
     server.app.logger.info(f"Received request at {const.ENSEMBLE_HAZARD_ENDPOINT}")
-    cache = flask.current_app.extensions["cache"]
+    cache = server.cache
 
     (ensemble_id, station, im), optional_kwargs = su.api.get_check_keys(
         flask.request.args,
         ("ensemble_id", "station", "im"),
-        (
-            ("calc_percentiles", int),
-            ("vs30", float),
-            ("im_component", str, "RotD50"),
-        ),
+        (("calc_percentiles", int), ("vs30", float), ("im_component", str, "RotD50"),),
     )
 
     user_vs30 = optional_kwargs.get("vs30")
@@ -94,7 +85,6 @@ def get_ensemble_hazard():
                 "calc_percentiles": calc_percentiles,
             },
             server.DOWNLOAD_URL_SECRET_KEY,
-            server.DOWNLOAD_URL_VALID_FOR,
         ),
     )
 
@@ -120,7 +110,7 @@ def download_ens_hazard():
     server.app.logger.info(
         f"Received request at {const.ENSEMBLE_HAZARD_DOWNLOAD_ENDPOINT}"
     )
-    cache = flask.current_app.extensions["cache"]
+    cache = server.cache
 
     (hazard_token, nzs1170p5_token), optional_kwargs = su.api.get_check_keys(
         flask.request.args,
@@ -216,7 +206,7 @@ def _get_hazard(
     ensemble_id: str,
     station: str,
     im: sc.im.IM,
-    cache: BaseCache,
+    cache: Cache,
     calc_percentiles: bool = False,
     user_vs30: float = None,
 ) -> Tuple[
@@ -258,11 +248,6 @@ def _get_hazard(
         )
     else:
         server.app.logger.debug(f"Using cached result with key {cache_key}")
-        (
-            ensemble,
-            site_info,
-            ensemble_hazard,
-            branches_hazard,
-        ) = cached_data
+        (ensemble, site_info, ensemble_hazard, branches_hazard,) = cached_data
 
     return ensemble, site_info, ensemble_hazard, branches_hazard

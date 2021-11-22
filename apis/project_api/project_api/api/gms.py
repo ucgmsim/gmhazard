@@ -57,7 +57,6 @@ def get_ensemble_gms():
             su.api.get_download_token(
                 dict(project_id=project_id, station_id=station_id, gms_id=gms_id),
                 server.DOWNLOAD_URL_SECRET_KEY,
-                server.DOWNLOAD_URL_VALID_FOR,
             ),
             disagg_data,
             project_id,
@@ -83,10 +82,7 @@ def download_gms_results(token):
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_ffp, missing_waveforms = su.api.create_gms_download_zip(
-            gms_result,
-            tmp_dir,
-            disagg_data,
-            cs_param_bounds=cs_param_bounds,
+            gms_result, tmp_dir, disagg_data, cs_param_bounds=cs_param_bounds,
         )
 
         if missing_waveforms > 0:
