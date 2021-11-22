@@ -119,6 +119,7 @@ def _get_management_api_token():
 
 def get_users():
     """Get all users
+
     Returns
     -------
     dictionary:
@@ -157,6 +158,7 @@ def get_users():
 
 def requires_permission(required_permission):
     """Determines if the required scope is present in the Access Token
+
     Parameters
     ----------
     required_permission: string
