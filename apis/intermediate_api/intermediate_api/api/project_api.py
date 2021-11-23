@@ -21,26 +21,32 @@ def has_project_permission(f):
         is_authenticated = kwargs["is_authenticated"]
         project_id = request.args.get("project_id")
         is_authorized = False
-        if project_id is not None:
-            if is_authenticated:
-                user_id = auth0.get_user_id()
-                # Authenticated users can access to both private and public projects
-                allowed_projects = utils.run_project_crosscheck(
-                    db.get_user_project_permission(user_id),
-                    db.get_projects("public"),
-                    get_available_projects()["ids"],
-                )
-                if project_id in allowed_projects:
-                    is_authorized = True
-                return f(*args, **kwargs, is_authorized=is_authorized)
-            else:
-                public_projects = utils.run_project_crosscheck(
-                    {}, db.get_projects("public"), get_available_projects()["ids"],
-                )
-                if project_id in public_projects:
-                    is_authorized = True
-                return f(*args, **kwargs, is_authorized=is_authorized)
+
+        if project_id is None:
+            raise auth0.AuthError(
+                error={
+                    "code": "No Project ID provided",
+                    "description": "Please provide a valid Project ID",
+                }
+            )
+
+        if is_authenticated:
+            user_id = auth0.get_user_id()
+            # Authenticated users can access to both private and public projects
+            allowed_projects = utils.run_project_crosscheck(
+                db.get_user_project_permission(user_id),
+                db.get_projects("public"),
+                get_available_projects()["ids"],
+            )
+            if project_id in allowed_projects:
+                is_authorized = True
+            return f(*args, **kwargs, is_authorized=is_authorized)
         else:
+            public_projects = utils.run_project_crosscheck(
+                {}, db.get_projects("public"), get_available_projects()["ids"],
+            )
+            if project_id in public_projects:
+                is_authorized = True
             return f(*args, **kwargs, is_authorized=is_authorized)
 
     return decorated
