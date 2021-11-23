@@ -473,7 +473,7 @@ def psa_sigma_plot(
             if save_path is None
             else save_path
         )
-        plot_directory = root_path / "plot" / "psa_sigma_period" / f"{rrup}"
+        plot_directory = root_path / "psa_sigma_period" / f"{rrup}"
         plot_directory.mkdir(exist_ok=True, parents=True)
 
         plot_psha_psa_sigma(
@@ -520,7 +520,7 @@ def psa_plot(
             else save_path
         )
 
-        plot_directory = root_path / "plot" / "psa_period" / f"{rrup}"
+        plot_directory = root_path / "psa_period" / f"{rrup}"
         plot_directory.mkdir(exist_ok=True, parents=True)
 
         plot_psha_psa(vs30_values, mag_dict, psa_periods, result_dict, plot_directory)
@@ -564,7 +564,7 @@ def psa_median_plot(
             if save_path is None
             else save_path
         )
-        plot_directory = root_path / "plot" / "psa_median_period" / f"{rrup}"
+        plot_directory = root_path / "psa_median_period" / f"{rrup}"
         plot_directory.mkdir(exist_ok=True, parents=True)
 
         plot_psha_median_psa(
@@ -575,15 +575,15 @@ def psa_median_plot(
 if __name__ == "__main__":
     """Update those inputs to get different outputs"""
     mag_dict = {
-        "ACTIVE_SHALLOW": [6, 7, 8],
-        "SUBDUCTION_SLAB": [6, 7],
-        "SUBDUCTION_INTERFACE": [7.0, 8.0, 9.0],
+        "ACTIVE_SHALLOW": [5, 6, 7, 8],
+        "SUBDUCTION_SLAB": [5, 6, 7],
+        "SUBDUCTION_INTERFACE": [5.0, 6.0, 7.0, 8.0, 9.0],
     }
-    vs30_list = [200, 400, 760]
+    vs30_list = [200, 300, 400, 760]
     period_list = np.linspace(0.01, 10, 200)
     rrup = [50, 100, 200, 300, 400, 500]
     save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/verification_plots")
 
-    psa_sigma_plot(mag_dict, vs30_list, period_list, rrup, save_path)
+    # psa_sigma_plot(mag_dict, vs30_list, period_list, rrup, save_path)
     psa_plot(mag_dict, vs30_list, period_list, rrup, save_path)
-    psa_median_plot(mag_dict, vs30_list, period_list, rrup, save_path)
+    # psa_median_plot(mag_dict, vs30_list, period_list, rrup, save_path)

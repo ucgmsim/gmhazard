@@ -161,10 +161,7 @@ def get_computed_gmms(
                                         )
                                 else:
                                     result = empirical_factory.compute_gmm(
-                                        fault,
-                                        site,
-                                        empirical_factory.GMM[model],
-                                        im,
+                                        fault, site, empirical_factory.GMM[model], im,
                                     )
                                     # result is always tuple
                                     result_dict[tect_type][im][vs30][mag][model].append(
@@ -325,7 +322,11 @@ def plot_psa_rrup(
 
 
 def im_rrup_plot(
-    mag_dict: Dict, vs30_values: List, psa_periods: List, rrup_values: Dict
+    mag_dict: Dict,
+    vs30_values: List,
+    psa_periods: List,
+    rrup_values: Dict,
+    save_path: pathlib.PosixPath = None,
 ):
     """Plot function for a IM(no pSA) versus Rrup
 
@@ -339,9 +340,15 @@ def im_rrup_plot(
         list of Periods
     rrup_values: Dict
         dictionary of Rrups np.ndarray
+    save_path: pathlib.PosixPath
+        Directory to save plots
     """
-
-    plot_directory = pathlib.Path(__file__).resolve().parent.parent / "plot" / "im_rrup"
+    root_path = (
+        pathlib.Path(__file__).resolve().parent.parent
+        if save_path is None
+        else save_path
+    )
+    plot_directory = root_path / "im_rrup"
     plot_directory.mkdir(exist_ok=True, parents=True)
 
     faults, result_dict = init_setup(mag_dict, vs30_values, psa_periods)
@@ -356,7 +363,11 @@ def im_rrup_plot(
 
 
 def psa_rrup_plot(
-    mag_dict: Dict, vs30_values: List, psa_periods: List, rrup_values: Dict
+    mag_dict: Dict,
+    vs30_values: List,
+    psa_periods: List,
+    rrup_values: Dict,
+    save_path: pathlib.PosixPath = None,
 ):
     """Plot function for a IM(pSA) versus Rrup
 
@@ -370,9 +381,16 @@ def psa_rrup_plot(
         list of Periods
     rrup_values: Dict
         dictionary of Rrups np.ndarray
+    save_path: pathlib.PosixPath
+        Directory to save plots
     """
 
-    plot_directory = pathlib.Path(__file__).resolve().parent.parent / "plot" / "im_rrup"
+    root_path = (
+        pathlib.Path(__file__).resolve().parent.parent
+        if save_path is None
+        else save_path
+    )
+    plot_directory = root_path / "im_rrup"
     plot_directory.mkdir(exist_ok=True, parents=True)
 
     faults, result_dict = init_setup(mag_dict, vs30_values, psa_periods)
@@ -395,17 +413,18 @@ if __name__ == "__main__":
         "SUBDUCTION_SLAB": [5, 6, 7],
         "SUBDUCTION_INTERFACE": [7, 8, 9],
     }
-    vs30_lists = [200, 400, 760]
+    vs30_lists = [200, 300, 400, 760]
     psa_lists = [0.2, 1.0, 3.0, 10.0]
     # For ACTIVE_SHALLOW and INTERFACE
-    first_rrup_lists = np.linspace(1, 1000, 500)
+    first_rrup_lists = np.linspace(1, 1000, 200)
     # For SLAB
-    second_rrup_lists = np.linspace(50, 1000, 500)
+    second_rrup_lists = np.linspace(50, 1000, 200)
     rrup_dict = {
         "ACTIVE_SHALLOW": first_rrup_lists,
         "SUBDUCTION_INTERFACE": first_rrup_lists,
         "SUBDUCTION_SLAB": second_rrup_lists,
     }
+    save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/verification_plots")
 
-    im_rrup_plot(mag_dict, vs30_lists, psa_lists, rrup_dict)
-    psa_rrup_plot(mag_dict, vs30_lists, psa_lists, rrup_dict)
+    im_rrup_plot(mag_dict, vs30_lists, psa_lists, rrup_dict, save_path)
+    psa_rrup_plot(mag_dict, vs30_lists, psa_lists, rrup_dict, save_path)
