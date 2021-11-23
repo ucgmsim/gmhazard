@@ -317,13 +317,18 @@ def plot_psha_psa(
                 ax[x_position, y_position].set_title(
                     f"SA versus T - Mw{mag}, Vs30-{vs30}"
                 )
+                ax[x_position, y_position].legend(im_models[const.PSA_IM_NAME])
                 ax[x_position, y_position].xaxis.set_label_text("Period [sec]")
                 ax[x_position, y_position].yaxis.set_label_text("SA [g]")
                 ax[x_position, y_position].set_xscale("log")
                 ax[x_position, y_position].set_yscale("log")
-                # plt.xaxis.grid(True, which="both", linestyle="dotted")
-                # plt.yaxis.grid(True, which="both", linestyle="dotted")
-
+                ax[x_position, y_position].xaxis.grid(
+                    True, which="both", linestyle="dotted"
+                )
+                ax[x_position, y_position].yaxis.grid(
+                    True, which="both", linestyle="dotted"
+                )
+                # If we want to save subplots individually
                 # plt.savefig(
                 #     f"{plot_directory}/{tect_type}_{str(mag).replace('.', 'p')}_{str(vs30).replace('.', 'p')}_pSA_versus_T.png"
                 # )
@@ -331,9 +336,11 @@ def plot_psha_psa(
                 y_position += 1
             x_position += 1
 
-        fig.legend(loc=7)
+        # Uncomment those if we want to move the legend outside of grid
+        # Subplot will no longer holds legend
+        # fig.legend(loc=7)
         fig.tight_layout()
-        fig.subplots_adjust(right=0.75)
+        # fig.subplots_adjust(right=0.75)
         # plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", borderaxespad=0)
         plt.savefig(f"{plot_directory}/{tect_type}_pSA_versus_T.png")
         plt.close()
@@ -408,9 +415,9 @@ def plot_psha_median_psa(
                 )
 
                 ax[x_position, y_position].set_title(f"Median - Mw{mag}, Vs30-{vs30}")
-                # ax[x_position, y_position].legend()
+                ax[x_position, y_position].legend()
                 ax[x_position, y_position].xaxis.set_label_text("Period [sec]")
-                # ax[x_position, y_position].yaxis.set_label_text("SA [g]")
+                ax[x_position, y_position].yaxis.set_label_text("SA [g]")
                 ax[x_position, y_position].set_xscale("log")
                 ax[x_position, y_position].set_yscale("log")
                 ax[x_position, y_position].xaxis.grid(
@@ -433,6 +440,7 @@ def psa_sigma_plot(
     vs30_values: List,
     psa_periods: np.ndarray,
     rrup_values: List[Union[float, int]],
+    save_path: pathlib.PosixPath = None,
 ):
     """Plot function for a pSA Sigma versus T
 
@@ -446,6 +454,8 @@ def psa_sigma_plot(
         list of Periods
     rrup_values: List[Union[float, int]]
         Rupture distance in km
+    save_path: pathlib.PosixPath
+        Directory to save plots
     """
     faults, result_dict = init_setup(mag_dict, vs30_values)
 
@@ -458,12 +468,12 @@ def psa_sigma_plot(
             vs30_values, sites, mag_dict, faults, result_dict, psa_periods, True
         )
 
-        plot_directory = (
+        root_path = (
             pathlib.Path(__file__).resolve().parent.parent
-            / "plot"
-            / "psa_sigma_period"
-            / f"{rrup}"
+            if save_path is None
+            else save_path
         )
+        plot_directory = root_path / "plot" / "psa_sigma_period" / f"{rrup}"
         plot_directory.mkdir(exist_ok=True, parents=True)
 
         plot_psha_psa_sigma(
@@ -476,6 +486,7 @@ def psa_plot(
     vs30_values: List,
     psa_periods: np.ndarray,
     rrup_values: List[Union[float, int]],
+    save_path: pathlib.PosixPath = None,
 ):
     """Plot function for a pSA versus T
 
@@ -489,6 +500,8 @@ def psa_plot(
         list of Periods
     rrup_values: List[Union[float, int]]
         Rupture distance in km
+    save_path: pathlib.PosixPath
+        Directory to save plots
     """
     faults, result_dict = init_setup(mag_dict, vs30_values)
 
@@ -501,12 +514,13 @@ def psa_plot(
             vs30_values, sites, mag_dict, faults, result_dict, psa_periods, False
         )
 
-        plot_directory = (
+        root_path = (
             pathlib.Path(__file__).resolve().parent.parent
-            / "plot"
-            / "psa_period"
-            / f"{rrup}"
+            if save_path is None
+            else save_path
         )
+
+        plot_directory = root_path / "plot" / "psa_period" / f"{rrup}"
         plot_directory.mkdir(exist_ok=True, parents=True)
 
         plot_psha_psa(vs30_values, mag_dict, psa_periods, result_dict, plot_directory)
@@ -517,6 +531,7 @@ def psa_median_plot(
     vs30_values: List,
     psa_periods: np.ndarray,
     rrup_value: List[Union[float, int]],
+    save_path: pathlib.PosixPath = None,
 ):
     """Plot function for a pSA medians, std versus T
 
@@ -530,6 +545,8 @@ def psa_median_plot(
         list of Periods
     rrup_value: List[Union[float, int]]
         Rupture distance in km
+    save_path: pathlib.PosixPath
+        Directory to save plots
     """
     faults, result_dict = init_setup(mag_dict, vs30_values)
 
@@ -542,12 +559,12 @@ def psa_median_plot(
             vs30_values, sites, mag_dict, faults, result_dict, psa_periods, False
         )
 
-        plot_directory = (
+        root_path = (
             pathlib.Path(__file__).resolve().parent.parent
-            / "plot"
-            / "psa_median_period"
-            / f"{rrup}"
+            if save_path is None
+            else save_path
         )
+        plot_directory = root_path / "plot" / "psa_median_period" / f"{rrup}"
         plot_directory.mkdir(exist_ok=True, parents=True)
 
         plot_psha_median_psa(
@@ -558,14 +575,15 @@ def psa_median_plot(
 if __name__ == "__main__":
     """Update those inputs to get different outputs"""
     mag_dict = {
-        "ACTIVE_SHALLOW": [5, 6, 7, 8],
-        "SUBDUCTION_SLAB": [5, 6, 7],
-        "SUBDUCTION_INTERFACE": [5.0, 6.0, 7.0, 8.0, 9.0],
+        "ACTIVE_SHALLOW": [6, 7, 8],
+        "SUBDUCTION_SLAB": [6, 7],
+        "SUBDUCTION_INTERFACE": [7.0, 8.0, 9.0],
     }
-    vs30_list = [200, 300, 400, 760]
+    vs30_list = [200, 400, 760]
     period_list = np.linspace(0.01, 10, 200)
     rrup = [50, 100, 200, 300, 400, 500]
+    save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/verification_plots")
 
-    # psa_sigma_plot(mag_dict, vs30_list, period_list, rrup)
-    psa_plot(mag_dict, vs30_list, period_list, rrup)
-    # psa_median_plot(mag_dict, vs30_list, period_list, rrup)
+    psa_sigma_plot(mag_dict, vs30_list, period_list, rrup, save_path)
+    psa_plot(mag_dict, vs30_list, period_list, rrup, save_path)
+    psa_median_plot(mag_dict, vs30_list, period_list, rrup, save_path)
