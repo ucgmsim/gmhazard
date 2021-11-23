@@ -19,7 +19,7 @@ ALGORITHMS = os.environ["ALGORITHMS"]
 API_AUDIENCE = os.environ["API_AUDIENCE"]
 
 
-def requires_auth(f):
+def get_authentication(f):
     """Determines if the Access Token is valid"""
 
     @wraps(f)
