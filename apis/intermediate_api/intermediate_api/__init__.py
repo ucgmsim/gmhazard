@@ -60,5 +60,4 @@ from intermediate_api.api import (
     core_api,
     project_api,
     intermediate_api,
-    public_project_api,
 )
