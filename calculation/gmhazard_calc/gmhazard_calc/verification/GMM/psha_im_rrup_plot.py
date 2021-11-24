@@ -424,7 +424,8 @@ if __name__ == "__main__":
         "SUBDUCTION_INTERFACE": first_rrup_lists,
         "SUBDUCTION_SLAB": second_rrup_lists,
     }
-    save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/verification_plots")
+    # Update the path to the directory to save plots
+    save_path = pathlib.Path("")
 
     im_rrup_plot(mag_dict, vs30_lists, psa_lists, rrup_dict, save_path)
     psa_rrup_plot(mag_dict, vs30_lists, psa_lists, rrup_dict, save_path)

@@ -260,59 +260,64 @@ def plot_psha_psa(
                     )
                     color_index += 1
 
-                # Create DatFrame to make life easier
-                df = np.log(
-                    pd.DataFrame(
-                        list(
-                            result_dict[tect_type][const.PSA_IM_NAME][vs30][
-                                mag
-                            ].values()
-                        ),
-                        columns=period_values,
-                        index=list(
-                            result_dict[tect_type][const.PSA_IM_NAME][vs30][mag].keys()
-                        ),
+                if len(im_models) > 1:
+                    # Create DatFrame to make life easier
+                    df = np.log(
+                        pd.DataFrame(
+                            list(
+                                result_dict[tect_type][const.PSA_IM_NAME][vs30][
+                                    mag
+                                ].values()
+                            ),
+                            columns=period_values,
+                            index=list(
+                                result_dict[tect_type][const.PSA_IM_NAME][vs30][
+                                    mag
+                                ].keys()
+                            ),
+                        )
                     )
-                )
-
-                average_medians = df.sum(axis=0) / len(
-                    list(result_dict[tect_type][const.PSA_IM_NAME][vs30][mag].keys())
-                )
-                sigma_intermodel = np.sqrt(
-                    np.square(df - average_medians).sum(axis=0)
-                    / len(
+                    average_medians = df.sum(axis=0) / len(
                         list(
                             result_dict[tect_type][const.PSA_IM_NAME][vs30][mag].keys()
                         )
                     )
-                )
-
-                ax[x_position, y_position].plot(
-                    period_values,
-                    np.exp(average_medians),
-                    color="black",
-                    label="average medians"
-                    if x_position == 0 and y_position == 0
-                    else None,
-                )
-                ax[x_position, y_position].plot(
-                    period_values,
-                    np.exp(np.add(average_medians, sigma_intermodel)),
-                    color="black",
-                    linestyle="--",
-                    label="average medians + sigma intermodel"
-                    if x_position == 0 and y_position == 0
-                    else None,
-                )
-                ax[x_position, y_position].plot(
-                    period_values,
-                    np.exp(np.subtract(average_medians, sigma_intermodel)),
-                    color="black",
-                    linestyle="--",
-                    label="average medians - sigma intermodel"
-                    if x_position == 0 and y_position == 0
-                    else None,
-                )
+                    sigma_intermodel = np.sqrt(
+                        np.square(df - average_medians).sum(axis=0)
+                        / len(
+                            list(
+                                result_dict[tect_type][const.PSA_IM_NAME][vs30][
+                                    mag
+                                ].keys()
+                            )
+                        )
+                    )
+                    ax[x_position, y_position].plot(
+                        period_values,
+                        np.exp(average_medians),
+                        color="black",
+                        label="average medians"
+                        if x_position == 0 and y_position == 0
+                        else None,
+                    )
+                    ax[x_position, y_position].plot(
+                        period_values,
+                        np.exp(np.add(average_medians, sigma_intermodel)),
+                        color="black",
+                        linestyle="--",
+                        label="average medians + sigma intermodel"
+                        if x_position == 0 and y_position == 0
+                        else None,
+                    )
+                    ax[x_position, y_position].plot(
+                        period_values,
+                        np.exp(np.subtract(average_medians, sigma_intermodel)),
+                        color="black",
+                        linestyle="--",
+                        label="average medians - sigma intermodel"
+                        if x_position == 0 and y_position == 0
+                        else None,
+                    )
 
                 ax[x_position, y_position].set_title(
                     f"SA versus T - Mw{mag}, Vs30-{vs30}"
@@ -385,34 +390,35 @@ def plot_psha_median_psa(
                     )
                 )
 
-                average_medians = df.sum(axis=0) / len(
-                    list(result_dict[tect_type]["pSA"][vs30][mag].keys())
-                )
-                sigma_intermodel = np.sqrt(
-                    np.square(df - average_medians).sum(axis=0)
-                    / len(list(result_dict[tect_type]["pSA"][vs30][mag].keys()))
-                )
+                if len(im_models) > 1:
+                    average_medians = df.sum(axis=0) / len(
+                        list(result_dict[tect_type]["pSA"][vs30][mag].keys())
+                    )
+                    sigma_intermodel = np.sqrt(
+                        np.square(df - average_medians).sum(axis=0)
+                        / len(list(result_dict[tect_type]["pSA"][vs30][mag].keys()))
+                    )
 
-                ax[x_position, y_position].plot(
-                    period_values,
-                    np.exp(average_medians),
-                    c="k",
-                    label="average medians",
-                )
-                ax[x_position, y_position].plot(
-                    period_values,
-                    np.exp(np.add(average_medians, sigma_intermodel)),
-                    c="k",
-                    linestyle="--",
-                    label="average medians + sigma intermodel",
-                )
-                ax[x_position, y_position].plot(
-                    period_values,
-                    np.exp(np.subtract(average_medians, sigma_intermodel)),
-                    c="k",
-                    linestyle="--",
-                    label="average medians - sigma intermodel",
-                )
+                    ax[x_position, y_position].plot(
+                        period_values,
+                        np.exp(average_medians),
+                        c="k",
+                        label="average medians",
+                    )
+                    ax[x_position, y_position].plot(
+                        period_values,
+                        np.exp(np.add(average_medians, sigma_intermodel)),
+                        c="k",
+                        linestyle="--",
+                        label="average medians + sigma intermodel",
+                    )
+                    ax[x_position, y_position].plot(
+                        period_values,
+                        np.exp(np.subtract(average_medians, sigma_intermodel)),
+                        c="k",
+                        linestyle="--",
+                        label="average medians - sigma intermodel",
+                    )
 
                 ax[x_position, y_position].set_title(f"Median - Mw{mag}, Vs30-{vs30}")
                 ax[x_position, y_position].legend()
@@ -582,7 +588,8 @@ if __name__ == "__main__":
     vs30_list = [200, 300, 400, 760]
     period_list = np.linspace(0.01, 10, 200)
     rrup = [50, 100, 200, 300, 400, 500]
-    save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/verification_plots")
+    # Update the path to the directory to save plots
+    save_path = pathlib.Path("")
 
     # psa_sigma_plot(mag_dict, vs30_list, period_list, rrup, save_path)
     psa_plot(mag_dict, vs30_list, period_list, rrup, save_path)
