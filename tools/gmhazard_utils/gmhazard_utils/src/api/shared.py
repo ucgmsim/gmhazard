@@ -211,7 +211,9 @@ def write_disagg_download_data(
     disagg_df = disagg_data.total_contributions_df.merge(
         metadata_df, how="left", left_index=True, right_index=True
     )
-
+    disagg_df.loc[
+        "distributed_seismicity", "rupture_name"
+    ] = "distributed_seismicity"
     disagg_df.loc[
         :,
         [
@@ -223,6 +225,34 @@ def write_disagg_download_data(
             "rrup",
         ],
     ].to_csv(disagg_data_ffp, index=True, mode="a", index_label="rupture_id")
+
+    # Save an aggregated version in the case of ERF perturbation
+    disagg_agg_data_ffp = None
+    if np.unique(disagg_df.rupture_name.values).size < disagg_df.shape[0]:
+        agg_dict = {}
+        for cur_rupture_name, cur_rupture_df in disagg_df.groupby("rupture_name"):
+            # Contribution is summed across realisations,
+            # everything else is aggregated via weighted average
+            # with the normalised realisation contributions as weights
+            cur_contribution = cur_rupture_df.contribution.sum()
+            cur_agg_dict = {
+                cur_col: np.average(
+                    cur_rupture_df[cur_col].values,
+                    weights=cur_rupture_df.contribution.values / cur_contribution,
+                )
+                for cur_col in ["epsilon", "annual_rec_prob", "magnitude", "rrup"]
+            }
+            cur_agg_dict["contribution"] = cur_contribution
+            agg_dict[cur_rupture_name] = cur_agg_dict
+
+        disagg_agg_df = pd.DataFrame(agg_dict).T.sort_values(
+            "contribution", ascending=False
+        )
+
+        disagg_agg_data_ffp = Path(out_dir) / f"{prefix}{disagg_data.im.file_format()}_{int(1 / disagg_data.exceedance)}_disagg_aggregated.csv"
+        disagg_agg_df.loc[
+            :, ["contribution", "epsilon", "annual_rec_prob", "magnitude", "rrup",]
+        ].to_csv(disagg_agg_data_ffp, index=True, mode="a", index_label="rupture_name")
 
     # Create metadata file
     meta_data_ffp = (
@@ -274,7 +304,7 @@ def write_disagg_download_data(
         with eps_plot_ffp.open(mode="wb") as f:
             f.write(eps_plot_data)
 
-    return disagg_data_ffp, meta_data_ffp, mean_values_ffp, src_plot_ffp, eps_plot_ffp
+    return disagg_data_ffp, meta_data_ffp, mean_values_ffp, src_plot_ffp, eps_plot_ffp, disagg_agg_data_ffp
 
 
 def create_disagg_download_zip(
