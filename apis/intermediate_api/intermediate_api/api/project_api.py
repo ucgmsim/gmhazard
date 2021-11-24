@@ -36,14 +36,14 @@ def has_project_permission(f):
             allowed_projects = utils.run_project_crosscheck(
                 db.get_user_project_permission(user_id),
                 db.get_projects("public"),
-                get_available_projects()["ids"],
+                _get_available_projects()["ids"],
             )
             if project_id in allowed_projects:
                 is_authorized = True
             return f(*args, **kwargs, is_authorized=is_authorized)
         else:
             public_projects = utils.run_project_crosscheck(
-                {}, db.get_projects("public"), get_available_projects()["ids"],
+                {}, db.get_projects("public"), _get_available_projects()["ids"],
             )
             if project_id in public_projects:
                 is_authorized = True
@@ -53,7 +53,7 @@ def has_project_permission(f):
 
 
 # Site Selection
-def get_available_projects():
+def _get_available_projects():
     return utils.proxy_to_api(
         request, const.PROJECT_IDS_ENDPOINT, "GET", PROJECT_API_BASE, PROJECT_API_TOKEN,
     ).get_json()
@@ -68,11 +68,11 @@ def get_available_project_ids(is_authenticated):
         return utils.run_project_crosscheck(
             db.get_user_project_permission(user_id),
             db.get_projects("public"),
-            get_available_projects()["ids"],
+            _get_available_projects()["ids"],
         )
     else:
         return utils.run_project_crosscheck(
-            {}, db.get_projects("public"), get_available_projects()["ids"],
+            {}, db.get_projects("public"), _get_available_projects()["ids"],
         )
 
 
