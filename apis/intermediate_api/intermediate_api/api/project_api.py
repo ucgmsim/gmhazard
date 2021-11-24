@@ -89,8 +89,7 @@ def get_project_sites(*args, **kwargs):
             PROJECT_API_BASE,
             PROJECT_API_TOKEN,
         )
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.PROJECT_API_IMS_ENDPOINT, methods=["GET"])
@@ -106,8 +105,7 @@ def get_project_ims(*args, **kwargs):
             PROJECT_API_BASE,
             PROJECT_API_TOKEN,
         )
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.PROJECT_API_MAPS_ENDPOINT, methods=["GET"])
@@ -128,8 +126,7 @@ def get_project_maps(*args, **kwargs):
             user_id=auth0.get_user_id() if is_authenticated else None,
             action="Project - Site Selection Get" if is_authenticated else None,
         )
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 # Seismic Hazard
@@ -151,8 +148,7 @@ def get_project_hazard(*args, **kwargs):
             user_id=auth0.get_user_id() if is_authenticated else None,
             action="Project - Hazard Compute" if is_authenticated else None,
         )
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.PROJECT_API_HAZARD_DISAGG_ENDPOINT, methods=["GET"])
@@ -173,8 +169,7 @@ def get_project_disagg(*args, **kwargs):
             user_id=auth0.get_user_id() if is_authenticated else None,
             action="Project - Disaggregation Compute" if is_authenticated else None,
         )
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.PROJECT_API_HAZARD_DISAGG_RPS_ENDPOINT, methods=["GET"])
@@ -190,8 +185,7 @@ def get_project_disagg_rps(*args, **kwargs):
             PROJECT_API_BASE,
             PROJECT_API_TOKEN,
         )
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.PROJECT_API_HAZARD_UHS_RPS_ENDPOINT, methods=["GET"])
@@ -207,8 +201,7 @@ def get_project_uhs_rps(*args, **kwargs):
             PROJECT_API_BASE,
             PROJECT_API_TOKEN,
         )
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.PROJECT_API_HAZARD_UHS_ENDPOINT, methods=["GET"])
@@ -229,8 +222,7 @@ def get_project_uhs(*args, **kwargs):
             user_id=auth0.get_user_id() if is_authenticated else None,
             action="Project - UHS Compute" if is_authenticated else None,
         )
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.PROJECT_API_GMS_RUNS_ENDPOINT, methods=["GET"])
@@ -246,8 +238,7 @@ def get_gms_runs(*args, **kwargs):
             PROJECT_API_BASE,
             PROJECT_API_TOKEN,
         )
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.PROJECT_API_GMS_ENDPOINT, methods=["GET"])
@@ -268,8 +259,7 @@ def get_ensemble_gms(*args, **kwargs):
             user_id=auth0.get_user_id() if is_authenticated else None,
             action="Project - GMS Compute" if is_authenticated else None,
         )
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.PROJECT_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT, methods=["GET"])
@@ -315,8 +305,7 @@ def get_gms_default_causal_params(*args, **kwargs):
             return jsonify(data_dict)
 
         return Response(status=response.status_code)
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.PROJECT_API_SCENARIOS_ENDPOINT, methods=["GET"])
@@ -337,8 +326,7 @@ def get_ensemble_scenarios(*args, **kwargs):
             user_id=auth0.get_user_id() if is_authenticated else None,
             action="Project - Scenarios Get" if is_authenticated else None,
         )
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 # PROJECT DOWNLOAD

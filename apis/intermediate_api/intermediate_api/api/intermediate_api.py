@@ -35,8 +35,7 @@ def get_auth0_user_key_info(is_authenticated):
         db.update_user_access_permission(user_id, permission_list)
 
         return jsonify({"permissions": permission_list, "id": user_id})
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 # Edit User
@@ -55,8 +54,7 @@ def get_auth0_users(is_authenticated):
         )
         response, status_code = auth0.get_users()
         return jsonify(response), status_code
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_ALL_PRIVATE_PROJECTS_ENDPOINT, methods=["GET"])
@@ -69,8 +67,7 @@ def get_private_projects(is_authenticated):
             f"Received request at {const.INTERMEDIATE_API_ALL_PRIVATE_PROJECTS_ENDPOINT}"
         )
         return jsonify(db.get_projects("private"))
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT, methods=["GET"])
@@ -83,8 +80,7 @@ def get_public_projects(is_authenticated):
             f"Received request at {const.INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT}"
         )
         return jsonify(db.get_projects("public"))
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_USER_PROJECTS_ENDPOINT, methods=["GET"])
@@ -102,8 +98,7 @@ def get_user_allowed_projects(is_authenticated):
         user_id = request.args.to_dict()["user_id"]
 
         return jsonify(db.get_user_project_permission(user_id))
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_USER_ALLOCATE_PROJECTS_ENDPOINT, methods=["POST"])
@@ -124,8 +119,7 @@ def allocate_projects_to_user(is_authenticated):
         db.allocate_projects_to_user(user_id, project_list)
 
         return Response(status=const.OK_CODE)
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_USER_REMOVE_PROJECTS_ENDPOINT, methods=["POST"])
@@ -146,8 +140,7 @@ def remove_projects_from_user(is_authenticated):
         db.remove_projects_from_user(user_id, project_list)
 
         return Response(status=const.OK_CODE)
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_ALL_USERS_PROJECTS_ENDPOINT, methods=["GET"])
@@ -161,8 +154,7 @@ def get_all_users_projects(is_authenticated):
         )
         auth0_users, _ = auth0.get_users()
         return db.get_all_users_project_permissions(auth0_users)
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_ALL_PERMISSIONS_ENDPOINT, methods=["GET"])
@@ -175,8 +167,7 @@ def get_all_permissions(is_authenticated):
             f"Received request at {const.INTERMEDIATE_API_ALL_PERMISSIONS_ENDPOINT}"
         )
         return jsonify({"all_permissions": db.get_all_permissions_for_dashboard()})
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_ALL_USERS_PERMISSIONS_ENDPOINT, methods=["GET"])
@@ -190,8 +181,7 @@ def get_all_users_permissions(is_authenticated):
         )
         auth0_users, _ = auth0.get_users()
         return db.get_all_users_permissions(auth0_users)
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
 
 
 @app.route(const.INTERMEDIATE_API_CREATE_PROJECT_ENDPOINT, methods=["POST"])
@@ -235,5 +225,4 @@ def create_project(is_authenticated):
                     jsonify({"project_created": False}),
                     response_code,
                 )
-    else:
-        raise auth0.AuthError()
+    raise auth0.AuthError()
