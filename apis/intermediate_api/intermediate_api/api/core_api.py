@@ -27,11 +27,7 @@ CORE_API_TOKEN = "Bearer {}".format(
 def get_ensemble_ids(is_authenticated):
     if is_authenticated and auth0.requires_permission("hazard"):
         return utils.proxy_to_api(
-            request,
-            const.ENSEMBLE_IDS_ENDPOINT,
-            "GET",
-            CORE_API_BASE,
-            CORE_API_TOKEN,
+            request, const.ENSEMBLE_IDS_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN,
         )
     else:
         raise auth0.AuthError()
@@ -42,11 +38,7 @@ def get_ensemble_ids(is_authenticated):
 def get_im_ids(is_authenticated):
     if is_authenticated and auth0.requires_permission("hazard"):
         return utils.proxy_to_api(
-            request,
-            const.ENSEMBLE_IMS_ENDPOINT,
-            "GET",
-            CORE_API_BASE,
-            CORE_API_TOKEN,
+            request, const.ENSEMBLE_IMS_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN,
         )
     else:
         raise auth0.AuthError()
@@ -72,11 +64,7 @@ def get_context_map(is_authenticated):
 def get_vs30_map(is_authenticated):
     if is_authenticated and auth0.requires_permission("hazard"):
         return utils.proxy_to_api(
-            request,
-            const.SITE_VS30_MAP_ENDPOINT,
-            "GET",
-            CORE_API_BASE,
-            CORE_API_TOKEN,
+            request, const.SITE_VS30_MAP_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN,
         )
     else:
         raise auth0.AuthError()
@@ -338,11 +326,7 @@ def get_gm_datasets(is_authenticated):
 def get_gms_available_ims(is_authenticated):
     if is_authenticated and auth0.requires_permission("hazard:gms"):
         return utils.proxy_to_api(
-            request,
-            const.GMS_IMS_ENDPOINT,
-            "GET",
-            CORE_API_BASE,
-            CORE_API_TOKEN,
+            request, const.GMS_IMS_ENDPOINT, "GET", CORE_API_BASE, CORE_API_TOKEN,
         )
     else:
         raise auth0.AuthError()
