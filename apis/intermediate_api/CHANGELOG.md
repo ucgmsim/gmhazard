@@ -1,3 +1,9 @@
+## November 16, 2021
+
+### Permission check - ([PR #30](https://github.com/ucgmsim/gmhazard/pull/30))
+
+- Adding permission check before forwarding requests to Core/Project API.
+
 ## October 27, 2021
 
 ### Remove Authentication for the Projects tab - ([PR #23](https://github.com/ucgmsim/gmhazard/pull/23))
@@ -12,4 +18,4 @@
 
 - Rename Middleware to IntermediateAPI.
 - Upload `.env.example`.
-- Update ReadME to provide better information.
+- Update ReadME to provide better information.~~

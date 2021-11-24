@@ -33,6 +33,37 @@ def get_token_payload(token: str, secret_key: str):
 
 
 @decorators.endpoint_exception_handler
+def records_user_activity(request, action, api_destination, user_id):
+    if "Download" in action:
+        secret_key = (
+            DOWNLOAD_URL_SECRET_KEY_CORE
+            if "psha-core" in api_destination or "10022" in api_destination
+            else DOWNLOAD_URL_SECRET_KEY_PROJECT
+        )
+
+        decoded_payloads = {
+            key: get_token_payload(value, secret_key)
+            for key, value in request.args.to_dict().items()
+        }
+
+        # Only user's inputs
+        for payload in decoded_payloads.values():
+            db.write_request_details(
+                user_id, action, {key: value for key, value in payload.items()},
+            )
+    else:
+        db.write_request_details(
+            user_id,
+            action,
+            {
+                key: value
+                for key, value in request.args.to_dict().items()
+                if "token" not in key
+            },
+        )
+
+
+@decorators.endpoint_exception_handler
 def proxy_to_api(
     request,
     route,
@@ -45,7 +76,6 @@ def proxy_to_api(
     content_type: str = "application/json",
 ):
     """IntermediateAPI - Handling the communication between Frontend and Core/Project API.
-
     Parameters
     ----------
     request: object

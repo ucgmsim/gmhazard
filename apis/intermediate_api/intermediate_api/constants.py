@@ -104,39 +104,6 @@ INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT = (
     "/intermediateAPI/project/public/get/all"
 )
 
-# Public Project API Endpoints - Project tab
-# Site Selection
-PUBLIC_API_PROJECT_IDS_ENDPOINT = "/publicAPI/ids/get"
-PUBLIC_API_SITES_ENDPOINT = "/publicAPI/sites/get"
-PUBLIC_API_IMS_ENDPOINT = "/publicAPI/ims/get"
-PUBLIC_API_MAPS_ENDPOINT = "/publicAPI/maps/get"
-
-# Seismic Hazard
-PUBLIC_API_HAZARD_ENDPOINT = "/publicAPI/hazard/get"
-PUBLIC_API_HAZARD_DISAGG_ENDPOINT = "/publicAPI/disagg/get"
-PUBLIC_API_HAZARD_DISAGG_RPS_ENDPOINT = "/publicAPI/disagg/rps/get"
-PUBLIC_API_HAZARD_UHS_ENDPOINT = "/publicAPI/uhs/get"
-PUBLIC_API_HAZARD_UHS_RPS_ENDPOINT = "/publicAPI/uhs/rps/get"
-
-# GMS
-PUBLIC_API_GMS_RUNS_ENDPOINT = "/publicAPI/gms/runs/get"
-PUBLIC_API_GMS_ENDPOINT = "/publicAPI/gms/get"
-PUBLIC_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT = (
-    "/publicAPI/gms/default_causal_params/get"
-)
-
-# Scenarios
-PUBLIC_API_SCENARIOS_ENDPOINT = "/publicAPI/scenario/ensemble_scenario/get"
-
-# Download Endpoints
-PUBLIC_API_HAZARD_CURVE_DOWNLOAD_ENDPOINT = "/publicAPI/hazard/download"
-PUBLIC_API_HAZARD_DISAGG_DOWNLOAD_ENDPOINT = "/publicAPI/disagg/download"
-PUBLIC_API_HAZARD_UHS_DOWNLOAD_ENDPOINT = "/publicAPI/uhs/download"
-PUBLIC_API_GMS_DOWNLOAD_ENDPOINT = "/publicAPI/gms/download"
-PUBLIC_API_SCENARIOS_DOWNLOAD_ENDPOINT = (
-    "/publicAPI/scenario/ensemble_scenario/download"
-)
-
 # Forwarding path to Core API
 # GM data endpoints
 ENSEMBLE_IDS_ENDPOINT = "/api/gm_data/ensemble/ids/get"
