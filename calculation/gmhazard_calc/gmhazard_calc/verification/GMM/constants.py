@@ -79,6 +79,13 @@ MODELS_DICT = {
     },
 }
 
+# Temporary for META CONFIG
+MODELS_DICT = {
+    "ACTIVE_SHALLOW": {"PGV": ["META"], "PGA": ["META"], "pSA": ["META"],},
+    "SUBDUCTION_SLAB": {"PGV": ["META"], "PGA": ["META"], "pSA": ["META"],},
+    "SUBDUCTION_INTERFACE": {"PGV": ["META"], "PGA": ["META"], "pSA": ["META"],},
+}
+
 DEFAULT_LABEL_COLOR = [
     "#d62728",
     "#2ca02c",
