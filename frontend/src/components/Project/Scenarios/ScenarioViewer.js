@@ -11,12 +11,13 @@ import {
   ErrorMessage,
   ScenarioPlot,
 } from "components/common";
+import { getProjectScenario } from "apis/ProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 
 import "assets/style/ScenarioViewer.css";
 
 const ScenarioViewer = () => {
-  const { getTokenSilently } = useAuth0();
+  const { isAuthenticated, getTokenSilently } = useAuth0();
 
   const {
     projectId,
@@ -51,70 +52,38 @@ const ScenarioViewer = () => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const computeEnsembleScenario = async () => {
-      if (
-        projectScenarioGetClick !== null &&
-        projectSelectedScenarioIMComponent !== null
-      ) {
-        try {
-          const token = await getTokenSilently();
+    if (
+      projectScenarioGetClick !== null &&
+      projectSelectedScenarioIMComponent !== null
+    ) {
+      setIsLoading(true);
+      setProjectScenarioData(null);
+      setShowErrorMessage({ isError: false, errorCode: null });
 
-          setIsLoading(true);
-          setProjectScenarioData(null);
-          setShowErrorMessage({ isError: false, errorCode: null });
+      let token = null;
+      const queryString = APIQueryBuilder({
+        project_id: projectId["value"],
+        station_id: createStationID(
+          projectLocationCode[projectLocation],
+          projectVS30,
+          projectZ1p0,
+          projectZ2p5
+        ),
+        im_component: projectSelectedScenarioIMComponent,
+      });
 
-          let queryString = APIQueryBuilder({
-            project_id: projectId["value"],
-            station_id: createStationID(
-              projectLocationCode[projectLocation],
-              projectVS30,
-              projectZ1p0,
-              projectZ2p5
-            ),
-            im_component: projectSelectedScenarioIMComponent,
-          });
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-          await fetch(
-            CONSTANTS.INTERMEDIATE_API_URL +
-              CONSTANTS.PROJECT_API_SCENARIOS_ENDPOINT +
-              queryString,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              signal: signal,
-            }
-          )
-            .then(handleErrors)
-            .then(async (scenarioResponse) => {
-              const responseData = await scenarioResponse.json();
-              setProjectScenarioData(responseData);
-              setDownloadToken(responseData["download_token"]);
-
-              setExtraInfo({
-                from: "project",
-                id: projectId["value"],
-                location: projectLocation,
-                vs30: projectVS30,
-              });
-
-              setIsLoading(false);
-            })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                setIsLoading(false);
-                setShowErrorMessage({ isError: true, errorCode: error });
-              }
-              console.log(error);
-            });
-        } catch (error) {
-          setIsLoading(false);
-          setShowErrorMessage({ isError: false, errorCode: error });
-        }
-      }
-    };
-
-    computeEnsembleScenario();
+        getProjectScenario(queryString, signal, token)
+          .then(handleErrors)
+          .then(async (response) => {
+            const responseData = await response.json();
+            updateScenarioData(responseData);
+          })
+          .catch((error) => catchError(error));
+      })();
+    }
 
     return () => {
       abortController.abort();
@@ -126,6 +95,28 @@ const ScenarioViewer = () => {
     setProjectScenarioGetClick(null);
     setShowErrorMessage({ isError: false, errorCode: null });
   }, [projectId, projectVS30, projectLocation, projectZ1p0, projectZ2p5]);
+
+  const updateScenarioData = (data) => {
+    setProjectScenarioData(data);
+    setDownloadToken(data["download_token"]);
+
+    setExtraInfo({
+      from: "project",
+      id: projectId["value"],
+      location: projectLocation,
+      vs30: projectVS30,
+    });
+
+    setIsLoading(false);
+  };
+
+  const catchError = (error) => {
+    if (error.name !== "AbortError") {
+      setIsLoading(false);
+      setShowErrorMessage({ isError: true, errorCode: error });
+    }
+    console.log(error);
+  };
 
   return (
     <div className="scenario-viewer">

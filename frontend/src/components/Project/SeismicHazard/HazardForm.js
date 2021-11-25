@@ -1,6 +1,4 @@
-import React, { Fragment, useContext } from "react";
-
-import { GlobalContext } from "context";
+import React, { Fragment } from "react";
 
 import {
   HazardCurveSection,
@@ -11,23 +9,17 @@ import {
 import "assets/style/HazardForms.css";
 
 const HazardForm = () => {
-  const { hasPermission } = useContext(GlobalContext);
-
   return (
     <Fragment>
-      {hasPermission("project:hazard") ? <HazardCurveSection /> : null}
-      {hasPermission("project:disagg") ? (
-        <Fragment>
-          <div className="hr"></div>
-          <DisaggregationSection />
-        </Fragment>
-      ) : null}
-      {hasPermission("project:uhs") ? (
-        <Fragment>
-          <div className="hr"></div>
-          <UHSSection />
-        </Fragment>
-      ) : null}
+      <HazardCurveSection />
+      <Fragment>
+        <div className="hr"></div>
+        <DisaggregationSection />
+      </Fragment>
+      <Fragment>
+        <div className="hr"></div>
+        <UHSSection />
+      </Fragment>
     </Fragment>
   );
 };

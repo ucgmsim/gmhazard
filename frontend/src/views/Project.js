@@ -14,20 +14,11 @@ import { HazardForm, HazardViewer } from "components/Project/SeismicHazard";
 import { ScenarioForm, ScenarioViewer } from "components/Project/Scenarios";
 
 const Project = () => {
-  const { hasPermission, projectId, projectLocation, projectVS30 } =
-    useContext(GlobalContext);
+  const { projectId, projectLocation, projectVS30 } = useContext(GlobalContext);
 
   const invalidTab = () => {
     return (
       projectId === null || projectLocation === null || projectVS30 === null
-    );
-  };
-
-  const permissionSeismicHazardTab = () => {
-    return (
-      hasPermission("project:hazard") ||
-      hasPermission("project:disagg") ||
-      hasPermission("project:uhs")
     );
   };
 
@@ -41,38 +32,32 @@ const Project = () => {
           />
         </Tab>
 
-        {permissionSeismicHazardTab() ? (
-          <Tab
-            eventKey="hazard"
-            title="Seismic Hazard"
-            disabled={invalidTab()}
-            tabClassName="seismic-hazard-tab"
-          >
-            <TwoColumnView cpanel={HazardForm} viewer={HazardViewer} />
-          </Tab>
-        ) : null}
+        <Tab
+          eventKey="hazard"
+          title="Seismic Hazard"
+          disabled={invalidTab()}
+          tabClassName="seismic-hazard-tab"
+        >
+          <TwoColumnView cpanel={HazardForm} viewer={HazardViewer} />
+        </Tab>
 
-        {hasPermission("project:gms") ? (
-          <Tab
-            eventKey="gms"
-            title="Ground Motion Selection"
-            disabled={invalidTab()}
-            tabClassName="gms-tab"
-          >
-            <TwoColumnView cpanel={GMSForm} viewer={GMSViewer} />
-          </Tab>
-        ) : null}
+        <Tab
+          eventKey="gms"
+          title="Ground Motion Selection"
+          disabled={invalidTab()}
+          tabClassName="gms-tab"
+        >
+          <TwoColumnView cpanel={GMSForm} viewer={GMSViewer} />
+        </Tab>
 
-        {hasPermission("project:scenarios") ? (
-          <Tab
-            eventKey="scenario"
-            title="Scenarios"
-            disabled={invalidTab()}
-            tabClassName="scenarios-tab"
-          >
-            <TwoColumnView cpanel={ScenarioForm} viewer={ScenarioViewer} />
-          </Tab>
-        ) : null}
+        <Tab
+          eventKey="scenario"
+          title="Scenarios"
+          disabled={invalidTab()}
+          tabClassName="scenarios-tab"
+        >
+          <TwoColumnView cpanel={ScenarioForm} viewer={ScenarioViewer} />
+        </Tab>
       </Tabs>
     </Fragment>
   );
