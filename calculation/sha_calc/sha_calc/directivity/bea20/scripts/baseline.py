@@ -34,7 +34,6 @@ def perform_mp_directivity(fault_name):
         fault.rake,
         periods=[im.period],
         fault_name=fault_name,
-        return_fdi_array=True,
     )
 
     fdi = fdi.reshape(grid_space, grid_space)

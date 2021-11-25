@@ -8,6 +8,7 @@ import argparse
 
 from mpi4py import MPI
 
+from qcore import nhm, formats
 import gmhazard_calc as sc
 import common
 
@@ -28,6 +29,7 @@ def calculate_flt(
     nhm_ffp,
     site_source_db_ffp,
     vs30_ffp,
+    station_ffp,
     z_ffp,
     ims,
     psa_periods,
@@ -37,6 +39,8 @@ def calculate_flt(
     suffix=None,
 ):
     nhm_data = sc.utils.flt_nhm_to_rup_df(nhm_ffp)
+    nhm_dict = nhm.load_nhm(nhm_ffp)
+    stat_df = formats.load_station_file(station_ffp)
 
     imdb_dict, __ = common.open_imdbs(
         tect_type_model_dict_ffp, output_dir, sc.constants.SourceType.fault, suffix=suffix
@@ -64,6 +68,8 @@ def calculate_flt(
                     rupture_df,
                     distance_store,
                     nhm_data,
+                    nhm_dict,
+                    stat_df,
                     site.vs30,
                     site.z1p0 if hasattr(site, "z1p0") else None,
                     site.z2p5 if hasattr(site, "z2p5") else None,
@@ -95,6 +101,7 @@ def parse_args():
     parser.add_argument("site_source_db")
     parser.add_argument("vs30_file")
     parser.add_argument("output_dir")
+    parser.add_argument("station_file")
     parser.add_argument(
         "--z-file",
         help="File name of the Z data",
@@ -137,6 +144,7 @@ def calculate_emp_flt():
         args.nhm_ffp,
         args.site_source_db,
         args.vs30_file,
+        args.station_file,
         args.z_file,
         args.im,
         args.periods,

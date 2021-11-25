@@ -12,13 +12,15 @@ from empirical.util import empirical_factory, classdef
 from empirical.util.classdef import Site, Fault
 from qcore import formats
 from gmhazard_calc.nz_code.nzs1170p5.nzs_zfactor_2016.ll2z import ll2z
+from gmhazard_calc.rupture import rupture
 from gmhazard_calc.im import IM, IMType
-
 from gmhazard_calc import utils
 from gmhazard_calc import dbs
+import sha_calc
 
 # fmt: off
-PERIOD = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.9, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]
+PERIOD = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8,
+          0.9, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]
 # fmt: on
 
 IM_TYPE_LIST = [
@@ -130,14 +132,14 @@ def curate_im_list(tect_type_model_dict, model, periods):
 
 
 def write_data_and_close(
-    imdb_dict,
-    nhm_ffp,
-    rupture_df,
-    site_df,
-    vs30_ffp,
-    psa_periods=None,
-    ims=None,
-    tect_type_model_dict_ffp=None,
+        imdb_dict,
+        nhm_ffp,
+        rupture_df,
+        site_df,
+        vs30_ffp,
+        psa_periods=None,
+        ims=None,
+        tect_type_model_dict_ffp=None,
 ):
     """
     Writes metadata, rupture_df and closes the IMDBs for the ones opened by open_imdbs
@@ -178,23 +180,25 @@ def get_max_dist_zfac_scaled(site):
 
 
 def calculate_emp_site(
-    im_types,
-    psa_periods,
-    imdb_dict,
-    fault_df,
-    rupture_df,
-    distance_store,
-    nhm_data,
-    vs30,
-    z1p0,
-    z2p5,
-    station_name,
-    tect_type_model_dict_ffp,
-    max_rjb=MAX_RJB,
-    dist_filter_by_mag=False,
-    return_vals=False,
-    keep_sigma_components=False,
-    use_directivity=True,
+        im_types,
+        psa_periods,
+        imdb_dict,
+        fault_df,
+        rupture_df,
+        distance_store,
+        nhm_data,
+        nhm_dict,
+        stat_df,
+        vs30,
+        z1p0,
+        z2p5,
+        station_name,
+        tect_type_model_dict_ffp,
+        max_rjb=MAX_RJB,
+        dist_filter_by_mag=False,
+        return_vals=False,
+        keep_sigma_components=False,
+        use_directivity=True,
 ):
     """
     Calculates (and writes) all empirical values for all ruptures in nhm_data at a given site.
@@ -207,6 +211,8 @@ def calculate_emp_site(
     :param rupture_df: list of ruptures considered - these will be used as indexes for the data stored by each site
     :param distance_store: site source distance h5 - to determine wether the site-source needs to be calculated
     :param nhm_data: rupture dataframe returned from utils.py from either a nhm background sources or fault file
+    :param nhm_dict: rupture dictionary returned from qcore from a fault file
+    :param stat_df: station dataframe containing lon and lat values for every station
     :param vs30: vs30 value at the given station
     :param z1p0: Z1.0 value at the given station
     :param z2p5: Z2.5 value at the given station
@@ -267,7 +273,7 @@ def calculate_emp_site(
 
         rupture_id = rupture_df[
             rupture_df["rupture_name"] == rupture_name
-        ].index.values.item()
+            ].index.values.item()
 
         fault_im_result_dict = {key: {} for key in imdb_dict.keys()}
 
@@ -284,22 +290,27 @@ def calculate_emp_site(
                     str(im_type),
                     psa_periods if im_type is IMType.pSA else None,
                 )
-                if not im_type is IMType.pSA:
+                if im_type is not IMType.pSA:
                     values = [values]
                 elif use_directivity:
-                    # nhm_dict = nhm.load_nhm(branch.flt_erf_ffp)
-                    # fault = nhm_dict[fault_name]
-                    print("TESTing")
-                    # planes, lon_lat_depth = rupture.get_fault_header_points(fault)
-                    # sha_calc.directivity.bea20.directivity.compute_fault_directivity(lon_lat_depth,planes, [[]])
+                    print(f"Computing Directivity for fault {rupture_name} and site {station_name}")
+                    nhm_fault = nhm_dict[rupture_name]
+                    planes, lon_lat_depth = rupture.get_fault_header_points(nhm_fault)
+                    site_coords = np.asarray([stat_df.loc[station_name].values])
+                    fdi, _, phi_red = sha_calc.directivity.bea20.directivity.compute_fault_directivity(lon_lat_depth, planes, site_coords, 25, 4, nhm_fault.mw, nhm_fault.rake, periods=psa_periods)
                 for i, value in enumerate(values):
                     full_im_name = (
                         IM(im_type, period=psa_periods[i])
                         if im_type is IMType.pSA
                         else IM(im_type)
                     )
-                    mean = np.log(value[0])
-                    stdev, sigma_inter, sigma_intra = value[1]
+                    if use_directivity and im_type is IMType.pSA:
+                        mean = np.log(value[0] * np.exp(fdi[0][i]))
+                        stdev, sigma_inter, sigma_intra = value[1]
+                        stdev += phi_red[0][i]
+                    else:
+                        mean = np.log(value[0])
+                        stdev, sigma_inter, sigma_intra = value[1]
 
                     fault_im_result_dict[db_type][str(full_im_name)] = mean
                     if keep_sigma_components:

@@ -1,6 +1,8 @@
 from typing import List
+import math
 
 import numpy as np
+
 from sha_calc.directivity.bea20.EventType import EventType
 from sha_calc.directivity.bea20 import distributions
 
@@ -10,7 +12,6 @@ def set_hypocentres(
     hypo_down_dip: int,
     planes: List,
     event_type: EventType,
-    fault_name: str = "Nothing",
 ):
     """
     Creates a List of planes each with a different set hypocentre for directivity calculations
@@ -35,14 +36,18 @@ def set_hypocentres(
         plane["shyp"] = -999.9
         plane["dhyp"] = -999.9
 
-    # return distributions.monte_carlo_distribution(hypo_along_strike, hypo_down_dip, planes, event_type, fault_name, total_length)
+    # return distributions.monte_carlo_distribution(hypo_along_strike, hypo_down_dip, planes, event_type, total_length)
 
     # return distributions.monte_carlo_grid(
-    #     hypo_along_strike, hypo_down_dip, planes, event_type, fault_name, total_length
+    #     hypo_along_strike, hypo_down_dip, planes, event_type, total_length
     # )
-    #
+
+    # return distributions.even_grid(
+    #     hypo_along_strike, hypo_down_dip, planes, event_type, total_length
+    # )
+
     return distributions.latin_hypercube(
-        hypo_along_strike, hypo_down_dip, planes, event_type, fault_name, total_length
+        hypo_along_strike, hypo_down_dip, planes, event_type, total_length
     )
 
 
@@ -67,3 +72,44 @@ def calc_nominal_strike(traces: np.ndarray):
         return np.asarray([trace_end]), np.asarray([trace_start])
     else:
         return np.asarray([trace_start]), np.asarray([trace_end])
+
+
+def get_hypo_lon_lat(planes: List, lon_lat_depth: np.ndarray):
+    """
+    Gets the approximate location of the hypocentre based on the lon lat depth values available for the fault
+
+    Parameters
+    ----------
+    planes: List
+        The list of planes with only 1 hypocentre location and the rest of dhyp/shyp being -999.9
+    lon_lat_depth: np.ndarray
+        The longitude latitude and depth values for the given fault from an srf or nhm file
+    """
+    length_from_start = 0
+    previous_n = 0
+    n_plane = 0
+    hplane = []
+    total_length = sum([plane["length"] for plane in planes])
+    for i, plane in enumerate(planes):
+        if plane["shyp"] != -999.9:
+            ratio_length = round(
+                (((total_length / 2) - length_from_start) + plane["shyp"])
+                / plane["length"]
+                * plane["nstrike"]
+            )
+            n_plane = plane["nstrike"] * plane["ndip"]
+            hplane = plane
+            break
+        else:
+            length_from_start += plane["length"]
+            previous_n += plane["nstrike"] * plane["ndip"]
+
+    lld_slice = lon_lat_depth[previous_n : previous_n + n_plane]
+    hdepth = hplane["dhyp"] * math.sin(math.radians(hplane["dip"]))
+    lld_depth_check = abs(lld_slice[:, 2] - hdepth)
+    min_val = min(lld_depth_check)
+    min_indices = [i for i, x in enumerate(lld_depth_check) if x == min_val]
+    min_slice = lld_slice[min_indices]
+    hypo = min_slice[ratio_length]
+
+    return hypo[0], hypo[1]

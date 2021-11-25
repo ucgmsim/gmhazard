@@ -6,12 +6,35 @@ import matplotlib.pyplot as plt
 from sha_calc.directivity.bea20.EventType import EventType
 
 
+class weibull_truncated_strike_slip(stats.rv_continuous):
+    weibull = stats.weibull_min(scale=0.626, c=3.921)
+    divide = weibull.cdf(1)
+
+    def _pdf(self, x):
+        return self.weibull.pdf(x) / self.divide
+
+
+class weibull_truncated_oblique(stats.rv_continuous):
+    weibull = stats.weibull_min(scale=0.612, c=3.353)
+    divide = weibull.cdf(1)
+
+    def _pdf(self, x):
+        return self.weibull.pdf(x) / self.divide
+
+
+class gamma_truncated(stats.rv_continuous):
+    gamma = stats.gamma(a=7.364, scale=0.072)
+    divide = gamma.cdf(1)
+
+    def _pdf(self, x):
+        return self.gamma.pdf(x) / self.divide
+
+
 def monte_carlo_distribution(
     hypo_along_strike: int,
     hypo_down_dip: int,
     planes: List,
     event_type: EventType,
-    fault_name: str,
     total_length: float,
 ):
     mean, std = 0.5, 0.23
@@ -58,15 +81,7 @@ def monte_carlo_distribution(
                 planes_list.append(planes_copy)
             current_length += plane["length"]
 
-    # pd.DataFrame(truncated_strike).to_csv(
-    #     f"/mnt/mantle_data/joel_scratch/directivity/baseline/dist/Strike_Distribution_{fault_name}_{hypo_along_strike}.csv"
-    # )
-    #
-    # pd.DataFrame(truncated_down_dip).to_csv(
-    #     f"/mnt/mantle_data/joel_scratch/directivity/baseline/dist/Down_Dip_Distribution_{fault_name}_{event_type}_{hypo_down_dip}.csv"
-    # )
-
-    return planes_list, planes_index
+    return planes_list, planes_index, []
 
 
 def monte_carlo_grid(
@@ -74,7 +89,6 @@ def monte_carlo_grid(
     hypo_down_dip: int,
     planes: List,
     event_type: EventType,
-    fault_name: str,
     total_length: float,
 ):
     # Works out the distances across strike of the fault for each hypocentre
@@ -86,12 +100,6 @@ def monte_carlo_grid(
     truncated_points = (np.random.uniform(0, 1, hypo_along_strike)) * dist_range + lower
     truncated_distribution = strike_distribution.ppf(truncated_points)
     distances = truncated_distribution * total_length
-
-    # Save the distribution TODO remove this
-    # truncated_df = pd.DataFrame(truncated_distribution)
-    # truncated_df.to_csv(
-    #     f"/home/joel/local/directivity/distributions2/Strike_Distribution_{fault_name}_{hypo_along_strike}.csv"
-    # )
 
     # Works out the depth method for down dip placement of hypocentres
     # Based on Weilbull or Gamma distributions depending on the EventType
@@ -106,12 +114,6 @@ def monte_carlo_grid(
     dist_range = upper - lower
     truncated_points = (np.random.uniform(0, 1, hypo_down_dip)) * dist_range + lower
     down_dip_distribution = distribution.ppf(truncated_points)
-
-    # Save the distribution TODO remove this
-    # truncated_df = pd.DataFrame(down_dip_distribution)
-    # truncated_df.to_csv(
-    #     f"/home/joel/local/directivity/distributions2/Down_Dip_Distribution_{fault_name}_{event_type}_{hypo_down_dip}.csv"
-    # )
 
     planes_list = []
     planes_index = []
@@ -129,7 +131,62 @@ def monte_carlo_grid(
                     planes_list.append(planes_depth_copy)
             current_length += plane["length"]
 
-    return planes_list, planes_index
+    return planes_list, planes_index, []
+
+
+def even_grid(
+    hypo_along_strike: int,
+    hypo_down_dip: int,
+    planes: List,
+    event_type: EventType,
+    total_length: float):
+
+    gap = total_length / (hypo_along_strike + 1)
+    distances = [gap * (x + 1) for x in range(hypo_along_strike)]
+
+    down_gap = planes[0]["width"] / (hypo_down_dip + 1)
+    down_dip_values = [down_gap * (x + 1) for x in range(hypo_down_dip)]
+
+    # Works out the distances across strike of the fault for each hypocentre
+    # Based on a normal distribution and truncated between 0 and 1
+    mu, sigma = 0.5, 0.23
+    lower, upper = 0, 1
+    strike_distribution = stats.truncnorm(
+        (lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma
+    )
+    strike_weight_dist = strike_distribution.pdf([x / total_length for x in distances]) * (1 / hypo_along_strike)
+
+    # Works out the depth method for down dip placement of hypocentres
+    # Based on Weilbull or Gamma distributions depending on the EventType
+    if event_type == EventType.DIP_SLIP:
+        down_dip_distribution = gamma_truncated(a=0, b=1)
+    elif event_type == EventType.STRIKE_SLIP:
+        down_dip_distribution = weibull_truncated_strike_slip(a=0, b=1)
+    else:
+        down_dip_distribution = weibull_truncated_oblique(a=0, b=1)
+    dip_weight_dist = down_dip_distribution.pdf([x / planes[0]["width"] for x in down_dip_values]) * (1 / hypo_down_dip)
+
+    combo_weight_dist = [strike * dip for strike in strike_weight_dist for dip in dip_weight_dist]
+    sum_dist = sum(combo_weight_dist)
+    weights = [x / sum_dist for x in combo_weight_dist]
+
+    planes_list = []
+    planes_index = []
+
+    for distance in distances:
+        current_length = 0
+        planes_copy = [plane.copy() for plane in planes]
+        for index, plane in enumerate(planes_copy):
+            if current_length < distance < (current_length + plane["length"]):
+                for depth in down_dip_values:
+                    planes_depth_copy = [plane.copy() for plane in planes]
+                    planes_depth_copy[index]["shyp"] = distance - (total_length / 2)
+                    planes_depth_copy[index]["dhyp"] = depth
+                    planes_index.append(index)
+                    planes_list.append(planes_depth_copy)
+            current_length += plane["length"]
+
+    return planes_list, planes_index, weights
 
 
 def plot_searchspace(x, title, name):
@@ -148,29 +205,8 @@ def latin_hypercube(
     hypo_down_dip: int,
     planes: List,
     event_type: EventType,
-    fault_name: str,
     total_length: float,
 ):
-    class weibull_truncated_strike_slip(stats.rv_continuous):
-        weibull = stats.weibull_min(scale=0.626, c=3.921)
-        divide = weibull.cdf(1)
-
-        def _pdf(self, x):
-            return self.weibull.pdf(x) / self.divide
-
-    class weibull_truncated_oblique(stats.rv_continuous):
-        weibull = stats.weibull_min(scale=0.612, c=3.353)
-        divide = weibull.cdf(1)
-
-        def _pdf(self, x):
-            return self.weibull.pdf(x) / self.divide
-
-    class gamma_truncated(stats.rv_continuous):
-        gamma = stats.gamma(a=7.364, scale=0.072)
-        divide = gamma.cdf(1)
-
-        def _pdf(self, x):
-            return self.gamma.pdf(x) / self.divide
 
     n_hypo = hypo_along_strike * hypo_down_dip
 
@@ -196,15 +232,6 @@ def latin_hypercube(
 
     lhd[:, 1] = down_dip_distribution.ppf(lhd[:, 1])
 
-    # Save the distribution
-    # lhd_df = pd.DataFrame(lhd)
-    # lhd_df.to_csv(f"/home/joel/local/directivity/test/{fault_name}_{n_hypo}.csv")
-    # plot_searchspace(
-    #     lhd,
-    #     f"Latin Hypercube Distribution {n_hypo} Hypocentres",
-    #     f"{fault_name}_{n_hypo}_distribution",
-    # )
-
     planes_list = []
     planes_index = []
 
@@ -223,4 +250,4 @@ def latin_hypercube(
                 planes_list.append(planes_copy)
             current_length += plane["length"]
 
-    return planes_list, planes_index
+    return planes_list, planes_index, []

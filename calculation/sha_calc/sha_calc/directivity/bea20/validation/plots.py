@@ -172,7 +172,10 @@ def plot_fdi(
         label="srf points",
         s=1.0,
     )
-    plt.colorbar(c)
+    cb = plt.colorbar(c)
+    cb.set_label("fD")
+    plt.ylabel("Latitude")
+    plt.xlabel("Longitude")
     ax1.set_title(title)
 
     fig.savefig(f"{output_ffp}")

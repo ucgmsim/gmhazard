@@ -57,7 +57,7 @@ for fault_name in faults:
         )
         fig.suptitle(f"{fault_name} Convergence")
         plt.savefig(
-            f"/home/joel/local/directivity/depth_fix/convergance_{fault_name}.png"
+            f"/home/joel/local/directivity/latin/mc/depth_fix/convergance_{fault_name}.png"
         )
 
         fault, _, planes, lon_lat_depth, x, y = common.load_fault_info(
@@ -75,10 +75,11 @@ for fault_name in faults:
         site_y = [lat_values[a] for a in sample]
         site_x, site_y = np.meshgrid(site_x, site_y)
 
-        title = f"{fault_name} Site Locations"
+        title = f"{fault_name} Site Locations On Baseline Values"
         fig2, (ax1) = plt.subplots(1, 1, figsize=(21, 13.5), dpi=144)
 
-        c = ax1.pcolormesh(x, y, baseline_array, cmap="bwr")
+        vmax = max(max(baseline_array.reshape(10000)) - 1, 1 - min(baseline_array.reshape(10000)))
+        c = ax1.pcolormesh(x, y, baseline_array, cmap="bwr", vmax=1 + vmax, vmin=1 - vmax)
         ax1.scatter(
             lon_lat_depth[:, 0][::2],
             lon_lat_depth[:, 1][::2],
@@ -87,6 +88,8 @@ for fault_name in faults:
             s=1.0,
         )
         plt.plot(site_x, site_y, "bo", color="black")
+        plt.xlabel("Longitude")
+        plt.ylabel("Latitude")
         site_x = site_x.reshape(9)
         site_y = site_y.reshape(9)
         for site in range(9):
@@ -98,9 +101,10 @@ for fault_name in faults:
                 ha="center",
                 fontsize=20,
             )
-        plt.colorbar(c)
+        cb = plt.colorbar(c)
+        cb.set_label("fD Baseline")
         ax1.set_title(title)
 
-        fig2.savefig(f"/home/joel/local/directivity/depth_fix/{fault_name}_sites.png")
+        fig2.savefig(f"/home/joel/local/directivity/latin/mc/depth_fix/{fault_name}_sites.png")
     except FileNotFoundError:
         print(f"Could not find file - Skipping {fault_name}")
