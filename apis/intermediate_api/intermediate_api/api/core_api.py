@@ -130,11 +130,7 @@ def get_hazard_nzs1170p5():
 def get_nzs1170p5_soil_class():
     if auth0.requires_permission("hazard:hazard"):
         return utils.proxy_to_api(
-            request,
-            const.NZS1170p5_SOIL_CLASS,
-            "GET",
-            CORE_API_BASE,
-            CORE_API_TOKEN,
+            request, const.NZS1170p5_SOIL_CLASS, "GET", CORE_API_BASE, CORE_API_TOKEN,
         )
     raise auth0.AuthError(
         {
@@ -192,11 +188,7 @@ def get_hazard_nzta():
 def get_nzta_soil_class():
     if auth0.requires_permission("hazard:hazard"):
         return utils.proxy_to_api(
-            request,
-            const.NZTA_SOIL_CLASS,
-            "GET",
-            CORE_API_BASE,
-            CORE_API_TOKEN,
+            request, const.NZTA_SOIL_CLASS, "GET", CORE_API_BASE, CORE_API_TOKEN,
         )
     raise auth0.AuthError(
         {
@@ -415,12 +407,12 @@ def core_api_download_uhs():
     return core_response
 
 
-@app.route(f"{const.CORE_API_GMS_DOWNLOAD_ENDPOINT}/<token>", methods=["GET"])
+@app.route(const.CORE_API_GMS_DOWNLOAD_ENDPOINT, methods=["GET"])
 @decorators.requires_auth
-def core_api_download_gms(token):
+def core_api_download_gms():
     core_response = utils.proxy_to_api(
         request,
-        const.ENSEMBLE_GMS_DOWNLOAD_ENDPOINT + "/" + token,
+        const.ENSEMBLE_GMS_DOWNLOAD_ENDPOINT,
         "GET",
         CORE_API_BASE,
         CORE_API_TOKEN,

@@ -165,15 +165,19 @@ def compute_ensemble_GMS():
     )
 
 
-@server.app.route(f"{const.ENSEMBLE_GMS_DOWNLOAD_ENDPOINT}/<token>", methods=["GET"])
+@server.app.route(const.ENSEMBLE_GMS_DOWNLOAD_ENDPOINT, methods=["GET"])
 @su.api.endpoint_exception_handling(server.app)
-def download_gms_results(token):
+def download_gms_results():
     """Handles downloading of the GMs selected via GMS"""
     server.app.logger.info(
         f"Received request at {const.ENSEMBLE_GMS_DOWNLOAD_ENDPOINT}"
     )
     cache = server.cache
-    cache_key = su.api.get_token_payload(token, server.DOWNLOAD_URL_SECRET_KEY)["key"]
+
+    gms_token, _ = su.api.get_check_keys(flask.request.args, ("gms_token",))
+    cache_key = su.api.get_token_payload(gms_token[0], server.DOWNLOAD_URL_SECRET_KEY)[
+        "key"
+    ]
 
     cached_data = cache.get(cache_key)
     if cached_data is not None:
