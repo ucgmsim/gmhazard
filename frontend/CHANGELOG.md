@@ -1,3 +1,9 @@
+## November 26, 2021
+
+### Download GMS no longer needs a token as a parameter - ([PR #36](https://github.com/ucgmsim/gmhazard/pull/36))
+
+- To keep the consistency with other download endpoints.
+
 ## September 22, 2021
 
 ### Mw and Rrup distribution plot with error bounds - ([PR #14](https://github.com/ucgmsim/gmhazard/pull/14))
