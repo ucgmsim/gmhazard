@@ -19,6 +19,7 @@ import {
   GMSMwRrupPlot,
   GMSCausalParamPlot,
 } from "components/common";
+import { getProjectGMS } from "apis/ProjectAPI";
 import {
   handleErrors,
   GMSIMLabelConverter,
@@ -30,7 +31,7 @@ import {
 import { calculateGMSSpectra } from "utils/calculations/CalculateGMSSpectra";
 
 const GmsViewer = () => {
-  const { getTokenSilently } = useAuth0();
+  const { isAuthenticated, getTokenSilently } = useAuth0();
 
   const sanitizer = dompurify.sanitize;
 
@@ -143,130 +144,52 @@ const GmsViewer = () => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const getGMSData = async () => {
-      if (projectGMSGetClick !== null) {
-        try {
-          setShowErrorMessage({ isError: false, errorCode: null });
-          setIsLoading(true);
+    if (projectGMSGetClick !== null) {
+      setShowErrorMessage({ isError: false, errorCode: null });
+      setIsLoading(true);
 
-          const token = await getTokenSilently();
+      let token = null;
+      const gms_id = projectGMSIDs.find((GMSId) => {
+        return (
+          GMSId.includes(
+            `${projectGMSConditionIM}_${projectGMSSelectedIMPeriod.replace(
+              ".",
+              "p"
+            )}`
+          ) &&
+          GMSId.includes(projectGMSExceedance.toString().replace(".", "p")) &&
+          GMSId.includes(
+            [
+              ...new Set(projectGMSIMVector.replace(/[0-9]/g, "").split(", ")),
+            ].join("_")
+          )
+        );
+      });
+      const queryString = APIQueryBuilder({
+        project_id: projectId["value"],
+        station_id: createStationID(
+          projectLocationCode[projectLocation],
+          projectVS30,
+          projectZ1p0,
+          projectZ2p5
+        ),
+        gms_id: gms_id,
+      });
 
-          const gms_id = projectGMSIDs.find((GMSId) => {
-            return (
-              GMSId.includes(
-                `${projectGMSConditionIM}_${projectGMSSelectedIMPeriod.replace(
-                  ".",
-                  "p"
-                )}`
-              ) &&
-              GMSId.includes(
-                projectGMSExceedance.toString().replace(".", "p")
-              ) &&
-              GMSId.includes(
-                [
-                  ...new Set(
-                    projectGMSIMVector.replace(/[0-9]/g, "").split(", ")
-                  ),
-                ].join("_")
-              )
-            );
-          });
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-          let queryString = APIQueryBuilder({
-            project_id: projectId["value"],
-            station_id: createStationID(
-              projectLocationCode[projectLocation],
-              projectVS30,
-              projectZ1p0,
-              projectZ2p5
-            ),
-            gms_id: gms_id,
-          });
+        getProjectGMS(queryString, signal, token)
+          .then(handleErrors)
+          .then(async ([gms, defaultCausalParam]) => {
+            const gmsData = await gms.json();
+            const defaultCausalParamData = await defaultCausalParam.json();
 
-          await Promise.all([
-            fetch(
-              CONSTANTS.INTERMEDIATE_API_URL +
-                CONSTANTS.PROJECT_API_GMS_ENDPOINT +
-                queryString,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                signal: signal,
-              }
-            ),
-            fetch(
-              CONSTANTS.INTERMEDIATE_API_URL +
-                CONSTANTS.PROJECT_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT +
-                queryString,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                signal: signal,
-              }
-            ),
-          ])
-            .then(handleErrors)
-            .then(async ([computedGMS, defaultCausalParams]) => {
-              const GMSData = await computedGMS.json();
-              const defaultParams = await defaultCausalParams.json();
-
-              setComputedGMS(GMSData);
-              setGMSSpectraData(
-                calculateGMSSpectra(GMSData, projectGMSNumGMs[gms_id])
-              );
-              setIMVectors(GMSData["IMs"]);
-              setDownloadToken(GMSData["download_token"]);
-
-              // Min/Max values for CausalParamPlot
-              setCausalParamBounds({
-                mag: {
-                  min: defaultParams["mw_low"],
-                  max: defaultParams["mw_high"],
-                },
-                rrup: {
-                  min: defaultParams["rrup_low"],
-                  max: defaultParams["rrup_high"],
-                },
-                vs30: {
-                  min: defaultParams["vs30_low"],
-                  max: defaultParams["vs30_high"],
-                  vs30: projectVS30,
-                },
-              });
-              setContributionDFData(defaultParams["contribution_df"]);
-
-              // For MwRrup plot (Both MwRrup and available GMs)
-              setMwRrupBounds(
-                createBoundsCoords(
-                  defaultParams["rrup_low"],
-                  defaultParams["rrup_high"],
-                  defaultParams["mw_low"],
-                  defaultParams["mw_high"]
-                )
-              );
-
-              setDisaggMeanValues(GMSData["disagg_mean_values"]);
-
-              setIsLoading(false);
-            })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                setIsLoading(false);
-                setShowErrorMessage({ isError: true, errorCode: error });
-              }
-
-              console.log(error);
-            });
-        } catch (error) {
-          setIsLoading(false);
-          setShowErrorMessage({ isError: true, errorCode: error });
-          console.log(error);
-        }
-      }
-    };
-    getGMSData();
+            updateGMSPlots(gmsData, defaultCausalParamData, gms_id);
+          })
+          .catch((error) => catchError(error));
+      })();
+    }
 
     return () => {
       abortController.abort();
@@ -279,6 +202,53 @@ const GmsViewer = () => {
       computedGMS !== null &&
       showErrorMessage.isError === false
     );
+  };
+
+  const updateGMSPlots = (gmsData, defaultCausalParamsData, gms_id) => {
+    setComputedGMS(gmsData);
+    setGMSSpectraData(calculateGMSSpectra(gmsData, projectGMSNumGMs[gms_id]));
+    setIMVectors(gmsData["IMs"]);
+    setDownloadToken(gmsData["download_token"]);
+
+    // Min/Max values for CausalParamPlot
+    setCausalParamBounds({
+      mag: {
+        min: defaultCausalParamsData["mw_low"],
+        max: defaultCausalParamsData["mw_high"],
+      },
+      rrup: {
+        min: defaultCausalParamsData["rrup_low"],
+        max: defaultCausalParamsData["rrup_high"],
+      },
+      vs30: {
+        min: defaultCausalParamsData["vs30_low"],
+        max: defaultCausalParamsData["vs30_high"],
+        vs30: projectVS30,
+      },
+    });
+    setContributionDFData(defaultCausalParamsData["contribution_df"]);
+
+    // For MwRrup plot (Both MwRrup and available GMs)
+    setMwRrupBounds(
+      createBoundsCoords(
+        defaultCausalParamsData["rrup_low"],
+        defaultCausalParamsData["rrup_high"],
+        defaultCausalParamsData["mw_low"],
+        defaultCausalParamsData["mw_high"]
+      )
+    );
+
+    setDisaggMeanValues(gmsData["disagg_mean_values"]);
+
+    setIsLoading(false);
+  };
+
+  const catchError = (error) => {
+    if (error.name !== "AbortError") {
+      setIsLoading(false);
+      setShowErrorMessage({ isError: true, errorCode: error });
+    }
+    console.log(error);
   };
 
   return (

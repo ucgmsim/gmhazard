@@ -20,9 +20,18 @@ AUTH0_DOMAIN = os.environ["AUTH0_DOMAIN"]
 
 
 class AuthError(Exception):
-    def __init__(self, error, status_code):
-        self.error = error
-        self.status_code = status_code
+    def __init__(self, error=None, status_code=None):
+        self.error = (
+            error
+            if error is not None
+            else {
+                "code": "Unauthorized",
+                "description": "You don't have access to this resource",
+            }
+        )
+        self.status_code = (
+            status_code if status_code is not None else const.NO_ACCESS_RIGHT_CODE
+        )
 
 
 @app.errorhandler(AuthError)
@@ -163,3 +172,7 @@ def requires_permission(required_permission):
         return required_permission in token_permissions
 
     return False
+
+
+def is_admin():
+    return requires_permission("admin")

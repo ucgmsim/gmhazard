@@ -110,6 +110,7 @@ export const INTERMEDIATE_API_ALL_PRIVATE_PROJECTS_ENDPOINT =
 export const INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT =
   "/intermediateAPI/project/public/get/all";
 
+/* Labels */
 export const HAZARD_ANALYSIS = "Hazard Analysis";
 export const SITE_SELECTION = "Site Selection";
 export const SEISMIC_HAZARD = "Seismic Hazard";
@@ -242,14 +243,14 @@ export const SCENARIO_VIEWER_GUIDE_MSG =
 export const SCENARIO_VIEWER_GUIDE_INSTRUCTION = [
   "Select an IM Component",
   "Click the Compute button",
-  "Select scenarios to plot when available"
+  "Select scenarios to plot when available",
 ];
 
 // Project Tabs
 export const PROJECT_SITE_SELECTION_GUIDE_MSG =
   "Please do the following steps to see images.";
 export const PROJECT_SITE_SELECTION_INSTRUCTION = [
-  "Choose the Project ID.",
+  "Choose the Project.",
   "Choose the Location.",
   "Choose the Vs30.",
   "Choose the Z1.0 | Z2.5.",
@@ -276,7 +277,7 @@ export const PROJECT_DISAGG_INSTRUCTION_TABLE = [
 export const PROJECT_SCENARIO_VIEWER_GUIDE_INSTRUCTION = [
   "Select an IM Component",
   "Click the Get button",
-  "Select scenarios to plot when available"
+  "Select scenarios to plot when available",
 ];
 
 // Error Messages

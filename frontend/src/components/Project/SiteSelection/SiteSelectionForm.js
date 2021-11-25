@@ -8,6 +8,11 @@ import * as CONSTANTS from "constants/Constants";
 
 import { CustomSelect, GuideTooltip } from "components/common";
 import {
+  getProjectID,
+  getProjectLocation,
+  getProjectGMSID,
+} from "apis/ProjectAPI";
+import {
   handleErrors,
   sortIMs,
   renderSigfigs,
@@ -42,7 +47,7 @@ const SiteSelectionForm = () => {
     setProjectScenarioIMComponentOptions,
   } = useContext(GlobalContext);
 
-  const { getTokenSilently } = useAuth0();
+  const { isAuthenticated, getTokenSilently } = useAuth0();
 
   // For react-select (Dropdowns)
   const [projectIdOptions, setProjectIdOptions] = useState([]);
@@ -63,42 +68,28 @@ const SiteSelectionForm = () => {
 
   // Getting Project IDs
   useEffect(() => {
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+
     // Reset those to default to disable tabs
     setProjectId(null);
     setProjectLocation(null);
     setProjectVS30(null);
 
-    const abortController = new AbortController();
-    const signal = abortController.signal;
+    let token = null;
 
-    const getProjectID = async () => {
-      try {
-        const token = await getTokenSilently();
+    (async () => {
+      if (isAuthenticated) token = await getTokenSilently();
 
-        await fetch(
-          CONSTANTS.INTERMEDIATE_API_URL +
-            CONSTANTS.PROJECT_API_PROJECT_IDS_ENDPOINT,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            signal: signal,
-          }
-        )
-          .then(handleErrors)
-          .then(async (response) => {
-            const responseData = await response.json();
-            setProjectIdOptions(responseData);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      } catch (error) {
-        console.log(error);
-      }
-    };
+      getProjectID(signal, token)
+        .then(handleErrors)
+        .then(async (response) => {
+          const responseData = await response.json();
 
-    getProjectID();
+          setProjectIdOptions(responseData);
+        })
+        .catch((error) => console.log(error));
+    })();
 
     return () => {
       abortController.abort();
@@ -111,93 +102,33 @@ const SiteSelectionForm = () => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const getLocation = async () => {
-      if (localProjectId !== null) {
-        try {
-          const token = await getTokenSilently();
+    if (localProjectId !== null) {
+      let token = null;
+      const queryString = APIQueryBuilder({
+        project_id: localProjectId["value"],
+      });
 
-          let queryString = APIQueryBuilder({
-            project_id: localProjectId["value"],
-          });
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-          await Promise.all([
-            fetch(
-              CONSTANTS.INTERMEDIATE_API_URL +
-                CONSTANTS.PROJECT_API_SITES_ENDPOINT +
-                queryString,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                signal: signal,
-              }
-            ),
-            fetch(
-              CONSTANTS.INTERMEDIATE_API_URL +
-                CONSTANTS.PROJECT_API_IMS_ENDPOINT +
-                queryString,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                signal: signal,
-              }
-            ),
-            fetch(
-              CONSTANTS.INTERMEDIATE_API_URL +
-                CONSTANTS.PROJECT_API_HAZARD_DISAGG_RPS_ENDPOINT +
-                queryString,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                signal: signal,
-              }
-            ),
-            fetch(
-              CONSTANTS.INTERMEDIATE_API_URL +
-                CONSTANTS.PROJECT_API_HAZARD_UHS_RPS_ENDPOINT +
-                queryString,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-                signal: signal,
-              }
-            ),
-          ])
-            .then(handleErrors)
-            .then(async ([location, im, disaggRPs, uhsRPs]) => {
-              const responseLocationData = await location.json();
-              const responseIMData = await im.json();
-              const responseDisaggRPData = await disaggRPs.json();
-              const responseUHSRPData = await uhsRPs.json();
+        getProjectLocation(queryString, signal, token)
+          .then(handleErrors)
+          .then(async ([location, im, disaggRPs, uhsRPs]) => {
+            const responseLocationData = await location.json();
+            const responseIMData = await im.json();
+            const responseDisaggRPData = await disaggRPs.json();
+            const responseUHSRPData = await uhsRPs.json();
 
-              // Setting Locations
-              setLocalProjectLocations(responseLocationData);
-              // Setting IMs
-              setProjectIMs(sortIMs(Object.keys(responseIMData["ims"])));
-              setProjectIMDict(responseIMData["ims"]);
-              setProjectScenarioIMComponentOptions(responseIMData["ims"]["pSA"]["components"]);
-
-              // Setting RPs
-              setProjectDisagRPs(responseDisaggRPData["rps"]);
-              setProjectUHSRPs(responseUHSRPData["rps"]);
-              // Reset dropdowns
-              setLocalLocation(null);
-              setLocalVS30(null);
-              setLocalZs(null);
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        } catch (error) {
-          console.log(error);
-        }
-      }
-    };
-
-    getLocation();
+            updateDropdown(
+              responseLocationData,
+              responseIMData,
+              responseDisaggRPData,
+              responseUHSRPData
+            );
+          })
+          .catch((error) => console.log(error));
+      })();
+    }
 
     return () => {
       abortController.abort();
@@ -280,56 +211,25 @@ const SiteSelectionForm = () => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const getGMSIDs = async () => {
-      if (projectSiteSelectionGetClick !== null) {
-        try {
-          const token = await getTokenSilently();
+    if (projectSiteSelectionGetClick !== null) {
+      let token = null;
+      const queryString = APIQueryBuilder({
+        project_id: localProjectId["value"],
+      });
 
-          await fetch(
-            CONSTANTS.INTERMEDIATE_API_URL +
-              CONSTANTS.PROJECT_API_GMS_RUNS_ENDPOINT +
-              APIQueryBuilder({
-                project_id: localProjectId["value"],
-              }),
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              signal: signal,
-            }
-          )
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-              const targetArr = Object.values(responseData);
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-              setProjectGMSIDs(Object.keys(responseData));
+        getProjectGMSID(queryString, signal, token)
+          .then(handleErrors)
+          .then(async (response) => {
+            const responseData = await response.json();
 
-              const numGMs = {};
-              for (const [key, value] of Object.entries(responseData)) {
-                numGMs[key] = value["n_gms"];
-              }
-              setProjectGMSNumGMs(numGMs);
-
-              const splitIMs = splitIMPeriods(
-                getValuesFromArr(targetArr, "IM_j")
-              );
-              const periods = [...splitIMs["Periods"]];
-
-              setProjectGMSIMTypes(sortIMs([...new Set(splitIMs["IMs"])]));
-              setProjectGMSIMPeriods(periods.sort((a, b) => a - b));
-              setProjectGMSExceedances(
-                getValuesFromArr(targetArr, "exceedance")
-              );
-              setProjectGMSIMVectors(getValuesFromArr(targetArr, "IMs"));
-            });
-        } catch (error) {
-          console.log(error);
-        }
-      }
-    };
-
-    getGMSIDs();
+            updateGMSDropdown(responseData);
+          })
+          .catch((error) => console.log(error));
+      })();
+    }
 
     return () => {
       abortController.abort();
@@ -368,6 +268,43 @@ const SiteSelectionForm = () => {
       localVS30 === null ||
       localZs === null
     );
+  };
+
+  const updateDropdown = (locationData, imData, disaggRPData, uhsRPData) => {
+    // Setting Locations
+    setLocalProjectLocations(locationData);
+    // Setting IMs
+    setProjectIMs(sortIMs(Object.keys(imData["ims"])));
+    setProjectIMDict(imData["ims"]);
+    setProjectScenarioIMComponentOptions(imData["ims"]["pSA"]["components"]);
+
+    // Setting RPs
+    setProjectDisagRPs(disaggRPData["rps"]);
+    setProjectUHSRPs(uhsRPData["rps"]);
+    // Reset dropdowns
+    setLocalLocation(null);
+    setLocalVS30(null);
+    setLocalZs(null);
+  };
+
+  const updateGMSDropdown = (gmsData) => {
+    const targetArr = Object.values(gmsData);
+
+    setProjectGMSIDs(Object.keys(gmsData));
+
+    const numGMs = {};
+    for (const [key, value] of Object.entries(gmsData)) {
+      numGMs[key] = value["n_gms"];
+    }
+    setProjectGMSNumGMs(numGMs);
+
+    const splitIMs = splitIMPeriods(getValuesFromArr(targetArr, "IM_j"));
+    const periods = [...splitIMs["Periods"]];
+
+    setProjectGMSIMTypes(sortIMs([...new Set(splitIMs["IMs"])]));
+    setProjectGMSIMPeriods(periods.sort((a, b) => a - b));
+    setProjectGMSExceedances(getValuesFromArr(targetArr, "exceedance"));
+    setProjectGMSIMVectors(getValuesFromArr(targetArr, "IMs"));
   };
 
   return (

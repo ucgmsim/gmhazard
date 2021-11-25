@@ -14,15 +14,45 @@ const DownloadButton = ({
   fileName,
   disabled,
 }) => {
-  const { getTokenSilently } = useAuth0();
+  const { isAuthenticated, getTokenSilently } = useAuth0();
 
   const [downloadButtonLabel, setDownloadButtonLabel] = useState({
     icon: <FontAwesomeIcon icon="download" className="mr-3" />,
     isFetching: false,
   });
 
-  const downloadData = async () => {
+  const downloadPrivateData = async () => {
     const token = await getTokenSilently();
+
+    const queryString = generateQueryString();
+
+    axios({
+      url: INTERMEDIATE_API_URL + downloadURL + queryString,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      method: "GET",
+      responseType: "blob",
+    })
+      .then(handleErrors)
+      .then((response) => downloadData(response))
+      .catch((error) => catchError(error));
+  };
+
+  const downloadPublicData = async () => {
+    const queryString = generateQueryString();
+
+    axios({
+      url: INTERMEDIATE_API_URL + downloadURL + queryString,
+      method: "GET",
+      responseType: "blob",
+    })
+      .then(handleErrors)
+      .then((response) => downloadData(response))
+      .catch((error) => catchError(error));
+  };
+
+  const generateQueryString = () => {
     setDownloadButtonLabel({
       icon: <FontAwesomeIcon icon="spinner" className="mr-3" spin />,
       isFetching: true,
@@ -42,42 +72,38 @@ const DownloadButton = ({
       queryString = queryString.slice(0, -1);
     }
 
-    axios({
-      url: INTERMEDIATE_API_URL + downloadURL + queryString,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      method: "GET",
-      responseType: "blob",
-    })
-      .then(handleErrors)
-      .then((response) => {
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-        setDownloadButtonLabel({
-          icon: <FontAwesomeIcon icon="download" className="mr-3" />,
-          isFetching: false,
-        });
-      })
-      .catch((error) => {
-        // Later on, maybe can add Modal to tell users an error msg.
-        setDownloadButtonLabel({
-          icon: <FontAwesomeIcon icon="download" className="mr-3" />,
-          isFetching: false,
-        });
-        console.log(error);
-      });
+    return queryString;
+  };
+
+  const downloadData = (response) => {
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    setDownloadButtonLabel({
+      icon: <FontAwesomeIcon icon="download" className="mr-3" />,
+      isFetching: false,
+    });
+  };
+
+  const catchError = (error) => {
+    // Later on, maybe can add Modal to tell users an error msg.
+    setDownloadButtonLabel({
+      icon: <FontAwesomeIcon icon="download" className="mr-3" />,
+      isFetching: false,
+    });
+    console.log(error);
   };
 
   return (
     <button
       className="download-button btn btn-primary"
       disabled={disabled || downloadButtonLabel.isFetching === true}
-      onClick={() => downloadData()}
+      onClick={() =>
+        isAuthenticated ? downloadPrivateData() : downloadPublicData()
+      }
     >
       {downloadButtonLabel.icon}
       Download Data

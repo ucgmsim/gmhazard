@@ -14,7 +14,6 @@ import "assets/style/HazardForms.css";
 
 const HazardViewer = () => {
   const {
-    hasPermission,
     projectHazardCurveGetClick,
     projectDisaggGetClick,
     projectUHSGetClick,
@@ -48,22 +47,17 @@ const HazardViewer = () => {
         className="hazard-viewer-tabs"
         onSelect={(key) => setSelectedTab(key)}
       >
-        {hasPermission("project:hazard") ? (
-          <Tab eventKey="hazardCurve" title="Hazard Curve">
-            <HazardViewerHazardCurve />
-          </Tab>
-        ) : null}
+        <Tab eventKey="hazardCurve" title="Hazard Curve">
+          <HazardViewerHazardCurve />
+        </Tab>
 
-        {hasPermission("project:disagg") ? (
-          <Tab eventKey="disagg" title="Disaggregation">
-            <HazardViewerDisaggregation />
-          </Tab>
-        ) : null}
-        {hasPermission("project:uhs") ? (
-          <Tab eventKey="uhs" title="Uniform Hazard Spectrum">
-            <HazardViewerUHS />
-          </Tab>
-        ) : null}
+        <Tab eventKey="disagg" title="Disaggregation">
+          <HazardViewerDisaggregation />
+        </Tab>
+
+        <Tab eventKey="uhs" title="Uniform Hazard Spectrum">
+          <HazardViewerUHS />
+        </Tab>
       </Tabs>
     </Fragment>
   );
