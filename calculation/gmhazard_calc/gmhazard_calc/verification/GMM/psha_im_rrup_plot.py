@@ -2,6 +2,7 @@ import pathlib
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import List, Dict
+import time
 
 import constants as const
 from empirical.util import empirical_factory
@@ -351,6 +352,8 @@ def im_rrup_plot(
     plot_directory = root_path / "im_rrup"
     plot_directory.mkdir(exist_ok=True, parents=True)
 
+    start_time = time.time()
+    print("Normal IM Rrup started at: ", start_time)
     faults, result_dict = init_setup(mag_dict, vs30_values, psa_periods)
     sites = get_sites(vs30_values, rrup_values)
 
@@ -358,6 +361,7 @@ def im_rrup_plot(
     result_dict = get_computed_gmms(
         vs30_values, sites, mag_dict, faults, result_dict, psa_periods
     )
+    print("Normal IM Rrup result got at: ", time.time() - start_time)
 
     plot_im_rrup(vs30_values, mag_dict, rrup_values, result_dict, plot_directory)
 
@@ -409,23 +413,26 @@ def psa_rrup_plot(
 
 if __name__ == "__main__":
     mag_dict = {
-        "ACTIVE_SHALLOW": [5, 6, 7, 8],
-        "SUBDUCTION_SLAB": [5, 6, 7],
+        "ACTIVE_SHALLOW": [6, 7, 8],
+        "SUBDUCTION_SLAB": [6, 7],
         "SUBDUCTION_INTERFACE": [7, 8, 9],
     }
-    vs30_lists = [200, 300, 400, 760]
-    psa_lists = [0.2, 1.0, 3.0, 10.0]
+    vs30_lists = [200, 400, 760]
+    psa_lists = [1.0, 3.0]
     # For ACTIVE_SHALLOW and INTERFACE
-    first_rrup_lists = np.linspace(1, 1000, 200)
+    first_rrup_lists = np.linspace(1, 1000, 500)
     # For SLAB
-    second_rrup_lists = np.linspace(50, 1000, 200)
+    second_rrup_lists = np.linspace(50, 1000, 500)
     rrup_dict = {
         "ACTIVE_SHALLOW": first_rrup_lists,
         "SUBDUCTION_INTERFACE": first_rrup_lists,
         "SUBDUCTION_SLAB": second_rrup_lists,
     }
     # Update the path to the directory to save plots
-    save_path = pathlib.Path("")
-
+    save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/verification_plots")
+    start_time = time.time()
+    print("Whole script started at: ", start_time)
     im_rrup_plot(mag_dict, vs30_lists, psa_lists, rrup_dict, save_path)
     psa_rrup_plot(mag_dict, vs30_lists, psa_lists, rrup_dict, save_path)
+
+    print("Finished in: ", time.time() - start_time)

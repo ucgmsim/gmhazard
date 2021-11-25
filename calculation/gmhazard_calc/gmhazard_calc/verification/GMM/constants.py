@@ -63,28 +63,28 @@ si_spectral_models = [
 ]
 MODELS_DICT = {
     "ACTIVE_SHALLOW": {
-        "PGV": ["Br_10", "ASK_14", "BSSA_14", "CB_14", "CY_14"],
+        # "PGV": ["Br_10", "ASK_14", "BSSA_14", "CB_14", "CY_14"],
         "PGA": ["Br_10", "ASK_14", "BSSA_14", "CB_14", "CY_14"],
         "pSA": ["Br_10", "ASK_14", "BSSA_14", "CB_14", "CY_14"],
     },
     "SUBDUCTION_SLAB": {
-        "PGV": ["P_20", "K_20", "K_20_NZ"],
+        # "PGV": ["P_20", "K_20", "K_20_NZ"],
         "PGA": ss_spectral_models,
         "pSA": ss_spectral_models,
     },
     "SUBDUCTION_INTERFACE": {
-        "PGV": ["P_20", "K_20", "K_20_NZ"],
+        # "PGV": ["P_20", "K_20", "K_20_NZ"],
         "PGA": si_spectral_models,
         "pSA": si_spectral_models,
     },
 }
 
 # Temporary for META CONFIG
-MODELS_DICT = {
-    "ACTIVE_SHALLOW": {"PGV": ["META"], "PGA": ["META"], "pSA": ["META"],},
-    "SUBDUCTION_SLAB": {"PGV": ["META"], "PGA": ["META"], "pSA": ["META"],},
-    "SUBDUCTION_INTERFACE": {"PGV": ["META"], "PGA": ["META"], "pSA": ["META"],},
-}
+# MODELS_DICT = {
+#     "ACTIVE_SHALLOW": {"PGV": ["META"], "PGA": ["META"], "pSA": ["META"],},
+#     "SUBDUCTION_SLAB": {"PGV": ["META"], "PGA": ["META"], "pSA": ["META"],},
+#     "SUBDUCTION_INTERFACE": {"PGV": ["META"], "PGA": ["META"], "pSA": ["META"],},
+# }
 
 DEFAULT_LABEL_COLOR = [
     "#d62728",
