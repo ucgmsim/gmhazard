@@ -382,20 +382,20 @@ def core_api_download_uhs(is_authenticated):
 
 
 @app.route(const.CORE_API_GMS_DOWNLOAD_ENDPOINT, methods=["GET"])
-@decorators.requires_auth
-def core_api_download_gms():
-    core_response = utils.proxy_to_api(
-        request,
-        const.ENSEMBLE_GMS_DOWNLOAD_ENDPOINT,
-        "GET",
-        CORE_API_BASE,
-        CORE_API_TOKEN,
-        user_id=auth0.get_user_id(),
-        action="Hazard Analysis - GMS Download",
-        content_type="application/zip",
-    )
-
-    return core_response
+@decorators.get_authentication
+def core_api_download_gms(is_authenticated):
+    if is_authenticated:
+        return utils.proxy_to_api(
+            request,
+            const.ENSEMBLE_GMS_DOWNLOAD_ENDPOINT,
+            "GET",
+            CORE_API_BASE,
+            CORE_API_TOKEN,
+            user_id=auth0.get_user_id(),
+            action="Hazard Analysis - GMS Download",
+            content_type="application/zip",
+        )
+    raise auth0.AuthError()
 
 
 @app.route(f"{const.CORE_API_SCENARIOS_DOWNLOAD_ENDPOINT}", methods=["GET"])
