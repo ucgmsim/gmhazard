@@ -107,6 +107,7 @@ def compute_fault_directivity(
     rake: float,
     periods: List[float] = DEFAULT_PSA_PERIODS,
     hypo_weighting: bool = False,
+    method: str = "Hypercube",
 ):
     """
     Does the computation of directivity for a fault with any number of hypocentres.

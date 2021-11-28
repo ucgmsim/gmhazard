@@ -46,8 +46,6 @@ for nhpy in nhyps:
         fault.mw,
         fault.rake,
         periods=[im.period],
-        fault_name=fault_name,
-        return_fdi_array=False,
     )
 
     df[f"FD_{nhpy}"] = np.exp(fdi)

@@ -1,6 +1,7 @@
 import time
 import multiprocessing as mp
 from pathlib import Path
+import argparse
 
 import numpy as np
 
@@ -8,14 +9,8 @@ import sha_calc
 from sha_calc.directivity.bea20.validation.plots import plot_fdi
 import common
 
-# Constant / Adjustable variables
-nhm_dict, faults, im, grid_space, nhyps = common.default_variables()
-combo = [(fault, strike, 1) for strike in nhyps for fault in faults]
-n_procs = 30
 
-
-def perform_mp_directivity(combo):
-    fault_name, hypo_along_strike, hypo_down_dip = combo
+def perform_mp_directivity(fault_name, hypo_along_strike, hypo_down_dip, method, period, grid_space, nhm_dict, output_dir):
     nhyp = hypo_along_strike * hypo_down_dip
     print(f"Computing for {fault_name} {nhyp}")
 
@@ -37,9 +32,8 @@ def perform_mp_directivity(combo):
             hypo_down_dip,
             fault.mw,
             fault.rake,
-            periods=[im.period],
-            fault_name=fault_name,
-            return_fdi_array=True,
+            periods=[period],
+            method=method,
         )
 
         total_fd[i] = fdi
@@ -55,29 +49,86 @@ def perform_mp_directivity(combo):
         fdi_average,
         lon_lat_depth,
         Path(
-            f"/mnt/mantle_data/joel_scratch/directivity/latin_mc/plots/{fault_name}_{nhyp}.png"
+            f"{output_dir}/{fault_name}_{nhyp}.png"
         ),
         title,
     )
     np.save(
-        f"/mnt/mantle_data/joel_scratch/directivity/latin_mc/{fault_name}_{nhyp}_fd_mc_hypo_array.npy",
+        f"{output_dir}/{fault_name}_{nhyp}_fd_mc_hypo_array.npy",
         np.exp(total_fd_array),
     )
     np.save(
-        f"/mnt/mantle_data/joel_scratch/directivity/latin_mc/{fault_name}_{nhyp}_fd_mc.npy",
+        f"{output_dir}/{fault_name}_{nhyp}_fd_mc.npy",
         np.exp(total_fd),
     )
     np.save(
-        f"/mnt/mantle_data/joel_scratch/directivity/latin_mc/{fault_name}_{nhyp}_fd_average.npy",
+        f"{output_dir}/{fault_name}_{nhyp}_fd_average.npy",
         np.exp(fdi_average),
     )
 
 
+def parse_args():
+    nhm_dict, faults, im, grid_space, nhyps = common.default_variables()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("output_dir")
+    parser.add_argument(
+        "--faults",
+        default=faults,
+        nargs="+",
+        help="Which faults to calculate for",
+    )
+    parser.add_argument(
+        "--nhyps",
+        default=nhyps,
+        nargs="+",
+        help="How many hypocentres along strike and dip",
+    )
+    parser.add_argument(
+        "--method",
+        default="Hypercube",
+        help="Method to place hypocentres",
+    )
+    parser.add_argument(
+        "--period",
+        default=im.period,
+        help="Period to calculate directivity for",
+    )
+    parser.add_argument(
+        "--grid_space",
+        default=grid_space,
+        help="How many sites to do along each axis",
+    )
+    parser.add_argument(
+        "--n_procs",
+        default=30,
+        help="Number of processes to use",
+    )
+
+    return parser.parse_args(), nhm_dict
+
+
 if __name__ == "__main__":
+    args, nhm_dict = parse_args()
+    n_procs = 30
+
     start_time = time.time()
 
-    pool = mp.Pool(n_procs)
-    pool.map(perform_mp_directivity, combo)
-    pool.close()
+    with mp.Pool(processes=args.n_procs) as pool:
+        pool.starmap(
+            perform_mp_directivity,
+            [
+                (
+                    fault,
+                    args.nhyps,
+                    args.period,
+                    args.grid_space,
+                    nhm_dict,
+                    args.output_dir,
+                )
+                for strike in args.nhyps
+                for fault in args.faults
+            ],
+        )
 
     print(f"FINISHED and took {time.time() - start_time}")
