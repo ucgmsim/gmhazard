@@ -22,7 +22,7 @@ def test_get_ensemble_ims(config):
     )
 
 
-def test_get_ensemble_ims_missingparam(config):
+def test_get_ensemble_ims_missing_param(config):
     """ Tests the failed get request of a Ensemble's IM's without parameters"""
     response = tu.send_test_request(constants.ENSEMBLE_IMS_ENDPOINT)
     tu.response_checks(

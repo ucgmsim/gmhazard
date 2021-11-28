@@ -33,7 +33,7 @@ def test_get_nzs1170p5_ensemble_hazard(config):
     )
 
 
-def test_get_nzs1170p5_ensemble_hazard_missingparam(config):
+def test_get_nzs1170p5_ensemble_hazard_missing_param(config):
     """ Tests the failed get request of a NZS1170p5 ensemble hazard"""
     response = tu.send_test_request(
         constants.NZS1170p5_HAZARD_ENDPOINT,
@@ -73,7 +73,7 @@ def test_get_nzs1170p5_uhs(config):
     )
 
 
-def test_get_nzs1170p5_uhs_missingparam(config):
+def test_get_nzs1170p5_uhs_missing_param(config):
     """ Tests the failed get request of a NZS1170p5 UHS"""
     response = tu.send_test_request(
         constants.NZS1170p5_UHS_ENDPOINT,
@@ -106,7 +106,7 @@ def test_get_nzs1170p5_default(config):
     )
 
 
-def test_get_nzs1170p5_default_missingparam(config):
+def test_get_nzs1170p5_default_missing_param(config):
     """ Tests the failed get request of a NZS1170p5 default parameters"""
     response = tu.send_test_request(
         constants.NZS1170p5_DEFAULT_PARAMS_ENDPOINT,
