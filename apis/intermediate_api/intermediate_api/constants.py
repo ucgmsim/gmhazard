@@ -69,7 +69,9 @@ PROJECT_API_HAZARD_CURVE_DOWNLOAD_ENDPOINT = "/projectAPI/hazard/download"
 PROJECT_API_HAZARD_DISAGG_DOWNLOAD_ENDPOINT = "/projectAPI/disagg/download"
 PROJECT_API_HAZARD_UHS_DOWNLOAD_ENDPOINT = "/projectAPI/uhs/download"
 PROJECT_API_GMS_DOWNLOAD_ENDPOINT = "/projectAPI/gms/download"
-PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT = "/projectAPI/scenario/ensemble_scenario/download"
+PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT = (
+    "/projectAPI/scenario/ensemble_scenario/download"
+)
 
 # Create new projects
 PROJECT_API_CREATE_NEW_PROJECT_ENDPOINT = "/projectAPI/project/create"
