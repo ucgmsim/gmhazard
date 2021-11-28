@@ -381,13 +381,13 @@ def core_api_download_uhs(is_authenticated):
     raise auth0.AuthError()
 
 
-@app.route(f"{const.CORE_API_GMS_DOWNLOAD_ENDPOINT}/<token>", methods=["GET"])
+@app.route(const.CORE_API_GMS_DOWNLOAD_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
-def core_api_download_gms(is_authenticated, token):
+def core_api_download_gms(is_authenticated):
     if is_authenticated:
         return utils.proxy_to_api(
             request,
-            const.ENSEMBLE_GMS_DOWNLOAD_ENDPOINT + "/" + token,
+            const.ENSEMBLE_GMS_DOWNLOAD_ENDPOINT,
             "GET",
             CORE_API_BASE,
             CORE_API_TOKEN,
