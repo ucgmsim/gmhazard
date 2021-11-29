@@ -12,7 +12,6 @@ import {
   ScenarioPlot,
 } from "components/common";
 import { getProjectScenario } from "apis/ProjectAPI";
-import { getPublicProjectScenario } from "apis/PublicProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 
 import "assets/style/ScenarioViewer.css";
@@ -61,7 +60,8 @@ const ScenarioViewer = () => {
       setProjectScenarioData(null);
       setShowErrorMessage({ isError: false, errorCode: null });
 
-      let queryString = APIQueryBuilder({
+      let token = null;
+      const queryString = APIQueryBuilder({
         project_id: projectId["value"],
         station_id: createStationID(
           projectLocationCode[projectLocation],
@@ -72,27 +72,17 @@ const ScenarioViewer = () => {
         im_component: projectSelectedScenarioIMComponent,
       });
 
-      if (isAuthenticated) {
-        (async () => {
-          const token = await getTokenSilently();
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-          getProjectScenario(queryString, token, signal)
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-              updateScenarioData(responseData);
-            })
-            .catch((error) => catchError(error));
-        })();
-      } else {
-        getPublicProjectScenario(queryString, signal)
+        getProjectScenario(queryString, signal, token)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
             updateScenarioData(responseData);
           })
           .catch((error) => catchError(error));
-      }
+      })();
     }
 
     return () => {
@@ -153,11 +143,7 @@ const ScenarioViewer = () => {
               extra={extraInfo}
             />
             <DownloadButton
-              downloadURL={
-                isAuthenticated
-                  ? CONSTANTS.PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT
-                  : CONSTANTS.PUBLIC_API_SCENARIOS_DOWNLOAD_ENDPOINT
-              }
+              downloadURL={CONSTANTS.PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT}
               downloadToken={{
                 scenario_token: downloadToken,
               }}

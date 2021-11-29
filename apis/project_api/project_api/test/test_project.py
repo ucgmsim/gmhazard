@@ -155,4 +155,4 @@ def test_download_all_missing_parameter():
         constants.PROJECT_DOWNLOAD_ENDPOINT,
         api="PROJECT",
     )
-    tu.response_checks(response, [], [], 404, "text/html")
+    tu.response_checks(response, [], [], 404, "text/html; charset=utf-8")

@@ -13,7 +13,6 @@ import {
   ImageMap,
 } from "components/common";
 import { getProjectMaps } from "apis/ProjectAPI";
-import { getPublicProjectMaps } from "apis/PublicProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 
 const SiteSelectionViewer = () => {
@@ -56,7 +55,12 @@ const SiteSelectionViewer = () => {
     const signal = abortController.signal;
 
     if (projectSiteSelectionGetClick !== null) {
-      let queryString = APIQueryBuilder({
+      setShowImages(false);
+      setShowSpinner(true);
+      setShowErrorMessage({ isError: false, errorCode: null });
+
+      let token = null;
+      const queryString = APIQueryBuilder({
         project_id: projectId["value"],
         station_id: createStationID(
           projectLocationCode[projectLocation],
@@ -65,31 +69,18 @@ const SiteSelectionViewer = () => {
           projectZ2p5
         ),
       });
-      setShowImages(false);
-      setShowSpinner(true);
-      setShowErrorMessage({ isError: false, errorCode: null });
 
-      if (isAuthenticated) {
-        (async () => {
-          const token = await getTokenSilently();
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-          getProjectMaps(queryString, token, signal)
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-              updateMap(responseData);
-            })
-            .catch((error) => catchError(error));
-        })();
-      } else {
-        getPublicProjectMaps(queryString, signal)
+        getProjectMaps(queryString, signal, token)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
             updateMap(responseData);
           })
           .catch((error) => catchError(error));
-      }
+      })();
     }
 
     return () => {

@@ -20,7 +20,6 @@ import {
   GMSCausalParamPlot,
 } from "components/common";
 import { getProjectGMS } from "apis/ProjectAPI";
-import { getPublicProjectGMS } from "apis/PublicProjectAPI";
 import {
   handleErrors,
   GMSIMLabelConverter,
@@ -149,6 +148,7 @@ const GmsViewer = () => {
       setShowErrorMessage({ isError: false, errorCode: null });
       setIsLoading(true);
 
+      let token = null;
       const gms_id = projectGMSIDs.find((GMSId) => {
         return (
           GMSId.includes(
@@ -165,8 +165,7 @@ const GmsViewer = () => {
           )
         );
       });
-
-      let queryString = APIQueryBuilder({
+      const queryString = APIQueryBuilder({
         project_id: projectId["value"],
         station_id: createStationID(
           projectLocationCode[projectLocation],
@@ -177,22 +176,10 @@ const GmsViewer = () => {
         gms_id: gms_id,
       });
 
-      if (isAuthenticated) {
-        (async () => {
-          const token = await getTokenSilently();
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-          getProjectGMS(queryString, token, signal)
-            .then(handleErrors)
-            .then(async ([gms, defaultCausalParam]) => {
-              const gmsData = await gms.json();
-              const defaultCausalParamData = await defaultCausalParam.json();
-
-              updateGMSPlots(gmsData, defaultCausalParamData, gms_id);
-            })
-            .catch((error) => catchError(error));
-        })();
-      } else {
-        getPublicProjectGMS(queryString, signal)
+        getProjectGMS(queryString, signal, token)
           .then(handleErrors)
           .then(async ([gms, defaultCausalParam]) => {
             const gmsData = await gms.json();
@@ -201,7 +188,7 @@ const GmsViewer = () => {
             updateGMSPlots(gmsData, defaultCausalParamData, gms_id);
           })
           .catch((error) => catchError(error));
-      }
+      })();
     }
 
     return () => {
@@ -380,9 +367,7 @@ const GmsViewer = () => {
       <DownloadButton
         disabled={invalidInputs()}
         downloadURL={
-          isAuthenticated
-            ? CONSTANTS.PROJECT_API_GMS_DOWNLOAD_ENDPOINT + "/" + downloadToken
-            : CONSTANTS.PUBLIC_API_GMS_DOWNLOAD_ENDPOINT + "/" + downloadToken
+          CONSTANTS.PROJECT_API_GMS_DOWNLOAD_ENDPOINT + "/" + downloadToken
         }
         fileName="Projects_Ground_Motion_Selection.zip"
       />

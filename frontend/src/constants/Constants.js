@@ -110,42 +110,7 @@ export const INTERMEDIATE_API_ALL_PRIVATE_PROJECTS_ENDPOINT =
 export const INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT =
   "/intermediateAPI/project/public/get/all";
 
-// Public Project API Endpoints - Project tab
-// Site Selection
-export const PUBLIC_API_PROJECT_IDS_ENDPOINT = "/publicAPI/ids/get";
-export const PUBLIC_API_SITES_ENDPOINT = "/publicAPI/sites/get";
-export const PUBLIC_API_IMS_ENDPOINT = "/publicAPI/ims/get";
-export const PUBLIC_API_MAPS_ENDPOINT = "/publicAPI/maps/get";
-
-// Seismic Hazard
-export const PUBLIC_API_HAZARD_ENDPOINT = "/publicAPI/hazard/get";
-export const PUBLIC_API_HAZARD_DISAGG_ENDPOINT = "/publicAPI/disagg/get";
-export const PUBLIC_API_HAZARD_DISAGG_RPS_ENDPOINT =
-  "/publicAPI/disagg/rps/get";
-export const PUBLIC_API_HAZARD_UHS_ENDPOINT = "/publicAPI/uhs/get";
-export const PUBLIC_API_HAZARD_UHS_RPS_ENDPOINT = "/publicAPI/uhs/rps/get";
-
-// GMS
-export const PUBLIC_API_GMS_RUNS_ENDPOINT = "/publicAPI/gms/runs/get";
-export const PUBLIC_API_GMS_ENDPOINT = "/publicAPI/gms/get";
-export const PUBLIC_API_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT =
-  "/publicAPI/gms/default_causal_params/get";
-
-// Scenarios
-export const PUBLIC_API_SCENARIOS_ENDPOINT =
-  "/publicAPI/scenario/ensemble_scenario/get";
-
-// Download Endpoints
-export const PUBLIC_API_HAZARD_CURVE_DOWNLOAD_ENDPOINT =
-  "/publicAPI/hazard/download";
-export const PUBLIC_API_HAZARD_DISAGG_DOWNLOAD_ENDPOINT =
-  "/publicAPI/disagg/download";
-export const PUBLIC_API_HAZARD_UHS_DOWNLOAD_ENDPOINT =
-  "/publicAPI/uhs/download";
-export const PUBLIC_API_GMS_DOWNLOAD_ENDPOINT = "/publicAPI/gms/download";
-export const PUBLIC_API_SCENARIOS_DOWNLOAD_ENDPOINT =
-  "/publicAPI/scenario/ensemble_scenario/download";
-
+/* Labels */
 export const HAZARD_ANALYSIS = "Hazard Analysis";
 export const SITE_SELECTION = "Site Selection";
 export const SEISMIC_HAZARD = "Seismic Hazard";

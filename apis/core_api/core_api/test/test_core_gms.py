@@ -90,7 +90,7 @@ def test_get_gms_compute_download(config):
 def test_get_gms_compute_download_missing_token(config):
     """ Tests the failed get request of a GMS compute download with missing token"""
     response = tu.send_test_request(constants.ENSEMBLE_GMS_DOWNLOAD_ENDPOINT)
-    tu.response_checks(response, [], [], 404, "text/html")
+    tu.response_checks(response, [], [], 404, "text/html; charset=utf-8")
 
 
 def test_get_gms_default_im_weights(config):

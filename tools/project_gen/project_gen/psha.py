@@ -238,8 +238,10 @@ def process_station_scenarios(
 
     # Compute and Write Scenario
     if (output_dir / sc.scenario.EnsembleScenarioResult.get_save_dir()).exists():
-        print(f"Skipping scenario computation for station {station_name} "
-              f"- IM component {im_component} as it already exists")
+        print(
+            f"Skipping scenario computation for station {station_name} "
+            f"- IM component {im_component} as it already exists"
+        )
     else:
         sc.scenario.run_ensemble_scenario(
             ensemble, site_info, im_component=im_component,
@@ -290,21 +292,22 @@ def process_station_im(
         ens_hazard.save(output_dir)
 
     # Compute & write NZS1170.5 if needed
-    if (
-        output_dir / sc.nz_code.nzs1170p5.NZS1170p5Result.get_save_dir(im, "hazard")
-    ).exists():
-        print(
-            f"\t{os.getpid()} - Skipping NZS1170.5 computation for station {site_info.station_name} - "
-            f"IM {im} - Component {im.component} as it already exists"
-        )
-    else:
-        print(
-            f"\t{os.getpid()} - Computing NZS1170.5 for station "
-            f"{site_info.station_name} - IM {im} - Component {im.component}"
-        )
-        sc.nz_code.nzs1170p5.run_ensemble_nzs1170p5(ensemble, site_info, im).save(
-            output_dir, "hazard"
-        )
+    if im.im_type == sc.im.IMType.PGA or im.is_pSA():
+        if (
+            output_dir / sc.nz_code.nzs1170p5.NZS1170p5Result.get_save_dir(im, "hazard")
+        ).exists():
+            print(
+                f"\t{os.getpid()} - Skipping NZS1170.5 computation for station {site_info.station_name} - "
+                f"IM {im} - Component {im.component} as it already exists"
+            )
+        else:
+            print(
+                f"\t{os.getpid()} - Computing NZS1170.5 for station "
+                f"{site_info.station_name} - IM {im} - Component {im.component}"
+            )
+            sc.nz_code.nzs1170p5.run_ensemble_nzs1170p5(ensemble, site_info, im).save(
+                output_dir, "hazard"
+            )
 
     # Compute & write NZTA hazard if needed
     if im.im_type == sc.im.IMType.PGA:

@@ -53,7 +53,6 @@ def get_ensemble_hazard():
                 "im_component": str(ensemble_hazard.im.component),
             },
             server.DOWNLOAD_URL_SECRET_KEY,
-            server.DOWNLOAD_URL_VALID_FOR,
         ),
     )
 

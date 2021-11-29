@@ -5,8 +5,8 @@ import pathlib
 from jose import jwt
 from flask_cors import CORS
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 
-import intermediate_api.custom_sqlalchemy as cs
 from intermediate_api.custom_log_handler import MultiProcessSafeTimedRotatingFileHandler
 
 app = Flask("intermediate_api")
@@ -42,7 +42,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://{0}:{1}@{2}/{3}".format
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db = cs.CustomSQLALchemy(app)
+db = SQLAlchemy(app)
 
 # For Project API with ENV
 PROJECT_API_BASE = os.environ["PROJECT_API_BASE"]
@@ -56,9 +56,4 @@ PROJECT_API_TOKEN = "Bearer {}".format(
 
 # See Circular Import section on here for some attempt at justification of this
 # https://flask.palletsprojects.com/en/1.1.x/patterns/packages/
-from intermediate_api.api import (
-    core_api,
-    project_api,
-    intermediate_api,
-    public_project_api,
-)
+from intermediate_api.api import core_api, project_api, intermediate_api

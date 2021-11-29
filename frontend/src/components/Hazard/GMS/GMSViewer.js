@@ -474,9 +474,10 @@ const GMSViewer = () => {
       </Tabs>
       <DownloadButton
         disabled={invalidDownload()}
-        downloadURL={
-          CONSTANTS.CORE_API_GMS_DOWNLOAD_ENDPOINT + "/" + downloadToken
-        }
+        downloadURL={CONSTANTS.CORE_API_GMS_DOWNLOAD_ENDPOINT}
+        downloadToken={{
+          gms_token: downloadToken,
+        }}
         fileName="Ground_Motion_Selection.zip"
       />
     </div>

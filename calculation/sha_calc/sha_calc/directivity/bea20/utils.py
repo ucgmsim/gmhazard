@@ -67,11 +67,8 @@ def set_hypocentres(n_hypo: int, planes: List, depth_method: List):
         current_length = 0
         planes_copy = [plane.copy() for plane in planes]
         for index, plane in enumerate(planes_copy):
-            if (
-                current_length < distance
-                and (current_length + plane["length"]) > distance
-            ):
-                plane["shyp"] = distance - (current_length + plane["length"] / 2)
+            if current_length < distance < (current_length + plane["length"]):
+                plane["shyp"] = distance - (total_length / 2)
                 plane["dhyp"] = plane["width"] * depth_method[depth_index]
                 depth_index = (depth_index + 1) % len(depth_method)
                 planes_index.append(index)
@@ -89,20 +86,11 @@ def calc_nominal_strike(traces: np.ndarray):
     traces: np.ndarray
         Array of traces of points across a fault with the format [[lon, lat, depth],...]
     """
-    # Lowest depth point
-    depth = traces[0][2]
-    trace_end_index = 0
-
-    # Loops to find the last point with that depth value to find the end points of the fault at the highest depth
-    for index, trace in enumerate(traces):
-        if depth != trace[2]:
-            trace_end_index = index - 1
-            break
 
     # Extract just lat and lon for the start and end of the traces
     trace_start, trace_end = [traces[0][0], traces[0][1]], [
-        traces[trace_end_index][0],
-        traces[trace_end_index][1],
+        traces[-1][0],
+        traces[-1][1],
     ]
 
     # Ensures correct order

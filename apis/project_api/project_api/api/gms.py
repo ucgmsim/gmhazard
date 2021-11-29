@@ -57,7 +57,6 @@ def get_ensemble_gms():
             su.api.get_download_token(
                 dict(project_id=project_id, station_id=station_id, gms_id=gms_id),
                 server.DOWNLOAD_URL_SECRET_KEY,
-                server.DOWNLOAD_URL_VALID_FOR,
             ),
             disagg_data,
             project_id,
@@ -65,16 +64,21 @@ def get_ensemble_gms():
     )
 
 
-@server.app.route(f"{const.PROJECT_GMS_DOWNLOAD_ENDPOINT}/<token>", methods=["GET"])
+@server.app.route(const.PROJECT_GMS_DOWNLOAD_ENDPOINT, methods=["GET"])
 @su.api.endpoint_exception_handling(server.app)
-def download_gms_results(token):
+def download_gms_results():
     server.app.logger.info(f"Received request at {const.PROJECT_GMS_ENDPOINT}")
 
     _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
-    payload = su.api.get_token_payload(token, server.DOWNLOAD_URL_SECRET_KEY)
-    project_id, station_id = payload["project_id"], payload["station_id"]
-    gms_id = payload["gms_id"]
+
+    (gms_token,), _ = su.api.get_check_keys(flask.request.args, ("gms_token",))
+    payload = su.api.get_token_payload(gms_token, server.DOWNLOAD_URL_SECRET_KEY)
+    project_id, station_id, gms_id = (
+        payload["project_id"],
+        payload["station_id"],
+        payload["gms_id"],
+    )
 
     results_dir = (
         server.BASE_PROJECTS_DIR / version_str / project_id / "results" / station_id
@@ -83,10 +87,7 @@ def download_gms_results(token):
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_ffp, missing_waveforms = su.api.create_gms_download_zip(
-            gms_result,
-            tmp_dir,
-            disagg_data,
-            cs_param_bounds=cs_param_bounds,
+            gms_result, tmp_dir, disagg_data, cs_param_bounds=cs_param_bounds,
         )
 
         if missing_waveforms > 0:

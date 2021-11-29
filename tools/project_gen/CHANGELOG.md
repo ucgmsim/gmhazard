@@ -1,4 +1,10 @@
-## [21.8.1] - 2021-08-30 -- IM Components
+## [21.8.2] - 2021-11-03 -- Restart Project Gen
+### Changed
+    - Added support for restarting project generation
+    - Updated default GMM weighting
+    - Bug fixes
+
+## [21.8.1] - 2021-08-30 -- CFM ERF
 ### Changed
     - Added support for the CFM ERF
     - Disagg calculation improvement

@@ -16,7 +16,6 @@ import {
   ErrorMessage,
 } from "components/common";
 import { getProjectUHS } from "apis/ProjectAPI";
-import { getPublicProjectUHS } from "apis/PublicProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 
 const HazardViewerUHS = () => {
@@ -90,7 +89,8 @@ const HazardViewerUHS = () => {
       setShowSpinnerUHS(true);
       setShowErrorMessage({ isError: false, errorCode: null });
 
-      let queryString = APIQueryBuilder({
+      let token = null;
+      const queryString = APIQueryBuilder({
         project_id: projectId["value"],
         station_id: createStationID(
           projectLocationCode[projectLocation],
@@ -105,27 +105,18 @@ const HazardViewerUHS = () => {
             : projectSelectedIMComponent,
       });
 
-      if (isAuthenticated) {
-        (async () => {
-          const token = await getTokenSilently();
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-          getProjectUHS(queryString, token, signal)
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-              updateUHSData(responseData);
-            })
-            .catch((error) => catchError(error));
-        })();
-      } else {
-        getPublicProjectUHS(queryString, signal)
+        getProjectUHS(queryString, signal, token)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
+
             updateUHSData(responseData);
           })
           .catch((error) => catchError(error));
-      }
+      })();
     }
 
     return () => {
@@ -286,11 +277,7 @@ const HazardViewerUHS = () => {
 
       <DownloadButton
         disabled={!showPlotUHS}
-        downloadURL={
-          isAuthenticated
-            ? CONSTANTS.PROJECT_API_HAZARD_UHS_DOWNLOAD_ENDPOINT
-            : CONSTANTS.PUBLIC_API_HAZARD_UHS_DOWNLOAD_ENDPOINT
-        }
+        downloadURL={CONSTANTS.PROJECT_API_HAZARD_UHS_DOWNLOAD_ENDPOINT}
         downloadToken={{
           uhs_token: downloadToken,
         }}

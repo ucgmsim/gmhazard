@@ -16,7 +16,6 @@ import {
   HazardCurveMetadata,
 } from "components/common";
 import { getProjectHazardCurve } from "apis/ProjectAPI";
-import { getPublicProjectHazardCurve } from "apis/PublicProjectAPI";
 import {
   handleErrors,
   APIQueryBuilder,
@@ -100,7 +99,8 @@ const HazardViewerHazardCurve = () => {
       setShowSpinnerHazard(true);
       setShowErrorMessage({ isError: false, errorCode: null });
 
-      let queryString = APIQueryBuilder({
+      let token = null;
+      const queryString = APIQueryBuilder({
         project_id: projectId["value"],
         station_id: createStationID(
           projectLocationCode[projectLocation],
@@ -112,27 +112,17 @@ const HazardViewerHazardCurve = () => {
         im_component: projectSelectedIMComponent,
       });
 
-      if (isAuthenticated) {
-        (async () => {
-          const token = await getTokenSilently();
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-          getProjectHazardCurve(queryString, token, signal)
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-              updateHazardData(responseData);
-            })
-            .catch((error) => catchError(error));
-        })();
-      } else {
-        getPublicProjectHazardCurve(queryString, signal)
+        getProjectHazardCurve(queryString, signal, token)
           .then(handleErrors)
           .then(async (response) => {
             const responseData = await response.json();
             updateHazardData(responseData);
           })
           .catch((error) => catchError(error));
-      }
+      })();
     }
 
     return () => {
@@ -302,11 +292,7 @@ const HazardViewerHazardCurve = () => {
 
       <DownloadButton
         disabled={!showPlotHazard}
-        downloadURL={
-          isAuthenticated
-            ? CONSTANTS.PROJECT_API_HAZARD_CURVE_DOWNLOAD_ENDPOINT
-            : CONSTANTS.PUBLIC_API_HAZARD_CURVE_DOWNLOAD_ENDPOINT
-        }
+        downloadURL={CONSTANTS.PROJECT_API_HAZARD_CURVE_DOWNLOAD_ENDPOINT}
         downloadToken={{
           hazard_token: downloadToken,
         }}

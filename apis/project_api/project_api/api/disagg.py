@@ -80,7 +80,6 @@ def get_ensemble_disagg():
                     "rp": rp,
                 },
                 server.DOWNLOAD_URL_SECRET_KEY,
-                server.DOWNLOAD_URL_VALID_FOR,
             ),
         )
     )

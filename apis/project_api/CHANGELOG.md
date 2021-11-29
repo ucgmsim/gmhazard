@@ -1,3 +1,7 @@
+## [21.8.2] - 2021-11-26 -- Download GMS no longer needs a token as a parameter
+### Changed
+    - Non-projects GMS download endpoint no longer needs a token as a parameter
+        - To keep the consistency with other download endpoints. (E.g., Hazard Curve, Disagg, UHS...)
 ## [21.8.1] - 2021-08-30 -- IM Components
 ### Changed
     - Added support for the CFM ERF

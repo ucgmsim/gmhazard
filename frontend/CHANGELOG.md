@@ -1,3 +1,9 @@
+## November 26, 2021
+
+### Download GMS no longer needs a token as a parameter - ([PR #36](https://github.com/ucgmsim/gmhazard/pull/36))
+
+- To keep the consistency with other download endpoints.
+
 ## October 27, 2021
 
 ### Remove Authentication for the Projects tab - ([PR #23](https://github.com/ucgmsim/gmhazard/pull/23))
