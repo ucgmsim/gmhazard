@@ -10,7 +10,16 @@ from sha_calc.directivity.bea20.validation.plots import plot_fdi
 import common
 
 
-def perform_mp_directivity(fault_name, hypo_along_strike, hypo_down_dip, period, grid_space, nhm_dict, output_dir):
+def perform_mp_directivity(
+    fault_name,
+    hypo_along_strike,
+    hypo_down_dip,
+    method,
+    period,
+    grid_space,
+    nhm_dict,
+    output_dir,
+):
     print(f"Computing for {fault_name}")
 
     fault, site_coords, planes, lon_lat_depth, x, y = common.load_fault_info(
@@ -26,6 +35,7 @@ def perform_mp_directivity(fault_name, hypo_along_strike, hypo_down_dip, period,
         fault.mw,
         fault.rake,
         periods=[period],
+        method=method,
     )
 
     fdi = fdi.reshape(grid_space, grid_space)
@@ -37,9 +47,7 @@ def perform_mp_directivity(fault_name, hypo_along_strike, hypo_down_dip, period,
         y,
         fdi,
         lon_lat_depth,
-        Path(
-            f"{output_dir}/{fault_name}_{nhyp}_mu.png"
-        ),
+        Path(f"{output_dir}/{fault_name}_{nhyp}_mu.png"),
         title,
     )
     np.save(
@@ -78,6 +86,11 @@ def parse_args():
         help="How many hypocentres down dip",
     )
     parser.add_argument(
+        "--method",
+        default="MC",
+        help="Method to place hypocentres",
+    )
+    parser.add_argument(
         "--period",
         default=im.period,
         help="Period to calculate directivity for",
@@ -109,6 +122,7 @@ if __name__ == "__main__":
                     fault,
                     args.nstrike,
                     args.ndip,
+                    args.method,
                     args.period,
                     args.grid_space,
                     nhm_dict,

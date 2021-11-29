@@ -15,7 +15,6 @@ for fault_name in faults:
     )
 
     modes = ["std", "mean bias"]
-    modes = ["mean bias"]  # REMOVE
 
     baseline_array = np.load(
         f"/mnt/mantle_data/joel_scratch/directivity/new_baseline/{fault_name}_20000_fd.npy"

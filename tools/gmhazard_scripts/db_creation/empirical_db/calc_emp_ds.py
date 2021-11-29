@@ -48,7 +48,7 @@ def calculate_ds(
     """
     imdb_dict = {}
     wait_time = 0.0
-    nhm_data, rupture_df = None, None
+    nhm_data, nhm_dict, rupture_df, stat_df = None, None, None, None
     if is_master:
         nhm_data = sc.utils.ds_nhm_to_rup_df(background_sources_ffp)
         rupture_df = pd.DataFrame(nhm_data["rupture_name"])
@@ -136,6 +136,8 @@ def calculate_ds(
                             rupture_df,
                             distance_store,
                             nhm_data,
+                            nhm_dict,
+                            stat_df,
                             site.vs30,
                             site.z1p0 if hasattr(site, "z1p0") else None,
                             site.z2p5 if hasattr(site, "z2p5") else None,

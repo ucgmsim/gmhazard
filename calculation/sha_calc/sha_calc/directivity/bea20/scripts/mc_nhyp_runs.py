@@ -10,7 +10,17 @@ from sha_calc.directivity.bea20.validation.plots import plot_fdi
 import common
 
 
-def perform_mp_directivity(fault_name, hypo_along_strike, hypo_down_dip, method, period, grid_space, nhm_dict, output_dir):
+def perform_mp_directivity(
+    fault_name,
+    hypo_along_strike,
+    hypo_down_dip,
+    method,
+    repeats,
+    period,
+    grid_space,
+    nhm_dict,
+    output_dir,
+):
     nhyp = hypo_along_strike * hypo_down_dip
     print(f"Computing for {fault_name} {nhyp}")
 
@@ -18,10 +28,8 @@ def perform_mp_directivity(fault_name, hypo_along_strike, hypo_down_dip, method,
         fault_name, nhm_dict, grid_space
     )
 
-    repeats = 100
-
-    total_fd = np.zeros((repeats, 10000, 1))
-    total_fd_array = np.zeros((repeats, nhyp, 10000, 1))
+    total_fd = np.zeros((repeats, len(site_coords), 1))
+    total_fd_array = np.zeros((repeats, nhyp, len(site_coords), 1))
 
     for i in range(repeats):
         fdi, fdi_array, phi_red = sha_calc.bea20.compute_fault_directivity(
@@ -48,9 +56,7 @@ def perform_mp_directivity(fault_name, hypo_along_strike, hypo_down_dip, method,
         y,
         fdi_average,
         lon_lat_depth,
-        Path(
-            f"{output_dir}/{fault_name}_{nhyp}.png"
-        ),
+        Path(f"{output_dir}/{fault_name}_{nhyp}.png"),
         title,
     )
     np.save(
@@ -79,15 +85,26 @@ def parse_args():
         help="Which faults to calculate for",
     )
     parser.add_argument(
-        "--nhyps",
-        default=nhyps,
+        "--nstrikes",
+        default=[5],
         nargs="+",
-        help="How many hypocentres along strike and dip",
+        help="How many hypocentres along strike",
+    )
+    parser.add_argument(
+        "--ndips",
+        default=[1],
+        nargs="+",
+        help="How many hypocentres down dip",
     )
     parser.add_argument(
         "--method",
         default="Hypercube",
         help="Method to place hypocentres",
+    )
+    parser.add_argument(
+        "--repeats",
+        default=100,
+        help="Times to repeat directivity calculation",
     )
     parser.add_argument(
         "--period",
@@ -120,13 +137,16 @@ if __name__ == "__main__":
             [
                 (
                     fault,
-                    args.nhyps,
+                    strike,
+                    args.ndips[i],
+                    args.method,
+                    args.repeats,
                     args.period,
                     args.grid_space,
                     nhm_dict,
                     args.output_dir,
                 )
-                for strike in args.nhyps
+                for i, strike in enumerate(args.nstrikes)
                 for fault in args.faults
             ],
         )

@@ -12,7 +12,7 @@ from empirical.util import empirical_factory, classdef
 from empirical.util.classdef import Site, Fault
 from qcore import formats
 from gmhazard_calc.nz_code.nzs1170p5.nzs_zfactor_2016.ll2z import ll2z
-from gmhazard_calc.rupture import rupture
+from gmhazard_calc.rupture import rupture as gc_rupture
 from gmhazard_calc.im import IM, IMType
 from gmhazard_calc import utils
 from gmhazard_calc import dbs
@@ -182,8 +182,11 @@ def get_max_dist_zfac_scaled(site):
 def __process_rupture(
     rupture,
     site,
+    station_name,
     im_types,
     tect_type_model_dict,
+    nhm_dict,
+    stat_df,
     psa_periods,
     keep_sigma_components,
     fault_im_result_dict,
@@ -226,9 +229,9 @@ def __process_rupture(
             if im_type is not IMType.pSA:
                 values = [values]
             elif use_directivity:
-                print(f"Computing Directivity for fault {rupture_name} and site {station_name}")
-                nhm_fault = nhm_dict[rupture_name]
-                planes, lon_lat_depth = rupture.get_fault_header_points(nhm_fault)
+                print(f"Computing Directivity for fault {rupture.rupture_name} and site {station_name}")
+                nhm_fault = nhm_dict[rupture.rupture_name]
+                planes, lon_lat_depth = gc_rupture.get_fault_header_points(nhm_fault)
                 site_coords = np.asarray([stat_df.loc[station_name].values])
                 fdi, _, phi_red = sha_calc.directivity.bea20.directivity.compute_fault_directivity(lon_lat_depth,
                                                                                                    planes, site_coords,
@@ -338,11 +341,15 @@ def calculate_emp_site(
                 (
                     rupture,
                     site,
+                    station_name,
                     im_types,
                     tect_type_model_dict,
+                    nhm_dict,
+                    stat_df,
                     psa_periods,
                     keep_sigma_components,
                     {key: {} for key in imdb_dict.keys()},
+                    use_directivity,
                 )
                 for index, rupture in matching_df.iterrows()
             ],
