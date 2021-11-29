@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import List, Dict
 import time
+from collections.abc import Iterable
 
 import constants as const
 from empirical.util import empirical_factory
@@ -165,6 +166,12 @@ def get_computed_gmms(
                                         fault, site, empirical_factory.GMM[model], im,
                                     )
                                     # result is always tuple
+                                    # For Meta
+                                    # result_dict[tect_type][im][vs30][mag][model].append(
+                                    #     result[0][0]
+                                    #     if isinstance(result, Iterable)
+                                    #     else result[0]
+                                    # )
                                     result_dict[tect_type][im][vs30][mag][model].append(
                                         result[0]
                                     )
@@ -325,8 +332,8 @@ def plot_psa_rrup(
 def im_rrup_plot(
     mag_dict: Dict,
     vs30_values: List,
-    psa_periods: List,
     rrup_values: Dict,
+    result_dict: Dict,
     save_path: pathlib.PosixPath = None,
 ):
     """Plot function for a IM(no pSA) versus Rrup
@@ -337,10 +344,10 @@ def im_rrup_plot(
         Dictionary with a different Mw lists for a different tectonic type
     vs30_values: List
         list of Vs30s
-    psa_periods: List
-        list of Periods
     rrup_values: Dict
         dictionary of Rrups np.ndarray
+    result_dict: Dict
+        nested dictionary that has a different computed GMMs
     save_path: pathlib.PosixPath
         Directory to save plots
     """
@@ -352,17 +359,6 @@ def im_rrup_plot(
     plot_directory = root_path / "im_rrup"
     plot_directory.mkdir(exist_ok=True, parents=True)
 
-    start_time = time.time()
-    print("Normal IM Rrup started at: ", start_time)
-    faults, result_dict = init_setup(mag_dict, vs30_values, psa_periods)
-    sites = get_sites(vs30_values, rrup_values)
-
-    faults = get_faults(vs30_values, mag_dict, faults)
-    result_dict = get_computed_gmms(
-        vs30_values, sites, mag_dict, faults, result_dict, psa_periods
-    )
-    print("Normal IM Rrup result got at: ", time.time() - start_time)
-
     plot_im_rrup(vs30_values, mag_dict, rrup_values, result_dict, plot_directory)
 
 
@@ -371,6 +367,7 @@ def psa_rrup_plot(
     vs30_values: List,
     psa_periods: List,
     rrup_values: Dict,
+    result_dict: Dict,
     save_path: pathlib.PosixPath = None,
 ):
     """Plot function for a IM(pSA) versus Rrup
@@ -385,6 +382,8 @@ def psa_rrup_plot(
         list of Periods
     rrup_values: Dict
         dictionary of Rrups np.ndarray
+    result_dict: Dict
+        nested dictionary that has a different computed GMMs
     save_path: pathlib.PosixPath
         Directory to save plots
     """
@@ -396,15 +395,6 @@ def psa_rrup_plot(
     )
     plot_directory = root_path / "im_rrup"
     plot_directory.mkdir(exist_ok=True, parents=True)
-
-    faults, result_dict = init_setup(mag_dict, vs30_values, psa_periods)
-    sites = get_sites(vs30_values, rrup_values)
-
-    faults = get_faults(vs30_values, mag_dict, faults)
-
-    result_dict = get_computed_gmms(
-        vs30_values, sites, mag_dict, faults, result_dict, psa_periods
-    )
 
     plot_psa_rrup(
         vs30_values, mag_dict, psa_periods, rrup_values, result_dict, plot_directory
@@ -430,9 +420,26 @@ if __name__ == "__main__":
     }
     # Update the path to the directory to save plots
     save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/verification_plots")
-    start_time = time.time()
-    print("Whole script started at: ", start_time)
-    im_rrup_plot(mag_dict, vs30_lists, psa_lists, rrup_dict, save_path)
-    psa_rrup_plot(mag_dict, vs30_lists, psa_lists, rrup_dict, save_path)
 
-    print("Finished in: ", time.time() - start_time)
+    start_time = time.time()
+
+    # Set up process
+    faults, result_dict = init_setup(mag_dict, vs30_lists, psa_lists)
+    sites = get_sites(vs30_lists, rrup_dict)
+    faults = get_faults(vs30_lists, mag_dict, faults)
+    computed_gmms_dict = get_computed_gmms(
+        vs30_lists, sites, mag_dict, faults, result_dict, psa_lists
+    )
+    setup_done = time.time()
+
+    plot_start = time.time()
+
+    im_rrup_plot(mag_dict, vs30_lists, rrup_dict, computed_gmms_dict, save_path)
+    psa_rrup_plot(
+        mag_dict, vs30_lists, psa_lists, rrup_dict, computed_gmms_dict, save_path
+    )
+    plot_done = time.time()
+    print("START NOW!: ", start_time)
+    print("SET UP IS DONE!: ", setup_done - start_time)
+    print("START PLOTTING!: ", plot_start - start_time)
+    print("STOP PLOTTING!: ", plot_done - start_time)
