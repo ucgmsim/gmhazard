@@ -319,6 +319,7 @@ def generate_dbs(
         str(z_ffp),
     ]
     ds_timeout = (n_stations * (60 * 60)) / (min(n_procs - 1, n_stations))
+    ds_timeout = n_stations * (60 * 60)
     print(f"Using a timeout of {ds_timeout} seconds")
     ds_imdbs_result = subprocess.run(
         ds_imdbs_cmd, capture_output=True, timeout=ds_timeout

@@ -138,6 +138,7 @@ def calculate_ds(
                             max_dist,
                             dist_filter_by_mag=True,
                             return_vals=True,
+                            use_directivity=False,
                         ),
                         site.name,
                     )
