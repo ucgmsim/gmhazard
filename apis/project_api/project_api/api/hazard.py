@@ -53,10 +53,8 @@ def get_ensemble_hazard():
                 "im_component": str(ensemble_hazard.im.component),
             },
             server.DOWNLOAD_URL_SECRET_KEY,
-            server.DOWNLOAD_URL_VALID_FOR,
         ),
     )
-    result = {**result, "nzs1170p5_hazard": nzs1170p5_hazard.to_dict()}
 
     if ensemble_hazard.percentiles is not None:
         result = {
@@ -69,6 +67,8 @@ def get_ensemble_hazard():
             },
         }
 
+    if nzs1170p5_hazard is not None:
+        result = {**result, "nzs1170p5_hazard": nzs1170p5_hazard.to_dict()}
     if nzta_hazard is not None:
         result = {**result, "nzta_hazard": nzta_hazard.to_dict(nan_to_string=True)}
     return flask.jsonify(result)
@@ -114,10 +114,7 @@ def download_ens_hazard():
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_ffp = su.api.create_hazard_download_zip(
-            ensemble_hazard,
-            nzs1170p5_hazard,
-            tmp_dir,
-            nzta_hazard=nzta_hazard,
+            ensemble_hazard, nzs1170p5_hazard, tmp_dir, nzta_hazard=nzta_hazard,
         )
 
         return flask.send_file(

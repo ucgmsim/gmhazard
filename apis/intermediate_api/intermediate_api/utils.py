@@ -7,6 +7,7 @@ import numpy as np
 import flask
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+from itsdangerous.url_safe import URLSafeTimedSerializer
 
 from intermediate_api import app
 import intermediate_api.db as db
@@ -14,17 +15,23 @@ import intermediate_api.decorators as decorators
 
 DOWNLOAD_URL_SECRET_KEY_CORE = os.environ["DOWNLOAD_URL_SECRET_KEY_CORE_API"]
 DOWNLOAD_URL_SECRET_KEY_PROJECT = os.environ["DOWNLOAD_URL_SECRET_KEY_PROJECT_API"]
+DOWNLOAD_URL_VALID_FOR = 24 * 60 * 60
+SALT = os.environ["SALT"]
+
+
+class ExpiredTokenError(Exception):
+    pass
 
 
 class InvalidTokenError(Exception):
     pass
 
 
-def get_token_payload(token: str, secret_key: str):
+def _get_token_payload(token: str, secret_key: str):
     """Retrieves the parameters from an encoded url"""
-    s = itsdangerous.TimedJSONWebSignatureSerializer(secret_key)
+    s = URLSafeTimedSerializer(secret_key=secret_key, salt=SALT)
     try:
-        payload = s.loads(token)
+        payload = s.loads(token, max_age=DOWNLOAD_URL_VALID_FOR)
     except itsdangerous.exc.SignatureExpired as e:
         raise ExpiredTokenError()
     except Exception as e:
@@ -45,7 +52,6 @@ def proxy_to_api(
     content_type: str = "application/json",
 ):
     """IntermediateAPI - Handling the communication between Frontend and Core/Project API.
-
     Parameters
     ----------
     request: object
@@ -76,7 +82,7 @@ def proxy_to_api(
             )
 
             decoded_payloads = {
-                key: get_token_payload(value, secret_key)
+                key: _get_token_payload(value, secret_key)
                 for key, value in request.args.to_dict().items()
             }
 
@@ -112,9 +118,7 @@ def proxy_to_api(
             api_destination + route + querystring, headers={"Authorization": api_token},
         )
 
-    response = flask.Response(resp.content, resp.status_code, mimetype=content_type)
-
-    return response
+    return flask.Response(resp.content, resp.status_code, mimetype=content_type)
 
 
 def run_project_crosscheck(db_user_projects, public_projects, project_api_projects):

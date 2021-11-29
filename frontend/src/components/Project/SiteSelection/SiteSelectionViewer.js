@@ -12,10 +12,11 @@ import {
   ErrorMessage,
   ImageMap,
 } from "components/common";
+import { getProjectMaps } from "apis/ProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 
 const SiteSelectionViewer = () => {
-  const { getTokenSilently } = useAuth0();
+  const { isAuthenticated, getTokenSilently } = useAuth0();
 
   const {
     projectId,
@@ -53,63 +54,54 @@ const SiteSelectionViewer = () => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const getMaps = async () => {
-      if (projectSiteSelectionGetClick !== null) {
-        try {
-          setShowImages(false);
-          setShowSpinner(true);
-          setShowErrorMessage({ isError: false, errorCode: null });
+    if (projectSiteSelectionGetClick !== null) {
+      setShowImages(false);
+      setShowSpinner(true);
+      setShowErrorMessage({ isError: false, errorCode: null });
 
-          const token = await getTokenSilently();
+      let token = null;
+      const queryString = APIQueryBuilder({
+        project_id: projectId["value"],
+        station_id: createStationID(
+          projectLocationCode[projectLocation],
+          projectVS30,
+          projectZ1p0,
+          projectZ2p5
+        ),
+      });
 
-          await fetch(
-            CONSTANTS.INTERMEDIATE_API_URL +
-              CONSTANTS.PROJECT_API_MAPS_ENDPOINT +
-              APIQueryBuilder({
-                project_id: projectId["value"],
-                station_id: createStationID(
-                  projectLocationCode[projectLocation],
-                  projectVS30,
-                  projectZ1p0,
-                  projectZ2p5
-                ),
-              }),
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              signal: signal,
-            }
-          )
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
-              setRegionalMap(responseData["context_plot"]);
-              setVS30Map(responseData["vs30_plot"]);
-              setShowSpinner(false);
-              setShowImages(true);
-            })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                setShowSpinner(false);
-                setShowErrorMessage({ isError: true, errorCode: error });
-              }
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-              console.log(error);
-            });
-        } catch (error) {
-          setShowSpinner(false);
-          setShowErrorMessage({ isError: true, errorCode: error });
-          console.log(error);
-        }
-      }
-    };
-    getMaps();
+        getProjectMaps(queryString, signal, token)
+          .then(handleErrors)
+          .then(async (response) => {
+            const responseData = await response.json();
+            updateMap(responseData);
+          })
+          .catch((error) => catchError(error));
+      })();
+    }
 
     return () => {
       abortController.abort();
     };
   }, [projectSiteSelectionGetClick]);
+
+  const updateMap = (mapData) => {
+    setRegionalMap(mapData["context_plot"]);
+    setVS30Map(mapData["vs30_plot"]);
+    setShowSpinner(false);
+    setShowImages(true);
+  };
+
+  const catchError = (error) => {
+    if (error.name !== "AbortError") {
+      setShowSpinner(false);
+      setShowErrorMessage({ isError: true, errorCode: error });
+    }
+    console.log(error);
+  };
 
   return (
     <Fragment>

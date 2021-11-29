@@ -1,9 +1,6 @@
-from typing import Dict, Sequence
-
 import flask
 import numpy as np
 from flask_cors import cross_origin
-from werkzeug.contrib.cache import BaseCache
 
 import gmhazard_calc as sc
 import gmhazard_utils as su
@@ -51,7 +48,7 @@ def get_nzs1170p5_default_params():
 def get_nzs1170p5_hazard():
     """Retrieves the NZS1170p5 hazard for the station"""
     server.app.logger.info(f"Received request at {const.NZS1170p5_HAZARD_ENDPOINT}")
-    cache = flask.current_app.extensions["cache"]
+    cache = server.cache
 
     (ensemble_id, station, im), optional_values_dict = su.api.get_check_keys(
         flask.request.args,
@@ -90,7 +87,6 @@ def get_nzs1170p5_hazard():
                     **{key: str(value) for key, value in optional_values_dict.items()},
                 },
                 server.DOWNLOAD_URL_SECRET_KEY,
-                server.DOWNLOAD_URL_VALID_FOR,
             ),
         }
     )
@@ -102,7 +98,7 @@ def get_nzs1170p5_hazard():
 @su.api.endpoint_exception_handling(server.app)
 def get_nzs1170p5_uhs():
     server.app.logger.info(f"Received request at {const.NZS1170p5_UHS_ENDPOINT}")
-    cache = flask.current_app.extensions["cache"]
+    cache = server.cache
 
     (ensemble_id, station, exceedances), optional_kwargs = su.api.get_check_keys(
         flask.request.args,
@@ -148,7 +144,6 @@ def get_nzs1170p5_uhs():
                     **{key: str(value) for key, value in optional_args.items()},
                 },
                 server.DOWNLOAD_URL_SECRET_KEY,
-                server.DOWNLOAD_URL_VALID_FOR,
             ),
         }
     )

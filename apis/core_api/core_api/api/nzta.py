@@ -36,18 +36,12 @@ def get_nzta_default_params():
 def get_nzta_hazard():
     """Retrieves the NZS1170p5 hazard for the station"""
     server.app.logger.info(f"Received request at {const.NZTA_HAZARD_ENDPOINT}")
-    cache = flask.current_app.extensions["cache"]
+    cache = server.cache
 
     (ensemble_id, station, soil_class), optional_kwargs = su.api.get_check_keys(
         flask.request.args,
         (("ensemble_id", str), ("station", str), ("soil_class", sc.NZTASoilClass)),
-        (
-            (
-                "im_component",
-                sc.im.IMComponent,
-                sc.im.IMComponent.RotD50,
-            ),
-        ),
+        (("im_component", sc.im.IMComponent, sc.im.IMComponent.RotD50,),),
     )
 
     server.app.logger.debug(
@@ -70,7 +64,6 @@ def get_nzta_hazard():
                     "im_component": str(im_component),
                 },
                 server.DOWNLOAD_URL_SECRET_KEY,
-                server.DOWNLOAD_URL_VALID_FOR,
             ),
         }
     )

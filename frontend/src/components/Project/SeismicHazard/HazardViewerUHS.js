@@ -15,10 +15,11 @@ import {
   GuideMessage,
   ErrorMessage,
 } from "components/common";
+import { getProjectUHS } from "apis/ProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 
 const HazardViewerUHS = () => {
-  const { getTokenSilently } = useAuth0();
+  const { isAuthenticated, getTokenSilently } = useAuth0();
 
   const {
     projectId,
@@ -83,77 +84,40 @@ const HazardViewerUHS = () => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const loadUHSData = async () => {
-      if (projectUHSGetClick !== null) {
-        try {
-          setShowPlotUHS(false);
-          setShowSpinnerUHS(true);
-          setShowErrorMessage({ isError: false, errorCode: null });
+    if (projectUHSGetClick !== null) {
+      setShowPlotUHS(false);
+      setShowSpinnerUHS(true);
+      setShowErrorMessage({ isError: false, errorCode: null });
 
-          const token = await getTokenSilently();
+      let token = null;
+      const queryString = APIQueryBuilder({
+        project_id: projectId["value"],
+        station_id: createStationID(
+          projectLocationCode[projectLocation],
+          projectVS30,
+          projectZ1p0,
+          projectZ2p5
+        ),
+        rp: `${getSelectedRP().join(",")}`,
+        im_component:
+          projectSelectedIMComponent === null
+            ? "RotD50"
+            : projectSelectedIMComponent,
+      });
 
-          await fetch(
-            CONSTANTS.INTERMEDIATE_API_URL +
-              CONSTANTS.PROJECT_API_HAZARD_UHS_ENDPOINT +
-              APIQueryBuilder({
-                project_id: projectId["value"],
-                station_id: createStationID(
-                  projectLocationCode[projectLocation],
-                  projectVS30,
-                  projectZ1p0,
-                  projectZ2p5
-                ),
-                rp: `${getSelectedRP().join(",")}`,
-                im_component:
-                  projectSelectedIMComponent === null
-                    ? "RotD50"
-                    : projectSelectedIMComponent,
-              }),
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              signal: signal,
-            }
-          )
-            .then(handleErrors)
-            .then(async (response) => {
-              const responseData = await response.json();
+      (async () => {
+        if (isAuthenticated) token = await getTokenSilently();
 
-              setUHSData(
-                filterUHSData(responseData["uhs_results"], getSelectedRP())
-              );
-              setUHSNZS1170p5Data(
-                filterUHSData(responseData["nzs1170p5_uhs_df"], getSelectedRP())
-              );
-              setUHSBranchData(responseData["branch_uhs_results"]);
-              setDownloadToken(responseData["download_token"]);
-              setExtraInfo({
-                from: "project",
-                id: projectId,
-                location: projectLocation,
-                vs30: projectVS30,
-                selectedRPs: getSelectedRP(),
-              });
+        getProjectUHS(queryString, signal, token)
+          .then(handleErrors)
+          .then(async (response) => {
+            const responseData = await response.json();
 
-              setShowSpinnerUHS(false);
-              setShowPlotUHS(true);
-            })
-            .catch((error) => {
-              if (error.name !== "AbortError") {
-                setShowSpinnerUHS(false);
-                setShowErrorMessage({ isError: true, errorCode: error });
-              }
-              console.log(error);
-            });
-        } catch (error) {
-          setShowSpinnerUHS(false);
-          setShowErrorMessage({ isError: false, errorCode: error });
-        }
-      }
-    };
-
-    loadUHSData();
+            updateUHSData(responseData);
+          })
+          .catch((error) => catchError(error));
+      })();
+    }
 
     return () => {
       abortController.abort();
@@ -182,6 +146,33 @@ const HazardViewerUHS = () => {
       }, {});
 
     return filtered;
+  };
+
+  const updateUHSData = (uhsData) => {
+    setUHSData(filterUHSData(uhsData["uhs_results"], getSelectedRP()));
+    setUHSNZS1170p5Data(
+      filterUHSData(uhsData["nzs1170p5_uhs_df"], getSelectedRP())
+    );
+    setUHSBranchData(uhsData["branch_uhs_results"]);
+    setDownloadToken(uhsData["download_token"]);
+    setExtraInfo({
+      from: "project",
+      id: projectId,
+      location: projectLocation,
+      vs30: projectVS30,
+      selectedRPs: getSelectedRP(),
+    });
+
+    setShowSpinnerUHS(false);
+    setShowPlotUHS(true);
+  };
+
+  const catchError = (error) => {
+    if (error.name !== "AbortError") {
+      setShowSpinnerUHS(false);
+      setShowErrorMessage({ isError: true, errorCode: error });
+    }
+    console.log(error);
   };
 
   return (

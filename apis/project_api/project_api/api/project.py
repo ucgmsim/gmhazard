@@ -1,10 +1,8 @@
 import base64
 import tempfile
 import json
-import multiprocessing as mp
 from pathlib import Path
 
-import pandas as pd
 import flask
 from flask_cors import cross_origin
 
@@ -163,9 +161,7 @@ def get_download_all_token():
     return flask.jsonify(
         {
             "download_token": su.api.get_download_token(
-                {"project_id": project_id},
-                server.DOWNLOAD_URL_SECRET_KEY,
-                server.DOWNLOAD_URL_VALID_FOR,
+                {"project_id": project_id}, server.DOWNLOAD_URL_SECRET_KEY,
             )
         }
     )
@@ -249,7 +245,5 @@ def download_all(token):
         )
 
         return flask.send_file(
-            zip_ffp,
-            as_attachment=True,
-            attachment_filename=f"{project_id}_data.zip",
+            zip_ffp, as_attachment=True, attachment_filename=f"{project_id}_data.zip",
         )

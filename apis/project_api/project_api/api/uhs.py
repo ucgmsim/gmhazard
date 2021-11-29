@@ -41,9 +41,7 @@ def get_ensemble_uhs():
     server.app.logger.debug(f"API - version {version_str}")
 
     (project_id, station_id), optional_kwargs = su.api.get_check_keys(
-        flask.request.args,
-        ("project_id", "station_id"),
-        (("im_component", str),),
+        flask.request.args, ("project_id", "station_id"), (("im_component", str),),
     )
     im_component = (
         sc.im.IMComponent.RotD50
@@ -77,7 +75,6 @@ def get_ensemble_uhs():
                         "im_component": str(im_component),
                     },
                     server.DOWNLOAD_URL_SECRET_KEY,
-                    server.DOWNLOAD_URL_VALID_FOR,
                 ),
             ),
             "nzs1170p5_uhs_df": sc.nz_code.nzs1170p5.NZS1170p5Result.combine_results(
