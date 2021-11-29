@@ -184,7 +184,7 @@ def plot_im_rrup(
     mag_dict: Dict,
     rrup_values: Dict,
     result_dict: Dict,
-    plot_directory: pathlib.PosixPath,
+    plot_directory: pathlib.Path,
 ):
     """Plots for IM(no pSA) versus Rrup
 
@@ -258,7 +258,7 @@ def plot_psa_rrup(
     psa_periods: List,
     rrup_values: Dict,
     result_dict: Dict,
-    plot_directory: pathlib.PosixPath,
+    plot_directory: pathlib.Path,
 ):
     """Plots for pSA versus Rrup
 
@@ -329,78 +329,6 @@ def plot_psa_rrup(
             plt.close()
 
 
-def im_rrup_plot(
-    mag_dict: Dict,
-    vs30_values: List,
-    rrup_values: Dict,
-    result_dict: Dict,
-    save_path: pathlib.PosixPath = None,
-):
-    """Plot function for a IM(no pSA) versus Rrup
-
-    Parameters
-    ----------
-    mag_dict: Dict
-        Dictionary with a different Mw lists for a different tectonic type
-    vs30_values: List
-        list of Vs30s
-    rrup_values: Dict
-        dictionary of Rrups np.ndarray
-    result_dict: Dict
-        nested dictionary that has a different computed GMMs
-    save_path: pathlib.PosixPath
-        Directory to save plots
-    """
-    root_path = (
-        pathlib.Path(__file__).resolve().parent.parent
-        if save_path is None
-        else save_path
-    )
-    plot_directory = root_path / "im_rrup"
-    plot_directory.mkdir(exist_ok=True, parents=True)
-
-    plot_im_rrup(vs30_values, mag_dict, rrup_values, result_dict, plot_directory)
-
-
-def psa_rrup_plot(
-    mag_dict: Dict,
-    vs30_values: List,
-    psa_periods: List,
-    rrup_values: Dict,
-    result_dict: Dict,
-    save_path: pathlib.PosixPath = None,
-):
-    """Plot function for a IM(pSA) versus Rrup
-
-    Parameters
-    ----------
-    mag_dict: Dict
-        Dictionary with a different Mw lists for a different tectonic type
-    vs30_values: List
-        list of Vs30s
-    psa_periods: List
-        list of Periods
-    rrup_values: Dict
-        dictionary of Rrups np.ndarray
-    result_dict: Dict
-        nested dictionary that has a different computed GMMs
-    save_path: pathlib.PosixPath
-        Directory to save plots
-    """
-
-    root_path = (
-        pathlib.Path(__file__).resolve().parent.parent
-        if save_path is None
-        else save_path
-    )
-    plot_directory = root_path / "im_rrup"
-    plot_directory.mkdir(exist_ok=True, parents=True)
-
-    plot_psa_rrup(
-        vs30_values, mag_dict, psa_periods, rrup_values, result_dict, plot_directory
-    )
-
-
 if __name__ == "__main__":
     mag_dict = {
         "ACTIVE_SHALLOW": [6, 7, 8],
@@ -420,6 +348,8 @@ if __name__ == "__main__":
     }
     # Update the path to the directory to save plots
     save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/verification_plots")
+    plot_directory = save_path / "im_rrup"
+    plot_directory.mkdir(exist_ok=True, parents=True)
 
     start_time = time.time()
 
@@ -431,13 +361,14 @@ if __name__ == "__main__":
         vs30_lists, sites, mag_dict, faults, result_dict, psa_lists
     )
     setup_done = time.time()
-
     plot_start = time.time()
 
-    im_rrup_plot(mag_dict, vs30_lists, rrup_dict, computed_gmms_dict, save_path)
-    psa_rrup_plot(
-        mag_dict, vs30_lists, psa_lists, rrup_dict, computed_gmms_dict, save_path
+    # Plotting process
+    plot_im_rrup(vs30_lists, mag_dict, rrup_dict, computed_gmms_dict, plot_directory)
+    plot_psa_rrup(
+        vs30_lists, mag_dict, psa_lists, rrup_dict, computed_gmms_dict, plot_directory,
     )
+
     plot_done = time.time()
     print("START NOW!: ", start_time)
     print("SET UP IS DONE!: ", setup_done - start_time)
