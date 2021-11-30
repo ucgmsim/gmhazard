@@ -114,7 +114,7 @@ def create_project(
 
         if new_project:
             # Setup the project structure
-            setup_project(projects_base_dir, project_id)
+            # setup_project(projects_base_dir, project_id)
 
             if "im_components" not in project_specs:
                 project_specs["im_components"] = ["RotD50"]
