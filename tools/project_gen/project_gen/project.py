@@ -415,6 +415,7 @@ def generate_dbs(
                 str(flt_site_source_db_ffp),
                 str(vs30_ffp),
                 str(flt_db_dir),
+                str(ll_ffp),
                 "--model-dict",
                 str(model_config_ffp),
                 "--z-file",
