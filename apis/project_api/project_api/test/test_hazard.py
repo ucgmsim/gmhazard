@@ -43,7 +43,7 @@ def test_get_hazard(config):
     )
 
 
-def test_get_hazard_missingparam(config):
+def test_get_hazard_missing_param(config):
     """ Tests the failed get request of a hazard without parameters"""
     response = tu.send_test_request(
         constants.PROJECT_HAZARD_ENDPOINT,
@@ -72,7 +72,7 @@ def test_get_hazard_download(config):
     tu.response_checks(response, [], [], 200, "application/zip")
 
 
-def test_get_hazard_download_missingparam():
+def test_get_hazard_download_missing_param():
     """ Tests the failed get request of a hazard download without parameters"""
     response = tu.send_test_request(
         constants.PROJECT_HAZARD_DOWNLOAD_ENDPOINT,

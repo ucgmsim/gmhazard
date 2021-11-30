@@ -32,7 +32,7 @@ def test_get_scenario(config):
     )
 
 
-def test_get_scenario_missingparam(config):
+def test_get_scenario_missing_param(config):
     """ Tests the failed get request of a scenario without parameters"""
     response = tu.send_test_request(
         constants.PROJECT_SCENARIO_ENDPOINT,
@@ -64,7 +64,7 @@ def test_get_scenario_download(config):
     tu.response_checks(response, [], [], 200, "application/zip")
 
 
-def test_get_scenario_download_missingparam():
+def test_get_scenario_download_missing_param():
     """ Tests the failed get request of a scenario download without parameters"""
     response = tu.send_test_request(
         constants.PROJECT_SCENARIO_DOWNLOAD_ENDPOINT,

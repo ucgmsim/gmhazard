@@ -34,7 +34,7 @@ def test_get_ensemble_scenario(config):
     )
 
 
-def test_get_ensemble_scenario_missingparam(config):
+def test_get_ensemble_scenario_missing_param(config):
     """ Tests the failed get request of an ensemble scenario without parameters"""
     response = tu.send_test_request(
         constants.ENSEMBLE_SCENARIO_ENDPOINT,
@@ -66,7 +66,7 @@ def test_get_ensemble_scenario_download(config):
     tu.response_checks(response, [], [], 200, "application/zip")
 
 
-def test_get_ensemble_scenario_download_missingparam():
+def test_get_ensemble_scenario_download_missing_param():
     """ Tests the failed get request of an ensemble scenario download without parameters"""
     response = tu.send_test_request(
         constants.ENSEMBLE_SCENARIO_DOWNLOAD_ENDPOINT,
