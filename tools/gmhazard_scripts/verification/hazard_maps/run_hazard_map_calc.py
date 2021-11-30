@@ -8,6 +8,7 @@ import argparse
 
 import numpy as np
 
+from gmhazard_calc.im import IM
 import gmhazard_utils as su
 import gmhazard_calc as sc
 
@@ -17,11 +18,11 @@ def main(args):
 
     if args.nz_code:
         hazard_map_data = sc.nz_code.nzs1170p5.run_hazard_map(
-            ensemble, args.im, args.exceedance, n_procs=args.n_procs
+            ensemble, IM.from_str(args.im), args.exceedance, n_procs=args.n_procs
         )
     else:
         hazard_map_data = sc.hazard.run_hazard_map(
-            ensemble, args.im, args.exceedance, n_procs=args.n_procs
+            ensemble, IM.from_str(args.im), args.exceedance, n_procs=args.n_procs
         )
 
     if np.any(hazard_map_data.isna()):
