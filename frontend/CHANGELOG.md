@@ -1,3 +1,14 @@
+## December 1, 2021
+
+### Deploying GMHazard web app to subdirectory - ([PR #39](https://github.com/ucgmsim/gmhazard/pull/39))
+
+- Deploy the GMHazard web application to subdirectory.
+- Only Dockerize the following components
+  - Intermediate API
+  - MariaDB
+- Frontend is now deployed with production build.
+  - It makes it easier to be deployed to subdirectories.
+
 ## November 26, 2021
 
 ### Download GMS no longer needs a token as a parameter - ([PR #36](https://github.com/ucgmsim/gmhazard/pull/36))

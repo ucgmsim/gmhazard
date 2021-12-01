@@ -67,7 +67,7 @@ const LogoutButton = () => {
           id="qs-logout-btn"
           onClick={() =>
             logout({
-              returnTo: window.location.origin,
+              returnTo: window.location.origin + "/gmhazard",
             })
           }
         >
