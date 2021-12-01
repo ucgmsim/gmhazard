@@ -285,7 +285,7 @@ def get_im_data(
 
     # No IM data for the specified branch and source type
     if im_data is None:
-        return None
+        return None, None
 
     if im_component != IMComponent.RotD50:
         if im_data_type is constants.IMDataType.parametric:
