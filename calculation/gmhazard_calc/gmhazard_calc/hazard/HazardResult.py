@@ -78,7 +78,7 @@ class BaseHazardResult:
             )
         except ValueError:
             raise exceptions.ExceedanceOutOfRangeError(
-                self.im,
+                str(self.im),
                 exceedance,
                 f"The specified exceedance value {exceedance} is out of"
                 f" range for this hazard result for {self.im}",
