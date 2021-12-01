@@ -1,8 +1,3 @@
-import os
-
-# Ensures config is set before importing GMHAZRAD
-os.environ["ENSEMBLE_CONFIG_PATH"] = "/mnt/mantle_data/seistech/ensemble_configs"
-
 import numpy as np
 
 import gmhazard_calc

@@ -7,6 +7,7 @@ import numpy as np
 
 import sha_calc
 from sha_calc.directivity.bea20.validation.plots import plot_fdi
+from sha_calc.directivity.bea20.HypoMethod import HypoMethod
 import common
 
 
@@ -87,7 +88,7 @@ def parse_args():
     )
     parser.add_argument(
         "--method",
-        default="MC",
+        default="MONTE_CARLO",
         help="Method to place hypocentres",
     )
     parser.add_argument(
@@ -122,7 +123,7 @@ if __name__ == "__main__":
                     fault,
                     args.nstrike,
                     args.ndip,
-                    args.method,
+                    HypoMethod[args.method],
                     args.period,
                     args.grid_space,
                     nhm_dict,

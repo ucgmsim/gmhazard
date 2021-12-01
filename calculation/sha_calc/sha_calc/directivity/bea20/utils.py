@@ -4,6 +4,7 @@ import math
 import numpy as np
 
 from sha_calc.directivity.bea20.EventType import EventType
+from sha_calc.directivity.bea20.HypoMethod import HypoMethod
 from sha_calc.directivity.bea20 import distributions
 
 
@@ -12,6 +13,7 @@ def set_hypocentres(
     hypo_down_dip: int,
     planes: List,
     event_type: EventType,
+    method=HypoMethod.LATIN_HYPERCUBE,
 ):
     """
     Creates a List of planes each with a different set hypocentre for directivity calculations
@@ -27,6 +29,8 @@ def set_hypocentres(
         The planes to adjust and set the hypocentre on
     event_type: EventType
         The event type Strike_slip, dip_slip or all for determining the down dip distribution function
+    method: HypoMethod, optional
+        Method to place hypocentres across strike and dip
     """
 
     # Gets the total length and removes any previous hypocentres
@@ -36,19 +40,24 @@ def set_hypocentres(
         plane["shyp"] = -999.9
         plane["dhyp"] = -999.9
 
-    # return distributions.monte_carlo_distribution(hypo_along_strike, hypo_down_dip, planes, event_type, total_length)
-
-    # return distributions.monte_carlo_grid(
-    #     hypo_along_strike, hypo_down_dip, planes, event_type, total_length
-    # )
-
-    # return distributions.even_grid(
-    #     hypo_along_strike, hypo_down_dip, planes, event_type, total_length
-    # )
-
-    return distributions.latin_hypercube(
-        hypo_along_strike, hypo_down_dip, planes, event_type, total_length
-    )
+    if method == HypoMethod.LATIN_HYPERCUBE:
+        return distributions.latin_hypercube(
+            hypo_along_strike * hypo_down_dip, planes, event_type, total_length
+        )
+    elif method == HypoMethod.MONTE_CARLO:
+        return distributions.monte_carlo_distribution(
+            hypo_along_strike * hypo_down_dip, planes, event_type, total_length
+        )
+    elif method == HypoMethod.MONTE_CARLO_GRID:
+        return distributions.monte_carlo_grid(
+            hypo_along_strike, hypo_down_dip, planes, event_type, total_length
+        )
+    elif method == HypoMethod.GRID:
+        return distributions.even_grid(
+            hypo_along_strike, hypo_down_dip, planes, event_type, total_length
+        )
+    else:
+        raise NotImplementedError(f"Method {method} is not currently implemented")
 
 
 def calc_nominal_strike(traces: np.ndarray):

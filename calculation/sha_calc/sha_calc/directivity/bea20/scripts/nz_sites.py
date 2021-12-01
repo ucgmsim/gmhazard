@@ -99,4 +99,5 @@ if __name__ == "__main__":
         args.period,
         args.grid_space,
         args.method,
+        args.output_dir,
     )

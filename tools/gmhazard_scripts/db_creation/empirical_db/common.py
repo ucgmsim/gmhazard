@@ -132,14 +132,14 @@ def curate_im_list(tect_type_model_dict, model, periods):
 
 
 def write_data_and_close(
-        imdb_dict,
-        nhm_ffp,
-        rupture_df,
-        site_df,
-        vs30_ffp,
-        psa_periods=None,
-        ims=None,
-        tect_type_model_dict_ffp=None,
+    imdb_dict,
+    nhm_ffp,
+    rupture_df,
+    site_df,
+    vs30_ffp,
+    psa_periods=None,
+    ims=None,
+    tect_type_model_dict_ffp=None,
 ):
     """
     Writes metadata, rupture_df and closes the IMDBs for the ones opened by open_imdbs
@@ -229,15 +229,23 @@ def __process_rupture(
             if im_type is not IMType.pSA:
                 values = [values]
             elif use_directivity:
-                print(f"Computing Directivity for fault {rupture.rupture_name} and site {station_name}")
                 nhm_fault = nhm_dict[rupture.rupture_name]
                 planes, lon_lat_depth = gc_rupture.get_fault_header_points(nhm_fault)
                 site_coords = np.asarray([stat_df.loc[station_name].values])
-                fdi, _, phi_red = sha_calc.directivity.bea20.directivity.compute_fault_directivity(lon_lat_depth,
-                                                                                                   planes, site_coords,
-                                                                                                   25, 4, nhm_fault.mw,
-                                                                                                   nhm_fault.rake,
-                                                                                                   periods=psa_periods)
+                (
+                    fdi,
+                    _,
+                    phi_red,
+                ) = sha_calc.directivity.bea20.directivity.compute_fault_directivity(
+                    lon_lat_depth,
+                    planes,
+                    site_coords,
+                    25,
+                    4,
+                    nhm_fault.mw,
+                    nhm_fault.rake,
+                    periods=psa_periods,
+                )
             for i, value in enumerate(values):
                 full_im_name = (
                     IM(im_type, period=psa_periods[i])
@@ -267,26 +275,26 @@ def __process_rupture(
 
 
 def calculate_emp_site(
-        im_types,
-        psa_periods,
-        imdb_dict,
-        fault_df,
-        rupture_df,
-        distance_store,
-        nhm_data,
-        nhm_dict,
-        stat_df,
-        vs30,
-        z1p0,
-        z2p5,
-        station_name,
-        tect_type_model_dict_ffp,
-        max_rjb=MAX_RJB,
-        dist_filter_by_mag=False,
-        return_vals=False,
-        keep_sigma_components=False,
-        use_directivity=True,
-        n_procs: int = 1,
+    im_types,
+    psa_periods,
+    imdb_dict,
+    fault_df,
+    rupture_df,
+    distance_store,
+    nhm_data,
+    nhm_dict,
+    stat_df,
+    vs30,
+    z1p0,
+    z2p5,
+    station_name,
+    tect_type_model_dict_ffp,
+    max_rjb=MAX_RJB,
+    dist_filter_by_mag=False,
+    return_vals=False,
+    keep_sigma_components=False,
+    use_directivity=False,
+    n_procs: int = 1,
 ):
     """
     Calculates (and writes) all empirical values for all ruptures in nhm_data at a given site.

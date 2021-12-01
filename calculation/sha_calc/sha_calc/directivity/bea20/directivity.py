@@ -4,11 +4,11 @@ from typing import List
 
 import numpy as np
 import pandas as pd
-import time
 
 from qcore import srf
 from IM_calculation.source_site_dist import src_site_dist
 from sha_calc.directivity.bea20 import bea20, utils
+from sha_calc.directivity.bea20.HypoMethod import HypoMethod
 from sha_calc.constants import DEFAULT_PSA_PERIODS
 
 
@@ -81,7 +81,6 @@ def compute_directivity_srf_multi(
         lon_lat_depth,
     ) = _srf_pre_process(srf_file, srf_csv)
 
-    # TODO Update with best practice for hypocentre averaging
     hyp_along_strike = 10
     hyp_down_dip = 2
 
@@ -106,8 +105,7 @@ def compute_fault_directivity(
     mag: float,
     rake: float,
     periods: List[float] = DEFAULT_PSA_PERIODS,
-    hypo_weighting: bool = False,
-    method: str = "Hypercube",
+    method=HypoMethod.LATIN_HYPERCUBE,
 ):
     """
     Does the computation of directivity for a fault with any number of hypocentres.
@@ -132,12 +130,14 @@ def compute_fault_directivity(
     periods: List[float], optional
         The periods to calculate for the bea20 model's fD
         If not set then will be all the default pSA periods for GMHazard
+    method: HypoMethod, optional
+        Method to place hypocentres across strike and dip
     """
     nominal_strike, nominal_strike2 = utils.calc_nominal_strike(lon_lat_depth)
 
     if hyp_down_dip == 1 and hyp_along_strike == 1:
         planes_list, plane_index = utils.set_hypocentres(
-            1, 1, planes, utils.EventType.from_rake(rake)
+            1, 1, planes, utils.EventType.from_rake(rake), method=method
         )
 
         return _compute_directivity_effect(
@@ -158,11 +158,16 @@ def compute_fault_directivity(
             hyp_down_dip,
             planes,
             utils.EventType.from_rake(rake),
+            method=method,
         )
 
         # Creating the array to store all fdi values
-        fdi_array = np.zeros((hyp_along_strike * hyp_down_dip, len(sites), len(periods)))
-        phired_array = np.zeros((hyp_along_strike * hyp_down_dip, len(sites), len(periods)))
+        fdi_array = np.zeros(
+            (hyp_along_strike * hyp_down_dip, len(sites), len(periods))
+        )
+        phired_array = np.zeros(
+            (hyp_along_strike * hyp_down_dip, len(sites), len(periods))
+        )
 
         for index, planes in enumerate(planes_list):
             # Gets the plane index of the hypocentre
@@ -183,18 +188,24 @@ def compute_fault_directivity(
             fdi_array[index] = fdi
             phired_array[index] = phi_red
 
-        if hypo_weighting:
+        if method == HypoMethod.GRID:
+            # Only apply weights if method type is grid
             fdi_average = np.multiply(
                 fdi_array.reshape((hyp_along_strike * hyp_down_dip, len(sites))),
-                np.asarray(weights).reshape((hyp_along_strike * hyp_down_dip, len(periods))),
+                np.asarray(weights).reshape(
+                    (hyp_along_strike * hyp_down_dip, len(periods))
+                ),
             )
             phired_average = np.multiply(
                 phired_array.reshape((hyp_along_strike * hyp_down_dip, len(sites))),
-                np.asarray(weights).reshape((hyp_along_strike * hyp_down_dip, len(periods))),
+                np.asarray(weights).reshape(
+                    (hyp_along_strike * hyp_down_dip, len(periods))
+                ),
             )
             fdi_average = np.sum(fdi_average, axis=0)
             phired_average = np.sum(phired_average, axis=0)
         else:
+            # Just average the fdi array for all other methods
             fdi_average = np.mean(fdi_array, axis=0)
             phired_average = np.mean(phired_array, axis=0)
 
