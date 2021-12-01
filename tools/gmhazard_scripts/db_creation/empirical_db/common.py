@@ -316,7 +316,7 @@ def calculate_emp_site(
     :param tect_type_model_dict_ffp: the relation between tectonic type and which empirical model(s) to use
     :param return_vals: flag to return the values instead of writing them to the DB - specifically for the single
                         writer MPI paradigm
-    :param use_directivity: flag to apply the directivity effect to each of the fault calculations. Applies only is pSA
+    :param use_directivity: flag to apply the directivity effect to each of the fault calculations. Applies only if pSA
     :return: if return vals is set - a Dictionary of dataframes are returned
     """
     # Sets Z1.0 and Z2.5 to None if NaN

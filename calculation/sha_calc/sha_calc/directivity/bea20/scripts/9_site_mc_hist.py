@@ -52,7 +52,7 @@ def parse_args():
     parser.add_argument(
         "--repeats",
         default=100,
-        help="Method to place hypocentres",
+        help="Times directivity calculation was repeated",
     )
     parser.add_argument(
         "--grid_space",

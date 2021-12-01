@@ -103,7 +103,7 @@ def parse_args():
     )
     parser.add_argument(
         "--n_procs",
-        default=30,
+        default=6,
         help="Number of processes to use",
     )
 

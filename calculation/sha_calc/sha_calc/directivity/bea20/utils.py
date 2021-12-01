@@ -17,7 +17,8 @@ def set_hypocentres(
 ):
     """
     Creates a List of planes each with a different set hypocentre for directivity calculations
-    Sets a given amount of hypocentres along strike and down dip based on different distributions and the event type.
+    Sets a given amount of hypocentres along strike and down dip based on different distributions
+    And the method and event type.
 
     Parameters
     ----------

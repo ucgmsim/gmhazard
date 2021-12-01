@@ -42,26 +42,6 @@ def hypo_average_plots(
         srf_file, srf_csv, site_coords, periods=[period]
     )
 
-    # im = IM(IMType.pSA, period=3.0)
-    # ens = gmhazard_calc.gm_data.Ensemble("v20p5emp")
-    # branch = ens.get_im_ensemble(im.im_type).branches[0]
-    #
-    # nhm_dict = nhm.load_nhm(branch.flt_erf_ffp)
-    #
-    # # for key, fault in nhm_dict.items():
-    # fault = nhm_dict["AlpineK2T"]
-    # planes, lon_lat_depth = rupture.get_fault_header_points(fault)
-    # lon_values = np.linspace(
-    #     lon_lat_depth[:, 0].min() - 0.5, lon_lat_depth[:, 0].max() + 0.5, 100
-    # )
-    # lat_values = np.linspace(
-    #     lon_lat_depth[:, 1].min() - 0.5, lon_lat_depth[:, 1].max() + 0.5, 100
-    # )
-    #
-    # x, y = np.meshgrid(lon_values, lat_values)
-    # site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
-    # fdi_average, fdi_array = sha_calc.bea20.compute_fault_directivity(lon_lat_depth, planes, site_coords, 10, 2, fault.mw, fault.rake, [im.period])
-
     for index, fdi in enumerate(fdi_array):
         plots.plot_fdi(
             x,

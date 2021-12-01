@@ -5,8 +5,9 @@ import numpy as np
 import pandas as pd
 
 import common
-import sha_calc
 from qcore.formats import load_station_file
+import sha_calc
+from sha_calc.directivity.bea20.HypoMethod import HypoMethod
 
 
 def comput_nz_site_effect(
@@ -82,7 +83,7 @@ def parse_args():
     )
     parser.add_argument(
         "--method",
-        default="Hypercube",
+        default="LATIN_HYPERCUBE",
         help="Method to place hypocentres",
     )
     return parser.parse_args(), nhm_dict
@@ -98,6 +99,6 @@ if __name__ == "__main__":
         args.nhyps,
         args.period,
         args.grid_space,
-        args.method,
+        HypoMethod[args.method],
         args.output_dir,
     )
