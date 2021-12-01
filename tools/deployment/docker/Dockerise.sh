@@ -7,7 +7,7 @@ docker-compose down
 
 # Remove existing images
 echo "Removing docker images first"
-docker rmi frontend:${target_branch} intermediate_api:${target_branch}
+docker rmi intermediate_api:${target_branch}
 
 # Switch to target branch in case we're not in the right branch
 echo "Changing to ${target_branch} branch"
