@@ -134,12 +134,10 @@ export const sortDuplicateYRange = (givenArr) => {
   },...]
 */
 export const createSelectArray = (options) => {
-  let selectOptions = options.map((option) => ({
+  return options.map((option) => ({
     value: option,
     label: option,
   }));
-
-  return selectOptions;
 };
 
 /* 
@@ -161,12 +159,10 @@ export const createProjectIDArray = (options) => {
   Specially made for Projects Vs30 - label to contain unit, m/s
 */
 export const createVs30Array = (options) => {
-  let selectOptions = options.map((option) => ({
+  return options.map((option) => ({
     value: option,
     label: `${option} m/s`,
   }));
-
-  return selectOptions;
 };
 
 /* 
