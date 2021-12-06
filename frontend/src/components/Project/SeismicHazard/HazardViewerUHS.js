@@ -125,13 +125,7 @@ const HazardViewerUHS = () => {
   }, [projectUHSGetClick]);
 
   // Create an array of selected RPs
-  const getSelectedRP = () => {
-    let tempArray = [];
-
-    projectSelectedUHSRP.forEach((RP) => tempArray.push(RP.value));
-
-    return tempArray;
-  };
+  const getSelectedRP = () => projectSelectedUHSRP.map((RP) => RP.value);
 
   /* 
     Filter the UHSData with selected RPs to display
