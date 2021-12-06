@@ -16,8 +16,8 @@ from . import shared_responses as sr
 
 def write_hazard_download_data(
     ensemble_hazard: sc.hazard.EnsembleHazardResult,
-    nzs1170p5_hazard: sc.nz_code.nzs1170p5.NZS1170p5Result,
     out_dir: str,
+    nzs1170p5_hazard: sc.nz_code.nzs1170p5.NZS1170p5Result = None,
     nzta_hazard: sc.nz_code.nzta_2018.NZTAResult = None,
     prefix: str = None,
 ):
@@ -60,19 +60,32 @@ def write_hazard_download_data(
     )
 
     # NZS1170p5 hazard
-    nzs1170p5_ffp = (
-        Path(out_dir) / f"{prefix}{ensemble_hazard.im.file_format()}_nzs1170p5.csv"
-    )
-    nzs1170p5_metadata = (
-        f"Z: {nzs1170p5_hazard.Z}, D: {nzs1170p5_hazard.D}, "
-        f"N: {nzs1170p5_hazard.N.values[0]}, Ch: {nzs1170p5_hazard.Ch.iloc[0]}\n"
-    )
-    utils.add_metadata_header(
-        str(nzs1170p5_ffp), ensemble, site_info, nzs1170p5_metadata
-    )
-    nzs1170p5_hazard.im_values.to_csv(
-        nzs1170p5_ffp, index_label="exceedance", header=True, mode="a"
-    )
+    nzs1170p5_metadata, nzs1170p5_ffp = {}, None
+    if nzs1170p5_hazard is not None:
+        nzs1170p5_ffp = (
+            Path(out_dir) / f"{prefix}{ensemble_hazard.im.file_format()}_nzs1170p5.csv"
+        )
+        nzs1170p5_metadata = (
+            f"Z: {nzs1170p5_hazard.Z}, D: {nzs1170p5_hazard.D}, "
+            f"N: {nzs1170p5_hazard.N.values[0]}, Ch: {nzs1170p5_hazard.Ch.iloc[0]}\n"
+        )
+        utils.add_metadata_header(
+            str(nzs1170p5_ffp), ensemble, site_info, nzs1170p5_metadata
+        )
+        nzs1170p5_hazard.im_values.to_csv(
+            nzs1170p5_ffp, index_label="exceedance", header=True, mode="a"
+        )
+
+        nzs1170p5_metadata = {
+            "NZS1170.5_metadata": {
+                "Z": float(nzs1170p5_hazard.Z),
+                "D": float(nzs1170p5_hazard.D),
+                "N": float(nzs1170p5_hazard.N.values[0]),
+                "Ch": float(nzs1170p5_hazard.Ch.values[0]),
+                "soil_class": nzs1170p5_hazard.soil_class.value,
+                "R": nzs1170p5_hazard.R.to_dict(),
+            },
+        }
 
     # NZTA_hazard
     nzta_metadata, nzta_ffp = {}, None
@@ -86,11 +99,7 @@ def write_hazard_download_data(
             nzta_ffp, index_label="exceedance", header=True, mode="a", index=True
         )
 
-        nzta_metadata = {
-            "NZTA_metadata": {
-                "soil_class": nzta_hazard.soil_class.value,
-            }
-        }
+        nzta_metadata = {"NZTA_metadata": {"soil_class": nzta_hazard.soil_class.value,}}
 
     # Metadata
     metadata = {
@@ -104,21 +113,15 @@ def write_hazard_download_data(
         else site_info.user_vs30,
         "im": str(ensemble_hazard.im),
         "git_version_hash": utils.get_repo_version(),
-        "NZS1170.5_metadata": {
-            "Z": float(nzs1170p5_hazard.Z),
-            "D": float(nzs1170p5_hazard.D),
-            "N": float(nzs1170p5_hazard.N.values[0]),
-            "Ch": float(nzs1170p5_hazard.Ch.values[0]),
-            "soil_class": nzs1170p5_hazard.soil_class.value,
-            "R": nzs1170p5_hazard.R.to_dict(),
-        },
     }
 
     meta_data_ffp = (
         Path(out_dir) / f"{prefix}{ensemble_hazard.im.file_format()}_metadata.yaml"
     )
     with meta_data_ffp.open(mode="w") as f:
-        yaml.safe_dump({**metadata, **nzta_metadata}, f)
+        yaml.safe_dump(
+            {**metadata, **nzs1170p5_metadata, **nzta_metadata}, f, sort_keys=False
+        )
 
     # Hazard & hazard branches plot
     # Temporarily disable logging, as matplotlib spams..
@@ -133,7 +136,7 @@ def write_hazard_download_data(
         "Hazard",
         ensemble_hazard.im,
         str(hazard_plot_ffp),
-        nzs1170p5_hazard.im_values,
+        nzs1170p5_hazard.im_values if nzs1170p5_hazard is not None else None,
         nzta_hazard.pga_values if nzta_hazard is not None else None,
     )
 
@@ -150,7 +153,7 @@ def write_hazard_download_data(
         "Branches Hazard",
         ensemble_hazard.im,
         str(hazard_branch_plot_ffp),
-        nzs1170p5_hazard.im_values,
+        nzs1170p5_hazard.im_values if nzs1170p5_hazard is not None else None,
         nzta_hazard.pga_values if nzta_hazard is not None else None,
     )
     logging.disable(level=logging.NOTSET)
@@ -168,15 +171,15 @@ def write_hazard_download_data(
 
 def create_hazard_download_zip(
     ensemble_hazard: sc.hazard.EnsembleHazardResult,
-    nzs1170p5_hazard: sc.nz_code.nzs1170p5.NZS1170p5Result,
     tmp_dir: str,
+    nzs1170p5_hazard: sc.nz_code.nzs1170p5.NZS1170p5Result = None,
     nzta_hazard: sc.nz_code.nzta_2018.NZTAResult = None,
     prefix: str = None,
 ):
     ffps = write_hazard_download_data(
         ensemble_hazard,
-        nzs1170p5_hazard,
         tmp_dir,
+        nzs1170p5_hazard=nzs1170p5_hazard,
         nzta_hazard=nzta_hazard,
         prefix=prefix,
     )
@@ -211,9 +214,7 @@ def write_disagg_download_data(
     disagg_df = disagg_data.total_contributions_df.merge(
         metadata_df, how="left", left_index=True, right_index=True
     )
-    disagg_df.loc[
-        "distributed_seismicity", "rupture_name"
-    ] = "distributed_seismicity"
+    disagg_df.loc["distributed_seismicity", "rupture_name"] = "distributed_seismicity"
     disagg_df.loc[
         :,
         [
@@ -249,7 +250,10 @@ def write_disagg_download_data(
             "contribution", ascending=False
         )
 
-        disagg_agg_data_ffp = Path(out_dir) / f"{prefix}{disagg_data.im.file_format()}_{int(1 / disagg_data.exceedance)}_disagg_aggregated.csv"
+        disagg_agg_data_ffp = (
+            Path(out_dir)
+            / f"{prefix}{disagg_data.im.file_format()}_{int(1 / disagg_data.exceedance)}_disagg_aggregated.csv"
+        )
         disagg_agg_df.loc[
             :, ["contribution", "epsilon", "annual_rec_prob", "magnitude", "rrup",]
         ].to_csv(disagg_agg_data_ffp, index=True, mode="a", index_label="rupture_name")
@@ -304,7 +308,14 @@ def write_disagg_download_data(
         with eps_plot_ffp.open(mode="wb") as f:
             f.write(eps_plot_data)
 
-    return disagg_data_ffp, meta_data_ffp, mean_values_ffp, src_plot_ffp, eps_plot_ffp, disagg_agg_data_ffp
+    return (
+        disagg_data_ffp,
+        meta_data_ffp,
+        mean_values_ffp,
+        src_plot_ffp,
+        eps_plot_ffp,
+        disagg_agg_data_ffp,
+    )
 
 
 def create_disagg_download_zip(
@@ -473,8 +484,7 @@ def write_gms_download_data(
 
         # Pseudo acceleration response spectra plot
         sc.plots.plt_gms_spectra(
-            gms_result,
-            save_file=Path(out_dir) / f"{prefix}gms_spectra_plot.png",
+            gms_result, save_file=Path(out_dir) / f"{prefix}gms_spectra_plot.png",
         )
 
         # IM distribution plots
@@ -556,8 +566,7 @@ def create_gms_download_zip(
         for cur_file in ffps:
             if cur_file != os.path.basename(zip_ffp):
                 cur_zip.write(
-                    os.path.join(tmp_dir, cur_file),
-                    arcname=os.path.basename(cur_file),
+                    os.path.join(tmp_dir, cur_file), arcname=os.path.basename(cur_file),
                 )
     return zip_ffp, missing_waveforms
 
@@ -714,9 +723,7 @@ def create_scenario_download_zip(
     prefix: str = None,
 ):
     ffps = write_scenario_download_data(
-        ensemble_scenario,
-        out_dir=tmp_dir,
-        prefix=prefix,
+        ensemble_scenario, out_dir=tmp_dir, prefix=prefix,
     )
 
     # Create zip file

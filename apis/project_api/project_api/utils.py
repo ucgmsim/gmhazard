@@ -139,11 +139,7 @@ def load_hazard_data(results_dir: Path, im: sc.im.IM):
     )
 
     nzta_hazard = (
-        (
-            sc.nz_code.nzta_2018.NZTAResult.load(results_dir / "hazard_nzta")
-            if im.im_type == sc.im.IMType.PGA
-            else None
-        )
+        sc.nz_code.nzta_2018.NZTAResult.load(results_dir / "hazard_nzta")
         if im.im_type == sc.im.IMType.pSA or im.im_type == sc.im.IMType.PGA
         else None
     )

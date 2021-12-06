@@ -1,3 +1,7 @@
+## [21.8.3] - 2021-12-06 -- Projects - Download Hazard Curve
+### Changed
+    - Projects API - NZS1170p5 is now an optional parameter for downloading Hazard Curve data
+        - By supporting more IM(Not just pSA and PGA) they may not have any NZ Code data(NZS1170p5 or NZTA)
 ## [21.8.2] - 2021-11-26 -- Download GMS no longer needs a token as a parameter
 ### Changed
     - Non-projects GMS download endpoint no longer needs a token as a parameter
