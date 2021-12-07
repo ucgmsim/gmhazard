@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, Fragment } from "react";
+import React, { useState, useContext, Fragment } from "react";
 
 import { v4 as uuidv4 } from "uuid";
 
@@ -13,19 +13,11 @@ const DisaggregationSection = () => {
     projectSelectedIM,
     projectSelectedIMPeriod,
     projectSelectedIMComponent,
-    projectSelectedDisagRP,
     setProjectSelectedDisagRP,
     setProjectDisaggGetClick,
   } = useContext(GlobalContext);
 
   const [localSelectedRP, setLocalSelectedRP] = useState(null);
-
-  // Reset local variable to null when global changed to null (Reset)
-  useEffect(() => {
-    if (projectSelectedDisagRP === null) {
-      setLocalSelectedRP(null);
-    }
-  }, [projectSelectedDisagRP]);
 
   const getDisagg = () => {
     setProjectSelectedDisagRP(localSelectedRP["value"]);

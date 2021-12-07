@@ -32,6 +32,13 @@ const ScenarioForm = () => {
   const [localRuptureOptions, setLocalRuptureOptions] = useState([]);
   const [localRuptures, setLocalRuptures] = useState([]);
 
+  // Reset tabs if users change Project ID, Vs30, Z values or Location
+  useEffect(() => {
+    setLocalRuptures([]);
+    setLocalSelectedIMComponent(null);
+    setProjectScenarioData(null);
+  }, [projectId, projectVS30, projectLocation, projectZ1p0, projectZ2p5]);
+
   useEffect(() => {
     if (localSelectedIMComponent !== null) {
       setProjectSelectedScenarioIMComponent(localSelectedIMComponent["value"]);
@@ -61,13 +68,6 @@ const ScenarioForm = () => {
       setProjectScenarioSelectedRuptures(rupture_values);
     }
   }, [localRuptures]);
-
-  // Reset tabs if users change Project ID, Vs30, Z values or Location
-  useEffect(() => {
-    setLocalRuptures([]);
-    setLocalSelectedIMComponent(null);
-    setProjectScenarioData(null);
-  }, [projectId, projectVS30, projectLocation, projectZ1p0, projectZ2p5]);
 
   return (
     <Fragment>

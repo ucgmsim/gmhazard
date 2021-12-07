@@ -1,4 +1,4 @@
-import React, { Fragment, useContext } from "react";
+import React, { Fragment, useContext, useEffect } from "react";
 
 import { Tabs, Tab } from "react-bootstrap";
 import { GlobalContext } from "context";
@@ -14,7 +14,30 @@ import { HazardForm, HazardViewer } from "components/Project/SeismicHazard";
 import { ScenarioForm, ScenarioViewer } from "components/Project/Scenarios";
 
 const Project = () => {
-  const { projectId, projectLocation, projectVS30 } = useContext(GlobalContext);
+  const {
+    projectId,
+    projectLocation,
+    projectVS30,
+    setProjectSiteSelectionGetClick,
+    setProjectHazardCurveGetClick,
+    setProjectDisaggGetClick,
+    setProjectUHSGetClick,
+    setProjectGMSGetClick,
+    setProjectScenarioGetClick,
+  } = useContext(GlobalContext);
+
+  useEffect(() => {
+    console.log("User accessed to the /Projects tab");
+    return () => {
+      console.log("User went to somewhere else, no longer on /Projects tab");
+      setProjectSiteSelectionGetClick(null);
+      setProjectHazardCurveGetClick(null);
+      setProjectDisaggGetClick(null);
+      setProjectUHSGetClick(null);
+      setProjectGMSGetClick(null);
+      setProjectScenarioGetClick(null);
+    };
+  }, []);
 
   const invalidTab = () => {
     return (

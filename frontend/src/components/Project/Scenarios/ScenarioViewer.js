@@ -47,6 +47,12 @@ const ScenarioViewer = () => {
   // For Download data button
   const [downloadToken, setDownloadToken] = useState("");
 
+  // Reset tabs if users change Project ID, Vs30, Z values or Location
+  useEffect(() => {
+    setProjectScenarioGetClick(null);
+    setShowErrorMessage({ isError: false, errorCode: null });
+  }, [projectId, projectVS30, projectLocation, projectZ1p0, projectZ2p5]);
+
   // Get Scenario data
   useEffect(() => {
     const abortController = new AbortController();
@@ -89,12 +95,6 @@ const ScenarioViewer = () => {
       abortController.abort();
     };
   }, [projectScenarioGetClick]);
-
-  // Reset tabs if users change Project ID, Vs30, Z values or Location
-  useEffect(() => {
-    setProjectScenarioGetClick(null);
-    setShowErrorMessage({ isError: false, errorCode: null });
-  }, [projectId, projectVS30, projectLocation, projectZ1p0, projectZ2p5]);
 
   const updateScenarioData = (data) => {
     setProjectScenarioData(data);
