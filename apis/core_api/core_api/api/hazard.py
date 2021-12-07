@@ -189,8 +189,8 @@ def download_ens_hazard():
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_ffp = su.api.create_hazard_download_zip(
             ensemble_hazard,
-            nzs1170p5_hazard,
             tmp_dir,
+            nzs1170p5_hazard=nzs1170p5_hazard,
             nzta_hazard=nzta_hazard,
             prefix=f"{ensemble.name}",
         )
