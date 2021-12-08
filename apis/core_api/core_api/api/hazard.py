@@ -112,12 +112,15 @@ def download_ens_hazard():
     )
     cache = server.cache
 
-    (hazard_token, nzs1170p5_token), optional_kwargs = su.api.get_check_keys(
+    (hazard_token,), optional_kwargs = su.api.get_check_keys(
         flask.request.args,
-        ("hazard_token", "nzs1170p5_hazard_token"),
-        ("nzta_hazard_token",),
+        ("hazard_token",),
+        ("nzs1170p5_hazard_token", "nzta_hazard_token"),
     )
-    nzta_hazard_token = optional_kwargs.get("nzta_hazard_token")
+    nzs1170p5_hazard_token, nzta_hazard_token = (
+        optional_kwargs.get("nzs1170p5_hazard_token"),
+        optional_kwargs.get("nzta_hazard_token"),
+    )
 
     hazard_payload = su.api.get_token_payload(
         hazard_token, server.DOWNLOAD_URL_SECRET_KEY
@@ -132,18 +135,18 @@ def download_ens_hazard():
         hazard_payload["calc_percentiles"],
     )
 
-    nzs1170p5_payload = su.api.get_token_payload(
-        nzs1170p5_token, server.DOWNLOAD_URL_SECRET_KEY
-    )
-    nzs1170p5_im = sc.im.IM.from_str(
-        nzs1170p5_payload["im"], im_component=nzs1170p5_payload["im_component"]
-    )
-
-    assert (
-        ensemble_id == nzs1170p5_payload["ensemble_id"]
-        and station == nzs1170p5_payload["station"]
-        and im == nzs1170p5_im
-    )
+    if nzs1170p5_hazard_token is not None:
+        nzs1170p5_payload = su.api.get_token_payload(
+            nzs1170p5_hazard_token, server.DOWNLOAD_URL_SECRET_KEY
+        )
+        nzs1170p5_im = sc.im.IM.from_str(
+            nzs1170p5_payload["im"], im_component=nzs1170p5_payload["im_component"]
+        )
+        assert (
+            ensemble_id == nzs1170p5_payload["ensemble_id"]
+            and station == nzs1170p5_payload["station"]
+            and im == nzs1170p5_im
+        )
 
     if nzta_hazard_token is not None:
         nzta_payload = su.api.get_token_payload(
@@ -165,14 +168,16 @@ def download_ens_hazard():
     )
 
     # Get the NZS1170p5 hazard data from the cache
-    opt_args = {
-        cur_key: cur_type(nzs1170p5_payload[cur_key])
-        for cur_key, cur_type in const.NZ_CODE_OPT_ARGS
-        if cur_key in nzs1170p5_payload.keys()
-    }
-    _, __, nzs1170p5_hazard = utils.get_nzs1170p5_hazard(
-        ensemble_id, station, im, opt_args, cache, user_vs30=user_vs30
-    )
+    nzs1170p5_hazard = None
+    if nzs1170p5_hazard_token is not None:
+        opt_args = {
+            cur_key: cur_type(nzs1170p5_payload[cur_key])
+            for cur_key, cur_type in const.NZ_CODE_OPT_ARGS
+            if cur_key in nzs1170p5_payload.keys()
+        }
+        _, __, nzs1170p5_hazard = utils.get_nzs1170p5_hazard(
+            ensemble_id, station, im, opt_args, cache, user_vs30=user_vs30
+        )
 
     # Get the NZTA hazard data from the cache
     nzta_hazard = None
