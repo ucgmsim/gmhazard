@@ -33,6 +33,7 @@ const HazardViewerUHS = () => {
     projectSelectedIMComponent,
     projectUHSGetClick,
     setProjectUHSGetClick,
+    projectSiteSelectionGetClick,
   } = useContext(GlobalContext);
 
   // For UHS data fetcher
@@ -56,13 +57,15 @@ const HazardViewerUHS = () => {
   const [localSelectedRP, setLocalSelectedRP] = useState(null);
   const [uhsRPOptions, setUHSRPOptions] = useState([]);
 
-  // Reset tabs if users change project id, project location or project vs30
+  // Reset tabs if users click Get button from Site Selection
   useEffect(() => {
-    setShowPlotUHS(false);
-    setShowSpinnerUHS(false);
-    setProjectSelectedUHSRP([]);
-    setProjectUHSGetClick(null);
-  }, [projectId, projectLocation, projectVS30]);
+    if (projectSiteSelectionGetClick !== null) {
+      setShowPlotUHS(false);
+      setShowSpinnerUHS(false);
+      setProjectSelectedUHSRP([]);
+      setProjectUHSGetClick(null);
+    }
+  }, [projectSiteSelectionGetClick]);
 
   // Setting variables for the selected RP and RP options
   useEffect(() => {

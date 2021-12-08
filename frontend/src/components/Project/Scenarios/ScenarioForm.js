@@ -20,11 +20,7 @@ const ScenarioForm = () => {
     projectScenarioData,
     setProjectScenarioData,
     setProjectScenarioSelectedRuptures,
-    projectId,
-    projectVS30,
-    projectLocation,
-    projectZ1p0,
-    projectZ2p5,
+    projectSiteSelectionGetClick,
   } = useContext(GlobalContext);
 
   const [localSelectedIMComponent, setLocalSelectedIMComponent] =
@@ -32,12 +28,14 @@ const ScenarioForm = () => {
   const [localRuptureOptions, setLocalRuptureOptions] = useState([]);
   const [localRuptures, setLocalRuptures] = useState([]);
 
-  // Reset tabs if users change Project ID, Vs30, Z values or Location
+  // Reset tabs if users click Get button from Site Selection
   useEffect(() => {
-    setLocalRuptures([]);
-    setLocalSelectedIMComponent(null);
-    setProjectScenarioData(null);
-  }, [projectId, projectVS30, projectLocation, projectZ1p0, projectZ2p5]);
+    if (projectSiteSelectionGetClick !== null) {
+      setLocalRuptures([]);
+      setLocalSelectedIMComponent(null);
+      setProjectScenarioData(null);
+    }
+  }, [projectSiteSelectionGetClick]);
 
   useEffect(() => {
     if (localSelectedIMComponent !== null) {
@@ -60,14 +58,18 @@ const ScenarioForm = () => {
   }, [projectScenarioData]);
 
   useEffect(() => {
-    if (localRuptures !== []) {
-      const rupture_values = [];
-      for (const key in localRuptures) {
-        rupture_values.push(localRuptures[key]["value"]);
-      }
-      setProjectScenarioSelectedRuptures(rupture_values);
+    if (localRuptures.length !== 0) {
+      setProjectScenarioSelectedRuptures(
+        localRuptures.map((rupture) => rupture["value"])
+      );
     }
   }, [localRuptures]);
+
+  const setGlobalVariables = () => {
+    setLocalRuptures([]);
+    setProjectScenarioSelectedRuptures([]);
+    setProjectScenarioGetClick(uuidv4());
+  };
 
   return (
     <Fragment>
@@ -93,7 +95,7 @@ const ScenarioForm = () => {
           type="button"
           className="btn btn-primary"
           disabled={localSelectedIMComponent === null}
-          onClick={() => setProjectScenarioGetClick(uuidv4())}
+          onClick={() => setGlobalVariables()}
         >
           Compute
         </button>

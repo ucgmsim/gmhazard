@@ -13,23 +13,26 @@ import { GuideTooltip } from "components/common";
 const UHSSection = () => {
   const {
     projectUHSRPs,
-    projectSelectedUHSRP,
     setProjectSelectedUHSRP,
     setProjectUHSGetClick,
     projectIMs,
+    projectSiteSelectionGetClick,
   } = useContext(GlobalContext);
 
   const animatedComponents = makeAnimated();
-  const [localRPs, setLocalRPs] = useState([]);
 
-  const options = createSelectArray(projectUHSRPs);
+  const [localRPs, setLocalRPs] = useState([]);
+  const [rpOptions, setRPOptions] = useState([]);
 
   // Reset local variable to empty array when global changed to empty array (Reset)
   useEffect(() => {
-    if (projectSelectedUHSRP.length === 0) {
-      setLocalRPs([]);
+    setLocalRPs([]);
+    if (projectUHSRPs.length !== 0) {
+      setRPOptions(createSelectArray(projectUHSRPs));
+    } else {
+      setRPOptions([]);
     }
-  }, [projectSelectedUHSRP]);
+  }, [projectSiteSelectionGetClick]);
 
   const getUHS = () => {
     setProjectSelectedUHSRP(localRPs);
@@ -58,11 +61,11 @@ const UHSSection = () => {
             closeMenuOnSelect={false}
             components={animatedComponents}
             isMulti
-            placeholder={options.length === 0 ? "Not available" : "Select..."}
+            placeholder={rpOptions.length === 0 ? "Not available" : "Select..."}
             value={localRPs.length === 0 ? [] : localRPs}
             onChange={(value) => setLocalRPs(value || [])}
-            options={options}
-            isDisabled={options.length === 0 || isPSANotInIMList(projectIMs)}
+            options={rpOptions}
+            isDisabled={rpOptions.length === 0 || isPSANotInIMList(projectIMs)}
             menuPlacement="auto"
             menuPortalTarget={document.body}
           />

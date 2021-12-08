@@ -66,6 +66,17 @@ const SiteSelectionForm = () => {
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
 
+  // Reset dropdowns when Project ID gets changed
+  useEffect(() => {
+    if (localProjectId !== null) {
+      setLocalLocation(null);
+      setLocalVS30(null);
+      setLocationOptions([]);
+      setVs30Options([]);
+      setZOptions([]);
+    }
+  }, [localProjectId]);
+
   // Getting Project IDs
   useEffect(() => {
     const abortController = new AbortController();
@@ -194,17 +205,6 @@ const SiteSelectionForm = () => {
       }
     }
   }, [localVS30]);
-
-  // Reset dropdowns when Project ID gets changed
-  useEffect(() => {
-    if (localProjectId !== null) {
-      setLocalLocation(null);
-      setLocalVS30(null);
-      setLocationOptions([]);
-      setVs30Options([]);
-      setZOptions([]);
-    }
-  }, [localProjectId]);
 
   // Get GMS IDs
   useEffect(() => {

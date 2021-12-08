@@ -39,6 +39,7 @@ const HazadViewerDisaggregation = () => {
     projectSelectedIMComponent,
     projectSelectedDisagRP,
     setProjectSelectedDisagRP,
+    projectSiteSelectionGetClick,
   } = useContext(GlobalContext);
 
   // For data fetcher
@@ -70,6 +71,24 @@ const HazadViewerDisaggregation = () => {
     src: null,
   });
 
+  // Reset tabs if users change project id, project vs30, project location or project im
+  useEffect(() => {
+    if (projectSiteSelectionGetClick !== null) {
+      setShowSpinnerDisaggEpsilon(false);
+      setShowPlotDisaggEpsilon(false);
+
+      setShowSpinnerDisaggFault(false);
+      setShowPlotDisaggFault(false);
+
+      setShowContribTable(false);
+      setShowSpinnerContribTable(false);
+
+      setProjectDisaggGetClick(null);
+
+      setProjectSelectedDisagRP(null);
+    }
+  }, [projectSiteSelectionGetClick]);
+
   // Replace the .(dot) to p for filename
   useEffect(() => {
     if (projectSelectedIM !== null && projectSelectedIM !== "pSA") {
@@ -83,22 +102,6 @@ const HazadViewerDisaggregation = () => {
       );
     }
   }, [projectSelectedIM, projectSelectedIMPeriod]);
-
-  // Reset tabs if users change project id, project vs30, project location or project im
-  useEffect(() => {
-    setShowSpinnerDisaggEpsilon(false);
-    setShowPlotDisaggEpsilon(false);
-
-    setShowSpinnerDisaggFault(false);
-    setShowPlotDisaggFault(false);
-
-    setShowContribTable(false);
-    setShowSpinnerContribTable(false);
-
-    setProjectDisaggGetClick(null);
-
-    setProjectSelectedDisagRP(null);
-  }, [projectId, projectVS30, projectLocation]);
 
   // Get hazard disagg data
   useEffect(() => {
