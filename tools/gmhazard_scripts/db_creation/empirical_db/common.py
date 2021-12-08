@@ -186,7 +186,7 @@ def __process_rupture(
     im_types,
     tect_type_model_dict,
     nhm_dict,
-    stat_df,
+    site_df,
     psa_periods,
     keep_sigma_components,
     fault_im_result_dict,
@@ -231,7 +231,9 @@ def __process_rupture(
             elif use_directivity:
                 nhm_fault = nhm_dict[rupture.rupture_name]
                 planes, lon_lat_depth = gc_rupture.get_fault_header_points(nhm_fault)
-                site_coords = np.asarray([stat_df.loc[station_name].values])
+                site_coords = np.asarray([site_df.loc[station_name][:2].values])
+                hypo_along_strike = 25
+                hypo_down_dip = 4
                 (
                     fdi,
                     _,
@@ -240,8 +242,8 @@ def __process_rupture(
                     lon_lat_depth,
                     planes,
                     site_coords,
-                    25,
-                    4,
+                    hypo_along_strike,
+                    hypo_down_dip,
                     nhm_fault.mw,
                     nhm_fault.rake,
                     periods=psa_periods,
@@ -283,7 +285,7 @@ def calculate_emp_site(
     distance_store,
     nhm_data,
     nhm_dict,
-    stat_df,
+    site_df,
     vs30,
     z1p0,
     z2p5,
@@ -293,7 +295,7 @@ def calculate_emp_site(
     dist_filter_by_mag=False,
     return_vals=False,
     keep_sigma_components=False,
-    use_directivity=False,
+    use_directivity=True,
     n_procs: int = 1,
 ):
     """
@@ -353,7 +355,7 @@ def calculate_emp_site(
                     im_types,
                     tect_type_model_dict,
                     nhm_dict,
-                    stat_df,
+                    site_df,
                     psa_periods,
                     keep_sigma_components,
                     {key: {} for key in imdb_dict.keys()},

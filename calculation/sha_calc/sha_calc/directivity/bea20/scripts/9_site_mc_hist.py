@@ -8,7 +8,6 @@ import common
 
 def site_mc_hist(input_dir, faults, nhyps, repeats, grid_space, sample, output_dir):
     for fault_name in faults:
-
         sites = [[x, y] for x in sample for y in sample]
         for x, site in enumerate(sites):
             fig = plt.figure(figsize=(16, 10))
@@ -21,14 +20,11 @@ def site_mc_hist(input_dir, faults, nhyps, repeats, grid_space, sample, output_d
                 ax1.set_xlabel("fD")
                 ax1.set_ylabel("Count")
                 plt.title(f"{fault_name} {nhyp} Site {x+1}")
-
                 plt.hist(site_100)
-
             plt.subplots_adjust(
                 left=0.1, bottom=0.1, right=0.9, top=0.9, wspace=0.4, hspace=0.4
             )
-
-            plt.savefig(f"{output_dir}/convergance_{fault_name}_site_{x}.png")
+            fig.savefig(f"{output_dir}/convergance_{fault_name}_site_{x}.png")
 
 
 def parse_args():

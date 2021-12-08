@@ -105,7 +105,7 @@ def compute_fault_directivity(
     mag: float,
     rake: float,
     periods: List[float] = DEFAULT_PSA_PERIODS,
-    method=HypoMethod.LATIN_HYPERCUBE,
+    method: HypoMethod = HypoMethod.LATIN_HYPERCUBE,
 ):
     """
     Does the computation of directivity for a fault with any number of hypocentres.
@@ -135,15 +135,31 @@ def compute_fault_directivity(
     """
     nominal_strike, nominal_strike2 = utils.calc_nominal_strike(lon_lat_depth)
 
-    if hyp_down_dip == 1 and hyp_along_strike == 1:
-        planes_list, plane_index = utils.set_hypocentres(
-            1, 1, planes, utils.EventType.from_rake(rake), method=method
-        )
+    # Customise the planes to set different hypocentres
+    planes_list, plane_index, weights = utils.set_hypocentres(
+        hyp_along_strike,
+        hyp_down_dip,
+        planes,
+        utils.EventType.from_rake(rake),
+        method=method,
+    )
 
-        return _compute_directivity_effect(
+    # Creating the array to store all fdi values
+    fdi_array = np.zeros(
+        (hyp_along_strike * hyp_down_dip, len(sites), len(periods))
+    )
+    phired_array = np.zeros(
+        (hyp_along_strike * hyp_down_dip, len(sites), len(periods))
+    )
+
+    for index, planes in enumerate(planes_list):
+        # Gets the plane index of the hypocentre
+        plane_index = plane_index[index]
+
+        fdi, (phi_red, predictor_functions, other) = _compute_directivity_effect(
             lon_lat_depth,
-            planes_list[0],
-            plane_index[0],
+            planes,
+            plane_index,
             sites,
             nominal_strike,
             nominal_strike2,
@@ -151,65 +167,32 @@ def compute_fault_directivity(
             rake,
             periods,
         )
+
+        fdi_array[index] = fdi
+        phired_array[index] = phi_red
+
+    if method == HypoMethod.GRID:
+        # Only apply weights if method type is grid
+        fdi_average = np.multiply(
+            fdi_array.reshape((hyp_along_strike * hyp_down_dip, len(sites))),
+            np.asarray(weights).reshape(
+                (hyp_along_strike * hyp_down_dip, len(periods))
+            ),
+        )
+        phired_average = np.multiply(
+            phired_array.reshape((hyp_along_strike * hyp_down_dip, len(sites))),
+            np.asarray(weights).reshape(
+                (hyp_along_strike * hyp_down_dip, len(periods))
+            ),
+        )
+        fdi_average = np.sum(fdi_average, axis=0)
+        phired_average = np.sum(phired_average, axis=0)
     else:
-        # Customise the planes to set different hypocentres
-        planes_list, planes_index, weights = utils.set_hypocentres(
-            hyp_along_strike,
-            hyp_down_dip,
-            planes,
-            utils.EventType.from_rake(rake),
-            method=method,
-        )
+        # Just average the fdi array for all other methods
+        fdi_average = np.mean(fdi_array, axis=0)
+        phired_average = np.mean(phired_array, axis=0)
 
-        # Creating the array to store all fdi values
-        fdi_array = np.zeros(
-            (hyp_along_strike * hyp_down_dip, len(sites), len(periods))
-        )
-        phired_array = np.zeros(
-            (hyp_along_strike * hyp_down_dip, len(sites), len(periods))
-        )
-
-        for index, planes in enumerate(planes_list):
-            # Gets the plane index of the hypocentre
-            plane_index = planes_index[index]
-
-            fdi, (phi_red, predictor_functions, other) = _compute_directivity_effect(
-                lon_lat_depth,
-                planes,
-                plane_index,
-                sites,
-                nominal_strike,
-                nominal_strike2,
-                mag,
-                rake,
-                periods,
-            )
-
-            fdi_array[index] = fdi
-            phired_array[index] = phi_red
-
-        if method == HypoMethod.GRID:
-            # Only apply weights if method type is grid
-            fdi_average = np.multiply(
-                fdi_array.reshape((hyp_along_strike * hyp_down_dip, len(sites))),
-                np.asarray(weights).reshape(
-                    (hyp_along_strike * hyp_down_dip, len(periods))
-                ),
-            )
-            phired_average = np.multiply(
-                phired_array.reshape((hyp_along_strike * hyp_down_dip, len(sites))),
-                np.asarray(weights).reshape(
-                    (hyp_along_strike * hyp_down_dip, len(periods))
-                ),
-            )
-            fdi_average = np.sum(fdi_average, axis=0)
-            phired_average = np.sum(phired_average, axis=0)
-        else:
-            # Just average the fdi array for all other methods
-            fdi_average = np.mean(fdi_array, axis=0)
-            phired_average = np.mean(phired_array, axis=0)
-
-        return fdi_average, fdi_array, phired_average
+    return fdi_average, fdi_array, phired_average
 
 
 def _compute_directivity_effect(

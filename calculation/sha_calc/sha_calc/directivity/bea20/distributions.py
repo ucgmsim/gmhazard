@@ -2,11 +2,11 @@ from typing import List
 
 import numpy as np
 from scipy import stats
-import matplotlib.pyplot as plt
+
 from sha_calc.directivity.bea20.EventType import EventType
 
 
-class weibull_truncated_strike_slip(stats.rv_continuous):
+class WeibullTruncatedStrikeSlip(stats.rv_continuous):
     """Truncates the weibull distribution to between 0 and 1 for strike slip events"""
 
     weibull = stats.weibull_min(scale=0.626, c=3.921)
@@ -16,7 +16,7 @@ class weibull_truncated_strike_slip(stats.rv_continuous):
         return self.weibull.pdf(x) / self.divide
 
 
-class weibull_truncated_oblique(stats.rv_continuous):
+class WeibullTruncatedOblique(stats.rv_continuous):
     """Truncates the weibull distribution to between 0 and 1 for oblique events"""
 
     weibull = stats.weibull_min(scale=0.612, c=3.353)
@@ -26,7 +26,7 @@ class weibull_truncated_oblique(stats.rv_continuous):
         return self.weibull.pdf(x) / self.divide
 
 
-class gamma_truncated(stats.rv_continuous):
+class GammaTruncated(stats.rv_continuous):
     """Truncates the gamma distribution to between 0 and 1 for dip slip events"""
 
     gamma = stats.gamma(a=7.364, scale=0.072)
@@ -214,11 +214,11 @@ def even_grid(
     # Works out the depth method for down dip placement of hypocentres
     # Based on Weilbull or Gamma distributions depending on the EventType
     if event_type == EventType.DIP_SLIP:
-        down_dip_distribution = gamma_truncated(a=0, b=1)
+        down_dip_distribution = GammaTruncated(a=0, b=1)
     elif event_type == EventType.STRIKE_SLIP:
-        down_dip_distribution = weibull_truncated_strike_slip(a=0, b=1)
+        down_dip_distribution = WeibullTruncatedStrikeSlip(a=0, b=1)
     else:
-        down_dip_distribution = weibull_truncated_oblique(a=0, b=1)
+        down_dip_distribution = WeibullTruncatedOblique(a=0, b=1)
     dip_weight_dist = down_dip_distribution.pdf(
         [x / planes[0]["width"] for x in down_dip_values]
     ) * (1 / hypo_down_dip)
@@ -285,11 +285,11 @@ def latin_hypercube(
     # Works out the depth method for down dip placement of hypocentres
     # Based on Weilbull or Gamma distributions depending on the EventType
     if event_type == EventType.DIP_SLIP:
-        down_dip_distribution = gamma_truncated(a=0, b=1)
+        down_dip_distribution = GammaTruncated(a=0, b=1)
     elif event_type == EventType.STRIKE_SLIP:
-        down_dip_distribution = weibull_truncated_strike_slip(a=0, b=1)
+        down_dip_distribution = WeibullTruncatedStrikeSlip(a=0, b=1)
     else:
-        down_dip_distribution = weibull_truncated_oblique(a=0, b=1)
+        down_dip_distribution = WeibullTruncatedOblique(a=0, b=1)
 
     lhd[:, 1] = down_dip_distribution.ppf(lhd[:, 1])
 

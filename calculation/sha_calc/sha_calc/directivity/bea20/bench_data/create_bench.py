@@ -3,7 +3,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from qcore import srf
 from sha_calc.directivity.bea20 import directivity
 
 FAULTS = ["AlpineK2T", "Ashley", "Browning", "Hossack"]
@@ -28,7 +27,7 @@ def create_benchmark_data():
         x, y = np.meshgrid(lon_values, lat_values)
         site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
-        fd, _ = directivity.compute_directivity_srf_multi(
+        fd, _, _ = directivity.compute_directivity_srf_multi(
             srf_file, srf_csv, site_coords
         )
 

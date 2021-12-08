@@ -10,7 +10,7 @@ import sha_calc
 from sha_calc.directivity.bea20.HypoMethod import HypoMethod
 
 
-def comput_nz_site_effect(
+def compute_nz_site_effect(
     sites_file, station_file, fault_name, nhyps, period, grid_space, method, output_dir
 ):
     site_names = sample(list(np.load(sites_file)), 1000)
@@ -50,7 +50,7 @@ def comput_nz_site_effect(
         df[f"FD_{nhpy}"] = np.exp(fdi)
         df[f"PHI_RED_{nhpy}"] = phi_red
 
-    df.to_csv(f"{output_dir}/Wairau_sites.csv")
+    df.to_csv(f"{output_dir}/{fault_name}_sites.csv")
 
 
 def parse_args():
@@ -92,7 +92,7 @@ def parse_args():
 if __name__ == "__main__":
     args, nhm_dict = parse_args()
 
-    comput_nz_site_effect(
+    compute_nz_site_effect(
         args.sites_file,
         args.station_file,
         args.fault,
