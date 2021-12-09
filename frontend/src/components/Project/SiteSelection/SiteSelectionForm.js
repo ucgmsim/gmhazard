@@ -242,9 +242,9 @@ const SiteSelectionForm = () => {
     setProjectVS30(localVS30["value"]);
     setProjectZ1p0(localZs["value"]["Z1.0"]);
     setProjectZ2p5(localZs["value"]["Z2.5"]);
-    setProjectSiteSelectionGetClick(uuidv4());
     setProjectLat(renderSigfigs(lat, CONSTANTS.APP_UI_SIGFIGS));
     setProjectLng(renderSigfigs(lng, CONSTANTS.APP_UI_SIGFIGS));
+    setProjectSiteSelectionGetClick(uuidv4());
   };
 
   /*
