@@ -1,3 +1,14 @@
+## December 9, 2021
+
+### Reset useState hooks at the right timing - ([PR #4](https://github.com/ucgmsim/gmhazard/pull/44))
+
+- Main changes
+  - Reset the `useState` hook at the right timing
+  - Reset any useStates when the user clicks a get button from the Site Selection tab
+- Minor changes
+  - Change the order of useEffect, any useEffect to reset variables will now be at the top of the component. (Still below any `useState`)
+  - Changed the way of checking the size of the array from a !== [] to a.length !== 0 as with JS, [] !== [] will always be true.
+
 ## December 1, 2021
 
 ### Deploying GMHazard web app to subdirectory - ([PR #39](https://github.com/ucgmsim/gmhazard/pull/39))
