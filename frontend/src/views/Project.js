@@ -26,10 +26,9 @@ const Project = () => {
     setProjectScenarioGetClick,
   } = useContext(GlobalContext);
 
+  // Reset some global variables when this component gets unmounted
   useEffect(() => {
-    console.log("User accessed to the /Projects tab");
     return () => {
-      console.log("User went to somewhere else, no longer on /Projects tab");
       setProjectSiteSelectionGetClick(null);
       setProjectHazardCurveGetClick(null);
       setProjectDisaggGetClick(null);
