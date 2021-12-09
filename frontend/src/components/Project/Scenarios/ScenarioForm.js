@@ -97,7 +97,7 @@ const ScenarioForm = () => {
           disabled={localSelectedIMComponent === null}
           onClick={() => setGlobalVariables()}
         >
-          Compute
+          Get
         </button>
       </div>
 
