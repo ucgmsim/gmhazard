@@ -71,7 +71,7 @@ const HazadViewerDisaggregation = () => {
     src: null,
   });
 
-  // Reset tabs if users change project id, project vs30, project location or project im
+  // Reset tabs if users click Get button from Site Selection
   useEffect(() => {
     if (projectSiteSelectionGetClick !== null) {
       setShowSpinnerDisaggEpsilon(false);
