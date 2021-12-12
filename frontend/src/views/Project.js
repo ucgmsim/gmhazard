@@ -1,4 +1,4 @@
-import React, { Fragment, useContext } from "react";
+import React, { Fragment, useContext, useEffect } from "react";
 
 import { Tabs, Tab } from "react-bootstrap";
 import { GlobalContext } from "context";
@@ -14,7 +14,29 @@ import { HazardForm, HazardViewer } from "components/Project/SeismicHazard";
 import { ScenarioForm, ScenarioViewer } from "components/Project/Scenarios";
 
 const Project = () => {
-  const { projectId, projectLocation, projectVS30 } = useContext(GlobalContext);
+  const {
+    projectId,
+    projectLocation,
+    projectVS30,
+    setProjectSiteSelectionGetClick,
+    setProjectHazardCurveGetClick,
+    setProjectDisaggGetClick,
+    setProjectUHSGetClick,
+    setProjectGMSGetClick,
+    setProjectScenarioGetClick,
+  } = useContext(GlobalContext);
+
+  // Reset some global variables when this component gets unmounted
+  useEffect(() => {
+    return () => {
+      setProjectSiteSelectionGetClick(null);
+      setProjectHazardCurveGetClick(null);
+      setProjectDisaggGetClick(null);
+      setProjectUHSGetClick(null);
+      setProjectGMSGetClick(null);
+      setProjectScenarioGetClick(null);
+    };
+  }, []);
 
   const invalidTab = () => {
     return (

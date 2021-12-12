@@ -1,3 +1,10 @@
+## December 9, 2021
+
+### Reset useState hooks at the right timing - ([PR #4](https://github.com/ucgmsim/gmhazard/pull/44))
+
+- Reset the states when the Projects view component gets unmounted to prevent sending a request.
+  - This fixes the issue that the app may get crashed when they access to Projects page after visiting Home or Framework Documents.
+
 ## December 1, 2021
 
 ### Deploying GMHazard web app to subdirectory - ([PR #39](https://github.com/ucgmsim/gmhazard/pull/39))
