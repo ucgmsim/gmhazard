@@ -20,7 +20,7 @@ import {
   combineIMwithPeriod,
 } from "utils/Utils";
 
-const HazadViewerDisaggregation = () => {
+const HazardViewerDisaggregation = () => {
   const { getTokenSilently } = useAuth0();
 
   const {
@@ -351,4 +351,4 @@ const HazadViewerDisaggregation = () => {
   );
 };
 
-export default HazadViewerDisaggregation;
+export default HazardViewerDisaggregation;

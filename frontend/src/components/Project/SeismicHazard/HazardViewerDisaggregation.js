@@ -22,7 +22,7 @@ import {
   createStationID,
 } from "utils/Utils";
 
-const HazadViewerDisaggregation = () => {
+const HazardViewerDisaggregation = () => {
   const { isAuthenticated, getTokenSilently } = useAuth0();
 
   const {
@@ -342,4 +342,4 @@ const HazadViewerDisaggregation = () => {
   );
 };
 
-export default HazadViewerDisaggregation;
+export default HazardViewerDisaggregation;
