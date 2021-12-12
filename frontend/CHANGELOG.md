@@ -1,3 +1,9 @@
+## December 13, 2021
+
+### Reset the Hazard Curve data before sending a new request - ([PR #45](https://github.com/ucgmsim/gmhazard/pull/45))
+
+- Reset any existing Hazard Curve data to plot with the correct data.
+
 ## December 1, 2021
 
 ### Deploying GMHazard web app to subdirectory - ([PR #39](https://github.com/ucgmsim/gmhazard/pull/39))
