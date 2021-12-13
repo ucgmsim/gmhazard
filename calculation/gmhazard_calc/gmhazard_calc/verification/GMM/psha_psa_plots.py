@@ -586,7 +586,8 @@ if __name__ == "__main__":
         "SUBDUCTION_INTERFACE": [5.0, 6.0, 7.0, 8.0, 9.0],
     }
     vs30_list = [200, 300, 400, 760]
-    period_list = np.linspace(0.01, 10, 200)
+    # period_list = np.linspace(0.01, 10, 200)
+    period_list = np.logspace(-2, 1, num=100)
     rrup = [50, 100, 200, 300, 400, 500]
     # Update the path to the directory to save plots
     save_path = pathlib.Path("")

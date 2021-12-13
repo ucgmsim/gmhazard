@@ -338,9 +338,11 @@ if __name__ == "__main__":
     vs30_lists = [200, 400, 760]
     psa_lists = [1.0, 3.0]
     # For ACTIVE_SHALLOW and INTERFACE
-    first_rrup_lists = np.linspace(1, 1000, 500)
+    # first_rrup_lists = np.linspace(1, 1000, 500)
+    first_rrup_lists = np.logspace(np.log10(1), np.log10(500), 100)
     # For SLAB
-    second_rrup_lists = np.linspace(50, 1000, 500)
+    # second_rrup_lists = np.linspace(50, 1000, 500)
+    second_rrup_lists = np.logspace(np.log10(50), np.log10(500), 100)
     rrup_dict = {
         "ACTIVE_SHALLOW": first_rrup_lists,
         "SUBDUCTION_INTERFACE": first_rrup_lists,
