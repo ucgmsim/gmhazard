@@ -50,6 +50,7 @@ const GmsViewer = () => {
     projectGMSExceedance,
     projectGMSIMVector,
     projectGMSNumGMs,
+    projectSiteSelectionGetClick,
   } = useContext(GlobalContext);
 
   // For fetching GMS data
@@ -77,22 +78,18 @@ const GmsViewer = () => {
   // For Download data button
   const [downloadToken, setDownloadToken] = useState("");
 
-  // Reset the state to prevent auto-trigger
-  // E.g. change tab between Projects and Hazard Analyis
+  // Reset tabs if users click Get button from Site Selection
   useEffect(() => {
-    setProjectGMSGetClick(null);
-  }, []);
-
-  // Reset tabs if users change project id, project location or project vs30
-  useEffect(() => {
-    setIsLoading(false);
-    setShowErrorMessage({
-      isError: false,
-      errorCode: null,
-    });
-    setComputedGMS(null);
-    setProjectGMSGetClick(null);
-  }, [projectId, projectLocation, projectVS30]);
+    if (projectSiteSelectionGetClick !== null) {
+      setIsLoading(false);
+      setShowErrorMessage({
+        isError: false,
+        errorCode: null,
+      });
+      setComputedGMS(null);
+      setProjectGMSGetClick(null);
+    }
+  }, [projectSiteSelectionGetClick]);
 
   // Create IM array of objects for IM Distributions plot (react-select dropdown)
   useEffect(() => {

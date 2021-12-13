@@ -9,7 +9,6 @@ import { IMCustomSelect, GuideTooltip } from "components/common";
 
 const HazardCurveSection = () => {
   const {
-    projectSelectedIM,
     setProjectSelectedIM,
     setProjectSelectedIMPeriod,
     setProjectSelectedIMComponent,
@@ -25,13 +24,6 @@ const HazardCurveSection = () => {
 
   const [periodOptions, setPeriodOptions] = useState([]);
   const [componentOptions, setComponentOptions] = useState([]);
-
-  // Reset local variable to null when global changed to null (Reset)
-  useEffect(() => {
-    if (projectSelectedIM === null) {
-      setLocalSelectedIM(null);
-    }
-  }, [projectSelectedIM]);
 
   // When local IM gets changed, update the global instantly so can do disaggregation without getting Hazard Curve data
   useEffect(() => {

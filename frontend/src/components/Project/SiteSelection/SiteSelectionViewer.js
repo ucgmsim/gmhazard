@@ -26,7 +26,6 @@ const SiteSelectionViewer = () => {
     projectZ2p5,
     projectLocationCode,
     projectSiteSelectionGetClick,
-    setProjectSiteSelectionGetClick,
   } = useContext(GlobalContext);
 
   const [showSpinner, setShowSpinner] = useState(false);
@@ -38,16 +37,6 @@ const SiteSelectionViewer = () => {
 
   const [regionalMap, setRegionalMap] = useState(null);
   const [vs30Map, setVS30Map] = useState(null);
-
-  /*
-    Reset when it first renders
-    E.g. change tab between Projects to Hazard Analyis
-  */
-  useEffect(() => {
-    setShowImages(false);
-    setShowSpinner(false);
-    setProjectSiteSelectionGetClick(null);
-  }, []);
 
   // Get Context/Vs30 maps
   useEffect(() => {
