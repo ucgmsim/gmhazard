@@ -101,6 +101,7 @@ const HazardViewerHazardCurve = () => {
       setShowPlotHazard(false);
       setShowSpinnerHazard(true);
       setShowErrorMessage({ isError: false, errorCode: null });
+      resetHazardData();
 
       let token = null;
       const queryString = APIQueryBuilder({
@@ -133,6 +134,15 @@ const HazardViewerHazardCurve = () => {
     };
   }, [projectHazardCurveGetClick]);
 
+  const resetHazardData = () => {
+    setHazardData(null);
+    setHazardNZS1170p5Data(null);
+    setHazardNZTAData(null);
+    setMetadataParam({});
+    setExtraInfo({});
+    setPercentileData(null);
+    setDownloadToken("");
+  };
   const updateHazardData = (hazardData) => {
     setHazardData(hazardData);
     // NZS1170p5 only available for PGA and pSA IM

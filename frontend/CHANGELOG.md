@@ -1,6 +1,12 @@
+## December 13, 2021
+
+### Reset the Hazard Curve data before sending a new request - ([PR #45](https://github.com/ucgmsim/gmhazard/pull/45))
+
+- Reset any existing Hazard Curve data to plot with the correct data.
+
 ## December 9, 2021
 
-### Reset useState hooks at the right timing - ([PR #4](https://github.com/ucgmsim/gmhazard/pull/44))
+### Reset useState hooks at the right timing - ([PR #44](https://github.com/ucgmsim/gmhazard/pull/44))
 
 - Reset the states when the Projects view component gets unmounted to prevent sending a request.
   - This fixes the issue that the app may get crashed when they access to Projects page after visiting Home or Framework Documents.
