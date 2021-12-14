@@ -4,11 +4,11 @@ import numpy as np
 from flask_caching import Cache
 
 import gmhazard_calc as sc
-import gmhazard_utils as su
+import api_utils as au
 from core_api import server
 
 
-class NZTACachedData(su.api.BaseCacheData):
+class NZTACachedData(au.api.BaseCacheData):
     """Wrapper for caching NZTA hazard data"""
 
     def __init__(
@@ -24,7 +24,7 @@ class NZTACachedData(su.api.BaseCacheData):
         return iter((self.ensemble, self.site_info, self.nzta_hazard))
 
 
-class NZS1170p5CachedHazardData(su.api.BaseCacheData):
+class NZS1170p5CachedHazardData(au.api.BaseCacheData):
     """Wrapper for caching NZS1170.5 hazard data"""
 
     def __init__(
@@ -40,7 +40,7 @@ class NZS1170p5CachedHazardData(su.api.BaseCacheData):
         return iter((self.ensemble, self.site_info, self.nzs1170p5_hazard))
 
 
-class NZS1170p5CachedUHSData(su.api.BaseCacheData):
+class NZS1170p5CachedUHSData(au.api.BaseCacheData):
     """Wrapper for caching NZS1170.5 uhs data"""
 
     def __init__(
@@ -65,7 +65,7 @@ def get_nzs1170p5_hazard(
     user_vs30: float = None,
 ):
     # Get the cached result, if there is one
-    cache_key = su.api.get_cache_key(
+    cache_key = au.api.get_cache_key(
         "nzs1170p5_hazard",
         ensemble_id=ensemble_id,
         station=station,
@@ -76,7 +76,7 @@ def get_nzs1170p5_hazard(
 
     if cached_data is None:
         server.app.logger.debug(
-            f"Computing NZS1170p5 - Hazard - version {su.api.get_repo_version()}"
+            f"Computing NZS1170p5 - Hazard - version {au.api.get_repo_version()}"
         )
         ensemble = sc.gm_data.Ensemble(ensemble_id)
         site_info = sc.site.get_site_from_name(ensemble, station, user_vs30=user_vs30)
@@ -113,7 +113,7 @@ def get_nzs1170p5_uhs(
     exceedances = np.asarray(list(map(float, exceedances.split(","))))
 
     # Get the cached result, if there is one
-    cache_key = su.api.get_cache_key(
+    cache_key = au.api.get_cache_key(
         "nzs1170p5_uhs",
         ensemble_id=ensemble_id,
         station=station,
@@ -127,7 +127,7 @@ def get_nzs1170p5_uhs(
 
     if cached_data is None:
         server.app.logger.debug(
-            f"No cached result for {cache_key}, computing NZS1170p5 - UHS - version {su.api.get_repo_version()}"
+            f"No cached result for {cache_key}, computing NZS1170p5 - UHS - version {au.api.get_repo_version()}"
         )
 
         ensemble = sc.gm_data.Ensemble(ensemble_id)
@@ -156,7 +156,7 @@ def get_nzta_result(
     im_component: sc.im.IMComponent = sc.im.IMComponent.RotD50,
 ):
     # Get the cached result, if there is one
-    cache_key = su.api.get_cache_key(
+    cache_key = au.api.get_cache_key(
         "nzta_hazard",
         ensemble_id=ensemble_id,
         station=station,
@@ -167,7 +167,7 @@ def get_nzta_result(
 
     if cached_data is None:
         server.app.logger.debug(
-            f"Computing NZTA - Hazard - version {su.api.get_repo_version()}"
+            f"Computing NZTA - Hazard - version {au.api.get_repo_version()}"
         )
         ensemble = sc.gm_data.Ensemble(ensemble_id)
         site_info = sc.site.get_site_from_name(ensemble, station, user_vs30=user_vs30)

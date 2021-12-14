@@ -6,13 +6,13 @@ from flask_cors import cross_origin
 from flask_caching import Cache
 
 import gmhazard_calc as sc
-import gmhazard_utils as su
+import api_utils as au
 from core_api import server
 from core_api import constants as const
 from core_api import utils
 
 
-class HazardCachedData(su.api.BaseCacheData):
+class HazardCachedData(au.api.BaseCacheData):
     """Just a wrapper for caching hazard result data"""
 
     def __init__(
@@ -35,7 +35,7 @@ class HazardCachedData(su.api.BaseCacheData):
 @server.app.route(const.ENSEMBLE_HAZARD_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_ensemble_hazard():
     """Retrieves the hazard for the ensemble, all its
      branches for the specified station (name) and NZ code
@@ -47,7 +47,7 @@ def get_ensemble_hazard():
     server.app.logger.info(f"Received request at {const.ENSEMBLE_HAZARD_ENDPOINT}")
     cache = server.cache
 
-    (ensemble_id, station, im), optional_kwargs = su.api.get_check_keys(
+    (ensemble_id, station, im), optional_kwargs = au.api.get_check_keys(
         flask.request.args,
         ("ensemble_id", "station", "im"),
         (("calc_percentiles", int), ("vs30", float), ("im_component", str, "RotD50"),),
@@ -72,9 +72,9 @@ def get_ensemble_hazard():
         user_vs30=user_vs30,
     )
 
-    result = su.api.get_ensemble_hazard_response(
+    result = au.api.get_ensemble_hazard_response(
         ensemble_hazard,
-        su.api.get_download_token(
+        au.api.get_download_token(
             {
                 "type": "ensemble_hazard",
                 "ensemble_id": ensemble_id,
@@ -100,7 +100,7 @@ def get_ensemble_hazard():
 
 
 @server.app.route(const.ENSEMBLE_HAZARD_DOWNLOAD_ENDPOINT, methods=["GET"])
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def download_ens_hazard():
     """Handles downloading of the hazard data
 
@@ -112,7 +112,7 @@ def download_ens_hazard():
     )
     cache = server.cache
 
-    (hazard_token,), optional_kwargs = su.api.get_check_keys(
+    (hazard_token,), optional_kwargs = au.api.get_check_keys(
         flask.request.args,
         ("hazard_token",),
         ("nzs1170p5_hazard_token", "nzta_hazard_token"),
@@ -122,7 +122,7 @@ def download_ens_hazard():
         optional_kwargs.get("nzta_hazard_token"),
     )
 
-    hazard_payload = su.api.get_token_payload(
+    hazard_payload = au.api.get_token_payload(
         hazard_token, server.DOWNLOAD_URL_SECRET_KEY
     )
     ensemble_id, station, user_vs30, im, calc_percentiles = (
@@ -136,7 +136,7 @@ def download_ens_hazard():
     )
 
     if nzs1170p5_hazard_token is not None:
-        nzs1170p5_payload = su.api.get_token_payload(
+        nzs1170p5_payload = au.api.get_token_payload(
             nzs1170p5_hazard_token, server.DOWNLOAD_URL_SECRET_KEY
         )
         nzs1170p5_im = sc.im.IM.from_str(
@@ -149,7 +149,7 @@ def download_ens_hazard():
         )
 
     if nzta_hazard_token is not None:
-        nzta_payload = su.api.get_token_payload(
+        nzta_payload = au.api.get_token_payload(
             nzta_hazard_token, server.DOWNLOAD_URL_SECRET_KEY
         )
         assert nzta_payload is None or (
@@ -192,7 +192,7 @@ def download_ens_hazard():
         )
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        zip_ffp = su.api.create_hazard_download_zip(
+        zip_ffp = au.api.create_hazard_download_zip(
             ensemble_hazard,
             tmp_dir,
             nzs1170p5_hazard=nzs1170p5_hazard,
@@ -220,10 +220,10 @@ def _get_hazard(
     sc.hazard.EnsembleHazardResult,
     Dict[str, sc.hazard.BranchHazardResult],
 ]:
-    git_version = su.api.get_repo_version()
+    git_version = au.api.get_repo_version()
 
     # Get the cached result, if there is one
-    cache_key = su.api.get_cache_key(
+    cache_key = au.api.get_cache_key(
         "hazard",
         ensemble_id=ensemble_id,
         station=station,

@@ -4,7 +4,8 @@ import tempfile
 import flask
 from flask_cors import cross_origin
 
-import gmhazard_utils as su
+import api_utils as au
+import gmhazard_utils as gu
 from project_api import constants as const
 from project_api import utils
 from project_api import server
@@ -13,14 +14,14 @@ from project_api import server
 @server.app.route(const.PROJECT_GMS_RUNS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_gms_runs():
     server.app.logger.info(f"Received request at {const.PROJECT_GMS_RUNS_ENDPOINT}")
 
-    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    project_id = su.api.get_check_keys(flask.request.args, ["project_id"])[0][0]
+    project_id = au.api.get_check_keys(flask.request.args, ["project_id"])[0][0]
     server.app.logger.debug(f"Request parameters {project_id}")
 
     # Load the project config
@@ -34,14 +35,14 @@ def get_gms_runs():
 @server.app.route(const.PROJECT_GMS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_ensemble_gms():
     server.app.logger.info(f"Received request at {const.PROJECT_GMS_ENDPOINT}")
 
-    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    (project_id, station_id, gms_id), _ = su.api.get_check_keys(
+    (project_id, station_id, gms_id), _ = au.api.get_check_keys(
         flask.request.args, ("project_id", "station_id", "gms_id")
     )
     server.app.logger.debug(f"Request parameters {project_id}, {station_id}, {gms_id}")
@@ -52,9 +53,9 @@ def get_ensemble_gms():
     gms_result, cs_param_bounds, disagg_data = utils.load_gms_data(results_dir, gms_id)
 
     return flask.jsonify(
-        su.api.get_ensemble_gms(
+        au.api.get_ensemble_gms(
             gms_result,
-            su.api.get_download_token(
+            au.api.get_download_token(
                 dict(project_id=project_id, station_id=station_id, gms_id=gms_id),
                 server.DOWNLOAD_URL_SECRET_KEY,
             ),
@@ -65,15 +66,15 @@ def get_ensemble_gms():
 
 
 @server.app.route(const.PROJECT_GMS_DOWNLOAD_ENDPOINT, methods=["GET"])
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def download_gms_results():
     server.app.logger.info(f"Received request at {const.PROJECT_GMS_ENDPOINT}")
 
-    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    (gms_token,), _ = su.api.get_check_keys(flask.request.args, ("gms_token",))
-    payload = su.api.get_token_payload(gms_token, server.DOWNLOAD_URL_SECRET_KEY)
+    (gms_token,), _ = au.api.get_check_keys(flask.request.args, ("gms_token",))
+    payload = au.api.get_token_payload(gms_token, server.DOWNLOAD_URL_SECRET_KEY)
     project_id, station_id, gms_id = (
         payload["project_id"],
         payload["station_id"],
@@ -86,7 +87,7 @@ def download_gms_results():
     gms_result, cs_param_bounds, disagg_data = utils.load_gms_data(results_dir, gms_id)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        zip_ffp, missing_waveforms = su.api.create_gms_download_zip(
+        zip_ffp, missing_waveforms = au.api.create_gms_download_zip(
             gms_result, tmp_dir, disagg_data, cs_param_bounds=cs_param_bounds,
         )
 
@@ -103,16 +104,16 @@ def download_gms_results():
 @server.app.route(
     f"{const.PROJECT_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT}", methods=["GET"]
 )
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_default_causal_params():
     server.app.logger.info(
         f"Received request at {const.PROJECT_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT}"
     )
 
-    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    (project_id, station_id, gms_id), _ = su.api.get_check_keys(
+    (project_id, station_id, gms_id), _ = au.api.get_check_keys(
         flask.request.args, ("project_id", "station_id", "gms_id")
     )
     server.app.logger.debug(f"Request parameters {project_id}, {station_id}, {gms_id}")
@@ -122,4 +123,4 @@ def get_default_causal_params():
     )
     gms_result, cs_param_bounds, disagg_data = utils.load_gms_data(results_dir, gms_id)
 
-    return flask.jsonify(su.api.get_default_causal_params(cs_param_bounds))
+    return flask.jsonify(au.api.get_default_causal_params(cs_param_bounds))

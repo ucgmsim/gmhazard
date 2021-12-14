@@ -6,8 +6,9 @@ from pathlib import Path
 import flask
 from flask_cors import cross_origin
 
-import gmhazard_utils as su
+import api_utils as au
 import gmhazard_calc as sc
+import gmhazard_utils as gu
 import project_gen as pg
 from project_api import utils
 from project_api import server
@@ -17,11 +18,11 @@ from project_api import constants as const
 @server.app.route(const.PROJECT_IDS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_available_ids():
     server.app.logger.info(f"Received request at {const.PROJECT_IDS_ENDPOINT}")
 
-    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
     server.app.logger.info(
@@ -40,14 +41,14 @@ def get_available_ids():
 @server.app.route(const.PROJECT_SITES_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_available_sites():
     server.app.logger.info(f"Received request at {const.PROJECT_SITES_ENDPOINT}")
 
-    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    project_id = su.api.get_check_keys(flask.request.args, ["project_id"])[0][0]
+    project_id = au.api.get_check_keys(flask.request.args, ["project_id"])[0][0]
     server.app.logger.debug(f"Request parameters {project_id}")
 
     # Load the project config
@@ -83,14 +84,14 @@ def get_available_sites():
 @server.app.route(const.PROJECT_IMS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_available_IMs():
     server.app.logger.info(f"Received request at {const.PROJECT_IMS_ENDPOINT}")
 
-    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    project_id = su.api.get_check_keys(flask.request.args, ["project_id"])[0][0]
+    project_id = au.api.get_check_keys(flask.request.args, ["project_id"])[0][0]
     server.app.logger.debug(f"Request parameters {project_id}")
 
     # Load the project config
@@ -98,7 +99,7 @@ def get_available_IMs():
 
     return flask.jsonify(
         {
-            "ims": su.api.get_available_im_dict(
+            "ims": au.api.get_available_im_dict(
                 project.ims, components=project.components
             )
         }
@@ -108,14 +109,14 @@ def get_available_IMs():
 @server.app.route(const.PROJECT_CONTEXT_MAPS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_context_maps():
     server.app.logger.info(f"Received request at {const.PROJECT_CONTEXT_MAPS_ENDPOINT}")
 
-    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    (project_id, station_id), _ = su.api.get_check_keys(
+    (project_id, station_id), _ = au.api.get_check_keys(
         flask.request.args, ("project_id", "station_id")
     )
     server.app.logger.debug(f"Request parameters {project_id}, {station_id}")
@@ -146,21 +147,21 @@ def get_context_maps():
 @server.app.route(const.PROJECT_DOWNLOAD_TOKEN_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_download_all_token():
     server.app.logger.info(
         f"Received request at {const.PROJECT_DOWNLOAD_TOKEN_ENDPOINT}"
     )
 
-    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    (project_id,), _ = su.api.get_check_keys(flask.request.args, ("project_id",))
+    (project_id,), _ = au.api.get_check_keys(flask.request.args, ("project_id",))
     server.app.logger.debug(f"Request parameters {project_id}")
 
     return flask.jsonify(
         {
-            "download_token": su.api.get_download_token(
+            "download_token": au.api.get_download_token(
                 {"project_id": project_id}, server.DOWNLOAD_URL_SECRET_KEY,
             )
         }
@@ -169,7 +170,7 @@ def get_download_all_token():
 
 @server.app.route(const.PROJECT_CREATE_NEW_ENDPOINT, methods=["POST"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def create_new():
     """
     Parameters
@@ -203,7 +204,7 @@ def create_new():
     """
     server.app.logger.info(f"Received request at {const.PROJECT_DOWNLOAD_ENDPOINT}")
 
-    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
     project_params = json.loads(flask.request.data.decode())
@@ -227,14 +228,14 @@ def create_new():
 
 
 @server.app.route(f"{const.PROJECT_DOWNLOAD_ENDPOINT}/<token>", methods=["GET"])
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def download_all(token):
     server.app.logger.info(f"Received request at {const.PROJECT_DOWNLOAD_ENDPOINT}")
 
-    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    project_id = su.api.get_token_payload(token, server.DOWNLOAD_URL_SECRET_KEY)[
+    project_id = au.api.get_token_payload(token, server.DOWNLOAD_URL_SECRET_KEY)[
         "project_id"
     ]
     server.app.logger.debug(f"Token parameters {project_id}")

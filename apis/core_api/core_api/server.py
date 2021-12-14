@@ -6,7 +6,7 @@ import flask
 from jose import jwt
 from flask_caching import Cache
 
-from gmhazard_utils import MultiProcessSafeTimedRotatingFileHandler
+from api_utils import MultiProcessSafeTimedRotatingFileHandler
 
 DOWNLOAD_URL_SECRET_KEY = os.getenv("CORE_API_DOWNLOAD_URL_SECRET_KEY")
 CORE_API_SECRET_KEY = os.getenv("CORE_API_SECRET")

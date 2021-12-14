@@ -13,7 +13,7 @@ import pandas as pd
 import yaml
 
 import gmhazard_calc as sc
-import gmhazard_utils as su
+import api_utils as au
 import project_gen as pg
 
 
@@ -280,7 +280,7 @@ def _write_station(
             ensemble_hazard, nzs1170p5_hazard, nzta_hazard = load_hazard_data(
                 cur_data_dir / str(component), cur_im
             )
-            su.api.write_hazard_download_data(
+            au.api.write_hazard_download_data(
                 ensemble_hazard,
                 nzs1170p5_hazard,
                 str(cur_comp_out_dir),
@@ -304,7 +304,7 @@ def _write_station(
                         f"results are missing or incomplete"
                     )
                 else:
-                    su.api.write_disagg_download_data(
+                    au.api.write_disagg_download_data(
                         ensemble_disagg,
                         metadata_df,
                         str(cur_comp_out_dir),
@@ -326,6 +326,6 @@ def _write_station(
         uhs_results, nzs1170p5_results = load_uhs_data(
             cur_data_dir / str(component), project.uhs_return_periods
         )
-        su.api.write_uhs_download_data(
+        au.api.write_uhs_download_data(
             uhs_results, nzs1170p5_results, str(cur_comp_out_dir)
         )

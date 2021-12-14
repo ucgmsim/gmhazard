@@ -9,7 +9,7 @@ from flask_cors import cross_origin
 from flask_caching import Cache
 
 import gmhazard_calc as sc
-import gmhazard_utils as su
+import api_utils as au
 from core_api import server
 from core_api import constants as const
 
@@ -48,7 +48,7 @@ class DisaggCachedData:
 @server.app.route(const.ENSEMBLE_DISAGG_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_ensemble_disagg():
     """Retrieves the contribution of each rupture for the
     specified exceedance.
@@ -62,7 +62,7 @@ def get_ensemble_disagg():
     (
         (ensemble_id, station, im, exceedance,),
         optional_params_dict,
-    ) = su.api.get_check_keys(
+    ) = au.api.get_check_keys(
         flask.request.args,
         ("ensemble_id", "station", "im", "exceedance"),
         (("gmt_plot", bool, False), ("vs30", float), ("im_component", str, "RotD50"),),
@@ -95,7 +95,7 @@ def get_ensemble_disagg():
     )
 
     return flask.jsonify(
-        su.api.get_ensemble_disagg(
+        au.api.get_ensemble_disagg(
             disagg_data,
             extra_info_df,
             base64.b64encode(src_png_data).decode()
@@ -104,7 +104,7 @@ def get_ensemble_disagg():
             base64.b64encode(eps_png_data).decode()
             if eps_png_data is not None
             else None,
-            su.api.get_download_token(
+            au.api.get_download_token(
                 {
                     "type": "ensemble_disagg",
                     "ensemble_id": ensemble_id,
@@ -122,7 +122,7 @@ def get_ensemble_disagg():
 
 
 @server.app.route(f"{const.ENSEMBLE_DISAGG_DOWNLOAD_ENDPOINT}", methods=["Get"])
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def download_ens_disagg():
     """Handles downloading of disagg contribution data"""
     server.app.logger.info(
@@ -131,8 +131,8 @@ def download_ens_disagg():
     cache = server.cache
 
     # Retrieve parameters from the token
-    disagg_token, *_ = su.api.get_check_keys(flask.request.args, ("disagg_token",))
-    disagg_payload = su.api.get_token_payload(
+    disagg_token, *_ = au.api.get_check_keys(flask.request.args, ("disagg_token",))
+    disagg_payload = au.api.get_token_payload(
         disagg_token[0], server.DOWNLOAD_URL_SECRET_KEY
     )
     ensemble_id, station, user_vs30, im, exceedance, gmt_plots = (
@@ -165,7 +165,7 @@ def download_ens_disagg():
     )
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        zip_ffp = su.api.create_disagg_download_zip(
+        zip_ffp = au.api.create_disagg_download_zip(
             disagg_data,
             merged_df,
             tmp_dir,
@@ -182,7 +182,7 @@ def download_ens_disagg():
 @server.app.route(const.ENSEMBLE_FULL_DISAGG_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_full_disagg():
     """
     Valid request has to contain the following
@@ -193,7 +193,7 @@ def get_full_disagg():
     (
         (ensemble_id, station, im, exceedance,),
         optional_values_dict,
-    ) = su.api.get_check_keys(
+    ) = au.api.get_check_keys(
         flask.request.args,
         ("ensemble_id", "station", "im", "exceedance"),
         (
@@ -249,7 +249,7 @@ def _get_disagg(
     Union[None, bytes],
 ]:
     # Get the cache key
-    cache_key = su.api.get_cache_key(
+    cache_key = au.api.get_cache_key(
         "disagg",
         ensemble_id=ensemble_id,
         station=station,
@@ -271,7 +271,7 @@ def _get_disagg(
         site_info = sc.site.get_site_from_name(ensemble, station, user_vs30=user_vs30)
 
         server.app.logger.debug(
-            f"Computing disagg - version {su.api.get_repo_version()}"
+            f"Computing disagg - version {au.api.get_repo_version()}"
         )
         disagg_data = sc.disagg.run_ensemble_disagg(
             ensemble, site_info, im, exceedance=float(exceedance), calc_mean_values=True

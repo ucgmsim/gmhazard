@@ -1,9 +1,9 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="project_api",
-    version="21.8.2",
+    name="api_utils",
+    version="21.12.1",
     packages=find_packages(),
     url="https://github.com/ucgmsim/gmhazard",
-    description="GMHazard Project API",
+    description="Utils used by APIs",
 )

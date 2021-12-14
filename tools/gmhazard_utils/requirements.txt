@@ -1,8 +1,2 @@
-Flask
-GitPython
-itsdangerous
-numpy
-pandas
 PyYAML
-requests
-slack-sdk
+six
