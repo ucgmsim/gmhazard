@@ -5,7 +5,7 @@ import flask
 from flask_cors import cross_origin
 
 import api_utils as au
-import gmhazard_utils as gu
+import gmhazard_utils as su
 from project_api import constants as const
 from project_api import utils
 from project_api import server
@@ -18,7 +18,7 @@ from project_api import server
 def get_gms_runs():
     server.app.logger.info(f"Received request at {const.PROJECT_GMS_RUNS_ENDPOINT}")
 
-    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
     project_id = au.api.get_check_keys(flask.request.args, ["project_id"])[0][0]
@@ -39,7 +39,7 @@ def get_gms_runs():
 def get_ensemble_gms():
     server.app.logger.info(f"Received request at {const.PROJECT_GMS_ENDPOINT}")
 
-    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
     (project_id, station_id, gms_id), _ = au.api.get_check_keys(
@@ -70,7 +70,7 @@ def get_ensemble_gms():
 def download_gms_results():
     server.app.logger.info(f"Received request at {const.PROJECT_GMS_ENDPOINT}")
 
-    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
     (gms_token,), _ = au.api.get_check_keys(flask.request.args, ("gms_token",))
@@ -110,7 +110,7 @@ def get_default_causal_params():
         f"Received request at {const.PROJECT_GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT}"
     )
 
-    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
     (project_id, station_id, gms_id), _ = au.api.get_check_keys(

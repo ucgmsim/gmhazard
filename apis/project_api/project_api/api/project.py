@@ -8,7 +8,7 @@ from flask_cors import cross_origin
 
 import api_utils as au
 import gmhazard_calc as sc
-import gmhazard_utils as gu
+import gmhazard_utils as su
 import project_gen as pg
 from project_api import utils
 from project_api import server
@@ -22,7 +22,7 @@ from project_api import constants as const
 def get_available_ids():
     server.app.logger.info(f"Received request at {const.PROJECT_IDS_ENDPOINT}")
 
-    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
     server.app.logger.info(
@@ -45,7 +45,7 @@ def get_available_ids():
 def get_available_sites():
     server.app.logger.info(f"Received request at {const.PROJECT_SITES_ENDPOINT}")
 
-    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
     project_id = au.api.get_check_keys(flask.request.args, ["project_id"])[0][0]
@@ -88,7 +88,7 @@ def get_available_sites():
 def get_available_IMs():
     server.app.logger.info(f"Received request at {const.PROJECT_IMS_ENDPOINT}")
 
-    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
     project_id = au.api.get_check_keys(flask.request.args, ["project_id"])[0][0]
@@ -113,7 +113,7 @@ def get_available_IMs():
 def get_context_maps():
     server.app.logger.info(f"Received request at {const.PROJECT_CONTEXT_MAPS_ENDPOINT}")
 
-    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
     (project_id, station_id), _ = au.api.get_check_keys(
@@ -153,7 +153,7 @@ def get_download_all_token():
         f"Received request at {const.PROJECT_DOWNLOAD_TOKEN_ENDPOINT}"
     )
 
-    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
     (project_id,), _ = au.api.get_check_keys(flask.request.args, ("project_id",))
@@ -204,7 +204,7 @@ def create_new():
     """
     server.app.logger.info(f"Received request at {const.PROJECT_DOWNLOAD_ENDPOINT}")
 
-    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
     project_params = json.loads(flask.request.data.decode())
@@ -232,7 +232,7 @@ def create_new():
 def download_all(token):
     server.app.logger.info(f"Received request at {const.PROJECT_DOWNLOAD_ENDPOINT}")
 
-    _, version_str = gu.utils.get_package_version(const.PACKAGE_NAME)
+    _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
     project_id = au.api.get_token_payload(token, server.DOWNLOAD_URL_SECRET_KEY)[

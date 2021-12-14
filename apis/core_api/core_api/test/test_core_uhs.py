@@ -98,7 +98,6 @@ def test_get_uhs_download(config):
             "nzs1170p5_hazard_token": response_nsz1170p5.json()["download_token"],
         },
     )
-    breakpoint()
     tu.response_checks(response, [], [], 200, "application/zip")
 
 
