@@ -65,7 +65,10 @@ def test_get_uhs_missing_parameter(config):
         },
     )
     tu.response_checks(
-        response, [("error", str)], [("error", tu.MISSING_PARAM_MSG.format("exceedances"))], 400
+        response,
+        [("error", str)],
+        [("error", tu.MISSING_PARAM_MSG.format("exceedances"))],
+        400,
     )
 
 
@@ -95,16 +98,18 @@ def test_get_uhs_download(config):
             "nzs1170p5_hazard_token": response_nsz1170p5.json()["download_token"],
         },
     )
+    breakpoint()
     tu.response_checks(response, [], [], 200, "application/zip")
 
 
 def test_get_uhs_download_missing_parameter(config):
     """ Tests the failed get request of a UHS Ensemble download with missing parameters"""
-    response = tu.send_test_request(
-        constants.ENSEMBLE_UHS_DOWNLOAD_ENDPOINT,
-    )
+    response = tu.send_test_request(constants.ENSEMBLE_UHS_DOWNLOAD_ENDPOINT,)
     tu.response_checks(
-        response, [("error", str)], [("error", tu.MISSING_PARAM_MSG.format("uhs_token"))], 400
+        response,
+        [("error", str)],
+        [("error", tu.MISSING_PARAM_MSG.format("uhs_token"))],
+        400,
     )
 
 
@@ -133,7 +138,5 @@ def test_get_uhs_user_vs30(config):
     tu.response_user_vs30_checks(
         response_db,
         response_user,
-        [
-            ["uhs_df", str(config["uhs"]["return_period"]) + "_mean"],
-        ],
+        [["uhs_df", str(config["uhs"]["return_period"]) + "_mean"],],
     )

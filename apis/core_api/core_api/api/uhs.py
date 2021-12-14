@@ -108,9 +108,7 @@ def download_ensemble_uhs():
     (uhs_token, nzs1170p5_token), _ = au.api.get_check_keys(
         flask.request.args, ("uhs_token", "nzs1170p5_hazard_token")
     )
-    uhs_payload = apis.api_utils.api_utils.api.utils.get_token_payload(
-        uhs_token, server.DOWNLOAD_URL_SECRET_KEY
-    )
+    uhs_payload = au.api.get_token_payload(uhs_token, server.DOWNLOAD_URL_SECRET_KEY)
     ensemble_id, station, user_vs30, exceedances_str, calc_percentiles, im_component = (
         uhs_payload["ensemble_id"],
         uhs_payload["station"],
@@ -120,7 +118,7 @@ def download_ensemble_uhs():
         sc.im.IMComponent(uhs_payload["im_component"]),
     )
 
-    nzs1170p5_payload = apis.api_utils.api_utils.api.utils.get_token_payload(
+    nzs1170p5_payload = au.api.get_token_payload(
         nzs1170p5_token, server.DOWNLOAD_URL_SECRET_KEY
     )
     assert (
