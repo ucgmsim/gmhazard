@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import common
+from gmhazard_calc.directivity import utils
 
 
 def convergence(input_dir, baseline_dir, faults, nhyps, grid_space, sample, output_dir):
@@ -50,7 +51,7 @@ def convergence(input_dir, baseline_dir, faults, nhyps, grid_space, sample, outp
             fig.suptitle(f"{fault_name} Convergence")
             plt.savefig(f"{output_dir}/convergance_{fault_name}.png")
 
-            fault, _, planes, lon_lat_depth, x, y = common.load_fault_info(
+            fault, _, planes, lon_lat_depth, x, y = utils.load_fault_info(
                 fault_name, nhm_dict, grid_space
             )
 
@@ -120,7 +121,7 @@ def parse_args():
         "--faults",
         default=faults,
         nargs="+",
-        help="Which faults to calculate for",
+        help="List of faults to calculate for",
     )
     parser.add_argument(
         "--nhyps",
@@ -131,7 +132,7 @@ def parse_args():
     parser.add_argument(
         "--grid_space",
         default=grid_space,
-        help="How many sites to do along each axis",
+        help="Number of sites to do along each axis",
     )
     parser.add_argument(
         "--sample",

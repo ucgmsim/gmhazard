@@ -1,13 +1,13 @@
 import argparse
 
-from random import sample
 import numpy as np
 import pandas as pd
+from random import sample
 
 import common
 from qcore.formats import load_station_file
-import sha_calc
-from sha_calc.directivity.bea20.HypoMethod import HypoMethod
+from gmhazard_calc.directivity.HypoMethod import HypoMethod
+from gmhazard_calc import directivity
 
 
 def compute_nz_site_effect(
@@ -25,7 +25,7 @@ def compute_nz_site_effect(
     df = pd.DataFrame(index=site_names, columns=column_values)
 
     # PREP
-    fault, _, planes, lon_lat_depth, _, _ = common.load_fault_info(
+    fault, _, planes, lon_lat_depth, _, _ = directivity.utils.load_fault_info(
         fault_name, nhm_dict, grid_space
     )
 
@@ -35,7 +35,7 @@ def compute_nz_site_effect(
         hypo_along_strike = nhpy
         hypo_down_dip = 1
 
-        fdi, fdi_array, phi_red = sha_calc.bea20.compute_fault_directivity(
+        fdi, fdi_array, phi_red = directivity.compute_fault_directivity(
             lon_lat_depth,
             planes,
             site_coords,
@@ -63,7 +63,7 @@ def parse_args():
     parser.add_argument(
         "--fault_name",
         default="Wairau",
-        help="Which fault to calculate for",
+        help="Fault to calculate for",
     )
     parser.add_argument(
         "--nhyps",
@@ -79,7 +79,7 @@ def parse_args():
     parser.add_argument(
         "--grid_space",
         default=grid_space,
-        help="How many sites to do along each axis",
+        help="Number of sites to do along each axis",
     )
     parser.add_argument(
         "--method",

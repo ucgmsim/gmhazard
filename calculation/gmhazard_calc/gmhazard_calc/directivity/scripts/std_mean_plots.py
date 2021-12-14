@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import common
+from gmhazard_calc.directivity import utils
 
 
 def std_mean_plots(
@@ -18,7 +19,7 @@ def std_mean_plots(
 ):
     for fault_name in faults:
 
-        fault, _, planes, lon_lat_depth, x, y = common.load_fault_info(
+        fault, _, planes, lon_lat_depth, x, y = utils.load_fault_info(
             fault_name, nhm_dict, grid_space
         )
 
@@ -137,7 +138,7 @@ def parse_args():
         "--faults",
         default=faults,
         nargs="+",
-        help="Which faults to produce results for",
+        help="List of faults to produce results for",
     )
     parser.add_argument(
         "--nhyps",
@@ -148,7 +149,7 @@ def parse_args():
     parser.add_argument(
         "--grid_space",
         default=grid_space,
-        help="How many sites to do along each axis",
+        help="Number of sites to do along each axis",
     )
     parser.add_argument(
         "--colour_mode",

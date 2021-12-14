@@ -112,17 +112,26 @@ def rupture_id_ix_to_rupture_id(
 
 
 def get_fault_header_points(fault: nhm.NHMFault):
+    """
+    Calculates and produces fault information such as the entire trace and fault header info per plane
+
+    Parameters
+    ----------
+    fault: nhm.NHMFault
+        A fault object from an NHM file
+    """
     srf_points = []
     srf_header: List[Dict[str, Union[int, float]]] = []
     lon1, lat1 = fault.trace[0]
     lon2, lat2 = fault.trace[1]
     strike = geo.ll_bearing(lon1, lat1, lon2, lat2, midpoint=True)
 
-    if 180 > fault.dip_dir - strike >= 0:
-        # If the dipdir is not to the right of the strike, turn the fault around
-        indexes = range(len(fault.trace))
-    else:
-        indexes = range(len(fault.trace) - 1, -1, -1)
+    # If the dipdir is not to the right of the strike, turn the fault around
+    indexes = (
+        np.arange(len(fault.trace))
+        if 180 > fault.dip_dir - strike >= 0
+        else np.flip(np.arange(len(fault.trace)))
+    )
 
     plane_offset = 0
     for i, i2 in zip(indexes[:-1], indexes[1:]):

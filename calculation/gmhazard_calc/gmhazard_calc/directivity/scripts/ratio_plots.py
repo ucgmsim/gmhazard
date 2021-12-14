@@ -63,7 +63,7 @@ def parse_args():
         "--faults",
         default=faults,
         nargs="+",
-        help="Which faults to produce results for",
+        help="List of faults to produce results for",
     )
     parser.add_argument(
         "--nhyps",
@@ -74,7 +74,7 @@ def parse_args():
     parser.add_argument(
         "--grid_space",
         default=grid_space,
-        help="How many sites to do along each axis",
+        help="Number of sites to do along each axis",
     )
     return parser.parse_args(), nhm_dict
 

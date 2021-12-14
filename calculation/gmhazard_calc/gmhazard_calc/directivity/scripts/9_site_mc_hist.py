@@ -37,7 +37,7 @@ def parse_args():
         "--faults",
         default=faults,
         nargs="+",
-        help="Which faults to calculate for",
+        help="List of faults to calculate for",
     )
     parser.add_argument(
         "--nhyps",
@@ -53,7 +53,7 @@ def parse_args():
     parser.add_argument(
         "--grid_space",
         default=grid_space,
-        help="How many sites to do along each axis",
+        help="Number of sites to do along each axis",
     )
     parser.add_argument(
         "--sample",

@@ -1,110 +1,24 @@
 import math
-from pathlib import Path
-from typing import List
+from typing import Sequence
 
 import numpy as np
-import pandas as pd
 
-from qcore import srf
 from IM_calculation.source_site_dist import src_site_dist
-from sha_calc.directivity.bea20 import bea20, utils
-from sha_calc.directivity.bea20.HypoMethod import HypoMethod
-from sha_calc.constants import DEFAULT_PSA_PERIODS
-
-
-def compute_directivity_srf_single(
-    srf_file: str,
-    srf_csv: Path,
-    sites: np.ndarray,
-    periods: List[float] = DEFAULT_PSA_PERIODS,
-):
-    """Computes directivity effects at the given sites with the given srf data for a single hypocentre
-
-    Parameters
-    ----------
-    srf_file: str
-        String of the ffp to the location of the srf file
-    srf_csv: Path
-        Path to the location of the srf csv file
-    sites: np.ndarray
-        Numpy array full of site lon/lat values [[lon, lat],...]
-    periods: List[float], optional
-        The periods to calculate for the bea20 model's fD
-        If not set then will be all the default pSA periods for GMHazard
-    """
-    (
-        mag,
-        rake,
-        planes,
-        lon_lat_depth,
-    ) = _srf_pre_process(srf_file, srf_csv)
-
-    hyp_along_strike = 1
-    hyp_down_dip = 1
-
-    return compute_fault_directivity(
-        lon_lat_depth,
-        planes,
-        sites,
-        hyp_along_strike,
-        hyp_down_dip,
-        mag,
-        rake,
-        periods=periods,
-    )
-
-
-def compute_directivity_srf_multi(
-    srf_file: str,
-    srf_csv: Path,
-    sites: np.ndarray,
-    periods: List[float] = DEFAULT_PSA_PERIODS,
-):
-    """Computes directivity effects at the given sites with the given srf data using hypocentre averaging
-
-    Parameters
-    ----------
-    srf_file: str
-        String of the ffp to the location of the srf file
-    srf_csv: Path
-        Path to the location of the srf csv file
-    sites: np.ndarray
-        Numpy array full of site lon/lat values [[lon, lat],...]
-    periods: List[float], optional
-        The periods to calculate for the bea20 model's fD
-        If not set then will be all the default pSA periods for GMHazard
-    """
-    (
-        mag,
-        rake,
-        planes,
-        lon_lat_depth,
-    ) = _srf_pre_process(srf_file, srf_csv)
-
-    hyp_along_strike = 10
-    hyp_down_dip = 2
-
-    return compute_fault_directivity(
-        lon_lat_depth,
-        planes,
-        sites,
-        hyp_along_strike,
-        hyp_down_dip,
-        mag,
-        rake,
-        periods=periods,
-    )
+from gmhazard_calc.directivity import utils
+from .HypoMethod import HypoMethod
+from .EventType import EventType
+import sha_calc
 
 
 def compute_fault_directivity(
     lon_lat_depth: np.ndarray,
-    planes: List,
+    planes: Sequence,
     sites: np.ndarray,
     hyp_along_strike: int,
     hyp_down_dip: int,
     mag: float,
     rake: float,
-    periods: List[float] = DEFAULT_PSA_PERIODS,
+    periods: Sequence[float] = sha_calc.constants.DEFAULT_PSA_PERIODS,
     method: HypoMethod = HypoMethod.LATIN_HYPERCUBE,
 ):
     """
@@ -136,11 +50,11 @@ def compute_fault_directivity(
     nominal_strike, nominal_strike2 = utils.calc_nominal_strike(lon_lat_depth)
 
     # Customise the planes to set different hypocentres
-    planes_list, plane_index, weights = utils.set_hypocentres(
+    planes_list, plane_index_list, weights = utils.set_hypocentres(
         hyp_along_strike,
         hyp_down_dip,
         planes,
-        utils.EventType.from_rake(rake),
+        EventType.from_rake(rake),
         method=method,
     )
 
@@ -151,10 +65,9 @@ def compute_fault_directivity(
     phired_array = np.zeros(
         (hyp_along_strike * hyp_down_dip, len(sites), len(periods))
     )
-
     for index, planes in enumerate(planes_list):
         # Gets the plane index of the hypocentre
-        plane_index = plane_index[index]
+        plane_index = plane_index_list[index]
 
         fdi, (phi_red, predictor_functions, other) = _compute_directivity_effect(
             lon_lat_depth,
@@ -171,20 +84,10 @@ def compute_fault_directivity(
         fdi_array[index] = fdi
         phired_array[index] = phi_red
 
-    if method == HypoMethod.GRID:
-        # Only apply weights if method type is grid
-        fdi_average = np.multiply(
-            fdi_array.reshape((hyp_along_strike * hyp_down_dip, len(sites))),
-            np.asarray(weights).reshape(
-                (hyp_along_strike * hyp_down_dip, len(periods))
-            ),
-        )
-        phired_average = np.multiply(
-            phired_array.reshape((hyp_along_strike * hyp_down_dip, len(sites))),
-            np.asarray(weights).reshape(
-                (hyp_along_strike * hyp_down_dip, len(periods))
-            ),
-        )
+    if method == HypoMethod.UNIFORM_GRID:
+        # Only apply weights if method type is uniform grid
+        fdi_average = weights[:, None, None] * fdi_array
+        phired_average = weights[:, None, None] * phired_array
         fdi_average = np.sum(fdi_average, axis=0)
         phired_average = np.sum(phired_average, axis=0)
     else:
@@ -197,14 +100,14 @@ def compute_fault_directivity(
 
 def _compute_directivity_effect(
     lon_lat_depth: np.ndarray,
-    planes: List,
+    planes: Sequence,
     plane_index: int,
     sites: np.ndarray,
     nominal_strike: np.ndarray,
     nominal_strike2: np.ndarray,
     mag: float,
     rake: float,
-    periods: List[float],
+    periods: Sequence[float],
 ):
     """
     Does the computation of directivity and GC2 given a set of planes with a set hypocentre.
@@ -254,31 +157,7 @@ def _compute_directivity_effect(
     d = planes[plane_index]["dhyp"]
 
     # Use the bea20 model to work out directivity (fd) at the given sites
-    fd, phi_red, predictor_functions, other = bea20(
+    fd, phi_red, predictor_functions, other = sha_calc.directivity.bea20.bea20(
         mag, ry, rx, s_max, d, t_bot, d_bot, rake, dip, np.asarray(periods)
     )
-
     return fd, (phi_red, predictor_functions, other)
-
-
-def _srf_pre_process(srf_file: str, srf_csv: Path):
-    """
-    Does the srf pre processing steps for computing directivity such as getting the
-    magnitude, rake, planes and lon_lat_depth values.
-
-    Parameters
-    ----------
-    srf_file: str
-        String of the ffp to the location of the srf file
-    srf_csv: Path
-        Path to the location of the srf csv file
-    """
-    # Get rake, magnitude from srf_csv
-    mag = pd.read_csv(srf_csv)["magnitude"][0]
-    rake = pd.read_csv(srf_csv)["rake"][0]
-
-    # Get planes and points from srf_file
-    planes = srf.read_header(srf_file, idx=True)
-    lon_lat_depth = srf.read_srf_points(srf_file)
-
-    return mag, rake, planes, lon_lat_depth

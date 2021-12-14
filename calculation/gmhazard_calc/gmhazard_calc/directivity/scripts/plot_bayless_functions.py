@@ -4,21 +4,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import common
-import sha_calc
+from gmhazard_calc import directivity
 
 
 def plot_bayless_model(fault_name, nhm_dict, grid_space, period, model_key, output_dir):
     depths = [0, 0.5, 1]
     depth_texts = ["min", "half", "max"]
 
-    fault, site_coords, planes, lon_lat_depth, x, y = common.load_fault_info(
+    fault, site_coords, planes, lon_lat_depth, x, y = directivity.utils.load_fault_info(
         fault_name, nhm_dict, grid_space
     )
 
     (
         nominal_strike,
         nominal_strike2,
-    ) = sha_calc.bea20.directivity.utils.calc_nominal_strike(lon_lat_depth)
+    ) = directivity.utils.calc_nominal_strike(lon_lat_depth)
 
     site_data = dict()
     sample = [24, 49, 74]
@@ -34,7 +34,7 @@ def plot_bayless_model(fault_name, nhm_dict, grid_space, period, model_key, outp
         planes[1]["dhyp"] = planes[1]["width"] * depth
         planes[1]["shyp"] = 0
 
-        hypo_lon, hypo_lat = sha_calc.bea20.directivity.utils.get_hypo_lon_lat(
+        hypo_lon, hypo_lat = directivity.utils.get_hypo_lon_lat(
             planes, lon_lat_depth
         )
 
@@ -42,7 +42,7 @@ def plot_bayless_model(fault_name, nhm_dict, grid_space, period, model_key, outp
             phi_red,
             predictor_functions,
             other,
-        ) = sha_calc.bea20.directivity._compute_directivity_effect(
+        ) = directivity.directivity._compute_directivity_effect(
             lon_lat_depth,
             planes,
             1,
@@ -98,7 +98,7 @@ def plot_bayless_model(fault_name, nhm_dict, grid_space, period, model_key, outp
         ax1 = fig.add_subplot(3, 3, x + 1)
         ax1.set_xlabel("Hypocentre Percentage Depth")
         ax1.set_ylabel(model_key)
-        plt.title(f"{fault_name} Site {x + 1}")
+        ax1.set_title(f"{fault_name} Site {x + 1}")
 
         ax1.errorbar(
             x=[f"{d*100}%" for d in depths], y=site_values, marker=".", color="blue"
@@ -130,12 +130,12 @@ def parse_args():
     parser.add_argument(
         "--fault_name",
         default="Ashley",
-        help="Which fault to calculate results for",
+        help="Fault to calculate results for",
     )
     parser.add_argument(
         "--grid_space",
         default=grid_space,
-        help="How many sites to do along each axis",
+        help="Number of sites to do along each axis",
     )
     parser.add_argument(
         "--period",

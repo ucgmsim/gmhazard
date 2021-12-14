@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
 
-from sha_calc.directivity.bea20.EventType import EventType
+from gmhazard_calc.directivity.EventType import EventType
 import common
 
 
@@ -76,19 +76,19 @@ def parse_args():
         "--faults",
         default=faults,
         nargs="+",
-        help="Which faults to produce results for",
+        help="List of faults to produce results for",
     )
     parser.add_argument(
         "--nstrikes",
         default=[200, 50, 20, 5],
         nargs="+",
-        help="How many hypocentres along strike",
+        help="Number of hypocentres along strike",
     )
     parser.add_argument(
         "--ndips",
         default=[100, 20, 5, 2],
         nargs="+",
-        help="How many hypocentres down dip",
+        help="Number of hypocentres down dip",
     )
     return parser.parse_args(), nhm_dict
 

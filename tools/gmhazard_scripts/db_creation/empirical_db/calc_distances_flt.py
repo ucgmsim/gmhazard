@@ -2,7 +2,7 @@ import argparse
 import numpy as np
 import os
 import pandas as pd
-from typing import List, Union, Dict
+from typing import Union, Dict
 
 from qcore import nhm, formats, geo
 from IM_calculation.source_site_dist import src_site_dist
@@ -60,7 +60,7 @@ def compute_site_source_distances(
 
         srf_header = None
         if isinstance(cur_fault_data, nhm.NHMFault):
-            srf_header, srf_points = sc.rupture.rupture.get_fault_header_points(faults[cur_fault_name])
+            srf_header, srf_points = sc.rupture.get_fault_header_points(faults[cur_fault_name])
             srf_points = np.asarray(srf_points)
         # Point source
         else:
@@ -90,7 +90,7 @@ def compute_site_source_distances(
                 distances[index, :]["rx"][~too_far_mask],
                 distances[index, :]["ry"][~too_far_mask],
             ) = src_site_dist.calc_rx_ry(
-                srf_points, srf_header, stations[~too_far_mask], type=1
+                srf_points, srf_header, stations[~too_far_mask], type=2
             )
         else:
             # Set Rx/Ry to rrup for point sources

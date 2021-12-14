@@ -484,7 +484,8 @@ def plot_uhs(
     """
 
     def get_legend_label(rp: Union[str, int]):
-        rp = int(rp.split("_")[0]) if isinstance(rp, str) else rp
+        # rp = int(rp.split("_")[0]) if isinstance(rp, str) else rp
+        rp = rp.split("_")[0] if isinstance(rp, str) else rp
 
         return f"{rp}" if legend_rp else f"{1 / rp:.4f}"
 

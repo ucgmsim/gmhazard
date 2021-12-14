@@ -16,6 +16,5 @@ from sha_calc.im_component.im_component_ratio import (
     get_component_ratio,
     get_computed_component_ratio,
 )
-
 from .gcim import *
 from .gms import *

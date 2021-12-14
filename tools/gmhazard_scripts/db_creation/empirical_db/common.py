@@ -338,6 +338,13 @@ def calculate_emp_site(
         distance_df, left_on="fault_name", right_on="fault_name"
     )
 
+    # a = pd.DataFrame.from_dict(
+    #     nhm_dict, orient="index"
+    # ) Add some sorting
+    # c = a.merge(
+    #     distance_df, left_index=True, right_on="fault_name"
+    # )
+
     if dist_filter_by_mag:
         max_dist = np.minimum(np.interp(matching_df.mag, MAG, DIST), max_rjb)
     else:

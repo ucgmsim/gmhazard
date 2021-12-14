@@ -1,12 +1,12 @@
 import time
 import multiprocessing as mp
-from pathlib import Path
 import argparse
+from pathlib import Path
 
 import numpy as np
 
+from gmhazard_calc import directivity
 import sha_calc
-from sha_calc.directivity.bea20.validation.plots import plot_fdi
 import common
 
 
@@ -24,7 +24,7 @@ def perform_mp_directivity(
     nhyp = hypo_along_strike * hypo_down_dip
     print(f"Computing for {fault_name} {nhyp}")
 
-    fault, site_coords, planes, lon_lat_depth, x, y = common.load_fault_info(
+    fault, site_coords, planes, lon_lat_depth, x, y = directivity.utils.load_fault_info(
         fault_name, nhm_dict, grid_space
     )
 
@@ -32,7 +32,7 @@ def perform_mp_directivity(
     total_fd_array = np.zeros((repeats, nhyp, len(site_coords), 1))
 
     for i in range(repeats):
-        fdi, fdi_array, phi_red = sha_calc.bea20.compute_fault_directivity(
+        fdi, fdi_array, phi_red = directivity.compute_fault_directivity(
             lon_lat_depth,
             planes,
             site_coords,
@@ -51,7 +51,7 @@ def perform_mp_directivity(
     fdi_average = fdi_average.reshape((grid_space, grid_space))
 
     title = f"{fault_name} Length={fault.length} Dip={fault.dip} Rake={fault.rake}"
-    plot_fdi(
+    directivity.validation.plots.plot_fdi(
         x,
         y,
         fdi_average,
@@ -82,23 +82,23 @@ def parse_args():
         "--faults",
         default=faults,
         nargs="+",
-        help="Which faults to calculate for",
+        help="List of faults to calculate",
     )
     parser.add_argument(
         "--nstrikes",
         default=[5],
         nargs="+",
-        help="How many hypocentres along strike",
+        help="List of hypocentres along strike",
     )
     parser.add_argument(
         "--ndips",
         default=[1],
         nargs="+",
-        help="How many hypocentres down dip",
+        help="List of hypocentres down dip",
     )
     parser.add_argument(
         "--method",
-        default="Hypercube",
+        default="LATIN_HYPERCUBE",
         help="Method to place hypocentres",
     )
     parser.add_argument(
@@ -114,7 +114,7 @@ def parse_args():
     parser.add_argument(
         "--grid_space",
         default=grid_space,
-        help="How many sites to do along each axis",
+        help="Number of sites to do along each axis",
     )
     parser.add_argument(
         "--n_procs",
@@ -127,7 +127,6 @@ def parse_args():
 
 if __name__ == "__main__":
     args, nhm_dict = parse_args()
-    n_procs = 30
 
     start_time = time.time()
 

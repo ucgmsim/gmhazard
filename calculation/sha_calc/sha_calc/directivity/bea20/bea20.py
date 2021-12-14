@@ -187,7 +187,8 @@ def bea20(
     ]
     e1interp = np.interp(np.log(Periods), np.log(PhiPer), e1)
 
-    # No longer calculating phiredi, instead compute phired for all Periods listed
+    # Computing phi_red for all periods
+    # Note: In the original matlab implementation this was only done for the period of interest
     PhiRed = np.matlib.repmat(e1interp, len(fD), 1)
     PhiRed[np.invert(Footprint), :] = 0
 
