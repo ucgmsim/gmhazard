@@ -406,7 +406,6 @@ def _get_gms(params: Dict[str, Any], cache: Cache):
     ks_bounds = sha_calc.shared.ks_critical_value(gms_result.realisations.shape[0], 0.1)
 
     # Save this in the cache, to allow downloading of the results
-    # TODO: Perhaps apply au.api.get_cache_key() instead randomly generated unique id?
     cache_key = str(uuid.uuid4())
     cache.set(
         cache_key,
