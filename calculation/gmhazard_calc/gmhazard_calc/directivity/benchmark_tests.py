@@ -53,15 +53,13 @@ def test_directivity():
         x, y = np.meshgrid(lon_values, lat_values)
         site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
-        hypo_along_strike = 25
-        hypo_down_dip = 4
+        n_hypo_data = directivity.NHypoData(directivity.HypoMethod.LATIN_HYPERCUBE, nhypo=100)
 
         fd, _, _ = directivity.compute_fault_directivity(
             lon_lat_depth,
             planes,
             site_coords,
-            hypo_along_strike,
-            hypo_down_dip,
+            n_hypo_data,
             fault.mw,
             fault.rake,
             periods=[im.period],

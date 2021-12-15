@@ -7,14 +7,13 @@ from gmhazard_calc.directivity import hypo_sampling
 from gmhazard_calc.rupture import get_fault_header_points
 from .EventType import EventType
 from .HypoMethod import HypoMethod
+from .NHypoData import NHypoData
 
 
 def set_hypocentres(
-    hypo_along_strike: int,
-    hypo_down_dip: int,
+    n_hypo_data: NHypoData,
     planes: Sequence,
     event_type: EventType,
-    method=HypoMethod.LATIN_HYPERCUBE,
 ):
     """
     Creates a List of planes each with a different set hypocentre for directivity calculations
@@ -23,16 +22,12 @@ def set_hypocentres(
 
     Parameters
     ----------
-    hypo_along_strike: int
-        Number of hypocentres across strike to set
-    hypo_down_dip: int
-        Number of hypocentres down dip to set
+    n_hypo_data: NHypoData
+        Dataclass to store information on number of hypocentres and the method for placement
     planes: list
         The planes to adjust and set the hypocentre on
     event_type: EventType
         The event type Strike_slip, dip_slip or all for determining the down dip distribution function
-    method: HypoMethod, optional
-        Method to place hypocentres across strike and dip
     """
 
     # Gets the total length and removes any previous hypocentres
@@ -42,20 +37,20 @@ def set_hypocentres(
         plane["shyp"] = -999.9
         plane["dhyp"] = -999.9
 
-    if method == HypoMethod.LATIN_HYPERCUBE:
-        return hypo_sampling.latin_hypercube(
-            hypo_along_strike * hypo_down_dip, planes, event_type, total_length
+    if n_hypo_data.method == HypoMethod.LATIN_HYPERCUBE:
+        return hypo_sampling.latin_hypercube_sampling(
+            n_hypo_data.nhypo, planes, event_type, total_length
         )
-    elif method == HypoMethod.MONTE_CARLO:
+    elif n_hypo_data.method == HypoMethod.MONTE_CARLO:
         return hypo_sampling.mc_sampling(
-            hypo_along_strike * hypo_down_dip, planes, event_type, total_length
+            n_hypo_data.nhypo, planes, event_type, total_length
         )
-    elif method == HypoMethod.UNIFORM_GRID:
-        return hypo_sampling.even_grid(
-            hypo_along_strike, hypo_down_dip, planes, event_type, total_length
+    elif n_hypo_data.method == HypoMethod.UNIFORM_GRID:
+        return hypo_sampling.uniform_grid(
+            n_hypo_data.hypo_along_strike, n_hypo_data.hypo_down_dip, planes, event_type, total_length
         )
     else:
-        raise NotImplementedError(f"Method {method} is not currently implemented")
+        raise NotImplementedError(f"Method {n_hypo_data.method} is not currently implemented")
 
 
 def calc_nominal_strike(traces: np.ndarray):

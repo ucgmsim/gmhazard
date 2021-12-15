@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import common
+from gmhazard_calc import directivity
 
 
 def plot_ratio(
@@ -17,7 +18,7 @@ def plot_ratio(
 ):
     for fault_name in faults:
         for nhyp in nhyps:
-            fault, _, planes, lon_lat_depth, x, y = common.load_fault_info(
+            fault, _, planes, lon_lat_depth, x, y = directivity.load_fault_info(
                 fault_name, nhm_dict, grid_space
             )
 

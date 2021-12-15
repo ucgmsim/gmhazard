@@ -12,9 +12,7 @@ import common
 
 def perform_mp_directivity(
     fault_name,
-    hypo_along_strike,
-    hypo_down_dip,
-    method,
+    n_hypo_data,
     period,
     grid_space,
     nhm_dict,
@@ -30,17 +28,15 @@ def perform_mp_directivity(
         lon_lat_depth,
         planes,
         site_coords,
-        hypo_along_strike,
-        hypo_down_dip,
+        n_hypo_data,
         fault.mw,
         fault.rake,
         periods=[period],
-        method=method,
     )
 
     fdi = fdi.reshape(grid_space, grid_space)
 
-    nhyp = hypo_along_strike * hypo_down_dip
+    nhyp = n_hypo_data.nhypo
     title = f"{fault_name} Length={fault.length} Dip={fault.dip} Rake={fault.rake}"
     directivity.validation.plots.plot_fdi(
         x,
@@ -86,6 +82,11 @@ def parse_args():
         help="Number of hypocentres down dip",
     )
     parser.add_argument(
+        "--nhypo",
+        default=20000,
+        help="How many hypocentres total",
+    )
+    parser.add_argument(
         "--method",
         default="MONTE_CARLO",
         help="Method to place hypocentres",
@@ -112,6 +113,8 @@ def parse_args():
 if __name__ == "__main__":
     args, nhm_dict = parse_args()
 
+    n_hypo_data = directivity.NHypoData(HypoMethod[args.method], args.nhypo, args.nstrike, args.ndip)
+
     start_time = time.time()
 
     with mp.Pool(processes=args.n_procs) as pool:
@@ -120,9 +123,7 @@ if __name__ == "__main__":
             [
                 (
                     fault,
-                    args.nstrike,
-                    args.ndip,
-                    HypoMethod[args.method],
+                    n_hypo_data,
                     args.period,
                     args.grid_space,
                     nhm_dict,

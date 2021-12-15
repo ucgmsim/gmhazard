@@ -14,8 +14,7 @@ from qcore import formats
 from gmhazard_calc.nz_code.nzs1170p5.nzs_zfactor_2016.ll2z import ll2z
 from gmhazard_calc.rupture import rupture as gc_rupture
 from gmhazard_calc.im import IM, IMType
-from gmhazard_calc import utils
-from gmhazard_calc import dbs
+from gmhazard_calc import utils, dbs, directivity
 import sha_calc
 
 # fmt: off
@@ -232,18 +231,16 @@ def __process_rupture(
                 nhm_fault = nhm_dict[rupture.rupture_name]
                 planes, lon_lat_depth = gc_rupture.get_fault_header_points(nhm_fault)
                 site_coords = np.asarray([site_df.loc[station_name][:2].values])
-                hypo_along_strike = 25
-                hypo_down_dip = 4
+                n_hypo_data = directivity.NHypoData(directivity.HypoMethod.LATIN_HYPERCUBE, nhypo=100)
                 (
                     fdi,
                     _,
                     phi_red,
-                ) = sha_calc.directivity.bea20.directivity.compute_fault_directivity(
+                ) = directivity.compute_fault_directivity(
                     lon_lat_depth,
                     planes,
                     site_coords,
-                    hypo_along_strike,
-                    hypo_down_dip,
+                    n_hypo_data,
                     nhm_fault.mw,
                     nhm_fault.rake,
                     periods=psa_periods,
@@ -254,13 +251,11 @@ def __process_rupture(
                     if im_type is IMType.pSA
                     else IM(im_type)
                 )
+                mean = np.log(value[0])
+                stdev, sigma_inter, sigma_intra = value[1]
                 if use_directivity and im_type is IMType.pSA:
-                    mean = np.log(value[0] * np.exp(fdi[0][i]))
-                    stdev, sigma_inter, sigma_intra = value[1]
+                    mean += fdi[0][i]
                     stdev += phi_red[0][i]
-                else:
-                    mean = np.log(value[0])
-                    stdev, sigma_inter, sigma_intra = value[1]
 
                 fault_im_result_dict[db_type][str(full_im_name)] = mean
                 if keep_sigma_components:

@@ -11,7 +11,16 @@ from gmhazard_calc import directivity
 
 
 def compute_nz_site_effect(
-    sites_file, station_file, fault_name, nhyps, period, grid_space, method, output_dir
+    sites_file,
+    station_file,
+    fault_name,
+    nhyps,
+    nstrikes,
+    ndips,
+    period,
+    grid_space,
+    method,
+    output_dir,
 ):
     site_names = sample(list(np.load(sites_file)), 1000)
     stat_df = load_station_file(station_file)
@@ -31,24 +40,28 @@ def compute_nz_site_effect(
 
     df = df.sort_index(ascending=False)
 
-    for nhpy in nhyps:
-        hypo_along_strike = nhpy
-        hypo_down_dip = 1
+    nhyps_length = len(nstrikes) if nhyps is None else len(nhyps)
+
+    for i in range(nhyps_length):
+        n_hypo_data = directivity.NHypoData(
+            method,
+            None if nhyps is None else nhyps[i],
+            None if nstrikes is None else nstrikes[i],
+            None if ndips is None else ndips[i],
+        )
 
         fdi, fdi_array, phi_red = directivity.compute_fault_directivity(
             lon_lat_depth,
             planes,
             site_coords,
-            hypo_along_strike,
-            hypo_down_dip,
+            n_hypo_data,
             fault.mw,
             fault.rake,
             periods=[period],
-            method=method,
         )
 
-        df[f"FD_{nhpy}"] = np.exp(fdi)
-        df[f"PHI_RED_{nhpy}"] = phi_red
+        df[f"FD_{n_hypo_data.nhypo}"] = np.exp(fdi)
+        df[f"PHI_RED_{n_hypo_data.nhypo}"] = phi_red
 
     df.to_csv(f"{output_dir}/{fault_name}_sites.csv")
 
@@ -66,10 +79,22 @@ def parse_args():
         help="Fault to calculate for",
     )
     parser.add_argument(
-        "--nhyps",
-        default=[5, 15, 30, 50, 100, 1000],
+        "--nstrikes",
+        default=None,
         nargs="+",
-        help="List of Hypocentre comparisons",
+        help="List of hypocentres along strike",
+    )
+    parser.add_argument(
+        "--ndips",
+        default=None,
+        nargs="+",
+        help="List of hypocentres down dip",
+    )
+    parser.add_argument(
+        "--nhypos",
+        default=None,
+        nargs="+",
+        help="List of hypocentre totals",
     )
     parser.add_argument(
         "--period",
@@ -97,6 +122,8 @@ if __name__ == "__main__":
         args.station_file,
         args.fault,
         args.nhyps,
+        args.nstrikes,
+        args.ndips,
         args.period,
         args.grid_space,
         HypoMethod[args.method],

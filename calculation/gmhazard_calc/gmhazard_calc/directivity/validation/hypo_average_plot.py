@@ -31,15 +31,13 @@ def hypo_average_plots(
 
     fault, site_coords, planes, lon_lat_depth, x, y = directivity.utils.load_fault_info(fault_name, nhm_dict, grid_space)
 
-    hypo_along_strike = 5
-    hypo_down_dip = 2
+    n_hypo_data = directivity.NHypoData(directivity.HypoMethod.LATIN_HYPERCUBE, nhypo=10)
 
     fd, fd_array, _ = directivity.compute_fault_directivity(
         lon_lat_depth,
         planes,
         site_coords,
-        hypo_along_strike,
-        hypo_down_dip,
+        n_hypo_data,
         fault.mw,
         fault.rake,
         periods=[im.period],
