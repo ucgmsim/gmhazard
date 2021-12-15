@@ -3,7 +3,7 @@ import pandas as pd
 from flask_cors import cross_origin
 
 import gmhazard_calc as sc
-import gmhazard_utils as su
+import api_utils as au
 from core_api import server
 from core_api import constants as const
 
@@ -11,7 +11,7 @@ from core_api import constants as const
 @server.app.route(const.SITE_SOURCE_DISTANCES_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_distance_df():
     """Gets the distances for the specified station
 
@@ -22,7 +22,7 @@ def get_distance_df():
         f"Received request at {const.SITE_SOURCE_DISTANCES_ENDPOINT}"
     )
 
-    (ensemble_id, station), *_ = su.api.get_check_keys(
+    (ensemble_id, station), *_ = au.api.get_check_keys(
         flask.request.args, ("ensemble_id", "station")
     )
 

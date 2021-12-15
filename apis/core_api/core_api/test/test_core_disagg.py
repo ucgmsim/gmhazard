@@ -1,4 +1,4 @@
-import gmhazard_utils.src.test as tu
+import api_utils.test as tu
 from core_api import constants
 
 
@@ -43,7 +43,10 @@ def test_get_disagg_missing_parameter(config):
         constants.ENSEMBLE_DISAGG_ENDPOINT, config["general"]
     )
     tu.response_checks(
-        response, [("error", str)], [("error", tu.MISSING_PARAM_MSG.format("exceedance"))], 400
+        response,
+        [("error", str)],
+        [("error", tu.MISSING_PARAM_MSG.format("exceedance"))],
+        400,
     )
 
 
@@ -74,17 +77,12 @@ def test_get_disagg_user_vs30(config):
     """Tests the successful get request of a Disagg with a
     different set of vs30 and ensure the result is different to the db vs30 calculations"""
     response_db = tu.send_test_request(
-        constants.ENSEMBLE_DISAGG_ENDPOINT,
-        {**config["general"], **config["disagg"]},
+        constants.ENSEMBLE_DISAGG_ENDPOINT, {**config["general"], **config["disagg"]},
     )
     response_user = tu.send_test_request(
         constants.ENSEMBLE_DISAGG_ENDPOINT,
         {**config["general"], **config["disagg"], "vs30": config["user_vs30"]},
     )
     tu.response_user_vs30_checks(
-        response_db,
-        response_user,
-        [
-            ["disagg_data", "total_contribution"],
-        ],
+        response_db, response_user, [["disagg_data", "total_contribution"],],
     )

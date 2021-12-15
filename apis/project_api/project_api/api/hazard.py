@@ -3,8 +3,9 @@ import tempfile
 import flask
 from flask_cors import cross_origin
 
-import gmhazard_utils as su
+import api_utils as au
 import gmhazard_calc as sc
+import gmhazard_utils as su
 from project_api import server
 from project_api import constants as const
 from project_api import utils
@@ -13,14 +14,14 @@ from project_api import utils
 @server.app.route(const.PROJECT_HAZARD_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_ensemble_hazard():
     server.app.logger.info(f"Received request at {const.PROJECT_HAZARD_ENDPOINT}")
 
     _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    (project_id, station_id, im), optional_kwargs = su.api.get_check_keys(
+    (project_id, station_id, im), optional_kwargs = au.api.get_check_keys(
         flask.request.args,
         ("project_id", "station_id", ("im", sc.im.IM.from_str)),
         (("im_component", str),),
@@ -43,9 +44,9 @@ def get_ensemble_hazard():
         im,
     )
 
-    result = su.api.get_ensemble_hazard_response(
+    result = au.api.get_ensemble_hazard_response(
         ensemble_hazard,
-        su.api.get_download_token(
+        au.api.get_download_token(
             {
                 "project_id": project_id,
                 "station_id": ensemble_hazard.site.station_name,
@@ -75,7 +76,7 @@ def get_ensemble_hazard():
 
 
 @server.app.route(const.PROJECT_HAZARD_DOWNLOAD_ENDPOINT, methods=["GET"])
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def download_ens_hazard():
     """Handles downloading of the hazard data,
     specified by the given token"""
@@ -86,9 +87,9 @@ def download_ens_hazard():
     _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    (token,), _ = su.api.get_check_keys(flask.request.args, ("hazard_token",))
+    (token,), _ = au.api.get_check_keys(flask.request.args, ("hazard_token",))
 
-    payload = su.api.get_token_payload(token, server.DOWNLOAD_URL_SECRET_KEY)
+    payload = au.api.get_token_payload(token, server.DOWNLOAD_URL_SECRET_KEY)
 
     project_id, station_id, im, im_component = (
         payload["project_id"],
@@ -113,7 +114,7 @@ def download_ens_hazard():
     )
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        zip_ffp = su.api.create_hazard_download_zip(
+        zip_ffp = au.api.create_hazard_download_zip(
             ensemble_hazard,
             tmp_dir,
             nzs1170p5_hazard=nzs1170p5_hazard,

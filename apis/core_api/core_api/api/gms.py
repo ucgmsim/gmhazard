@@ -11,7 +11,7 @@ from flask_cors import cross_origin
 from flask_caching import Cache
 
 import gmhazard_calc as sc
-import gmhazard_utils as su
+import api_utils as au
 import sha_calc as sha_calc
 from core_api import server
 from core_api import constants as const
@@ -46,7 +46,7 @@ class GMSCacheData:
 @server.app.route(const.ENSEMBLE_GMS_COMPUTE_ENDPOINT, methods=["POST"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def compute_ensemble_GMS():
     """For the specified ensemble computes the GCIM,
     selects the random realisations and selects the
@@ -126,11 +126,11 @@ def compute_ensemble_GMS():
         "gm_dataset_ids",
     ]:
         if req_param not in params.keys():
-            raise su.api.MissingKeyError(req_param)
+            raise au.api.MissingKeyError(req_param)
 
     # Require either the exceedance rate or the IM value
     if "exceedance" not in params.keys() and "im_level" not in params.keys():
-        raise su.api.MissingKeyError("[exceedance|im_level]")
+        raise au.api.MissingKeyError("[exceedance|im_level]")
 
     server.app.logger.debug(f"Request parameters: {params}")
 
@@ -154,9 +154,9 @@ def compute_ensemble_GMS():
     )
 
     return flask.jsonify(
-        su.api.get_ensemble_gms(
+        au.api.get_ensemble_gms(
             gms_result,
-            download_token=su.api.get_download_token(
+            download_token=au.api.get_download_token(
                 {"key": cache_key}, server.DOWNLOAD_URL_SECRET_KEY,
             ),
             disagg_data=disagg_result,
@@ -166,7 +166,7 @@ def compute_ensemble_GMS():
 
 
 @server.app.route(const.ENSEMBLE_GMS_DOWNLOAD_ENDPOINT, methods=["GET"])
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def download_gms_results():
     """Handles downloading of the GMs selected via GMS"""
     server.app.logger.info(
@@ -174,8 +174,8 @@ def download_gms_results():
     )
     cache = server.cache
 
-    gms_token, _ = su.api.get_check_keys(flask.request.args, ("gms_token",))
-    cache_key = su.api.get_token_payload(gms_token[0], server.DOWNLOAD_URL_SECRET_KEY)[
+    gms_token, _ = au.api.get_check_keys(flask.request.args, ("gms_token",))
+    cache_key = au.api.get_token_payload(gms_token[0], server.DOWNLOAD_URL_SECRET_KEY)[
         "key"
     ]
 
@@ -185,7 +185,7 @@ def download_gms_results():
             # TODO: Find a way to deal with disaggregation data with Core API
             # For instance, Projects already come with disaggregation data
             # whereas, Core API, disaggregation data needs to be computed
-            zip_ffp, _ = su.api.create_gms_download_zip(
+            zip_ffp, _ = au.api.create_gms_download_zip(
                 cached_data.gms_result,
                 tmp_dir,
                 disagg_data=None,
@@ -212,7 +212,7 @@ def download_gms_results():
 @server.app.route(const.GMS_DEFAULT_IM_WEIGHTS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_default_IM_weights():
     """Gets the default IM weights for the
     specified conditioning IM_j and IM vector
@@ -232,7 +232,7 @@ def get_default_IM_weights():
         f"Received request at {const.GMS_DEFAULT_IM_WEIGHTS_ENDPOINT}"
     )
 
-    (IM_j, IMs), _ = su.api.get_check_keys(
+    (IM_j, IMs), _ = au.api.get_check_keys(
         flask.request.args, (("IM_j", sc.im.IM.from_str), "IMs",),
     )
 
@@ -249,11 +249,11 @@ def get_default_IM_weights():
 @server.app.route(const.GMS_IMS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_available_IMs():
     server.app.logger.info(f"Received request at {const.GMS_IMS_ENDPOINT}")
 
-    (ensemble_id, gm_dataset_ids), _ = su.api.get_check_keys(
+    (ensemble_id, gm_dataset_ids), _ = au.api.get_check_keys(
         flask.request.args, ("ensemble_id", "gm_dataset_ids")
     )
 
@@ -273,7 +273,7 @@ def get_available_IMs():
 @server.app.route(const.GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_default_causal_params():
     """
     Gets the default GM pre-filtering parameters
@@ -295,7 +295,7 @@ def get_default_causal_params():
         f"Received request at {const.GMS_DEFAULT_CAUSAL_PARAMS_ENDPOINT}"
     )
 
-    params, opt_params_dict = su.api.get_check_keys(
+    params, opt_params_dict = au.api.get_check_keys(
         flask.request.args,
         ("ensemble_id", "station", ("IM_j", sc.im.IM.from_str)),
         (("exceedance", float), ("im_level", float), ("user_vs30", float)),
@@ -306,7 +306,7 @@ def get_default_causal_params():
         "exceedance" not in opt_params_dict.keys()
         and "im_level" not in opt_params_dict.keys()
     ):
-        raise su.api.MissingKeyError("[exceedance|im_level]")
+        raise au.api.MissingKeyError("[exceedance|im_level]")
 
     ensemble, station, IM_j = params
 
@@ -323,7 +323,7 @@ def get_default_causal_params():
     )
     return flask.jsonify(
         {
-            **su.api.get_default_causal_params(cs_param_bounds),
+            **au.api.get_default_causal_params(cs_param_bounds),
             "sf_low": cs_param_bounds.sf_low,
             "sf_high": cs_param_bounds.sf_high,
         }
@@ -333,7 +333,7 @@ def get_default_causal_params():
 @server.app.route(const.GMS_GM_DATASETS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_gm_datasets():
     server.app.logger.info(f"Received request at {const.GMS_GM_DATASETS_ENDPOINT}")
 
@@ -347,7 +347,7 @@ def get_gm_datasets():
 
 
 def _get_gms(params: Dict[str, Any], cache: Cache):
-    git_version = su.api.get_repo_version()
+    git_version = au.api.get_repo_version()
 
     # Load the required parameters
     ensemble_id, station = params["ensemble_id"], params["station"]
@@ -406,7 +406,6 @@ def _get_gms(params: Dict[str, Any], cache: Cache):
     ks_bounds = sha_calc.shared.ks_critical_value(gms_result.realisations.shape[0], 0.1)
 
     # Save this in the cache, to allow downloading of the results
-    # TODO: Perhaps apply su.api.get_cache_key() instead randomly generated unique id?
     cache_key = str(uuid.uuid4())
     cache.set(
         cache_key,

@@ -7,7 +7,7 @@ import flask
 from flask_cors import cross_origin
 
 import gmhazard_calc as sc
-import gmhazard_utils as su
+import api_utils as au
 from core_api import server
 from core_api import constants as const
 
@@ -18,7 +18,7 @@ VS30_GRID_FFP = os.getenv("VS30_GRID_FFP")
 @server.app.route(const.SITE_LOCATION_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_station_from_loc():
     """Gets the closest station for the specified lat/lon
 
@@ -27,7 +27,7 @@ def get_station_from_loc():
     """
     server.app.logger.info(f"Received request at {const.SITE_LOCATION_ENDPOINT}")
 
-    (ensemble_id, lat, lon), _ = su.api.get_check_keys(
+    (ensemble_id, lat, lon), _ = au.api.get_check_keys(
         flask.request.args, ("ensemble_id", "lat", "lon")
     )
 
@@ -51,7 +51,7 @@ def get_station_from_loc():
 @server.app.route(const.SITE_NAME_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_station_from_name():
     """Gets the station details
 
@@ -60,7 +60,7 @@ def get_station_from_name():
     """
 
     server.app.logger.info(f"Received request at {const.SITE_NAME_ENDPOINT}")
-    (ensemble_id, station), *_ = su.api.get_check_keys(
+    (ensemble_id, station), *_ = au.api.get_check_keys(
         flask.request.args, ("ensemble_id", "station")
     )
     server.app.logger.debug(f"Loading ensemble and retrieving site information")
@@ -80,12 +80,12 @@ def get_station_from_name():
 
 @server.app.route(const.SITE_CONTEXT_MAP_ENDPOINT, methods=["GET"])
 @cross_origin()
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def download_context_map():
     """Handles generation & downloading of the gmt context map"""
     server.app.logger.info(f"Received request at {const.SITE_CONTEXT_MAP_ENDPOINT}")
 
-    (ensemble_id, lon, lat), optional_values_dict = su.api.get_check_keys(
+    (ensemble_id, lon, lat), optional_values_dict = au.api.get_check_keys(
         flask.request.args, (("ensemble_id", str), ("lon", float), ("lat", float))
     )
 
@@ -108,12 +108,12 @@ def download_context_map():
 
 @server.app.route(const.SITE_VS30_MAP_ENDPOINT, methods=["GET"])
 @cross_origin()
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def download_vs30_map():
     """Handles generation & downloading of the gmt context map"""
     server.app.logger.info(f"Received request at {const.SITE_VS30_MAP_ENDPOINT}")
 
-    (ensemble_id, lon, lat), optional_values_dict = su.api.get_check_keys(
+    (ensemble_id, lon, lat), optional_values_dict = au.api.get_check_keys(
         flask.request.args, (("ensemble_id", str), ("lon", float), ("lat", float))
     )
 
@@ -147,7 +147,7 @@ def download_vs30_map():
 @server.app.route(const.SITE_VS30_SOIL_CLASS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_soil_class_from_vs30():
     """Gets the Soil Class for NZ Codes from the Vs30
     (NZTA and NZS1170.5)
@@ -156,7 +156,7 @@ def get_soil_class_from_vs30():
     URL parameter: vs30
     """
     server.app.logger.info(f"Received request at {const.SITE_VS30_SOIL_CLASS_ENDPOINT}")
-    vs30 = su.api.get_check_keys(flask.request.args, ["vs30"])[0][0]
+    vs30 = au.api.get_check_keys(flask.request.args, ["vs30"])[0][0]
     server.app.logger.debug(f"Request parameters {vs30}")
 
     return flask.jsonify(
