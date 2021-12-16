@@ -42,6 +42,7 @@ def mc_sampling(
     planes: Sequence,
     event_type: EventType,
     total_length: float,
+    seed: int = None,
 ):
     """
     Straight Monte Carlo using distributions along strike and dip to determine the placement
@@ -56,7 +57,12 @@ def mc_sampling(
         The event type strike_slip, dip_slip or oblique for determining the down dip distribution function
     total_length: float
         The total length of the fault
+    seed: int
+        The seed to use to get reproducible results
     """
+    # Setting seed to fix results unless None then will be random
+    np.random.seed(seed)
+
     # Define strike distribution and truncate
     mean, std = 0.5, 0.23
     strike_distribution = stats.norm(mean, std)
@@ -186,6 +192,7 @@ def latin_hypercube_sampling(
     planes: Sequence,
     event_type: EventType,
     total_length: float,
+    seed: int = None
 ):
     """
     Using Latin Hypercube to place hypocentres by taking a grid of nhypo length across both strike and dip
@@ -202,6 +209,8 @@ def latin_hypercube_sampling(
         The event type Strike_slip, dip_slip or all for determining the down dip distribution function
     total_length: float
         The total length of the fault
+    seed: int
+        The seed to use to get reproducible results
     """
     # Define strike and down dip distributions
     mu, sigma = 0.5, 0.23
@@ -219,7 +228,7 @@ def latin_hypercube_sampling(
         down_dip_distribution = WeibullTruncatedOblique(a=0, b=1)
 
     # Setup Latin-HyperCube
-    lhd = stats.qmc.LatinHypercube(2)
+    lhd = stats.qmc.LatinHypercube(2, seed=seed)
     lhd = lhd.random(nhypo)
     lhd[:, 0] = strike_distribution.ppf(lhd[:, 0])
     lhd[:, 1] = down_dip_distribution.ppf(lhd[:, 1])

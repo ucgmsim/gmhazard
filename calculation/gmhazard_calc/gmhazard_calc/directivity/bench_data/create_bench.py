@@ -12,7 +12,6 @@ FAULTS = ["AlpineK2T", "Ashley", "Browning", "Hossack"]
 
 def create_benchmark_data():
     """Creates the benchmark data with 4 different faults using 9 points and saving the fd results"""
-    np.random.seed(seed=1)
     im = IM(IMType.pSA, period=3.0)
     ens = gm_data.Ensemble("v20p5emp")
     branch = ens.get_im_ensemble(im.im_type).branches[0]
@@ -33,7 +32,7 @@ def create_benchmark_data():
         x, y = np.meshgrid(lon_values, lat_values)
         site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
-        n_hypo_data = directivity.NHypoData(directivity.HypoMethod.LATIN_HYPERCUBE, nhypo=100)
+        n_hypo_data = directivity.NHypoData(directivity.HypoMethod.LATIN_HYPERCUBE, nhypo=100, seed=1)
 
         fd, _, _ = directivity.compute_fault_directivity(
             lon_lat_depth,

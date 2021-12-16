@@ -12,6 +12,7 @@ class NHypoData:
     nhypo: int = None
     hypo_along_strike: int = None
     hypo_down_dip: int = None
+    seed: int = None
 
     def __post_init__(self):
         """

@@ -39,18 +39,24 @@ def set_hypocentres(
 
     if n_hypo_data.method == HypoMethod.LATIN_HYPERCUBE:
         return hypo_sampling.latin_hypercube_sampling(
-            n_hypo_data.nhypo, planes, event_type, total_length
+            n_hypo_data.nhypo, planes, event_type, total_length, n_hypo_data.seed
         )
     elif n_hypo_data.method == HypoMethod.MONTE_CARLO:
         return hypo_sampling.mc_sampling(
-            n_hypo_data.nhypo, planes, event_type, total_length
+            n_hypo_data.nhypo, planes, event_type, total_length, n_hypo_data.seed
         )
     elif n_hypo_data.method == HypoMethod.UNIFORM_GRID:
         return hypo_sampling.uniform_grid(
-            n_hypo_data.hypo_along_strike, n_hypo_data.hypo_down_dip, planes, event_type, total_length
+            n_hypo_data.hypo_along_strike,
+            n_hypo_data.hypo_down_dip,
+            planes,
+            event_type,
+            total_length,
         )
     else:
-        raise NotImplementedError(f"Method {n_hypo_data.method} is not currently implemented")
+        raise NotImplementedError(
+            f"Method {n_hypo_data.method} is not currently implemented"
+        )
 
 
 def calc_nominal_strike(traces: np.ndarray):
