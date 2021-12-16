@@ -15,6 +15,7 @@ import { ScenarioForm, ScenarioViewer } from "components/Project/Scenarios";
 
 const Project = () => {
   const {
+    hasPermission,
     projectId,
     projectLocation,
     projectVS30,
@@ -66,7 +67,7 @@ const Project = () => {
         <Tab
           eventKey="gms"
           title="Ground Motion Selection"
-          disabled={invalidTab()}
+          disabled={invalidTab() || !hasPermission("admin")}
           tabClassName="gms-tab"
         >
           <TwoColumnView cpanel={GMSForm} viewer={GMSViewer} />
