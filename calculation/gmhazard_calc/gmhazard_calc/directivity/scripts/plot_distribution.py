@@ -8,6 +8,10 @@ from matplotlib.ticker import PercentFormatter
 from gmhazard_calc.directivity.EventType import EventType
 import common
 
+"""
+Plots the distribution of hypocentre across strike and dip from a saved dataframe of distribution values
+"""
+
 
 def plot_distribution(
     input_dir,

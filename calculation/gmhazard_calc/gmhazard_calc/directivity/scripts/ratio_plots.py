@@ -6,6 +6,11 @@ import matplotlib.pyplot as plt
 import common
 from gmhazard_calc import directivity
 
+"""
+Plots the ratio difference between two fd results from using different methods
+or hypocentre locations or to compare against the baseline
+"""
+
 
 def plot_ratio(
     old_data_dir,

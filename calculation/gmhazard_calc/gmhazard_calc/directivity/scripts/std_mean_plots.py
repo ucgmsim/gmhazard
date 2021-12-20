@@ -6,6 +6,11 @@ import matplotlib.pyplot as plt
 import common
 from gmhazard_calc.directivity import utils
 
+"""
+Plots the mean and standard deviation between the different hypocentre locations used to compute fd
+can be produced in either a contour or mesh grid
+"""
+
 
 def std_mean_plots(
     baseline_dir,
