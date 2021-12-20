@@ -7,7 +7,7 @@ import common
 from gmhazard_calc import directivity
 
 """
-Plots three different depths of hypocentre location on a particular function of the bayless model
+Plots three different depths of hypocentre location on a particular function of the Bayless 2020 model
 to see how it changes based on depth
 """
 

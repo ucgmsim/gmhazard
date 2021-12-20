@@ -202,15 +202,14 @@ def run_branch_hazard(
         fault_hazard = pd.Series(data=np.zeros(im_values.shape), index=im_values)
 
     # DS Hazard
-    # ds_gm_prob_df = shared.get_gm_prob_df(
-    #     branch,
-    #     site_info,
-    #     im,
-    #     im_values,
-    #     const.SourceType.distributed,
-    #     ensemble=branch.im_ensemble.ensemble,
-    # )
-    ds_gm_prob_df = None
+    ds_gm_prob_df = shared.get_gm_prob_df(
+        branch,
+        site_info,
+        im,
+        im_values,
+        const.SourceType.distributed,
+        ensemble=branch.im_ensemble.ensemble,
+    )
     if ds_gm_prob_df is not None:
         ds_hazard = sha_calc.hazard_curve(
             ds_gm_prob_df, branch.rupture_df_id_ix["annual_rec_prob"]
