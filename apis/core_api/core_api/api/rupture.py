@@ -2,7 +2,7 @@ import flask
 from flask_cors import cross_origin
 
 import gmhazard_calc as sc
-import gmhazard_utils as su
+import api_utils as au
 from core_api import server
 from core_api import constants as const
 
@@ -10,7 +10,7 @@ from core_api import constants as const
 @server.app.route(const.RUPTURES_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_rupture_df():
     """Gets the ruptures for the specified ensemble id
 
@@ -19,7 +19,7 @@ def get_rupture_df():
     """
     server.app.logger.info(f"Received request at {const.RUPTURES_ENDPOINT}")
 
-    (ensemble_id,), *_ = su.api.get_check_keys(flask.request.args, ("ensemble_id",))
+    (ensemble_id,), *_ = au.api.get_check_keys(flask.request.args, ("ensemble_id",))
 
     server.app.logger.debug(f"Request parameters {ensemble_id}")
 

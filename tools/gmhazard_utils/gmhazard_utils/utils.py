@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from typing import Tuple, Union, Sequence, List
-
 from importlib.metadata import version
 
 

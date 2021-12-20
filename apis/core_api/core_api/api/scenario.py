@@ -6,12 +6,12 @@ from flask_cors import cross_origin
 from flask_caching import Cache
 
 import gmhazard_calc as sc
-import gmhazard_utils as su
+import api_utils as au
 from core_api import server
 from core_api import constants as const
 
 
-class ScenarioCachedData(su.api.BaseCacheData):
+class ScenarioCachedData(au.api.BaseCacheData):
     """Just a wrapper for caching scenario result data"""
 
     def __init__(
@@ -34,7 +34,7 @@ class ScenarioCachedData(su.api.BaseCacheData):
 @server.app.route(const.ENSEMBLE_SCENARIO_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_ensemble_scenario():
     """Retrieves the scenario for the ensemble, all its
      branches for the specified station (name)
@@ -46,7 +46,7 @@ def get_ensemble_scenario():
     server.app.logger.info(f"Received request at {const.ENSEMBLE_SCENARIO_ENDPOINT}")
     cache = server.cache
 
-    (ensemble_id, station), optional_kwargs = su.api.get_check_keys(
+    (ensemble_id, station), optional_kwargs = au.api.get_check_keys(
         flask.request.args,
         ("ensemble_id", "station"),
         (
@@ -66,10 +66,10 @@ def get_ensemble_scenario():
     )
 
     return flask.jsonify(
-        su.api.get_ensemble_scenario_response(
+        au.api.get_ensemble_scenario_response(
             # Filters the ruptures to the top 20 based on geometric mean
             sc.scenario.filter_ruptures(ensemble_scenario),
-            su.api.get_download_token(
+            au.api.get_download_token(
                 {
                     "type": "ensemble_scenario",
                     "ensemble_id": ensemble_id,
@@ -84,7 +84,7 @@ def get_ensemble_scenario():
 
 
 @server.app.route(const.ENSEMBLE_SCENARIO_DOWNLOAD_ENDPOINT, methods=["GET"])
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def download_ensemble_scenario():
     """Handles downloading of the Scenario data
 
@@ -96,11 +96,11 @@ def download_ensemble_scenario():
     )
     cache = server.cache
 
-    (scenario_token,), _ = su.api.get_check_keys(
+    (scenario_token,), _ = au.api.get_check_keys(
         flask.request.args, ("scenario_token",), ()
     )
 
-    scenario_payload = su.api.get_token_payload(
+    scenario_payload = au.api.get_token_payload(
         scenario_token, server.DOWNLOAD_URL_SECRET_KEY
     )
     ensemble_id, station, user_vs30, im_component = (
@@ -116,7 +116,7 @@ def download_ensemble_scenario():
     )
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        zip_ffp = su.api.create_scenario_download_zip(
+        zip_ffp = au.api.create_scenario_download_zip(
             ensemble_scenario, tmp_dir, prefix=f"{ensemble.name}",
         )
 
@@ -136,10 +136,10 @@ def _get_scenario(
 ) -> Tuple[
     sc.gm_data.Ensemble, sc.site.SiteInfo, sc.scenario.EnsembleScenarioResult,
 ]:
-    git_version = su.api.get_repo_version()
+    git_version = au.api.get_repo_version()
 
     # Get the cached result, if there is one
-    cache_key = su.api.get_cache_key(
+    cache_key = au.api.get_cache_key(
         "scenario",
         ensemble_id=ensemble_id,
         station=station,

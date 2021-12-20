@@ -7,7 +7,7 @@ from flask_caching import Cache
 from flask_cors import cross_origin
 
 import gmhazard_calc as sc
-import gmhazard_utils as su
+import api_utils as au
 from core_api import server
 from core_api import utils
 from core_api import constants as const
@@ -31,7 +31,7 @@ class UHSCachedData:
 @server.app.route(const.ENSEMBLE_UHS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_ensemble_uhs():
     """Retrieves the ensemble UHS for the
     specified station (name)
@@ -43,7 +43,7 @@ def get_ensemble_uhs():
     server.app.logger.info(f"Received request at {const.ENSEMBLE_UHS_ENDPOINT}")
     cache = server.cache
 
-    (ensemble_id, station, exceedances), optional_kwargs = su.api.get_check_keys(
+    (ensemble_id, station, exceedances), optional_kwargs = au.api.get_check_keys(
         flask.request.args,
         ("ensemble_id", "station", "exceedances"),
         (
@@ -73,9 +73,9 @@ def get_ensemble_uhs():
     )
 
     return flask.jsonify(
-        su.api.get_ensemble_uhs(
+        au.api.get_ensemble_uhs(
             uhs_results,
-            su.api.get_download_token(
+            au.api.get_download_token(
                 {
                     "type": "ensemble_uhs",
                     "ensemble_id": ensemble_id,
@@ -92,7 +92,7 @@ def get_ensemble_uhs():
 
 
 @server.app.route(const.ENSEMBLE_UHS_DOWNLOAD_ENDPOINT, methods=["GET"])
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def download_ensemble_uhs():
     """
     Handles downloading of the UHS raw data
@@ -105,12 +105,10 @@ def download_ensemble_uhs():
     )
     cache = server.cache
 
-    (uhs_token, nzs1170p5_token), _ = su.api.get_check_keys(
+    (uhs_token, nzs1170p5_token), _ = au.api.get_check_keys(
         flask.request.args, ("uhs_token", "nzs1170p5_hazard_token")
     )
-    uhs_payload = su.api.utils.get_token_payload(
-        uhs_token, server.DOWNLOAD_URL_SECRET_KEY
-    )
+    uhs_payload = au.api.get_token_payload(uhs_token, server.DOWNLOAD_URL_SECRET_KEY)
     ensemble_id, station, user_vs30, exceedances_str, calc_percentiles, im_component = (
         uhs_payload["ensemble_id"],
         uhs_payload["station"],
@@ -120,7 +118,7 @@ def download_ensemble_uhs():
         sc.im.IMComponent(uhs_payload["im_component"]),
     )
 
-    nzs1170p5_payload = su.api.utils.get_token_payload(
+    nzs1170p5_payload = au.api.get_token_payload(
         nzs1170p5_token, server.DOWNLOAD_URL_SECRET_KEY
     )
     assert (
@@ -151,7 +149,7 @@ def download_ensemble_uhs():
     )
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        zip_ffp = su.api.create_uhs_download_zip(
+        zip_ffp = au.api.create_uhs_download_zip(
             uhs_results, nzs1170p5_uhs, tmp_dir, prefix=f"{ensemble.name}"
         )
 
@@ -173,11 +171,11 @@ def _get_uhs(
 ) -> Tuple[
     sc.gm_data.Ensemble, sc.site.SiteInfo, List[sc.uhs.EnsembleUHSResult],
 ]:
-    git_version = su.api.get_repo_version()
+    git_version = au.api.get_repo_version()
     exceedances = np.asarray(list(map(float, exceedances.split(","))))
 
     # Get the cached result, if there is one
-    cache_key = su.api.get_cache_key(
+    cache_key = au.api.get_cache_key(
         "uhs",
         ensemble_id=ensemble_id,
         station=station,

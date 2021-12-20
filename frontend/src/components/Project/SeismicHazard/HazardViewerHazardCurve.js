@@ -42,6 +42,7 @@ const HazardViewerHazardCurve = () => {
     projectSelectedIMPeriod,
     projectSelectedIMComponent,
     setProjectSelectedIMPeriod,
+    projectSiteSelectionGetClick,
   } = useContext(GlobalContext);
 
   // For Fetching Hazard data
@@ -66,6 +67,17 @@ const HazardViewerHazardCurve = () => {
   const [downloadToken, setDownloadToken] = useState("");
   const [filteredSelectedIM, setFilteredSelectedIM] = useState("");
 
+  // Reset tabs if users click Get button from Site Selection
+  useEffect(() => {
+    if (projectSiteSelectionGetClick !== null) {
+      setShowSpinnerHazard(false);
+      setShowPlotHazard(false);
+      setProjectHazardCurveGetClick(null);
+      setProjectSelectedIM(null);
+      setProjectSelectedIMPeriod(null);
+    }
+  }, [projectSiteSelectionGetClick]);
+
   // Replace the .(dot) to p for filename
   useEffect(() => {
     if (projectSelectedIM !== null && projectSelectedIM !== "pSA") {
@@ -80,15 +92,6 @@ const HazardViewerHazardCurve = () => {
     }
   }, [projectSelectedIM, projectSelectedIMPeriod]);
 
-  // Reset tabs if users change Project ID, Vs30 or Location
-  useEffect(() => {
-    setShowSpinnerHazard(false);
-    setShowPlotHazard(false);
-    setProjectHazardCurveGetClick(null);
-    setProjectSelectedIM(null);
-    setProjectSelectedIMPeriod(null);
-  }, [projectId, projectVS30, projectLocation]);
-
   // Get hazard curve data
   useEffect(() => {
     const abortController = new AbortController();
@@ -98,6 +101,7 @@ const HazardViewerHazardCurve = () => {
       setShowPlotHazard(false);
       setShowSpinnerHazard(true);
       setShowErrorMessage({ isError: false, errorCode: null });
+      resetHazardData();
 
       let token = null;
       const queryString = APIQueryBuilder({
@@ -130,6 +134,15 @@ const HazardViewerHazardCurve = () => {
     };
   }, [projectHazardCurveGetClick]);
 
+  const resetHazardData = () => {
+    setHazardData(null);
+    setHazardNZS1170p5Data(null);
+    setHazardNZTAData(null);
+    setMetadataParam({});
+    setExtraInfo({});
+    setPercentileData(null);
+    setDownloadToken("");
+  };
   const updateHazardData = (hazardData) => {
     setHazardData(hazardData);
     // NZS1170p5 only available for PGA and pSA IM

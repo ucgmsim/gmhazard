@@ -94,16 +94,10 @@ const CustomSelect = ({
 
       <Select
         ref={selectInputRef}
-        placeholder={
-          localOptions.length === 0
-            ? placeholder
-            : "Select..."
-        }
+        placeholder={localOptions.length === 0 ? placeholder : "Select..."}
         onChange={(e) => setSelect(e)}
         options={localOptions}
-        isDisabled={
-          localOptions.length === 0
-        }
+        isDisabled={localOptions.length === 0}
         menuPlacement="auto"
         menuPortalTarget={document.body}
       />

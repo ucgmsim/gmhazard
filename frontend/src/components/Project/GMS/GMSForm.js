@@ -36,6 +36,14 @@ const GMSForm = () => {
     );
   };
 
+  const setGlobalVariables = () => {
+    setProjectGMSConditionIM(localGMSConditionIM["value"]);
+    setProjectGMSSelectedIMPeriod(localGMSIMPeriod["value"]);
+    setProjectGMSExceedance(localGMSExceedance["value"]);
+    setProjectGMSIMVector(localGMSIMVector["value"]);
+    setProjectGMSGetClick(uuidv4());
+  };
+
   return (
     <Fragment>
       <div className="form-group form-section-title">
@@ -98,13 +106,7 @@ const GMSForm = () => {
           type="button"
           className="btn btn-primary"
           disabled={invalidInputs()}
-          onClick={() => {
-            setProjectGMSConditionIM(localGMSConditionIM["value"]);
-            setProjectGMSSelectedIMPeriod(localGMSIMPeriod["value"]);
-            setProjectGMSExceedance(localGMSExceedance["value"]);
-            setProjectGMSIMVector(localGMSIMVector["value"]);
-            setProjectGMSGetClick(uuidv4());
-          }}
+          onClick={() => setGlobalVariables()}
         >
           Get
         </button>
