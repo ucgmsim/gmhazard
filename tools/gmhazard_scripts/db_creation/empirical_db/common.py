@@ -181,11 +181,9 @@ def get_max_dist_zfac_scaled(site):
 def __process_rupture(
     rupture,
     site,
-    station_name,
     im_types,
     tect_type_model_dict,
-    nhm_dict,
-    site_df,
+    directivity_adjustment,
     psa_periods,
     keep_sigma_components,
     fault_im_result_dict,
@@ -227,24 +225,6 @@ def __process_rupture(
             )
             if im_type is not IMType.pSA:
                 values = [values]
-            elif use_directivity:
-                nhm_fault = nhm_dict[rupture.rupture_name]
-                planes, lon_lat_depth = gc_rupture.get_fault_header_points(nhm_fault)
-                site_coords = np.asarray([site_df.loc[station_name][:2].values])
-                n_hypo_data = directivity.NHypoData(directivity.HypoMethod.LATIN_HYPERCUBE, nhypo=100)
-                (
-                    fdi,
-                    _,
-                    phi_red,
-                ) = directivity.compute_fault_directivity(
-                    lon_lat_depth,
-                    planes,
-                    site_coords,
-                    n_hypo_data,
-                    nhm_fault.mw,
-                    nhm_fault.rake,
-                    periods=psa_periods,
-                )
             for i, value in enumerate(values):
                 full_im_name = (
                     IM(im_type, period=psa_periods[i])
@@ -254,8 +234,8 @@ def __process_rupture(
                 mean = np.log(value[0])
                 stdev, sigma_inter, sigma_intra = value[1]
                 if use_directivity and im_type is IMType.pSA:
-                    mean += fdi[0][i]
-                    stdev += phi_red[0][i]
+                    mean += directivity_adjustment.loc[str(full_im_name)]
+                    stdev += directivity_adjustment.loc[f"{full_im_name}_sigma"]
 
                 fault_im_result_dict[db_type][str(full_im_name)] = mean
                 if keep_sigma_components:
@@ -279,8 +259,6 @@ def calculate_emp_site(
     rupture_df,
     distance_store,
     nhm_data,
-    nhm_dict,
-    site_df,
     vs30,
     z1p0,
     z2p5,
@@ -304,8 +282,6 @@ def calculate_emp_site(
     :param rupture_df: list of ruptures considered - these will be used as indexes for the data stored by each site
     :param distance_store: site source distance h5 - to determine wether the site-source needs to be calculated
     :param nhm_data: rupture dataframe returned from utils.py from either a nhm background sources or fault file
-    :param nhm_dict: rupture dictionary returned from qcore from a fault file
-    :param stat_df: station dataframe containing lon and lat values for every station
     :param vs30: vs30 value at the given station
     :param z1p0: Z1.0 value at the given station
     :param z2p5: Z2.5 value at the given station
@@ -313,7 +289,7 @@ def calculate_emp_site(
     :param tect_type_model_dict_ffp: the relation between tectonic type and which empirical model(s) to use
     :param return_vals: flag to return the values instead of writing them to the DB - specifically for the single
                         writer MPI paradigm
-    :param use_directivity: flag to apply the directivity effect to each of the fault calculations. Applies only if pSA
+    :param use_directivity: flag to apply the directivity effect to each of the fault calculations. Applies only on pSA
     :return: if return vals is set - a Dictionary of dataframes are returned
     """
     # Sets Z1.0 and Z2.5 to None if NaN
@@ -333,12 +309,11 @@ def calculate_emp_site(
         distance_df, left_on="fault_name", right_on="fault_name"
     )
 
-    # a = pd.DataFrame.from_dict(
-    #     nhm_dict, orient="index"
-    # ) Add some sorting
-    # c = a.merge(
-    #     distance_df, left_index=True, right_on="fault_name"
-    # )
+    directivity_df = fault_df.merge(
+        distance_store.station_directivity_data(station_name),
+        left_on="fault_name",
+        right_index=True,
+    )
 
     if dist_filter_by_mag:
         max_dist = np.minimum(np.interp(matching_df.mag, MAG, DIST), max_rjb)
@@ -353,11 +328,9 @@ def calculate_emp_site(
                 (
                     rupture,
                     site,
-                    station_name,
                     im_types,
                     tect_type_model_dict,
-                    nhm_dict,
-                    site_df,
+                    directivity_df.iloc[index],
                     psa_periods,
                     keep_sigma_components,
                     {key: {} for key in imdb_dict.keys()},

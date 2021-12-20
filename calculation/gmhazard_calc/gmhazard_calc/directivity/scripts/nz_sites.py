@@ -9,6 +9,10 @@ from qcore.formats import load_station_file
 from gmhazard_calc.directivity.HypoMethod import HypoMethod
 from gmhazard_calc import directivity
 
+"""
+Compute directivity values for NZ site locations
+"""
+
 
 def compute_nz_site_effect(
     sites_file,

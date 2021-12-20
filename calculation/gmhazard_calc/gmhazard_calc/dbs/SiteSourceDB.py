@@ -1,7 +1,7 @@
 import h5py
 import numpy as np
 
-from gmhazard_calc import utils
+from gmhazard_calc import utils, im
 from gmhazard_calc import constants as const
 from .BaseDB import BaseDB, check_open
 
@@ -99,6 +99,27 @@ class SiteSourceDB(BaseDB):
         """
         raise NotImplementedError
 
+    def station_directivity_data(self, station_name: str):
+        """Retrieves directivity data for a specific station/site
+
+        Parameters
+        ----------
+        station_name: str
+            The station name for which to retrieve the data
+
+        Returns
+        -------
+        pd.DataFrame
+            with the available faults as index and properties as columns
+        """
+        try:
+            df = self._db[self.station_directivity_h5_key(station_name)]
+        except KeyError:
+            return None
+
+        df.index = self.faults().fault_name
+        return df
+
     def write_attributes(self, erf_fname, station_list_fname, **kwargs):
         """
         Stores attributes into the ssd h5
@@ -143,6 +164,30 @@ class SiteSourceDB(BaseDB):
                 "('fault_id', 'rjb', 'rrup', 'rx', 'ry', 'rtvz') and an index"
             )
 
+    @check_open
+    def write_site_directivity_data(self, station, directivity_df):
+        """
+        Writes directivity df data for each of the pSA IM's for both mu and sigma for a given site
+        """
+        pSA_columns = [
+                    str(im.IM(im.IMType.pSA, period)) + mu_sigma
+                    for mu_sigma in ["", "_sigma"]
+                    for period in im.DEFAULT_PSA_PERIODS
+                ]
+        if utils.check_names(
+                pSA_columns, directivity_df.columns.values
+        ):
+            self._db[self.station_directivity_h5_key(station)] = directivity_df
+        else:
+            raise ValueError(
+                "Columns are not as expected. Must have 62 columns "
+                "('pSA_0.01', ..., 'pSA_0.01_sigma', ...)"
+            )
+
     @staticmethod
     def station_distance_h5_key(name):
         return f"/distances/station_{name}"
+
+    @staticmethod
+    def station_directivity_h5_key(name):
+        return f"/directivity/station_{name}"

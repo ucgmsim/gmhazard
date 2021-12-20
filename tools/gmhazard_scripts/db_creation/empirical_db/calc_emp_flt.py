@@ -38,7 +38,6 @@ def calculate_flt(
     suffix=None,
 ):
     nhm_data = sc.utils.flt_nhm_to_rup_df(nhm_ffp)
-    nhm_dict = nhm.load_nhm(nhm_ffp)
 
     imdb_dict, __ = common.open_imdbs(
         tect_type_model_dict_ffp, output_dir, sc.constants.SourceType.fault, suffix=suffix
@@ -66,8 +65,6 @@ def calculate_flt(
                     rupture_df,
                     distance_store,
                     nhm_data,
-                    nhm_dict,
-                    site_df,
                     site.vs30,
                     site.z1p0 if hasattr(site, "z1p0") else None,
                     site.z2p5 if hasattr(site, "z2p5") else None,

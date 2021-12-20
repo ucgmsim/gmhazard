@@ -4,6 +4,9 @@ from qcore import nhm
 
 
 def default_variables():
+    """
+    Load default information for directivity scripts
+    """
     im = IM(IMType.pSA, period=3.0)
     ens = gmhazard_calc.gm_data.Ensemble("v20p5emp")
     branch = ens.get_im_ensemble(im.im_type).branches[0]

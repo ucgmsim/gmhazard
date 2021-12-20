@@ -5,6 +5,7 @@ import numpy as np
 
 from IM_calculation.source_site_dist import src_site_dist
 from gmhazard_calc.directivity import utils
+from gmhazard_calc.im import DEFAULT_PSA_PERIODS
 from .HypoMethod import HypoMethod
 from .EventType import EventType
 from .NHypoData import NHypoData
@@ -18,7 +19,7 @@ def compute_fault_directivity(
     n_hypo_data: NHypoData,
     mag: float,
     rake: float,
-    periods: Sequence[float] = sha_calc.constants.DEFAULT_PSA_PERIODS,
+    periods: Sequence[float] = DEFAULT_PSA_PERIODS,
 ):
     """
     Does the computation of directivity for a fault with any number of hypocentres.

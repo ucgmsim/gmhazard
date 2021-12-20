@@ -6,8 +6,12 @@ from pathlib import Path
 import numpy as np
 
 from gmhazard_calc import directivity
-import sha_calc
 import common
+
+"""
+Compute directivity values multiple times specified by a repeating value
+To understand the standard deviation in results for the different number of hypocentres
+"""
 
 
 def perform_mp_directivity(

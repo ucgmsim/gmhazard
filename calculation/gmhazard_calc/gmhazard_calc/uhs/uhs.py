@@ -10,9 +10,8 @@ from gmhazard_calc import hazard
 from gmhazard_calc import gm_data
 from gmhazard_calc import exceptions
 from gmhazard_calc.nz_code import nzs1170p5
-from gmhazard_calc.im import IM, IMType, IMComponent
+from gmhazard_calc.im import IM, IMType, IMComponent, DEFAULT_PSA_PERIODS
 from .UHSResult import BaseUHSResult, EnsembleUHSResult, BranchUHSResult
-from sha_calc.constants import DEFAULT_PSA_PERIODS
 
 
 def run_ensemble_uhs(

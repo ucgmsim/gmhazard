@@ -6,6 +6,11 @@ import matplotlib.pyplot as plt
 import common
 from gmhazard_calc.directivity import utils
 
+"""
+Plots convergence over 9 site locations around the faults to compare different
+number of hypocentres with how accurate they are to the baseline 'exact' values
+"""
+
 
 def convergence(input_dir, baseline_dir, faults, nhyps, grid_space, sample, output_dir):
 

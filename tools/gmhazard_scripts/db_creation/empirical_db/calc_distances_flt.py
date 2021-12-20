@@ -7,7 +7,7 @@ from typing import Union, Dict
 from qcore import nhm, formats, geo
 from IM_calculation.source_site_dist import src_site_dist
 
-import gmhazard_calc as sc
+import gmhazard_calc as gc
 
 POINTS_PER_KILOMETER = (
     1 / 0.1
@@ -18,7 +18,9 @@ STATION_TOO_FAR_KEY = -1
 
 
 def compute_site_source_distances(
-    stations: np.ndarray, faults: Dict[str, Union[nhm.NHMFault, dict]]
+    stations: np.ndarray,
+    faults: Dict[str, Union[nhm.NHMFault, dict]],
+    calculate_directivity: bool = True,
 ):
     """
     Computes the site-source distances for the given stations and faults
@@ -34,6 +36,8 @@ def compute_site_source_distances(
         The first format is used for calculating site-source distances for
         finite faults and the 2nd for computing site-source distances for
         point sources
+    calculate_directivity: bool
+        True to calculate directivity and return numpy array of site directivity amplification values per fault
 
     Returns
     -------
@@ -52,6 +56,15 @@ def compute_site_source_distances(
             ("rtvz", np.float64),
         ],
     )
+    directivity = (
+        np.full(
+            fill_value=0,
+            shape=(len(faults), len(stations), len(gc.im.DEFAULT_PSA_PERIODS) * 2),
+            dtype=np.float64
+        )
+        if calculate_directivity
+        else None
+    )
 
     n_faults = len(faults)
     faults = dict(sorted(faults.items(), key=lambda item: item[0]))
@@ -60,7 +73,9 @@ def compute_site_source_distances(
 
         srf_header = None
         if isinstance(cur_fault_data, nhm.NHMFault):
-            srf_header, srf_points = sc.rupture.get_fault_header_points(faults[cur_fault_name])
+            srf_header, srf_points = gc.rupture.get_fault_header_points(
+                faults[cur_fault_name]
+            )
             srf_points = np.asarray(srf_points)
         # Point source
         else:
@@ -85,6 +100,23 @@ def compute_site_source_distances(
 
         distances[index, :]["rtvz"] = float("nan")
 
+        if calculate_directivity:
+            n_hypo_data = gc.directivity.NHypoData(
+                gc.directivity.HypoMethod.LATIN_HYPERCUBE, nhypo=100
+            )
+
+            fd, _, phi_red = gc.directivity.compute_fault_directivity(
+                srf_points,
+                srf_header,
+                stations[:, :2],
+                n_hypo_data,
+                cur_fault_data.mw,
+                cur_fault_data.rake,
+            )
+
+            directivity[index, :, :31] = fd
+            directivity[index, :, 31:] = phi_red
+
         if srf_header is not None:
             (
                 distances[index, :]["rx"][~too_far_mask],
@@ -97,7 +129,7 @@ def compute_site_source_distances(
             distances[index, :]["rx"][~too_far_mask] = rrup[~too_far_mask]
             distances[index, :]["ry"][~too_far_mask] = rrup[~too_far_mask]
 
-    return distances
+    return distances, directivity
 
 
 def load_args():
@@ -137,7 +169,7 @@ def load_args():
 
 
 def store_site_sources_distance_data(
-    distances: np.ndarray, stations: pd.DataFrame, ssddb: sc.dbs.SiteSourceDB
+    distances: np.ndarray, stations: pd.DataFrame, ssddb: gc.dbs.SiteSourceDB
 ):
     with ssddb as ssd:
         for index, station_name in enumerate(stations.index):
@@ -145,6 +177,22 @@ def store_site_sources_distance_data(
             if np.sum(station_mask) > 0:
                 station_frame = pd.DataFrame(distances[:, index][station_mask])
                 ssd.write_site_distances_data(station_name, station_frame)
+
+
+def store_site_sources_directivity_data(
+    directivity: np.ndarray, stations: pd.DataFrame, ssddb: gc.dbs.SiteSourceDB
+):
+    with ssddb as ssd:
+        for index, station_name in enumerate(stations.index):
+            station_frame = pd.DataFrame(
+                directivity[:, index],
+                columns=[
+                    str(gc.im.IM(gc.im.IMType.pSA, period)) + mu_sigma
+                    for mu_sigma in ["", "_sigma"]
+                    for period in gc.im.DEFAULT_PSA_PERIODS
+                ],
+            )
+            ssd.write_site_directivity_data(station_name, station_frame)
 
 
 def main():
@@ -160,7 +208,7 @@ def main():
         nhm_data = nhm.load_nhm(fault_data_ffp)
         fault_df = pd.DataFrame(sorted(nhm_data.keys()), columns=["fault_name"])
 
-        site_source_distance_data = compute_site_source_distances(
+        site_source_distance_data, directivity_data = compute_site_source_distances(
             stations.to_numpy(), nhm_data
         )
     else:
@@ -179,17 +227,18 @@ def main():
             np.arange(fault_df.shape[0])
         )
 
-        site_source_distance_data = compute_site_source_distances(
+        site_source_distance_data, directivity_data = compute_site_source_distances(
             stations.to_numpy(),
             fault_df.set_index("fault_name")
             .loc[:, ("lon", "lat", "depth")]
             .to_dict("index"),
+            calculate_directivity=False,
         )
 
         fault_df = fault_df["fault_name"].to_frame()
 
-    ssddb = sc.dbs.SiteSourceDB(
-        args.ssddb, source_type=sc.constants.SourceType.fault, writeable=True
+    ssddb = gc.dbs.SiteSourceDB(
+        args.ssddb, source_type=gc.constants.SourceType.fault, writeable=True
     )
     with ssddb as ssd:
         ssd.write_site_data(stations[["lon", "lat"]])
@@ -199,6 +248,8 @@ def main():
         )
 
     store_site_sources_distance_data(site_source_distance_data, stations, ssddb)
+    if directivity_data is not None:
+        store_site_sources_directivity_data(directivity_data, stations, ssddb)
 
 
 if __name__ == "__main__":

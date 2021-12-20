@@ -9,6 +9,12 @@ from gmhazard_calc.directivity.HypoMethod import HypoMethod
 from gmhazard_calc import directivity
 import common
 
+"""
+Computes the baseline values default of 20,000 hypocenters using Monte Carlo placement and distributions
+which can be used to compare against other methods to determine
+how close can you get to the 'expected' results
+"""
+
 
 def perform_mp_directivity(
     fault_name,

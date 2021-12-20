@@ -84,7 +84,8 @@ def calc_nominal_strike(traces: np.ndarray):
 
 def get_hypo_lon_lat(planes: Sequence, lon_lat_depth: np.ndarray):
     """
-    Gets the approximate location of the hypocentre based on the lon lat depth values available for the fault
+    Gets the approximate location of the hypocentre
+    based on the lon lat depth values available for the fault
 
     Parameters
     ----------
