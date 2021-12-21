@@ -80,14 +80,13 @@ def mc_sampling(
     dip_upper, dip_lower = distribution.cdf((1, 0))
     dip_dist_range = dip_upper - dip_lower
 
-    planes_list = []
-    plane_index = []
+    planes_list, plane_index_list = [], []
     plane_lengths = np.cumsum(np.asarray([plane["length"] for plane in planes]))
     # Assuming all widths in the planes are the same
     assert all([x["width"] == planes[0]["width"] for x in planes])
 
     # Creates a planes list each with a different hypocentre location drawn from the strike and dip distributions
-    for i in range(0, nhypo):
+    for i in range(nhypo):
         # Draw strike location based on distribution
         truncated_points = np.random.uniform(0, 1) * strike_dist_range + strike_lower
         truncated_dist = strike_distribution.ppf(truncated_points)
@@ -104,10 +103,10 @@ def mc_sampling(
         planes_copy = copy.deepcopy(planes)
         planes_copy[plane_ix]["shyp"] = strike_location - (total_length / 2)
         planes_copy[plane_ix]["dhyp"] = planes[0]["width"] * depth
-        plane_index.append(plane_ix)
+        plane_index_list.append(plane_ix)
         planes_list.append(planes_copy)
 
-    return planes_list, plane_index, []
+    return planes_list, plane_index_list, []
 
 
 def uniform_grid(
@@ -167,8 +166,7 @@ def uniform_grid(
     combo_weights = (strike_weights[:, np.newaxis] * dip_weights).ravel()
     combo_weights = combo_weights / combo_weights.sum()
 
-    planes_list = []
-    plane_index = []
+    planes_list, plane_index_list = [], []
     plane_lengths = np.cumsum(np.asarray([plane["length"] for plane in planes]))
 
     # Creates a planes list each with a different hypocentre location based on the strike and dip locations
@@ -181,10 +179,10 @@ def uniform_grid(
             planes_copy = copy.deepcopy(planes)
             planes_copy[plane_ix]["shyp"] = strike_location - (total_length / 2)
             planes_copy[plane_ix]["dhyp"] = depth
-            plane_index.append(plane_ix)
+            plane_index_list.append(plane_ix)
             planes_list.append(planes_copy)
 
-    return planes_list, plane_index, combo_weights
+    return planes_list, plane_index_list, combo_weights
 
 
 def latin_hypercube_sampling(
@@ -233,8 +231,7 @@ def latin_hypercube_sampling(
     lhd[:, 0] = strike_distribution.ppf(lhd[:, 0])
     lhd[:, 1] = down_dip_distribution.ppf(lhd[:, 1])
 
-    planes_list = []
-    plane_index = []
+    planes_list, plane_index_list = [], []
     plane_lengths = np.cumsum(np.asarray([plane["length"] for plane in planes]))
     # Assuming all widths in the planes are the same
     assert all([x["width"] == planes[0]["width"] for x in planes])
@@ -250,7 +247,7 @@ def latin_hypercube_sampling(
         planes_copy = copy.deepcopy(planes)
         planes_copy[plane_ix]["shyp"] = strike_location - (total_length / 2)
         planes_copy[plane_ix]["dhyp"] = planes[0]["width"] * depth
-        plane_index.append(plane_ix)
+        plane_index_list.append(plane_ix)
         planes_list.append(planes_copy)
 
-    return planes_list, plane_index, []
+    return planes_list, plane_index_list, []

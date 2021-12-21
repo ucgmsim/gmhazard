@@ -99,6 +99,7 @@ class SiteSourceDB(BaseDB):
         """
         raise NotImplementedError
 
+    @check_open
     def station_directivity_data(self, station_name: str):
         """Retrieves directivity data for a specific station/site
 

@@ -18,7 +18,6 @@ def create_benchmark_data():
     nhm_dict = nhm.load_nhm(branch.flt_erf_ffp)
 
     for fault_name in FAULTS:
-
         fault = nhm_dict[fault_name]
         planes, lon_lat_depth = rupture.get_fault_header_points(fault)
 
