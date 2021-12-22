@@ -3,7 +3,6 @@ from enum import Enum
 
 class EventType(Enum):
     """Event types for hypocentre distributions"""
-
     STRIKE_SLIP = "STRIKE_SLIP"
     DIP_SLIP = "DIP_SLIP"
     ALL = "ALL"

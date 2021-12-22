@@ -8,7 +8,6 @@ import argparse
 
 from mpi4py import MPI
 
-from qcore import nhm, formats
 import gmhazard_calc as sc
 import common
 
@@ -40,7 +39,10 @@ def calculate_flt(
     nhm_data = sc.utils.flt_nhm_to_rup_df(nhm_ffp)
 
     imdb_dict, __ = common.open_imdbs(
-        tect_type_model_dict_ffp, output_dir, sc.constants.SourceType.fault, suffix=suffix
+        tect_type_model_dict_ffp,
+        output_dir,
+        sc.constants.SourceType.fault,
+        suffix=suffix,
     )
 
     with sc.dbs.SiteSourceDB(site_source_db_ffp) as distance_store:
@@ -107,7 +109,11 @@ def parse_args():
         help="Which pSA periods to calculate for",
     )
     parser.add_argument(
-        "--im", default=common.IM_TYPE_LIST, nargs="+", help="Which IMs to calculate", type=sc.im.IMType,
+        "--im",
+        default=common.IM_TYPE_LIST,
+        nargs="+",
+        help="Which IMs to calculate",
+        type=sc.im.IMType,
     )
     parser.add_argument(
         "--model-dict",

@@ -23,15 +23,18 @@ def hypo_average_plots(
     grid_space: int, optional
         The grid spacing to use for generating directivity and to show resolution for plots
     """
-
     im = IM(IMType.pSA, period=period)
     ens = gm_data.Ensemble("v20p5emp")
     branch = ens.get_im_ensemble(im.im_type).branches[0]
     nhm_dict = nhm.load_nhm(branch.flt_erf_ffp)
 
-    fault, site_coords, planes, lon_lat_depth, x, y = directivity.utils.load_fault_info(fault_name, nhm_dict, grid_space)
+    fault, site_coords, planes, lon_lat_depth, x, y = directivity.utils.load_fault_info(
+        fault_name, nhm_dict, grid_space
+    )
 
-    n_hypo_data = directivity.NHypoData(directivity.HypoMethod.LATIN_HYPERCUBE, nhypo=10)
+    n_hypo_data = directivity.NHypoData(
+        directivity.HypoMethod.LATIN_HYPERCUBE, nhypo=10
+    )
 
     fd, fd_array, _ = directivity.compute_fault_directivity(
         lon_lat_depth,

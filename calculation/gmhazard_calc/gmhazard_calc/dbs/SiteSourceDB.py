@@ -171,17 +171,15 @@ class SiteSourceDB(BaseDB):
         Writes directivity df data for each of the pSA IM's for both mu and sigma for a given site
         """
         pSA_columns = [
-                    str(im.IM(im.IMType.pSA, period)) + mu_sigma
-                    for mu_sigma in ["", "_sigma"]
-                    for period in im.DEFAULT_PSA_PERIODS
-                ]
-        if utils.check_names(
-                pSA_columns, directivity_df.columns.values
-        ):
+            str(im.IM(im.IMType.pSA, period)) + mu_sigma
+            for mu_sigma in ["", "_sigma"]
+            for period in im.DEFAULT_PSA_PERIODS
+        ]
+        if utils.check_names(pSA_columns, directivity_df.columns.values):
             self._db[self.station_directivity_h5_key(station)] = directivity_df
         else:
             raise ValueError(
-                "Columns are not as expected. Must have 62 columns "
+                f"Columns are not as expected. Must have {len(im.DEFAULT_PSA_PERIODS) * 2} columns "
                 "('pSA_0.01', ..., 'pSA_0.01_sigma', ...)"
             )
 

@@ -3,13 +3,13 @@ from typing import Sequence
 
 import numpy as np
 
+import sha_calc
 from IM_calculation.source_site_dist import src_site_dist
 from gmhazard_calc.directivity import utils
 from gmhazard_calc.im import DEFAULT_PSA_PERIODS
 from .HypoMethod import HypoMethod
 from .EventType import EventType
 from .NHypoData import NHypoData
-import sha_calc
 
 
 def compute_fault_directivity(
@@ -22,19 +22,22 @@ def compute_fault_directivity(
     periods: Sequence[float] = DEFAULT_PSA_PERIODS,
 ):
     """
-    Does the computation of directivity for a fault with any number of hypocentres.
+    Does the computation of directivity for a fault
+    With any number of hypocentres.
     Can compute regardless if data came from an srf or nhm file.
 
     Parameters
     ----------
     lon_lat_depth: np.ndarray
-        Each point of the srf fault in an array with the format [[lon, lat, depth],...]
+        Each point of the srf fault in an array with the format
+        [[lon, lat, depth],...]
     planes: List
         List of the planes that make up the fault
     sites: np.ndarray
         Numpy array full of site lon/lat values [[lon, lat],...]
     n_hypo_data: NHypoData
-        Dataclass to store information on number of hypocentres and the method for placement
+        Dataclass to store information on number of hypocentres
+        and the method for placement
     mag: float
         The magnitude of the fault
     rake: float
@@ -46,22 +49,18 @@ def compute_fault_directivity(
     nominal_strike, nominal_strike2 = utils.calc_nominal_strike(lon_lat_depth)
 
     # Customise the planes to set different hypocentres
-    planes_list, plane_index_list, weights = utils.set_hypocentres(
+    hypo_planes, plane_ind, weights = utils.set_hypocentres(
         n_hypo_data,
         planes,
         EventType.from_rake(rake),
     )
 
     # Creating the array to store all fdi values
-    fdi_array = np.zeros(
-        (n_hypo_data.nhypo, len(sites), len(periods))
-    )
-    phired_array = np.zeros(
-        (n_hypo_data.nhypo, len(sites), len(periods))
-    )
-    for index, planes in enumerate(planes_list):
+    fdi_array = np.zeros((n_hypo_data.nhypo, len(sites), len(periods)))
+    phired_array = np.zeros((n_hypo_data.nhypo, len(sites), len(periods)))
+    for index, planes in enumerate(hypo_planes):
         # Gets the plane index of the hypocentre
-        plane_index = plane_index_list[index]
+        plane_index = plane_ind[index]
 
         fdi, (phi_red, predictor_functions, other) = _compute_directivity_effect(
             lon_lat_depth,
@@ -104,12 +103,14 @@ def _compute_directivity_effect(
     periods: Sequence[float],
 ):
     """
-    Does the computation of directivity and GC2 given a set of planes with a set hypocentre.
+    Does the computation of directivity and GC2 given a set of planes
+    with a set hypocentre.
 
     Parameters
     ----------
     lon_lat_depth: np.ndarray
-        Each point of the srf fault in an array with the format [[lon, lat, depth],...]
+        Each point of the srf fault in an array with the format
+        [[lon, lat, depth],...]
     planes: List
         List of the planes that make up the fault
     plane_index: int
@@ -117,9 +118,11 @@ def _compute_directivity_effect(
     sites: np.ndarray
         Numpy array full of site lon/lat values [[lon, lat],...]
     nominal_strike: np.ndarray
-        The nominal strike coordinates (edge of the fault) with the highest longitiude value
+        The nominal strike coordinates (edge of the fault)
+        with the highest longitiude value
     nominal_strike2: np.ndarray
-        The nominal strike coordinates (edge of the fault) with the lowest longitiude value
+        The nominal strike coordinates (edge of the fault)
+        with the lowest longitiude value
     mag: float
         The magnitude of the fault
     rake: float

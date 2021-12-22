@@ -1,3 +1,7 @@
+"""
+Compute directivity values multiple times specified by a repeating value
+To understand the standard deviation in results for the different number of hypocentres
+"""
 import time
 import multiprocessing as mp
 import argparse
@@ -7,11 +11,6 @@ import numpy as np
 
 from gmhazard_calc import directivity
 import common
-
-"""
-Compute directivity values multiple times specified by a repeating value
-To understand the standard deviation in results for the different number of hypocentres
-"""
 
 
 def perform_mp_directivity(

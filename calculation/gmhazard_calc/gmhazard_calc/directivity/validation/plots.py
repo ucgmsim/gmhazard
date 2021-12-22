@@ -164,7 +164,7 @@ def plot_fdi(
     """
     fig, (ax1) = plt.subplots(1, 1, figsize=(21, 13.5), dpi=144)
 
-    c = ax1.pcolormesh(x, y, np.exp(fdi), cmap='bwr')
+    c = ax1.pcolormesh(x, y, np.exp(fdi), cmap="bwr")
     ax1.scatter(
         lon_lat_depth[:, 0][::2],
         lon_lat_depth[:, 1][::2],

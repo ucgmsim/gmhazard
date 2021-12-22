@@ -1,3 +1,7 @@
+"""
+Plots three different depths of hypocentre location on a particular function of the Bayless 2020 model
+to see how it changes based on depth
+"""
 import argparse
 
 import numpy as np
@@ -5,11 +9,6 @@ import matplotlib.pyplot as plt
 
 import common
 from gmhazard_calc import directivity
-
-"""
-Plots three different depths of hypocentre location on a particular function of the Bayless 2020 model
-to see how it changes based on depth
-"""
 
 
 def plot_bayless_model(fault_name, nhm_dict, grid_space, period, model_key, output_dir):
@@ -39,9 +38,7 @@ def plot_bayless_model(fault_name, nhm_dict, grid_space, period, model_key, outp
         planes[1]["dhyp"] = planes[1]["width"] * depth
         planes[1]["shyp"] = 0
 
-        hypo_lon, hypo_lat = directivity.utils.get_hypo_lon_lat(
-            planes, lon_lat_depth
-        )
+        hypo_lon, hypo_lat = directivity.utils.get_hypo_lon_lat(planes, lon_lat_depth)
 
         fd, (
             phi_red,

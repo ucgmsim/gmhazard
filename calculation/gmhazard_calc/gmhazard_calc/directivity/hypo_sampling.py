@@ -45,7 +45,8 @@ def mc_sampling(
     seed: int = None,
 ):
     """
-    Straight Monte Carlo using distributions along strike and dip to determine the placement
+    Straight Monte Carlo using distributions along strike and dip
+    to determine the placement
 
     Parameters
     ----------
@@ -54,7 +55,8 @@ def mc_sampling(
     planes: list
         The planes to adjust and set the hypocentre on
     event_type: EventType
-        The event type strike_slip, dip_slip or oblique for determining the down dip distribution function
+        The event type strike_slip, dip_slip or oblique
+        for determining the down dip distribution function
     total_length: float
         The total length of the fault
     seed: int
@@ -70,17 +72,13 @@ def mc_sampling(
     strike_dist_range = strike_upper - strike_lower
 
     # Define down dip distribution
-    if event_type == EventType.DIP_SLIP:
-        distribution = stats.gamma(a=7.364, scale=0.072)
-    elif event_type == EventType.STRIKE_SLIP:
-        distribution = stats.weibull_min(scale=0.626, c=3.921)
-    else:
-        distribution = stats.weibull_min(scale=0.612, c=3.353)
+    down_dip_distribution = _get_down_dip_distribution(event_type)
+
     # Truncate between 0 and 1 for hypocentre depth to ensure none exceed the boundaries
-    dip_upper, dip_lower = distribution.cdf((1, 0))
+    dip_upper, dip_lower = down_dip_distribution.cdf((1, 0))
     dip_dist_range = dip_upper - dip_lower
 
-    planes_list, plane_index_list = [], []
+    hypo_planes, plane_ind = [], []
     plane_lengths = np.cumsum(np.asarray([plane["length"] for plane in planes]))
     # Assuming all widths in the planes are the same
     assert all([x["width"] == planes[0]["width"] for x in planes])
@@ -94,7 +92,7 @@ def mc_sampling(
 
         # Draw depth based on distribution
         truncated_points = np.random.uniform(0, 1) * dip_dist_range + dip_lower
-        depth = distribution.ppf(truncated_points)
+        depth = down_dip_distribution.ppf(truncated_points)
 
         # Get the plane index of the hypocentre location
         plane_ix = np.flatnonzero(strike_location < plane_lengths)[0]
@@ -103,10 +101,10 @@ def mc_sampling(
         planes_copy = copy.deepcopy(planes)
         planes_copy[plane_ix]["shyp"] = strike_location - (total_length / 2)
         planes_copy[plane_ix]["dhyp"] = planes[0]["width"] * depth
-        plane_index_list.append(plane_ix)
-        planes_list.append(planes_copy)
+        plane_ind.append(plane_ix)
+        hypo_planes.append(planes_copy)
 
-    return planes_list, plane_index_list, []
+    return hypo_planes, plane_ind, []
 
 
 def uniform_grid(
@@ -117,7 +115,8 @@ def uniform_grid(
     total_length: float,
 ):
     """
-    Uses a uniformly spaced grid across strike and dip based on the amount of hypocentres specified across both lengths
+    Uses a uniformly spaced grid across strike and dip
+    Based on the amount of hypocentres specified across both lengths
 
     Parameters
     ----------
@@ -128,16 +127,16 @@ def uniform_grid(
     planes: list
         The planes to adjust and set the hypocentre on
     event_type: EventType
-        The event type Strike_slip, dip_slip or all for determining the down dip distribution function
+        The event type Strike_slip, dip_slip or all
+        for determining the down dip distribution function
     total_length: float
         The total length of the fault
     """
-
     strike_gap = total_length / (hypo_along_strike + 1)
-    strike_locations = np.asarray(range(1, hypo_along_strike + 1)) * strike_gap
+    strike_locations = np.arange(1, hypo_along_strike + 1) * strike_gap
 
     down_gap = planes[0]["width"] / (hypo_down_dip + 1)
-    down_dip_locations = np.asarray(range(1, hypo_down_dip + 1)) * down_gap
+    down_dip_locations = np.arange(1, hypo_down_dip + 1) * down_gap
 
     # Works out the distances across strike of the fault for each hypocentre
     # Based on a normal distribution and truncated between 0 and 1
@@ -150,14 +149,7 @@ def uniform_grid(
         1 / hypo_along_strike
     )
 
-    # Works out the depth method for down dip placement of hypocentres
-    # Based on Weilbull or Gamma distributions depending on the EventType
-    if event_type == EventType.DIP_SLIP:
-        down_dip_distribution = GammaTruncated(a=0, b=1)
-    elif event_type == EventType.STRIKE_SLIP:
-        down_dip_distribution = WeibullTruncatedStrikeSlip(a=0, b=1)
-    else:
-        down_dip_distribution = WeibullTruncatedOblique(a=0, b=1)
+    down_dip_distribution = _get_down_dip_distribution(event_type)
     # Assuming all widths in the planes are the same
     assert all([x["width"] == planes[0]["width"] for x in planes])
     dip_weights = down_dip_distribution.pdf(down_dip_locations / planes[0]["width"]) * (
@@ -166,7 +158,7 @@ def uniform_grid(
     combo_weights = (strike_weights[:, np.newaxis] * dip_weights).ravel()
     combo_weights = combo_weights / combo_weights.sum()
 
-    planes_list, plane_index_list = [], []
+    hypo_planes, plane_ind = [], []
     plane_lengths = np.cumsum(np.asarray([plane["length"] for plane in planes]))
 
     # Creates a planes list each with a different hypocentre location based on the strike and dip locations
@@ -179,10 +171,10 @@ def uniform_grid(
             planes_copy = copy.deepcopy(planes)
             planes_copy[plane_ix]["shyp"] = strike_location - (total_length / 2)
             planes_copy[plane_ix]["dhyp"] = depth
-            plane_index_list.append(plane_ix)
-            planes_list.append(planes_copy)
+            plane_ind.append(plane_ix)
+            hypo_planes.append(planes_copy)
 
-    return planes_list, plane_index_list, combo_weights
+    return hypo_planes, plane_ind, combo_weights
 
 
 def latin_hypercube_sampling(
@@ -190,11 +182,12 @@ def latin_hypercube_sampling(
     planes: Sequence,
     event_type: EventType,
     total_length: float,
-    seed: int = None
+    seed: int = None,
 ):
     """
-    Using Latin Hypercube to place hypocentres by taking a grid of nhypo length across both strike and dip
-    which is defined by the strike and dip distribution methods but is sectioned to ensure lower probability hypocentre
+    Using Latin Hypercube to place hypocentres by taking a grid of nhypo length
+    across both strike and dip which is defined by the strike and dip distribution
+    methods but is sectioned to ensure lower probability hypocentre
     locations are chosen as part of the set
 
     Parameters
@@ -204,7 +197,8 @@ def latin_hypercube_sampling(
     planes: list
         The planes to adjust and set the hypocentre on
     event_type: EventType
-        The event type Strike_slip, dip_slip or all for determining the down dip distribution function
+        The event type Strike_slip, dip_slip or all
+        for determining the down dip distribution function
     total_length: float
         The total length of the fault
     seed: int
@@ -215,15 +209,7 @@ def latin_hypercube_sampling(
     strike_distribution = stats.truncnorm(
         (0.0 - mu) / sigma, (1.0 - mu) / sigma, loc=mu, scale=sigma
     )
-
-    # Works out the depth method for down dip placement of hypocentres
-    # Based on Weilbull or Gamma distributions depending on the EventType
-    if event_type == EventType.DIP_SLIP:
-        down_dip_distribution = GammaTruncated(a=0, b=1)
-    elif event_type == EventType.STRIKE_SLIP:
-        down_dip_distribution = WeibullTruncatedStrikeSlip(a=0, b=1)
-    else:
-        down_dip_distribution = WeibullTruncatedOblique(a=0, b=1)
+    down_dip_distribution = _get_down_dip_distribution(event_type)
 
     # Setup Latin-HyperCube
     lhd = stats.qmc.LatinHypercube(2, seed=seed)
@@ -231,7 +217,7 @@ def latin_hypercube_sampling(
     lhd[:, 0] = strike_distribution.ppf(lhd[:, 0])
     lhd[:, 1] = down_dip_distribution.ppf(lhd[:, 1])
 
-    planes_list, plane_index_list = [], []
+    hypo_planes, plane_ind = [], []
     plane_lengths = np.cumsum(np.asarray([plane["length"] for plane in planes]))
     # Assuming all widths in the planes are the same
     assert all([x["width"] == planes[0]["width"] for x in planes])
@@ -247,7 +233,21 @@ def latin_hypercube_sampling(
         planes_copy = copy.deepcopy(planes)
         planes_copy[plane_ix]["shyp"] = strike_location - (total_length / 2)
         planes_copy[plane_ix]["dhyp"] = planes[0]["width"] * depth
-        plane_index_list.append(plane_ix)
-        planes_list.append(planes_copy)
+        plane_ind.append(plane_ix)
+        hypo_planes.append(planes_copy)
 
-    return planes_list, plane_index_list, []
+    return hypo_planes, plane_ind, []
+
+
+def _get_down_dip_distribution(event_type: EventType):
+    """
+    Works out the depth method for down dip placement of hypocentres
+    Based on Weilbull or Gamma distributions depending on the EventType
+    """
+    if event_type == EventType.DIP_SLIP:
+        down_dip_distribution = GammaTruncated(a=0, b=1)
+    elif event_type == EventType.STRIKE_SLIP:
+        down_dip_distribution = WeibullTruncatedStrikeSlip(a=0, b=1)
+    else:
+        down_dip_distribution = WeibullTruncatedOblique(a=0, b=1)
+    return down_dip_distribution
