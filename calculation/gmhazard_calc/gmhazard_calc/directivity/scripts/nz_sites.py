@@ -6,7 +6,6 @@ from random import sample
 
 import common
 from qcore.formats import load_station_file
-from gmhazard_calc.directivity.HypoMethod import HypoMethod
 from gmhazard_calc import directivity
 
 """
@@ -130,6 +129,6 @@ if __name__ == "__main__":
         args.ndips,
         args.period,
         args.grid_space,
-        HypoMethod[args.method],
+        directivity.HypoMethod[args.method],
         args.output_dir,
     )

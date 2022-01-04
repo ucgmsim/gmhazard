@@ -1,7 +1,8 @@
 import h5py
 import numpy as np
 
-from gmhazard_calc import utils, im
+from gmhazard_calc import utils
+from gmhazard_calc import im
 from gmhazard_calc import constants as const
 from .BaseDB import BaseDB, check_open
 

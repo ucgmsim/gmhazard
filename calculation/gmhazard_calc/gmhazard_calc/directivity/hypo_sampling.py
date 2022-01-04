@@ -4,7 +4,7 @@ import numpy as np
 import copy
 from scipy import stats
 
-from .EventType import EventType
+from .directivity import EventType
 
 
 class WeibullTruncatedStrikeSlip(stats.rv_continuous):

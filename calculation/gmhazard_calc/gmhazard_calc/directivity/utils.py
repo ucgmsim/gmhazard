@@ -5,9 +5,9 @@ import numpy as np
 
 from gmhazard_calc.directivity import hypo_sampling
 from gmhazard_calc.rupture import get_fault_header_points
-from .EventType import EventType
-from .HypoMethod import HypoMethod
-from .NHypoData import NHypoData
+from .directivity import EventType
+from .directivity import HypoMethod
+from .directivity import NHypoData
 
 
 def set_hypocentres(

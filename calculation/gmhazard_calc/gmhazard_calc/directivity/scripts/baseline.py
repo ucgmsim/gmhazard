@@ -5,7 +5,6 @@ import argparse
 
 import numpy as np
 
-from gmhazard_calc.directivity.HypoMethod import HypoMethod
 from gmhazard_calc import directivity
 import common
 
@@ -119,7 +118,7 @@ def parse_args():
 if __name__ == "__main__":
     args, nhm_dict = parse_args()
 
-    n_hypo_data = directivity.NHypoData(HypoMethod[args.method], args.nhypo, args.nstrike, args.ndip)
+    n_hypo_data = directivity.NHypoData(directivity.HypoMethod[args.method], args.nhypo, args.nstrike, args.ndip)
 
     start_time = time.time()
 
