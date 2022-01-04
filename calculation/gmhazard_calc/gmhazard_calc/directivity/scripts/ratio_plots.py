@@ -1,3 +1,7 @@
+"""
+Plots the ratio difference between two fd results from using different methods
+or hypocentre locations or to compare against the baseline
+"""
 import argparse
 
 import numpy as np
@@ -21,7 +25,6 @@ def plot_ratio(
             fault, _, planes, lon_lat_depth, x, y = directivity.load_fault_info(
                 fault_name, nhm_dict, grid_space
             )
-
             try:
                 fdi_average = np.load(
                     f"{old_data_dir}/{fault_name}_{nhyp}_total_fd.npy"

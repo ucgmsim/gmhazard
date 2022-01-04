@@ -1,3 +1,6 @@
+"""
+Compute directivity values for NZ site locations
+"""
 import argparse
 
 import numpy as np
@@ -5,12 +8,9 @@ import pandas as pd
 from random import sample
 
 import common
-from qcore.formats import load_station_file
+import qcore.formats as formats
+from gmhazard_calc.directivity.HypoMethod import HypoMethod
 from gmhazard_calc import directivity
-
-"""
-Compute directivity values for NZ site locations
-"""
 
 
 def compute_nz_site_effect(
@@ -26,7 +26,7 @@ def compute_nz_site_effect(
     output_dir,
 ):
     site_names = sample(list(np.load(sites_file)), 1000)
-    stat_df = load_station_file(station_file)
+    stat_df = formats.load_station_file(station_file)
 
     site_coords = np.asarray(stat_df.loc[site_names].values)
 

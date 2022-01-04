@@ -29,7 +29,6 @@ def set_hypocentres(
     event_type: EventType
         The event type Strike_slip, dip_slip or all for determining the down dip distribution function
     """
-
     # Gets the total length and removes any previous hypocentres
     total_length = 0
     for plane in planes:

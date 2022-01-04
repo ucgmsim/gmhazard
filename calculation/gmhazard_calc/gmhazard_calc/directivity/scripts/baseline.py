@@ -1,3 +1,8 @@
+"""
+Computes the baseline values default of 20,000 hypocenters using Monte Carlo placement and distributions
+which can be used to compare against other methods to determine
+how close can you get to the 'expected' results
+"""
 import time
 import multiprocessing as mp
 from pathlib import Path
@@ -7,12 +12,6 @@ import numpy as np
 
 from gmhazard_calc import directivity
 import common
-
-"""
-Computes the baseline values default of 20,000 hypocenters using Monte Carlo placement and distributions
-which can be used to compare against other methods to determine
-how close can you get to the 'expected' results
-"""
 
 
 def perform_mp_directivity(
@@ -118,7 +117,9 @@ def parse_args():
 if __name__ == "__main__":
     args, nhm_dict = parse_args()
 
-    n_hypo_data = directivity.NHypoData(directivity.HypoMethod[args.method], args.nhypo, args.nstrike, args.ndip)
+    n_hypo_data = directivity.NHypoData(
+        directivity.HypoMethod[args.method], args.nhypo, args.nstrike, args.ndip
+    )
 
     start_time = time.time()
 

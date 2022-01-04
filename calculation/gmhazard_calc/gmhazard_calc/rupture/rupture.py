@@ -126,7 +126,7 @@ def get_fault_header_points(fault: nhm.NHMFault):
     lon2, lat2 = fault.trace[1]
     strike = geo.ll_bearing(lon1, lat1, lon2, lat2, midpoint=True)
 
-    # If the dipdir is not to the right of the strike, turn the fault around
+    # If the dip direction is not to the right of the strike, turn the fault around
     indexes = (
         np.arange(len(fault.trace))
         if 180 > fault.dip_dir - strike >= 0

@@ -1,3 +1,10 @@
+"""
+Tests the benchmark test data for 4 different faults
+Generates 9 sites locations close to the outer edges of the fault
+And uses a period of 3 and 100 hypocentres
+With latin hypercube and a set seed
+This is compared to original created results
+"""
 from pathlib import Path
 
 import numpy as np
@@ -52,7 +59,9 @@ def test_directivity():
         x, y = np.meshgrid(lon_values, lat_values)
         site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
-        n_hypo_data = directivity.NHypoData(directivity.HypoMethod.LATIN_HYPERCUBE, nhypo=100, seed=1)
+        n_hypo_data = directivity.NHypoData(
+            directivity.HypoMethod.LATIN_HYPERCUBE, nhypo=100, seed=1
+        )
 
         fd, _, _ = directivity.compute_fault_directivity(
             lon_lat_depth,

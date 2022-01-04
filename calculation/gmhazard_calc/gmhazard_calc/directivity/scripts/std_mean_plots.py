@@ -1,3 +1,7 @@
+"""
+Plots the mean and standard deviation between the different hypocentre locations used to compute fd
+can be produced in either a contour or mesh grid
+"""
 import argparse
 
 import numpy as np
@@ -18,7 +22,6 @@ def std_mean_plots(
     output_dir,
 ):
     for fault_name in faults:
-
         fault, _, planes, lon_lat_depth, x, y = utils.load_fault_info(
             fault_name, nhm_dict, grid_space
         )

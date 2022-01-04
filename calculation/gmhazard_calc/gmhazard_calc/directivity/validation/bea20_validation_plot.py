@@ -23,18 +23,25 @@ def bea20_directivity_plots(
     grid_space: int, optional
         The grid spacing to use for generating directivity and to show resolution for plots
     """
-
     im = IM(IMType.pSA, period=period)
     ens = gm_data.Ensemble("v20p5emp")
     branch = ens.get_im_ensemble(im.im_type).branches[0]
     nhm_dict = nhm.load_nhm(branch.flt_erf_ffp)
 
-    fault, site_coords, planes, lon_lat_depth, x, y = directivity.utils.load_fault_info(fault_name, nhm_dict, grid_space)
-    nominal_strike, nominal_strike2 = directivity.utils.calc_nominal_strike(lon_lat_depth)
+    fault, site_coords, planes, lon_lat_depth, x, y = directivity.utils.load_fault_info(
+        fault_name, nhm_dict, grid_space
+    )
+    nominal_strike, nominal_strike2 = directivity.utils.calc_nominal_strike(
+        lon_lat_depth
+    )
 
     plane_index = [i for i, plane in enumerate(planes) if plane["shyp"] != -999.9][0]
 
-    fdi, (phi_red, predictor_functions, other) = directivity.directivity._compute_directivity_effect(
+    fdi, (
+        phi_red,
+        predictor_functions,
+        other,
+    ) = directivity.directivity._compute_directivity_effect(
         lon_lat_depth,
         planes,
         plane_index,

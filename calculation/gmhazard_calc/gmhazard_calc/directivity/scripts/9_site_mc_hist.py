@@ -1,14 +1,13 @@
+"""
+Plots a histogram for each of the 9 sites to show difference in fd averaged values
+over the monte carlo repeats of the directivity calculation
+"""
 import argparse
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 import common
-
-"""
-Plots a histogram for each of the 9 sites to show difference in fd averaged values
-over the monte carlo repeats of the directivity calculation
-"""
 
 
 def site_mc_hist(input_dir, faults, nhyps, repeats, grid_space, sample, output_dir):

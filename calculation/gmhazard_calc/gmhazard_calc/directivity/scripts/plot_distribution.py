@@ -1,3 +1,6 @@
+"""
+Plots the distribution of hypocentre across strike and dip from a saved dataframe of distribution values
+"""
 import argparse
 
 import numpy as np
@@ -17,10 +20,8 @@ def plot_distribution(
     output_dir,
 ):
     for fault_name in faults:
-
         fig, (ax1) = plt.subplots(1, 1, figsize=(21, 13.5), dpi=144)
         for hypo_along_strike in hypo_along_strikes:
-
             csv = f"Strike_Distribution_{fault_name}_{hypo_along_strike}.csv"
             truncated_distribution = pd.read_csv(
                 f"{input_dir}/{csv}", index_col=0
@@ -37,9 +38,7 @@ def plot_distribution(
         ax1.set_title(f"{fault_name} Strike Distribution for range of hypocentres")
         ax1.set_ylabel("Percentage of hypocentres")
         ax1.set_xlabel("Spread across strike")
-        fig.savefig(
-            f"{output_dir}/{fault_name}_strike_distribution.png"
-        )
+        fig.savefig(f"{output_dir}/{fault_name}_strike_distribution.png")
 
         fig, (ax1) = plt.subplots(1, 1, figsize=(21, 13.5), dpi=144)
         for hypo_down_dip in hypo_down_dips:
@@ -61,9 +60,7 @@ def plot_distribution(
         ax1.set_title(f"{fault_name} Down Dip Distribution for range of hypocentres")
         ax1.set_ylabel("Percentage of hypocentres")
         ax1.set_xlabel("Spread down dip")
-        fig.savefig(
-            f"{output_dir}/{fault_name}_down_dip_distribution.png"
-        )
+        fig.savefig(f"{output_dir}/{fault_name}_down_dip_distribution.png")
 
 
 def parse_args():

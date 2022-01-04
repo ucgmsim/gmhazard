@@ -2,7 +2,6 @@ import math
 from typing import Tuple
 
 import numpy as np
-import numpy.matlib
 
 
 def bea20(
@@ -189,7 +188,7 @@ def bea20(
 
     # Computing phi_red for all periods
     # Note: In the original matlab implementation this was only done for the period of interest
-    PhiRed = np.matlib.repmat(e1interp, len(fD), 1)
+    PhiRed = np.tile(e1interp, (len(fD), 1))
     PhiRed[np.invert(Footprint), :] = 0
 
     predictor_functions = {
