@@ -6,9 +6,9 @@ import numpy as np
 
 import sha_calc
 from IM_calculation.source_site_dist import src_site_dist
-from gmhazard_calc.directivity import utils, hypo_sampling
+from gmhazard_calc.directivity import hypo_sampling
 from gmhazard_calc.im import DEFAULT_PSA_PERIODS
-from gmhazard_calc.constants import HypoMethod, EventType
+from gmhazard_calc import constants
 
 
 @dataclass
@@ -18,7 +18,7 @@ class NHypoData:
     correct number of hypocentre parameters
     for their method of placement
     """
-    method: HypoMethod
+    method: constants.HypoMethod
     nhypo: int = None
     hypo_along_strike: int = None
     hypo_down_dip: int = None
@@ -28,7 +28,7 @@ class NHypoData:
         """
         Checks to ensure that the given parameters are correct for the method specified
         """
-        if self.method == HypoMethod.UNIFORM_GRID:
+        if self.method == constants.HypoMethod.UNIFORM_GRID:
             if self.hypo_along_strike is None or self.hypo_down_dip is None:
                 raise ValueError(
                     f"hypo_along_strike and hypo_down_dip need to be defined for {str(self.method)}"
@@ -36,8 +36,8 @@ class NHypoData:
             else:
                 self.nhypo = self.hypo_along_strike * self.hypo_down_dip
         elif (
-            self.method == HypoMethod.LATIN_HYPERCUBE
-            or self.method == HypoMethod.MONTE_CARLO
+            self.method == constants.HypoMethod.LATIN_HYPERCUBE
+            or self.method == constants.HypoMethod.MONTE_CARLO
         ):
             if self.nhypo is None:
                 raise ValueError(f"nhypo needs to be defined for {str(self.method)}")
@@ -46,7 +46,7 @@ class NHypoData:
 def set_hypocentres(
     n_hypo_data: NHypoData,
     planes: Sequence,
-    event_type: EventType,
+    event_type: constants.EventType,
 ):
     """
     Creates a List of planes each with a different set hypocentre for directivity calculations
@@ -69,15 +69,15 @@ def set_hypocentres(
         plane["shyp"] = -999.9
         plane["dhyp"] = -999.9
 
-    if n_hypo_data.method == HypoMethod.LATIN_HYPERCUBE:
+    if n_hypo_data.method == constants.HypoMethod.LATIN_HYPERCUBE:
         return hypo_sampling.latin_hypercube_sampling(
             n_hypo_data.nhypo, planes, event_type, total_length, n_hypo_data.seed
         )
-    elif n_hypo_data.method == HypoMethod.MONTE_CARLO:
+    elif n_hypo_data.method == constants.HypoMethod.MONTE_CARLO:
         return hypo_sampling.mc_sampling(
             n_hypo_data.nhypo, planes, event_type, total_length, n_hypo_data.seed
         )
-    elif n_hypo_data.method == HypoMethod.UNIFORM_GRID:
+    elif n_hypo_data.method == constants.HypoMethod.UNIFORM_GRID:
         return hypo_sampling.uniform_grid(
             n_hypo_data.hypo_along_strike,
             n_hypo_data.hypo_down_dip,
@@ -154,7 +154,7 @@ def compute_fault_directivity(
     hypo_planes, plane_ind, weights = set_hypocentres(
         n_hypo_data,
         planes,
-        EventType.from_rake(rake),
+        constants.EventType.from_rake(rake),
     )
 
     # Creating the array to store all fdi values
@@ -179,7 +179,7 @@ def compute_fault_directivity(
         fdi_array[index] = fdi
         phired_array[index] = phi_red
 
-    if n_hypo_data.method == HypoMethod.UNIFORM_GRID:
+    if n_hypo_data.method == constants.HypoMethod.UNIFORM_GRID:
         # Only apply weights if method type is uniform grid
         fdi_average = weights[:, None, None] * fdi_array
         phired_average = weights[:, None, None] * phired_array
