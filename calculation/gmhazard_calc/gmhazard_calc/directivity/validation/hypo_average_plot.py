@@ -4,6 +4,7 @@ from pathlib import Path
 from qcore import nhm
 from gmhazard_calc import gm_data, directivity
 from gmhazard_calc.im import IM, IMType
+from gmhazard_calc.constants import HypoMethod
 
 
 def hypo_average_plots(
@@ -33,7 +34,7 @@ def hypo_average_plots(
     )
 
     n_hypo_data = directivity.NHypoData(
-        directivity.HypoMethod.LATIN_HYPERCUBE, nhypo=10
+        HypoMethod.LATIN_HYPERCUBE, nhypo=10
     )
 
     fd, fd_array, _ = directivity.compute_fault_directivity(

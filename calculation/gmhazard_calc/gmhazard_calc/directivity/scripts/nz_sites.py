@@ -9,8 +9,8 @@ from random import sample
 
 import common
 import qcore.formats as formats
-from gmhazard_calc.directivity.HypoMethod import HypoMethod
 from gmhazard_calc import directivity
+from gmhazard_calc.constants import HypoMethod
 
 
 def compute_nz_site_effect(
@@ -129,6 +129,6 @@ if __name__ == "__main__":
         args.ndips,
         args.period,
         args.grid_space,
-        directivity.HypoMethod[args.method],
+        HypoMethod[args.method],
         args.output_dir,
     )

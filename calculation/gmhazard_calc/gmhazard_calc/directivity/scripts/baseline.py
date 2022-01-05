@@ -5,13 +5,14 @@ how close can you get to the 'expected' results
 """
 import time
 import multiprocessing as mp
-from pathlib import Path
 import argparse
+from pathlib import Path
 
 import numpy as np
 
-from gmhazard_calc import directivity
 import common
+from gmhazard_calc import directivity
+from gmhazard_calc.constants import HypoMethod
 
 
 def perform_mp_directivity(
@@ -118,7 +119,7 @@ if __name__ == "__main__":
     args, nhm_dict = parse_args()
 
     n_hypo_data = directivity.NHypoData(
-        directivity.HypoMethod[args.method], args.nhypo, args.nstrike, args.ndip
+        HypoMethod[args.method], args.nhypo, args.nstrike, args.ndip
     )
 
     start_time = time.time()

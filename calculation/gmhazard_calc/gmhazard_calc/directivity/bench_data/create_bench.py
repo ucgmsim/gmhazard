@@ -11,6 +11,7 @@ import pandas as pd
 
 from gmhazard_calc import gm_data, directivity, rupture
 from gmhazard_calc.im import IM, IMType
+from gmhazard_calc.constants import HypoMethod
 from qcore import nhm
 
 FAULTS = ["AlpineK2T", "Ashley", "Browning", "Hossack"]
@@ -38,7 +39,7 @@ def create_benchmark_data():
         site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
         n_hypo_data = directivity.NHypoData(
-            directivity.HypoMethod.LATIN_HYPERCUBE, nhypo=100, seed=1
+            HypoMethod.LATIN_HYPERCUBE, nhypo=100, seed=1
         )
 
         fd, _, _ = directivity.compute_fault_directivity(

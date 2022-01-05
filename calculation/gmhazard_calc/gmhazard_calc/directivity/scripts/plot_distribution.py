@@ -8,7 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
 
-from gmhazard_calc.directivity.EventType import EventType
+from gmhazard_calc.constants import EventType
 import common
 
 

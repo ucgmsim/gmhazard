@@ -174,8 +174,8 @@ def plot_fdi(
     )
     cb = plt.colorbar(c)
     cb.set_label("fD")
-    plt.ylabel("Latitude")
-    plt.xlabel("Longitude")
+    ax1.set_ylabel("Latitude")
+    ax1.set_xlabel("Longitude")
     ax1.set_title(title)
 
     fig.savefig(f"{output_ffp}")

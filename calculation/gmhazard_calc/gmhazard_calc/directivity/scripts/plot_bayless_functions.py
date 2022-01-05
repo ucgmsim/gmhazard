@@ -1,5 +1,5 @@
 """
-Plots three different depths of hypocentre location on a particular function of the Bayless 2020 model
+Plots three different depths of hypocentre location for a given function of the Bayless 2020 model
 to see how it changes based on depth
 """
 import argparse
@@ -22,7 +22,7 @@ def plot_bayless_model(fault_name, nhm_dict, grid_space, period, model_key, outp
     (
         nominal_strike,
         nominal_strike2,
-    ) = directivity.utils.calc_nominal_strike(lon_lat_depth)
+    ) = directivity.calc_nominal_strike(lon_lat_depth)
 
     site_data = dict()
     sample = [24, 49, 74]
@@ -84,8 +84,8 @@ def plot_bayless_model(fault_name, nhm_dict, grid_space, period, model_key, outp
         cb = plt.colorbar(c)
         cb.set_label(f"{model_key}")
         ax1.set_title(title)
-        plt.ylabel("Latitude")
-        plt.xlabel("Longitude")
+        ax1.set_ylabel("Latitude")
+        ax1.set_xlabel("Longitude")
         plt.plot(hypo_lon, hypo_lat, marker="X", color="black", markersize=10)
         fig.savefig(f"{output_dir}/{fault_name}_{depth_texts[i]}")
         np.save(f"{output_dir}/{fault_name}_{depth_texts[i]}_fg.npy", model_value)

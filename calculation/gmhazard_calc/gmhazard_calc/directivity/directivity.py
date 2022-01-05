@@ -1,5 +1,4 @@
 import math
-from enum import Enum
 from typing import Sequence
 from dataclasses import dataclass
 
@@ -7,40 +6,17 @@ import numpy as np
 
 import sha_calc
 from IM_calculation.source_site_dist import src_site_dist
-from gmhazard_calc.directivity import utils
+from gmhazard_calc.directivity import utils, hypo_sampling
 from gmhazard_calc.im import DEFAULT_PSA_PERIODS
-
-
-class EventType(Enum):
-    """Event types for hypocentre distributions"""
-
-    STRIKE_SLIP = "STRIKE_SLIP"
-    DIP_SLIP = "DIP_SLIP"
-    ALL = "ALL"
-
-    @classmethod
-    def from_rake(cls, rake: float):
-        """Converts a rake value to an event type"""
-        if -30 <= rake <= 30 or 150 <= rake <= 210:
-            return EventType.STRIKE_SLIP
-        elif 60 <= rake <= 120 or -120 <= rake <= -60:
-            return EventType.DIP_SLIP
-        else:
-            return EventType.ALL
-
-
-class HypoMethod(Enum):
-    """Hypocentre placement methods"""
-
-    LATIN_HYPERCUBE = "LATIN_HYPERCUBE"
-    MONTE_CARLO = "MONTE_CARLO"
-    UNIFORM_GRID = "UNIFORM_GRID"
+from gmhazard_calc.constants import HypoMethod, EventType
 
 
 @dataclass
 class NHypoData:
     """
-    Class for keeping track of the correct number of hypocentre parameters for their method of placement
+    Class for keeping track of the
+    correct number of hypocentre parameters
+    for their method of placement
     """
     method: HypoMethod
     nhypo: int = None
@@ -54,12 +30,88 @@ class NHypoData:
         """
         if self.method == HypoMethod.UNIFORM_GRID:
             if self.hypo_along_strike is None or self.hypo_down_dip is None:
-                raise ValueError(f"hypo_along_strike and hypo_down_dip need to be defined for {str(self.method)}")
+                raise ValueError(
+                    f"hypo_along_strike and hypo_down_dip need to be defined for {str(self.method)}"
+                )
             else:
                 self.nhypo = self.hypo_along_strike * self.hypo_down_dip
-        elif self.method == HypoMethod.LATIN_HYPERCUBE or self.method == HypoMethod.MONTE_CARLO:
+        elif (
+            self.method == HypoMethod.LATIN_HYPERCUBE
+            or self.method == HypoMethod.MONTE_CARLO
+        ):
             if self.nhypo is None:
                 raise ValueError(f"nhypo needs to be defined for {str(self.method)}")
+
+
+def set_hypocentres(
+    n_hypo_data: NHypoData,
+    planes: Sequence,
+    event_type: EventType,
+):
+    """
+    Creates a List of planes each with a different set hypocentre for directivity calculations
+    Sets a given amount of hypocentres along strike and down dip based on different distributions
+    And the method and event type.
+
+    Parameters
+    ----------
+    n_hypo_data: NHypoData
+        Dataclass to store information on number of hypocentres and the method for placement
+    planes: list
+        The planes to adjust and set the hypocentre on
+    event_type: EventType
+        The event type Strike_slip, dip_slip or all for determining the down dip distribution function
+    """
+    # Gets the total length and removes any previous hypocentres
+    total_length = 0
+    for plane in planes:
+        total_length += plane["length"]
+        plane["shyp"] = -999.9
+        plane["dhyp"] = -999.9
+
+    if n_hypo_data.method == HypoMethod.LATIN_HYPERCUBE:
+        return hypo_sampling.latin_hypercube_sampling(
+            n_hypo_data.nhypo, planes, event_type, total_length, n_hypo_data.seed
+        )
+    elif n_hypo_data.method == HypoMethod.MONTE_CARLO:
+        return hypo_sampling.mc_sampling(
+            n_hypo_data.nhypo, planes, event_type, total_length, n_hypo_data.seed
+        )
+    elif n_hypo_data.method == HypoMethod.UNIFORM_GRID:
+        return hypo_sampling.uniform_grid(
+            n_hypo_data.hypo_along_strike,
+            n_hypo_data.hypo_down_dip,
+            planes,
+            event_type,
+            total_length,
+        )
+    else:
+        raise NotImplementedError(
+            f"Method {n_hypo_data.method} is not currently implemented"
+        )
+
+
+def calc_nominal_strike(traces: np.ndarray):
+    """
+    Gets the start and ending trace of the fault and ensures order for largest lon value first
+
+    Parameters
+    ----------
+    traces: np.ndarray
+        Array of traces of points across a fault with the format [[lon, lat, depth],...]
+    """
+
+    # Extract just lat and lon for the start and end of the traces
+    trace_start, trace_end = [traces[0][0], traces[0][1]], [
+        traces[-1][0],
+        traces[-1][1],
+    ]
+
+    # Ensures correct order
+    if trace_start[0] < trace_end[0]:
+        return np.asarray([trace_end]), np.asarray([trace_start])
+    else:
+        return np.asarray([trace_start]), np.asarray([trace_end])
 
 
 def compute_fault_directivity(
@@ -96,10 +148,10 @@ def compute_fault_directivity(
         The periods to calculate for the bea20 model's fD
         If not set then will be all the default pSA periods for GMHazard
     """
-    nominal_strike, nominal_strike2 = utils.calc_nominal_strike(lon_lat_depth)
+    nominal_strike, nominal_strike2 = calc_nominal_strike(lon_lat_depth)
 
     # Customise the planes to set different hypocentres
-    hypo_planes, plane_ind, weights = utils.set_hypocentres(
+    hypo_planes, plane_ind, weights = set_hypocentres(
         n_hypo_data,
         planes,
         EventType.from_rake(rake),

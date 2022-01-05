@@ -91,8 +91,8 @@ def convergence(input_dir, baseline_dir, faults, nhyps, grid_space, sample, outp
                 s=1.0,
             )
             plt.plot(site_x, site_y, "bo", color="black")
-            plt.xlabel("Longitude")
-            plt.ylabel("Latitude")
+            ax1.set_xlabel("Longitude")
+            ax1.set_ylabel("Latitude")
             site_x = site_x.reshape(9)
             site_y = site_y.reshape(9)
             for site in range(9):

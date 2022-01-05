@@ -116,8 +116,8 @@ def std_mean_plots(
                 else:
                     cb.set_label("std of (ln(estimate) - ln(exact))")
                 ax1.set_title(f"{nhyp} Hypocentres")
-                plt.xlabel("Longitude")
-                plt.ylabel("Latitude")
+                ax1.set_xlabel("Longitude")
+                ax1.set_ylabel("Latitude")
 
             plt.subplots_adjust(
                 left=0.1, bottom=0.1, right=0.95, top=0.90, wspace=0.40, hspace=0.35

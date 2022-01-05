@@ -102,7 +102,7 @@ def compute_site_source_distances(
 
         if calculate_directivity:
             n_hypo_data = gc.directivity.NHypoData(
-                gc.directivity.HypoMethod.LATIN_HYPERCUBE, nhypo=100
+                gc.constants.HypoMethod.LATIN_HYPERCUBE, nhypo=100
             )
 
             fd, _, phi_red = gc.directivity.compute_fault_directivity(

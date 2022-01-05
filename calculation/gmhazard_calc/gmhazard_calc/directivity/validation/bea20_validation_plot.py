@@ -31,7 +31,7 @@ def bea20_directivity_plots(
     fault, site_coords, planes, lon_lat_depth, x, y = directivity.utils.load_fault_info(
         fault_name, nhm_dict, grid_space
     )
-    nominal_strike, nominal_strike2 = directivity.utils.calc_nominal_strike(
+    nominal_strike, nominal_strike2 = directivity.calc_nominal_strike(
         lon_lat_depth
     )
 
