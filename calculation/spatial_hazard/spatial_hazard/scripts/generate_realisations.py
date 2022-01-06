@@ -19,7 +19,6 @@ def main(
     output_dir: Path,
     n_procs: int,
 ):
-    np.random.seed(0)
     # Load the station data
     stations_df = pd.read_csv(stations_ll_ffp, " ", index_col=2)
     stations = stations_df.index.values
@@ -67,7 +66,7 @@ def main(
         f"{fault}_{IM.file_format()}_Realisation",
         label=f"IM",
         n_procs=n_procs,
-        cpt_max=0.125
+        cpt_max=0.125,
     )
 
 

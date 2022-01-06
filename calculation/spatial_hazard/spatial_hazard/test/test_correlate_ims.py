@@ -23,12 +23,14 @@ def config():
 
 
 def test_correlate_ims(config):
+    # Get config variables
     bench_test_dir = pathlib.Path(__file__).parent / "bench_data" / config["type"]
     config_dir = pathlib.Path(__file__).parent / "config"
     stations_ll_ffp = config_dir / config["stations_ll"]
     imdb_ffps = [config_dir / imdb for imdb in config["imdbs"]]
     im, fault, seed = config["im"], config["fault"], config["seed"]
 
+    # Set the seed for the test
     np.random.seed(seed)
     # Load the station data
     stations_df = pd.read_csv(stations_ll_ffp, " ", index_col=2)
@@ -49,6 +51,7 @@ def test_correlate_ims(config):
         1, R, stations, emp_df
     )
 
+    # Compare resulting dataframes
     ln_im_values, between, within = (
         pd.DataFrame(data=random_IMs.T, index=stations),
         pd.DataFrame(data=between_event.T, index=stations),
@@ -72,7 +75,4 @@ def test_correlate_ims(config):
             & np.isclose(within, within_bench_data)
         )
     except AssertionError:
-        print(
-            "Some of the benchmark tests failed, "
-            "Results were different."
-        )
+        print("Some of the benchmark tests failed," "Results were different.")

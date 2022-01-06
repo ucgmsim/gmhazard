@@ -45,7 +45,12 @@ def plot_realisations(
         csv_files.append(str(cur_csv_ffp))
 
         gmt_options = get_gmt_options_dict(
-            options={**{"title": cur_out_name, "xyz-cpt-labels": label,},}
+            options={
+                **{
+                    "title": cur_out_name,
+                    "xyz-cpt-labels": label,
+                },
+            }
         )
         with open(output_dir / f"{cur_out_name}.yaml", "w") as f:
             yaml.safe_dump(gmt_options, f)

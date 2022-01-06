@@ -57,5 +57,3 @@ def get_correlations(im_1: str, im_2: str, site_dist: np.ndarray):
     self_mask = np.isclose(site_dist, 0.0)
     cov[self_mask] += nugget_corregionalization[idx_1, idx_2]
     return cov
-
-

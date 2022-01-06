@@ -8,8 +8,12 @@ import pandas as pd
 from spatial_hazard import correlate_ims
 
 
-def create_correlated_im_bench_data(stations_ll_ffp, imdb_ffps, im, fault, seed, output_dir):
+def create_correlated_im_bench_data(
+    stations_ll_ffp, imdb_ffps, im, fault, seed, output_dir
+):
+    # Set the testing seed
     np.random.seed(seed)
+
     # Load the station data
     stations_df = pd.read_csv(stations_ll_ffp, " ", index_col=2)
     stations = stations_df.index.values
@@ -47,7 +51,7 @@ def create_correlated_im_bench_data(stations_ll_ffp, imdb_ffps, im, fault, seed,
 
 def main(args):
     bench_dir = pathlib.Path(__file__).parent / "bench_data"
-    config_dir =  pathlib.Path(__file__).parent / "config"
+    config_dir = pathlib.Path(__file__).parent / "config"
     config_file = args.config
 
     # Check if the specified config_file is a full path or just a filename
@@ -68,7 +72,12 @@ def main(args):
         stations_ll_ffp = config_dir / config["stations_ll"]
         imdb_ffps = [config_dir / imdb for imdb in config["imdbs"]]
         create_correlated_im_bench_data(
-            stations_ll_ffp, imdb_ffps, config["im"], config["fault"], config["seed"], output_dir
+            stations_ll_ffp,
+            imdb_ffps,
+            config["im"],
+            config["fault"],
+            config["seed"],
+            output_dir,
         )
 
 

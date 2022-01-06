@@ -28,7 +28,7 @@ def load_stations_data(imdb_ffps: Sequence[str], stations: Sequence[str], im: gc
 
 
 def load_stations_fault_data(
-        imdb_ffps: Sequence[str], stations: Sequence[str], im: gc.im.IM, fault: str
+    imdb_ffps: Sequence[str], stations: Sequence[str], im: gc.im.IM, fault: str
 ):
     """Loads the IM data for the specified stations and fault from the IMDBs"""
     stations_data = load_stations_data(imdb_ffps, stations, im)
@@ -41,7 +41,9 @@ def load_stations_fault_data(
     ).T
 
 
-def calculate_distance_matrix(stations: Sequence[str], locations_df: pd.DataFrame) -> pd.DataFrame:
+def calculate_distance_matrix(
+    stations: Sequence[str], locations_df: pd.DataFrame
+) -> pd.DataFrame:
     """
     Given a set of stations and their locations (in lat, lon format), calculate the matrix containing
     the pairwise distance between each one
@@ -101,9 +103,13 @@ def get_corr_matrix(stations, distance_matrix, selected_im, emp_df):
     R = np.eye(len(stations))
     for i, station_i in enumerate(stations):
         correlation = models.loth_baker_model.get_correlations(
-            str(selected_im), str(selected_im), distance_matrix.loc[stations, station_i].values
+            str(selected_im),
+            str(selected_im),
+            distance_matrix.loc[stations, station_i].values,
         )
-        assert np.all(correlation >= 0.), "Correlation should be positive or 0. Error with {}, {}".format(i, station_i)
+        assert np.all(
+            correlation >= 0.0
+        ), "Correlation should be positive or 0. Error with {}, {}".format(i, station_i)
         R[i, :] = R[:, i] = correlation
 
     R = pd.DataFrame(index=stations, columns=stations, data=R)
@@ -111,7 +117,10 @@ def get_corr_matrix(stations, distance_matrix, selected_im, emp_df):
 
 
 def create_random_fields(
-        N: int, R: pd.DataFrame, stations: Sequence[str], emp_df: pd.DataFrame,
+    N: int,
+    R: pd.DataFrame,
+    stations: Sequence[str],
+    emp_df: pd.DataFrame,
 ):
     """
     Given a set of stations, create uncorrelated random values and then
