@@ -315,10 +315,10 @@ def generate_dbs(
 
     print("Generating DS distance db")
     ds_site_source_db_ffp = dbs_dir / DS_SITE_SOURCE_DB_FILENAME
+    empirical_db_scripts_dir = scripts_dir / "db_creation" / "empirical_db"
     if ds_site_source_db_ffp.exists():
         print("DS distance DB already exists, skipping")
     else:
-        empirical_db_scripts_dir = scripts_dir / "db_creation" / "empirical_db"
         calc_ds_distances_cmd = [
             "python",
             str(empirical_db_scripts_dir / "calc_distances_ds.py"),

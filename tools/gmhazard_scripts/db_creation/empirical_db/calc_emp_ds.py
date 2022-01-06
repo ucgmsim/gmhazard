@@ -144,7 +144,8 @@ def calculate_ds(
                             max_dist,
                             dist_filter_by_mag=True,
                             return_vals=True,
-                            n_procs=n_mp_proc
+                            n_procs=n_mp_proc,
+                            use_directivity=False,
                         ),
                         site.name,
                     )

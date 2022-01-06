@@ -2,6 +2,7 @@ import os
 import hashlib
 import logging
 import traceback
+from pathlib import Path
 from typing import List, Iterable, Tuple, Dict, Optional, Union, Type
 from datetime import datetime
 from functools import wraps
@@ -218,7 +219,7 @@ def get_cache_key(type: str, logger: logging.Logger = None, **kwargs):
 def get_repo_version():
     """Gets the current commit hash"""
     logging.disable(logging.ERROR)
-    repo = git.Repo(search_parent_directories=True)
+    repo = git.Repo(Path(__file__).absolute(), search_parent_directories=True)
     logging.disable(logging.NOTSET)
 
     return repo.head.object.hexsha

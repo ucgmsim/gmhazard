@@ -12,13 +12,14 @@ from empirical.util import empirical_factory, classdef
 from empirical.util.classdef import Site, Fault
 from qcore import formats
 from gmhazard_calc.nz_code.nzs1170p5.nzs_zfactor_2016.ll2z import ll2z
+from gmhazard_calc.rupture import rupture as gc_rupture
 from gmhazard_calc.im import IM, IMType
-
-from gmhazard_calc import utils
-from gmhazard_calc import dbs
+from gmhazard_calc import utils, dbs, directivity
+import sha_calc
 
 # fmt: off
-PERIOD = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.9, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]
+PERIOD = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8,
+          0.9, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]
 # fmt: on
 
 IM_TYPE_LIST = [
@@ -182,9 +183,11 @@ def __process_rupture(
     site,
     im_types,
     tect_type_model_dict,
+    directivity_adjustment,
     psa_periods,
     keep_sigma_components,
     fault_im_result_dict,
+    use_directivity=True,
 ):
     """Helper MP function for calculate_emp_site"""
     fault = Fault(
@@ -220,7 +223,7 @@ def __process_rupture(
                 str(im_type),
                 psa_periods if im_type is IMType.pSA else None,
             )
-            if not im_type is IMType.pSA:
+            if im_type is not IMType.pSA:
                 values = [values]
             for i, value in enumerate(values):
                 full_im_name = (
@@ -230,6 +233,9 @@ def __process_rupture(
                 )
                 mean = np.log(value[0])
                 stdev, sigma_inter, sigma_intra = value[1]
+                if use_directivity and im_type is IMType.pSA:
+                    mean += directivity_adjustment.loc[str(full_im_name)]
+                    stdev += directivity_adjustment.loc[f"{full_im_name}_sigma"]
 
                 fault_im_result_dict[db_type][str(full_im_name)] = mean
                 if keep_sigma_components:
@@ -262,6 +268,7 @@ def calculate_emp_site(
     dist_filter_by_mag=False,
     return_vals=False,
     keep_sigma_components=False,
+    use_directivity=True,
     n_procs: int = 1,
 ):
     """
@@ -282,6 +289,7 @@ def calculate_emp_site(
     :param tect_type_model_dict_ffp: the relation between tectonic type and which empirical model(s) to use
     :param return_vals: flag to return the values instead of writing them to the DB - specifically for the single
                         writer MPI paradigm
+    :param use_directivity: flag to apply the directivity effect to each of the fault calculations. Applies only on pSA
     :return: if return vals is set - a Dictionary of dataframes are returned
     """
     # Sets Z1.0 and Z2.5 to None if NaN
@@ -301,6 +309,12 @@ def calculate_emp_site(
         distance_df, left_on="fault_name", right_on="fault_name"
     )
 
+    directivity_df = fault_df.merge(
+        distance_store.station_directivity_data(station_name),
+        left_on="fault_name",
+        right_index=True,
+    )
+
     if dist_filter_by_mag:
         max_dist = np.minimum(np.interp(matching_df.mag, MAG, DIST), max_rjb)
     else:
@@ -316,9 +330,11 @@ def calculate_emp_site(
                     site,
                     im_types,
                     tect_type_model_dict,
+                    directivity_df.iloc[index],
                     psa_periods,
                     keep_sigma_components,
                     {key: {} for key in imdb_dict.keys()},
+                    use_directivity,
                 )
                 for index, rupture in matching_df.iterrows()
             ],
