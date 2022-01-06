@@ -3,6 +3,7 @@ import multiprocessing as mp
 from contextlib import contextmanager
 from typing import Optional, Dict, List, Union
 
+import gmhazard_calc.im
 import h5py
 import tables
 import numpy as np
@@ -376,13 +377,25 @@ class IMDBParametric(IMDB):
 
         if im is not None:
             ims = im if isinstance(im, list) else [im]
-            im_columns = list(
-                (itertools.chain(*[(f"{im}", f"{im}_sigma") for im in set(ims)]))
-            )
-            df = df.loc[:, im_columns]
-            if len(ims) == 1:
-                df.columns = ["mu", "sigma"]
-            return df
+            # Try using just mu and sigma for IM extraction
+            try:
+                im_columns = list(
+                    (itertools.chain(*[(f"{im}", f"{im}_sigma") for im in set(ims)]))
+                )
+                df = df.loc[:, im_columns]
+                if len(ims) == 1:
+                    df.columns = ["mu", "sigma"]
+            except KeyError:
+                # If failed to grab mu and sigma attempt to grab mu, inter and intra sigma values
+                try:
+                    im_columns = list(
+                        (itertools.chain(*[(f"{im}", f"{im}_sigma_inter", f"{im}_sigma_intra") for im in set(ims)]))
+                    )
+                    df = df.loc[:, im_columns]
+                    if len(ims) == 1:
+                        df.columns = ["mu", "sigma_inter", "sigma_intra"]
+                except KeyError:
+                    print(f"Could not extract given IM's {gmhazard_calc.im.to_string_list(ims)} from DB")
         return df
 
     @check_open(writeable=True)
