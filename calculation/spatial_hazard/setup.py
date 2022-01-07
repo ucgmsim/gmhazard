@@ -5,5 +5,5 @@ setup(
     version="21.3.0",
     packages=find_packages(),
     url="https://github.com/ucgmsim/gmhazard",
-    description="GMHazard calculation code",
+    description="Spatial Hazard calculation code",
 )

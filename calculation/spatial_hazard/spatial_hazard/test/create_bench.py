@@ -1,9 +1,9 @@
 import argparse
 import pathlib
-import yaml
 
 import numpy as np
 import pandas as pd
+import yaml
 
 from spatial_hazard import correlate_ims
 

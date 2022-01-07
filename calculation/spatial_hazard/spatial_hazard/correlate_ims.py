@@ -19,7 +19,7 @@ def load_stations_data(imdb_ffps: Sequence[str], stations: Sequence[str], im: gc
             for station in stations:
                 if station not in imdb_stations:
                     print("Station {} has no entries here".format(station))
-                cur_data = imdb.im_data(station, im)
+                cur_data = imdb.im_data(station, im, inter_intra=True)
                 if cur_data is not None:
                     result_dict[station].append(cur_data)
 
