@@ -12,7 +12,6 @@ from gmhazard_calc import utils
 from gmhazard_calc import constants as const
 from gmhazard_calc.im import IM
 from .BaseDB import BaseDB, check_open
-from qcore.simulation_structure import get_fault_from_realisation
 
 
 def get_station_ruptures(imdb_ffp: str, station: str):
@@ -331,7 +330,7 @@ class IMDBParametric(IMDB):
 
     @check_open
     def im_data(
-        self, station: str, im: Optional[Union[List[IM], IM]] = None
+        self, station: str, im: Optional[Union[List[IM], IM]] = None, inter_intra: bool = False,
     ) -> Union[pd.DataFrame, pd.Series, None]:
         """Retrieves the IM parameters for the ruptures
         at a specific site
@@ -342,6 +341,8 @@ class IMDBParametric(IMDB):
         im: IM or list[IM], optional
             IM(s) of interest
             if this is unspecified then it is equivalent to setting all IMs
+        inter_intra: bool
+            Boolean flag to determine to either extract normal mu and sigma or mu, sigma_inter and sigma_intra
 
         Returns
         -------
@@ -376,13 +377,20 @@ class IMDBParametric(IMDB):
 
         if im is not None:
             ims = im if isinstance(im, list) else [im]
-            im_columns = list(
-                (itertools.chain(*[(f"{im}", f"{im}_sigma") for im in set(ims)]))
-            )
+            # Setting columns to extract from the DB
+            if inter_intra:
+                single_im_columns = ["mu", "sigma_inter", "sigma_intra"]
+                im_columns = list(
+                    (itertools.chain(*[(f"{im}", f"{im}_sigma_inter", f"{im}_sigma_intra") for im in set(ims)]))
+                )
+            else:
+                single_im_columns = ["mu", "sigma"]
+                im_columns = list(
+                    (itertools.chain(*[(f"{im}", f"{im}_sigma") for im in set(ims)]))
+                )
             df = df.loc[:, im_columns]
             if len(ims) == 1:
-                df.columns = ["mu", "sigma"]
-            return df
+                df.columns = single_im_columns
         return df
 
     @check_open(writeable=True)
