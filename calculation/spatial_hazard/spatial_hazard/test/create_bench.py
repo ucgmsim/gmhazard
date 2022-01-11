@@ -25,12 +25,16 @@ def create_correlated_im_bench_data(
     print("Computing distance matrix")
     dist_matrix = correlate_ims.calculate_distance_matrix(stations, stations_df)
 
+    assert np.all(
+        dist_matrix.index.values == emp_df.index.values
+    ), "Order of the stations has to be the same"
+
     print("Computing correlation matrix")
-    R = correlate_ims.get_corr_matrix(stations, dist_matrix, im, emp_df)
+    R = correlate_ims.get_corr_matrix(stations, dist_matrix, im)
 
     print("Generating realisation")
     random_IMs, between_event, within_event = correlate_ims.create_random_fields(
-        1, R, stations, emp_df
+        1, R, len(stations), emp_df
     )
 
     ln_im_values, between, within = (

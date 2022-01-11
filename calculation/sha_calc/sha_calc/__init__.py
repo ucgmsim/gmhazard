@@ -12,6 +12,7 @@ from .hazard import hazard_single, hazard_curve
 from .exceptions import InputDataError
 from .nzs1170p5_spectra import nzs1170p5_spectra, get_return_period_factor
 from .directivity import bea20
+from .spatial_hazard import loth_baker_model
 from sha_calc.im_component.im_component_ratio import (
     get_component_ratio,
     get_computed_component_ratio,
