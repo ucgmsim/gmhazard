@@ -30,7 +30,7 @@ def load_stations_fault_data(
     fault_imdbs = []
     for imdb_ffp in imdb_ffps:
         with gc.dbs.IMDB.get_imdb(imdb_ffp, writeable=False) as imdb:
-            if fault in imdb._ruptures().values:
+            if fault in imdb.rupture_names():
                 fault_imdbs.append(imdb_ffp)
     # Ensure only 1 IMDB has the given fault data
     assert len(fault_imdbs) == 1

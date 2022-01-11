@@ -35,6 +35,7 @@ def calculate_flt(
     tect_type_model_dict_ffp,
     keep_sigma=False,
     suffix=None,
+    rupture_lookup=False,
 ):
     nhm_data = sc.utils.flt_nhm_to_rup_df(nhm_ffp)
 
@@ -89,6 +90,7 @@ def calculate_flt(
             psa_periods,
             ims,
             tect_type_model_dict_ffp,
+            rupture_lookup=rupture_lookup,
         )
 
 
@@ -131,6 +133,12 @@ def parse_args():
         help="suffix for the end of the imdb files",
         default=None,
     )
+    parser.add_argument(
+        "--rupture_lookup",
+        "-rl",
+        help="flag to run rupture lookup function when creating the db",
+        default=False,
+    )
 
     return parser.parse_args()
 
@@ -151,6 +159,7 @@ def calculate_emp_flt():
         args.model_dict,
         args.keep_sigma,
         suffix=args.suffix,
+        rupture_lookup=args.rupture_lookup,
     )
 
 
