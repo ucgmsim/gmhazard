@@ -13,14 +13,14 @@ def load_stations_fault_data(
     imdb_ffps: Sequence[str], stations: Sequence[str], im: gc.im.IM, fault: str
 ):
     """
-    Loads the IM data for the specified stations and fault from the IMDBs
+    Loads the IM data for the specified stations and fault from the IMDB's
 
     Parameters
     ----------
     imdb_ffps: Sequence[str]
         List of imdb full file paths to load
     stations: Sequence[str]
-        List of stations to grab data for from the imdbs
+        List of station names to grab data for from the imdbs
     im: IM
         IM Object to extract values from the imdb
     fault: String
@@ -54,7 +54,7 @@ def calculate_distance_matrix(stations: Sequence[str], locations_df: pd.DataFram
     Parameters
     ----------
     stations: Sequence[str]
-        List of the stations
+        List of the station names
     locations_df: pd.DataFrame
         Locations of each of the stations (in lat, lon)
     """
@@ -87,7 +87,7 @@ def get_corr_matrix(
     Parameters
     ----------
     stations: Sequence[str]
-        List of the stations
+        List of the station names
     distance_matrix: pd.DataFrame
         Distance values between all site locations
     selected_im: IM

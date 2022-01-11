@@ -31,6 +31,10 @@ def plot_realisations(
     n_procs: int = 4,
     cpt_max: float = 0.125,
 ):
+    """
+    Plots realisations and stations on a map
+    using a plot items wrapper from the visualisation package
+    """
     data_df = pd.merge(rel_df, station_df, left_index=True, right_index=True)
 
     csv_files = []
