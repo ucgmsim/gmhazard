@@ -173,7 +173,7 @@ def write_data_and_close(
         )
         imdb_dict[imdb_keys].close()
         if rupture_lookup:
-            imdb_dict[imdb_keys].add_rupture_lookup(imdb_dict[imdb_keys], 1) # TODO TEST ME
+            imdb_dict[imdb_keys].add_rupture_lookup(imdb_dict[imdb_keys].db_ffp, 1)
 
 
 def get_max_dist_zfac_scaled(site):
@@ -313,11 +313,12 @@ def calculate_emp_site(
         distance_df, left_on="fault_name", right_on="fault_name"
     )
 
-    directivity_df = fault_df.merge(
-        distance_store.station_directivity_data(station_name),
-        left_on="fault_name",
-        right_index=True,
-    )
+    if use_directivity:
+        directivity_df = fault_df.merge(
+            distance_store.station_directivity_data(station_name),
+            left_on="fault_name",
+            right_index=True,
+        )
 
     if dist_filter_by_mag:
         max_dist = np.minimum(np.interp(matching_df.mag, MAG, DIST), max_rjb)
@@ -334,7 +335,7 @@ def calculate_emp_site(
                     site,
                     im_types,
                     tect_type_model_dict,
-                    directivity_df.iloc[index],
+                    directivity_df.iloc[index] if use_directivity else None,
                     psa_periods,
                     keep_sigma_components,
                     {key: {} for key in imdb_dict.keys()},

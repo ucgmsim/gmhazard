@@ -84,6 +84,21 @@ class SiteSourceDB(BaseDB):
         return key in self._keys_cache
 
     @check_open
+    def has_station_directivity_data(self, station_name):
+        """
+        Checks if there is directivity data stored for the station.
+        If a station was used as an input but did not contain data it will return false.
+        :param station_name: Station to be checked
+        :return: True if station has directivity data, False otherwise
+        """
+        key = self.station_directivity_h5_key(station_name)
+
+        if not self._keys_cache:
+            self._keys_cache = set(self._db.keys())
+
+        return key in self._keys_cache
+
+    @check_open
     def fault_station_data(self, station_name: str, fault_name: str):
         """Returns the properties for the specified source-site combination
 
