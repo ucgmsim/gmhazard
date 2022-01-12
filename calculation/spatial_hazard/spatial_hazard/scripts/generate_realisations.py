@@ -38,8 +38,8 @@ def main(
     R = correlate_ims.get_corr_matrix(stations, dist_matrix, IM)
 
     print("Generating realisation")
-    random_IMs, between_event, within_event = correlate_ims.create_random_fields(
-        N, R, len(stations), emp_df
+    random_IMs, between_event, within_event = correlate_ims.generate_im_values(
+        N, R, emp_df
     )
 
     ln_im_values, between, within = (

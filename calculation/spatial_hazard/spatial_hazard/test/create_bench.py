@@ -33,8 +33,8 @@ def create_correlated_im_bench_data(
     R = correlate_ims.get_corr_matrix(stations, dist_matrix, im)
 
     print("Generating realisation")
-    random_IMs, between_event, within_event = correlate_ims.create_random_fields(
-        1, R, len(stations), emp_df
+    random_IMs, between_event, within_event = correlate_ims.generate_im_values(
+        1, R, emp_df
     )
 
     ln_im_values, between, within = (

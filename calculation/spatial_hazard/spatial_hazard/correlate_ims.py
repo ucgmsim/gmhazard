@@ -26,7 +26,7 @@ def load_stations_fault_data(
     fault: String
         Fault name to extract data from the imdb
     """
-    # Obtain the given IMDB with the correct fault information
+    # Obtain the IMDB with the correct fault information
     fault_imdbs = []
     for imdb_ffp in imdb_ffps:
         with gc.dbs.IMDB.get_imdb(imdb_ffp, writeable=False) as imdb:
@@ -39,7 +39,7 @@ def load_stations_fault_data(
     site_rupture_data = []
     with gc.dbs.IMDB.get_imdb(fault_imdbs[0], writeable=False) as imdb:
         for station in stations:
-            cur_data = imdb.im_data(station, im, incl_inter_intra=True)
+            cur_data = imdb.im_data(station, im, incl_with_between_sigma=True)
             # Check fault data was found
             assert cur_data is not None
             site_rupture_data.append(cur_data.loc[fault])
@@ -102,16 +102,15 @@ def get_corr_matrix(
         )
         assert np.all(
             correlation >= 0.0
-        ), f"Correlation should be positive or 0. Error with {i}, {station}"
+        ), f"Correlation should be positive or 0. Error with {station} at index {i}"
         R[i, :] = R[:, i] = correlation
 
     return pd.DataFrame(index=stations, columns=stations, data=R)
 
 
-def create_random_fields(
+def generate_im_values(
     N: int,
     R: pd.DataFrame,
-    n_stations: int,
     emp_df: pd.DataFrame,
 ):
     """
@@ -124,8 +123,6 @@ def create_random_fields(
         Number of realisations
     R: pd.Dataframe
         Correlation matrix (with unit variance) from
-    n_stations: int
-        Number of stations
     emp_df: pd.Dataframe
         Empirical results with mu, sigma_inter and sigma_intra
     """
@@ -149,10 +146,9 @@ def create_random_fields(
     )
 
     # Calculate random within event residual value per site and per realisation
-    # Calculate random within event residual value per site and per realisation
     # Then matrix multiply against the result of the Cholesky decomposition for each realisation
     within_event = np.matmul(
-        L, np.random.normal(0.0, within_event_std, size=(N, n_stations)).T
+        L, np.random.normal(0.0, within_event_std, size=(N, len(within_event_std))).T
     ).T
 
     # Combine the between and within event values with the mean IM values broadcast across realisations
