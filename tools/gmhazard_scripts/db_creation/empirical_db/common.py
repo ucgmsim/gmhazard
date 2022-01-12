@@ -309,11 +309,12 @@ def calculate_emp_site(
         distance_df, left_on="fault_name", right_on="fault_name"
     )
 
-    directivity_df = fault_df.merge(
-        distance_store.station_directivity_data(station_name),
-        left_on="fault_name",
-        right_index=True,
-    )
+    if use_directivity:
+        directivity_df = fault_df.merge(
+            distance_store.station_directivity_data(station_name),
+            left_on="fault_name",
+            right_index=True,
+        )
 
     if dist_filter_by_mag:
         max_dist = np.minimum(np.interp(matching_df.mag, MAG, DIST), max_rjb)
@@ -330,7 +331,7 @@ def calculate_emp_site(
                     site,
                     im_types,
                     tect_type_model_dict,
-                    directivity_df.iloc[index],
+                    directivity_df.iloc[index] if use_directivity else None,
                     psa_periods,
                     keep_sigma_components,
                     {key: {} for key in imdb_dict.keys()},

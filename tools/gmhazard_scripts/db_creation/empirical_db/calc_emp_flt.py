@@ -74,6 +74,7 @@ def calculate_flt(
                     tect_type_model_dict_ffp,
                     max_dist,
                     keep_sigma_components=keep_sigma,
+                    use_directivity=distance_store.has_station_directivity_data(site.name)
                 )
             else:
                 print(
