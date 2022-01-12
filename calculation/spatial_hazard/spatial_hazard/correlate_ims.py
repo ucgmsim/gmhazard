@@ -124,12 +124,12 @@ def generate_im_values(
     R: pd.Dataframe
         Correlation matrix (with unit variance) from
     emp_df: pd.Dataframe
-        Empirical results with mu, sigma_inter and sigma_intra
+        Empirical results with mu, between_event_sigma and within_event_sigma
     """
     mean_lnIM, between_event_std, within_event_std = (
         emp_df["mu"],
-        emp_df["sigma_inter"],
-        emp_df["sigma_intra"],
+        emp_df["between_event_sigma"],
+        emp_df["within_event_sigma"],
     )
 
     # Cholesky decomposition of the correlation matrix

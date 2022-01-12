@@ -380,7 +380,7 @@ class IMDBParametric(IMDB):
             ims = im if isinstance(im, list) else [im]
             # Setting columns to extract from the DB
             if incl_with_between_sigma:
-                single_im_columns = ["mu", "sigma_inter", "sigma_intra"]
+                single_im_columns = ["mu", "between_event_sigma", "within_event_sigma"]
                 im_columns = list(
                     (itertools.chain(*[(f"{im}", f"{im}_sigma_inter", f"{im}_sigma_intra") for im in set(ims)]))
                 )
