@@ -39,7 +39,7 @@ def load_stations_fault_data(
     site_rupture_data = []
     with gc.dbs.IMDB.get_imdb(fault_imdbs[0], writeable=False) as imdb:
         for station in stations:
-            cur_data = imdb.im_data(station, im, incl_with_between_sigma=True)
+            cur_data = imdb.im_data(station, im, incl_within_between_sigma=True)
             # Check fault data was found
             assert cur_data is not None
             site_rupture_data.append(cur_data.loc[fault])

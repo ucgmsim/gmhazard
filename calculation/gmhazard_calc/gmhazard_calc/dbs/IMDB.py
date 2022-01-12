@@ -330,7 +330,7 @@ class IMDBParametric(IMDB):
 
     @check_open
     def im_data(
-        self, station: str, im: Optional[Union[List[IM], IM]] = None, incl_with_between_sigma: bool = False,
+        self, station: str, im: Optional[Union[List[IM], IM]] = None, incl_within_between_sigma: bool = False,
     ) -> Union[pd.DataFrame, pd.Series, None]:
         """Retrieves the IM parameters for the ruptures
         at a specific site
@@ -341,7 +341,7 @@ class IMDBParametric(IMDB):
         im: IM or list[IM], optional
             IM(s) of interest
             if this is unspecified then it is equivalent to setting all IMs
-        incl_with_between_sigma: bool
+        incl_within_between_sigma: bool
             Boolean flag to determine to either extract mu and total standard deviation or
             mu, between-event and within-event standard deviation
 
@@ -379,7 +379,7 @@ class IMDBParametric(IMDB):
         if im is not None:
             ims = im if isinstance(im, list) else [im]
             # Setting columns to extract from the DB
-            if incl_with_between_sigma:
+            if incl_within_between_sigma:
                 single_im_columns = ["mu", "between_event_sigma", "within_event_sigma"]
                 im_columns = list(
                     (itertools.chain(*[(f"{im}", f"{im}_sigma_inter", f"{im}_sigma_intra") for im in set(ims)]))
