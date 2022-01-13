@@ -258,6 +258,19 @@ class IMDB(BaseDB):
 
     @staticmethod
     def add_rupture_lookup(db_ffp: str, n_procs: int):
+        """
+        Add a lookup to get stations for each rupture and to get the full list of rupture names
+        WARNING:
+        Could take a long time for large DB's such as a Distributed Seismicity db
+        Should only be used for a Fault db
+
+        Parameters
+        ----------
+        db_ffp: str
+            Full file path to the db file to add the rupture lookup
+        n_procs: int
+            Number of processes to use
+        """
         with IMDB.get_imdb(db_ffp) as db:
             stations = db.sites().index.values
 

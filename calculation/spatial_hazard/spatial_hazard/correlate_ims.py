@@ -27,6 +27,7 @@ def load_stations_fault_data(
         Fault name to extract data from the imdb
     """
     # Obtain the IMDB with the correct fault information
+    # Assuming only 1 GMM is being used so only 1 IMDB will have the fault information
     fault_imdbs = []
     for imdb_ffp in imdb_ffps:
         with gc.dbs.IMDB.get_imdb(imdb_ffp, writeable=False) as imdb:
