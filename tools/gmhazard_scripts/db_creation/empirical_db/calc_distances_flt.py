@@ -154,7 +154,10 @@ def load_args():
         "will be calculated for all stations in the station_file.",
     )
     parser.add_argument(
-        "--directivity", type=bool, help="Boolean to calculate directivity or not for the sites", default=True
+        "--directivity",
+        type=lambda x: (str(x).lower() == 'true'),
+        help="Boolean to calculate directivity or not for the sites",
+        default=True,
     )
 
     args = parser.parse_args()
