@@ -155,9 +155,10 @@ def load_args():
     )
     parser.add_argument(
         "--no_directivity",
-        action="store_true",
-        help="Boolean to calculate directivity or not for the sites",
-        default=False,
+        action="store_false",
+        dest="directivity",
+        help="Flag to turn off directivity calculation",
+        default=True,
     )
 
     args = parser.parse_args()
@@ -215,7 +216,7 @@ def main():
         fault_df = pd.DataFrame(sorted(nhm_data.keys()), columns=["fault_name"])
 
         site_source_distance_data, directivity_data = compute_site_source_distances(
-            stations.to_numpy(), nhm_data, calculate_directivity=not args.no_directivity
+            stations.to_numpy(), nhm_data, calculate_directivity=args.directivity
         )
     else:
         fault_data_ffp = os.path.abspath(args.gcmt_ffp)
