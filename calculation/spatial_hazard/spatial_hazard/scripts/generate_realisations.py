@@ -30,12 +30,16 @@ def main(
     print("Computing distance matrix")
     dist_matrix = correlate_ims.calculate_distance_matrix(stations, stations_df)
 
+    assert np.all(
+        dist_matrix.index.values == emp_df.index.values
+    ), "Order of the stations has to be the same"
+
     print("Computing correlation matrix")
-    R = correlate_ims.get_corr_matrix(stations, dist_matrix, IM, emp_df)
+    R = correlate_ims.get_corr_matrix(stations, dist_matrix, IM)
 
     print("Generating realisation")
-    random_IMs, between_event, within_event = correlate_ims.create_random_fields(
-        N, R, stations, emp_df
+    random_IMs, between_event, within_event = correlate_ims.generate_im_values(
+        N, R, emp_df
     )
 
     ln_im_values, between, within = (
@@ -64,7 +68,7 @@ def main(
         stations_df,
         plot_dir,
         f"{fault}_{IM.file_format()}_Realisation",
-        label=f"IM",
+        label=f"{IM}",
         n_procs=n_procs,
         cpt_max=0.125,
     )

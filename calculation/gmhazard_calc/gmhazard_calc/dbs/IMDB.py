@@ -258,6 +258,19 @@ class IMDB(BaseDB):
 
     @staticmethod
     def add_rupture_lookup(db_ffp: str, n_procs: int):
+        """
+        Add a lookup to get stations for each rupture and to get the full list of rupture names
+        WARNING:
+        Could take a long time for large DB's such as a Distributed Seismicity db
+        Should only be used for a Fault db
+
+        Parameters
+        ----------
+        db_ffp: str
+            Full file path to the db file to add the rupture lookup
+        n_procs: int
+            Number of processes to use
+        """
         with IMDB.get_imdb(db_ffp) as db:
             stations = db.sites().index.values
 
@@ -330,7 +343,7 @@ class IMDBParametric(IMDB):
 
     @check_open
     def im_data(
-        self, station: str, im: Optional[Union[List[IM], IM]] = None, inter_intra: bool = False,
+        self, station: str, im: Optional[Union[List[IM], IM]] = None, incl_within_between_sigma: bool = False,
     ) -> Union[pd.DataFrame, pd.Series, None]:
         """Retrieves the IM parameters for the ruptures
         at a specific site
@@ -341,8 +354,9 @@ class IMDBParametric(IMDB):
         im: IM or list[IM], optional
             IM(s) of interest
             if this is unspecified then it is equivalent to setting all IMs
-        inter_intra: bool
-            Boolean flag to determine to either extract normal mu and sigma or mu, sigma_inter and sigma_intra
+        incl_within_between_sigma: bool
+            Boolean flag to determine to either extract mu and total standard deviation or
+            mu, between-event and within-event standard deviation
 
         Returns
         -------
@@ -378,8 +392,8 @@ class IMDBParametric(IMDB):
         if im is not None:
             ims = im if isinstance(im, list) else [im]
             # Setting columns to extract from the DB
-            if inter_intra:
-                single_im_columns = ["mu", "sigma_inter", "sigma_intra"]
+            if incl_within_between_sigma:
+                single_im_columns = ["mu", "between_event_sigma", "within_event_sigma"]
                 im_columns = list(
                     (itertools.chain(*[(f"{im}", f"{im}_sigma_inter", f"{im}_sigma_intra") for im in set(ims)]))
                 )

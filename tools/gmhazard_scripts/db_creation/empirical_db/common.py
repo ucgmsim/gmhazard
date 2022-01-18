@@ -139,6 +139,7 @@ def write_data_and_close(
     psa_periods=None,
     ims=None,
     tect_type_model_dict_ffp=None,
+    rupture_lookup=False,
 ):
     """
     Writes metadata, rupture_df and closes the IMDBs for the ones opened by open_imdbs
@@ -148,6 +149,7 @@ def write_data_and_close(
     :param site_df: site dataframe to save in IMDB - what sites were the input for creating this IMDB
     :param vs30_ffp: filepath to vs30 file
     :param ims: List of IMs these DBs contain
+    :param rupture_lookup: Flag to add rupture lookup data to the imdb
     :return: None
     """
 
@@ -170,6 +172,8 @@ def write_data_and_close(
             ims=np.asarray(im_list, dtype=str),
         )
         imdb_dict[imdb_keys].close()
+        if rupture_lookup:
+            imdb_dict[imdb_keys].add_rupture_lookup(imdb_dict[imdb_keys].db_ffp, 1)
 
 
 def get_max_dist_zfac_scaled(site):
