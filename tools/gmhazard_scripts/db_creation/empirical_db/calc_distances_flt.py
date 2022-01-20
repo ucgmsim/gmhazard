@@ -26,6 +26,7 @@ def compute_site_source_distances(
     stations: np.ndarray,
     faults: Dict[str, Union[nhm.NHMFault, dict]],
     calculate_directivity: bool = True,
+    n_procs: int = 1
 ):
     """
     Computes the site-source distances for the given stations and faults
@@ -41,9 +42,12 @@ def compute_site_source_distances(
         The first format is used for calculating site-source distances for
         finite faults and the 2nd for computing site-source distances for
         point sources
-    calculate_directivity: bool
+    calculate_directivity: bool, optional
         True to calculate directivity and return numpy array of
          site directivity amplification values per fault
+    n_procs: int, optional
+        Number of processes to use for the directivity
+        calculation
 
     Returns
     -------
@@ -114,7 +118,7 @@ def compute_site_source_distances(
                 n_hypo_data,
                 cur_fault_data.mw,
                 cur_fault_data.rake,
-                n_procs=4,
+                n_procs=n_procs,
             )
 
             directivity[index, ~too_far_mask, :31] = fd
@@ -156,6 +160,7 @@ def load_args():
     parser.add_argument(
         "--gcmt_ffp", type=str, help="Path to the GCMT csv file", default=None
     )
+    parser.add_argument("--n_procs", help="Number of processes to use for the directivity calculation", type=int, default=4)
 
     args = parser.parse_args()
 
@@ -212,7 +217,7 @@ def main():
         fault_df = pd.DataFrame(sorted(nhm_data.keys()), columns=["fault_name"])
 
         site_source_distance_data, directivity_data = compute_site_source_distances(
-            stations.to_numpy(), nhm_data
+            stations.to_numpy(), nhm_data, n_procs=args.n_procs
         )
     else:
         fault_data_ffp = os.path.abspath(args.gcmt_ffp)
