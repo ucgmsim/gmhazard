@@ -26,7 +26,7 @@ def compute_site_source_distances(
     stations: np.ndarray,
     faults: Dict[str, Union[nhm.NHMFault, dict]],
     calculate_directivity: bool = True,
-    n_procs: int = 1
+    n_procs: int = 1,
 ):
     """
     Computes the site-source distances for the given stations and faults
@@ -107,7 +107,10 @@ def compute_site_source_distances(
         distances[index, :]["rjb"][~too_far_mask] = rjb[~too_far_mask]
         distances[index, :]["rtvz"] = float("nan")
 
-        if calculate_directivity and cur_fault_data.tectonic_type in DIR_SUPPORTED_TECTONIC_TYPYES:
+        if (
+            calculate_directivity
+            and cur_fault_data.tectonic_type in DIR_SUPPORTED_TECTONIC_TYPYES
+        ):
             n_hypo_data = gc.directivity.NHypoData(
                 gc.constants.HypoMethod.LATIN_HYPERCUBE, nhypo=100
             )
@@ -160,7 +163,19 @@ def load_args():
     parser.add_argument(
         "--gcmt_ffp", type=str, help="Path to the GCMT csv file", default=None
     )
-    parser.add_argument("--n_procs", help="Number of processes to use for the directivity calculation", type=int, default=4)
+    parser.add_argument(
+        "--n_procs",
+        help="Number of processes to use for the directivity calculation",
+        type=int,
+        default=4,
+    )
+    parser.add_argument(
+        "--no_directivity",
+        action="store_false",
+        dest="directivity",
+        help="Flag to turn off directivity calculation",
+        default=True,
+    )
 
     args = parser.parse_args()
 
@@ -217,7 +232,10 @@ def main():
         fault_df = pd.DataFrame(sorted(nhm_data.keys()), columns=["fault_name"])
 
         site_source_distance_data, directivity_data = compute_site_source_distances(
-            stations.to_numpy(), nhm_data, n_procs=args.n_procs
+            stations.to_numpy(),
+            nhm_data,
+            calculate_directivity=args.directivity,
+            n_procs=args.n_procs,
         )
     else:
         fault_data_ffp = os.path.abspath(args.gcmt_ffp)
