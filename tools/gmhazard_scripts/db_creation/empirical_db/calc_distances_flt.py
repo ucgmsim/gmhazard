@@ -19,6 +19,8 @@ POINTS_PER_KILOMETER = 1 / 0.1
 RJB_MAX_DIST = 500
 STATION_TOO_FAR_KEY = -1
 
+DIR_SUPPORTED_TECTONIC_TYPYES = ["ACTIVE_SHALLOW", "VOLCANIC"]
+
 
 def compute_site_source_distances(
     stations: np.ndarray,
@@ -101,7 +103,7 @@ def compute_site_source_distances(
         distances[index, :]["rjb"][~too_far_mask] = rjb[~too_far_mask]
         distances[index, :]["rtvz"] = float("nan")
 
-        if calculate_directivity:
+        if calculate_directivity and cur_fault_data.tectonic_type in DIR_SUPPORTED_TECTONIC_TYPYES:
             n_hypo_data = gc.directivity.NHypoData(
                 gc.constants.HypoMethod.LATIN_HYPERCUBE, nhypo=100
             )
@@ -109,7 +111,6 @@ def compute_site_source_distances(
                 srf_points,
                 srf_header,
                 stations[~too_far_mask, :2],
-                # stations[:, :2],
                 n_hypo_data,
                 cur_fault_data.mw,
                 cur_fault_data.rake,
