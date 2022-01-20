@@ -1,4 +1,6 @@
 import argparse
+import time
+
 import numpy as np
 import os
 import pandas as pd
@@ -9,11 +11,12 @@ from IM_calculation.source_site_dist import src_site_dist
 
 import gmhazard_calc as gc
 
-POINTS_PER_KILOMETER = (
-    1 / 0.1
-)  # 1km divided by distance between points (1km/0.1km gives 100m grid)
+# 1km divided by distance between points (1km/0.1km gives 100m grid)
+POINTS_PER_KILOMETER = 1 / 0.1
 
-RJB_MAX_DIST = 500  # Calculation distance is 200, but larger distances are required for simulation disaggregation
+# Calculation distance is 200, but larger
+# distances are required for simulation disaggregation
+RJB_MAX_DIST = 500
 STATION_TOO_FAR_KEY = -1
 
 
@@ -37,7 +40,8 @@ def compute_site_source_distances(
         finite faults and the 2nd for computing site-source distances for
         point sources
     calculate_directivity: bool
-        True to calculate directivity and return numpy array of site directivity amplification values per fault
+        True to calculate directivity and return numpy array of
+         site directivity amplification values per fault
 
     Returns
     -------
@@ -60,7 +64,7 @@ def compute_site_source_distances(
         np.full(
             fill_value=0,
             shape=(len(faults), len(stations), len(gc.im.DEFAULT_PSA_PERIODS) * 2),
-            dtype=np.float64
+            dtype=np.float64,
         )
         if calculate_directivity
         else None
@@ -92,30 +96,28 @@ def compute_site_source_distances(
         rrup, rjb = src_site_dist.calc_rrup_rjb(srf_points, stations)
 
         too_far_mask = rjb > RJB_MAX_DIST
-
         distances[index, :]["fault_id"] = index
-
         distances[index, :]["rrup"][~too_far_mask] = rrup[~too_far_mask]
         distances[index, :]["rjb"][~too_far_mask] = rjb[~too_far_mask]
-
         distances[index, :]["rtvz"] = float("nan")
 
         if calculate_directivity:
             n_hypo_data = gc.directivity.NHypoData(
                 gc.constants.HypoMethod.LATIN_HYPERCUBE, nhypo=100
             )
-
             fd, _, phi_red = gc.directivity.compute_fault_directivity(
                 srf_points,
                 srf_header,
-                stations[:, :2],
+                stations[~too_far_mask, :2],
+                # stations[:, :2],
                 n_hypo_data,
                 cur_fault_data.mw,
                 cur_fault_data.rake,
+                n_procs=4,
             )
 
-            directivity[index, :, :31] = fd
-            directivity[index, :, 31:] = phi_red
+            directivity[index, ~too_far_mask, :31] = fd
+            directivity[index, ~too_far_mask, 31:] = phi_red
 
         if srf_header is not None:
             (
@@ -143,15 +145,15 @@ def load_args():
         help="Path to the DB to be written",
     )
     parser.add_argument(
+        "station_file",
+        help="List of stations for a specific domain. Source to site distances "
+        "will be calculated for all stations in the station_file.",
+    )
+    parser.add_argument(
         "--nhm_file", type=str, help="Path to the NHM ERF", default=None
     )
     parser.add_argument(
         "--gcmt_ffp", type=str, help="Path to the GCMT csv file", default=None
-    )
-    parser.add_argument(
-        "station_file",
-        help="List of stations for a specific domain. Source to site distances "
-        "will be calculated for all stations in the station_file.",
     )
 
     args = parser.parse_args()

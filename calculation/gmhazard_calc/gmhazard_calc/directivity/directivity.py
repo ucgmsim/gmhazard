@@ -1,4 +1,5 @@
 import math
+import multiprocessing as mp
 from typing import Sequence
 from dataclasses import dataclass
 
@@ -122,6 +123,7 @@ def compute_fault_directivity(
     mag: float,
     rake: float,
     periods: Sequence[float] = DEFAULT_PSA_PERIODS,
+    n_procs: int = 1,
 ):
     """
     Does the computation of directivity for a fault
@@ -157,40 +159,63 @@ def compute_fault_directivity(
         constants.EventType.from_rake(rake),
     )
 
-    # Creating the array to store all fdi values
-    fdi_array = np.zeros((n_hypo_data.nhypo, len(sites), len(periods)))
-    phired_array = np.zeros((n_hypo_data.nhypo, len(sites), len(periods)))
-    for index, planes in enumerate(hypo_planes):
-        # Gets the plane index of the hypocentre
-        plane_index = plane_ind[index]
+    if n_procs == 1:
+        fdi, phired = [], []
+        for ix, planes in enumerate(hypo_planes):
+            cur_fdi, (cur_phi_red, cur_predictor_functions, cur_other) = _compute_directivity_effect(
+                lon_lat_depth,
+                planes,
+                plane_ind[ix],
+                sites,
+                nominal_strike,
+                nominal_strike2,
+                mag,
+                rake,
+                periods,
+            )
 
-        fdi, (phi_red, predictor_functions, other) = _compute_directivity_effect(
-            lon_lat_depth,
-            planes,
-            plane_index,
-            sites,
-            nominal_strike,
-            nominal_strike2,
-            mag,
-            rake,
-            periods,
-        )
+            fdi.append(cur_fdi)
+            phired.append(cur_fdi)
+    else:
+        # Compute directivity for all hypocentres
+        with mp.Pool(n_procs) as pool:
+            results = pool.starmap(
+                _compute_directivity_effect,
+                [
+                    (
+                        lon_lat_depth,
+                        planes,
+                        plane_ind[ix],
+                        sites,
+                        nominal_strike,
+                        nominal_strike2,
+                        mag,
+                        rake,
+                        periods,
+                    )
+                    for (ix, cur_plane) in enumerate(hypo_planes)
+                ],
+            )
 
-        fdi_array[index] = fdi
-        phired_array[index] = phi_red
+        # Combine results
+        fdi = [cur_result[0] for cur_result in results]
+        phired = [cur_result[1][0] for cur_result in results]
+
+    fdi = np.stack(fdi, axis=0)
+    phired = np.stack(phired, axis=0)
 
     if n_hypo_data.method == constants.HypoMethod.UNIFORM_GRID:
         # Only apply weights if method type is uniform grid
-        fdi_average = weights[:, None, None] * fdi_array
-        phired_average = weights[:, None, None] * phired_array
+        fdi_average = weights[:, None, None] * fdi
+        phired_average = weights[:, None, None] * phired
         fdi_average = np.sum(fdi_average, axis=0)
         phired_average = np.sum(phired_average, axis=0)
     else:
         # Just average the fdi array for all other methods
-        fdi_average = np.mean(fdi_array, axis=0)
-        phired_average = np.mean(phired_array, axis=0)
+        fdi_average = np.mean(fdi, axis=0)
+        phired_average = np.mean(phired, axis=0)
 
-    return fdi_average, fdi_array, phired_average
+    return fdi_average, fdi, phired_average
 
 
 def _compute_directivity_effect(
