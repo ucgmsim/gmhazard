@@ -161,10 +161,10 @@ def compute_fault_directivity(
 
     if n_procs == 1:
         fdi, phired = [], []
-        for ix, planes in enumerate(hypo_planes):
+        for ix, cur_planes in enumerate(hypo_planes):
             cur_fdi, (cur_phi_red, cur_predictor_functions, cur_other) = _compute_directivity_effect(
                 lon_lat_depth,
-                planes,
+                cur_planes,
                 plane_ind[ix],
                 sites,
                 nominal_strike,
@@ -175,7 +175,7 @@ def compute_fault_directivity(
             )
 
             fdi.append(cur_fdi)
-            phired.append(cur_fdi)
+            phired.append(cur_phi_red)
     else:
         # Compute directivity for all hypocentres
         with mp.Pool(n_procs) as pool:
@@ -184,7 +184,7 @@ def compute_fault_directivity(
                 [
                     (
                         lon_lat_depth,
-                        planes,
+                        cur_planes,
                         plane_ind[ix],
                         sites,
                         nominal_strike,
@@ -193,7 +193,7 @@ def compute_fault_directivity(
                         rake,
                         periods,
                     )
-                    for (ix, cur_plane) in enumerate(hypo_planes)
+                    for (ix, cur_planes) in enumerate(hypo_planes)
                 ],
             )
 
