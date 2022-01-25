@@ -5,6 +5,7 @@ Writes to multiple empirical DB depending on the config
 """
 import math
 import multiprocessing as mp
+import time
 from typing import Dict, Sequence
 import argparse
 
@@ -59,6 +60,7 @@ def calculate_flt(
     for ix in range(math.ceil(n_stations / 1000)):
         cur_site_df = site_df.iloc[(ix * 1000) : (ix + 1) * 1000]
 
+        start_time = time.time()
         if n_procs == 1:
             im_data = []
             for _, cur_site in cur_site_df.iterrows():
@@ -97,7 +99,8 @@ def calculate_flt(
                     ],
                 )
 
-        print(f"Computed data for sites {ix * 1000} - {(ix * 1) * 1000}, writing to DB")
+        print(f"Computed data for sites {ix * 1000} - {(ix * 1) * 1000}, "
+              f"took {time.time() - start_time} seconds; writing to DB")
         for cur_site_name, cur_im_data in im_data:
             common.write_result_to_db(cur_im_data, imdb_dict, cur_site_name)
 
