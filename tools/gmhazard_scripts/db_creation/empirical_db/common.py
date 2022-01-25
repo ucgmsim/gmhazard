@@ -103,7 +103,7 @@ def get_work(distance_store, vs30_file, z_file, rank, size, stations_calculated=
     fault_df["fault_name"] = fault_df["fault_name"].astype("category")
 
     n_stations = len(site_to_do_df)
-    work = site_to_do_df[rank::size]
+    work = site_to_do_df[rank::size] if rank is not None and size is not None else None
 
     return fault_df, n_stations, site_df, work
 
@@ -267,7 +267,7 @@ def calculate_emp_site(
     z1p0,
     z2p5,
     station_name,
-    tect_type_model_dict_ffp,
+    tect_type_model_dict,
     max_rjb=MAX_RJB,
     dist_filter_by_mag=False,
     return_vals=False,
@@ -301,8 +301,6 @@ def calculate_emp_site(
     z2p5 = None if z1p0 is None or np.isnan(float(z2p5)) else z2p5
     site = Site(vs30=vs30, z1p0=z1p0, z2p5=z2p5)
 
-    tect_type_model_dict = empirical_factory.read_model_dict(tect_type_model_dict_ffp)
-
     distance_df = fault_df.merge(
         distance_store.station_data(station_name),
         left_on="fault_name",
@@ -313,9 +311,10 @@ def calculate_emp_site(
         distance_df, left_on="fault_name", right_on="fault_name"
     )
 
-    if use_directivity:
+    dir_data = distance_store.station_directivity_data(station_name)
+    if use_directivity and dir_data is not None:
         directivity_df = fault_df.merge(
-            distance_store.station_directivity_data(station_name),
+            dir_data,
             left_on="fault_name",
             right_index=True,
         )
@@ -326,11 +325,10 @@ def calculate_emp_site(
         max_dist = max_rjb
     matching_df = matching_df[matching_df["rjb"] < max_dist]
 
-    with mp.Pool(n_procs) as p:
-        results = p.starmap(
-            __process_rupture,
-            [
-                (
+    if n_procs == 1:
+        results = []
+        for index, rupture in matching_df.iterrows():
+            results.append(__process_rupture(
                     rupture,
                     site,
                     im_types,
@@ -341,9 +339,26 @@ def calculate_emp_site(
                     {key: {} for key in imdb_dict.keys()},
                     use_directivity,
                 )
-                for index, rupture in matching_df.iterrows()
-            ],
-        )
+            )
+    else:
+        with mp.Pool(n_procs) as p:
+            results = p.starmap(
+                __process_rupture,
+                [
+                    (
+                        rupture,
+                        site,
+                        im_types,
+                        tect_type_model_dict,
+                        directivity_df.iloc[index] if use_directivity else None,
+                        psa_periods,
+                        keep_sigma_components,
+                        {key: {} for key in imdb_dict.keys()},
+                        use_directivity,
+                    )
+                    for index, rupture in matching_df.iterrows()
+                ],
+            )
 
     im_result_dict = {key: {} for key in imdb_dict.keys()}
     for cur_rupture_name, cur_fault_im_dict in results:

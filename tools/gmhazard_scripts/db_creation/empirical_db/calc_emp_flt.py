@@ -3,25 +3,17 @@
 
 Writes to multiple empirical DB depending on the config
 """
-
+import math
+import multiprocessing as mp
+from typing import Dict, Sequence
 import argparse
 
-from mpi4py import MPI
+import numpy as np
+import pandas as pd
 
 import gmhazard_calc as sc
 import common
-
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
-size = comm.Get_size()
-if size > 1:
-    print(
-        "MPI multiprocessing is unsupported at this stage - "
-        "please re-run again with only one process"
-    )
-    exit()
-master = 0
-is_master = not rank
+from empirical.util import empirical_factory
 
 
 def calculate_flt(
@@ -36,6 +28,7 @@ def calculate_flt(
     keep_sigma=False,
     suffix=None,
     rupture_lookup=False,
+    n_procs: int = 1,
 ):
     nhm_data = sc.utils.flt_nhm_to_rup_df(nhm_ffp)
 
@@ -46,53 +39,118 @@ def calculate_flt(
         suffix=suffix,
     )
 
-    with sc.dbs.SiteSourceDB(site_source_db_ffp) as distance_store:
-        fault_df, n_stations, site_df, work = common.get_work(
-            distance_store, vs30_ffp, z_ffp, rank, size
+    with sc.dbs.SiteSourceDB(site_source_db_ffp, writeable=False) as distance_store:
+        distance_stations = np.asarray(distance_store.stored_stations())
+
+        fault_df, _, site_df, work = common.get_work(
+            distance_store, vs30_ffp, z_ffp, None, None
         )
 
-        rupture_df = fault_df.copy(deep=True)
-        rupture_df.columns = ["rupture_name"]
+    # Drop stations for which there is no distance data
+    site_df = site_df.loc[np.isin(site_df.index.values, distance_stations)]
+    # n_stations = site_df.shape[0]
+    n_stations = 50
 
-        for site_index, site in work.iterrows():
-            max_dist = common.get_max_dist_zfac_scaled(site)
-            if distance_store.has_station_data(site.name):
-                print(
-                    f"Processing site {(site_df.index.get_loc(site_index) + 1)} / {n_stations} - Rank: {rank}"
+    tect_type_model_dict = empirical_factory.read_model_dict(tect_type_model_dict_ffp)
+
+    rupture_df = fault_df.copy(deep=True)
+    rupture_df.columns = ["rupture_name"]
+
+    for ix in range(math.ceil(n_stations / 1000)):
+        cur_site_df = site_df.iloc[(ix * 1000) : (ix + 1) * 1000]
+
+        if n_procs == 1:
+            im_data = []
+            for _, cur_site in cur_site_df.iterrows():
+                im_data.append(
+                    _process_site(
+                        cur_site,
+                        site_source_db_ffp,
+                        fault_df,
+                        rupture_df,
+                        keep_sigma,
+                        ims,
+                        psa_periods,
+                        imdb_dict,
+                        nhm_data,
+                        tect_type_model_dict,
+                    )
                 )
-                common.calculate_emp_site(
-                    ims,
-                    psa_periods,
-                    imdb_dict,
-                    fault_df,
-                    rupture_df,
-                    distance_store,
-                    nhm_data,
-                    site.vs30,
-                    site.z1p0 if hasattr(site, "z1p0") else None,
-                    site.z2p5 if hasattr(site, "z2p5") else None,
-                    site.name,
-                    tect_type_model_dict_ffp,
-                    max_dist,
-                    keep_sigma_components=keep_sigma,
-                    use_directivity=distance_store.has_station_directivity_data(site.name)
+        else:
+            with mp.Pool(n_procs) as p:
+                im_data = p.starmap(
+                    _process_site,
+                    [
+                        (
+                            cur_site,
+                            site_source_db_ffp,
+                            fault_df,
+                            rupture_df,
+                            keep_sigma,
+                            ims,
+                            psa_periods,
+                            imdb_dict,
+                            nhm_data,
+                            tect_type_model_dict,
+                        )
+                        for _, cur_site in cur_site_df.iterrows()
+                    ],
                 )
-            else:
-                print(
-                    f"Skipping site {(site_df.index.get_loc(site_index) + 1)} / {n_stations} - Rank: {rank}"
-                )
-    if is_master:
-        common.write_data_and_close(
-            imdb_dict,
-            nhm_ffp,
-            rupture_df,
-            site_df,
-            vs30_ffp,
-            psa_periods,
+
+        print(f"Computed data for sites {ix * 1000} - {(ix * 1) * 1000}, writing to DB")
+        for cur_site_name, cur_im_data in im_data:
+            common.write_result_to_db(cur_im_data, imdb_dict, cur_site_name)
+
+    common.write_data_and_close(
+        imdb_dict,
+        nhm_ffp,
+        rupture_df,
+        site_df,
+        vs30_ffp,
+        psa_periods,
+        ims,
+        tect_type_model_dict_ffp,
+        rupture_lookup=rupture_lookup,
+    )
+
+
+def _process_site(
+    site,
+    site_source_db_ffp: str,
+    fault_df: pd.DataFrame,
+    rupture_df: pd.DataFrame,
+    keep_sigma: bool,
+    ims: Sequence[str],
+    psa_periods,
+    imdb_dict,
+    nhm_data,
+    tect_type_model_dict: Dict,
+):
+    with sc.dbs.SiteSourceDB(site_source_db_ffp, writeable=False) as distance_store:
+        max_dist = common.get_max_dist_zfac_scaled(site)
+        print(f"Processing site {site.name}")
+        result = common.calculate_emp_site(
             ims,
-            tect_type_model_dict_ffp,
-            rupture_lookup=rupture_lookup,
+            psa_periods,
+            imdb_dict,
+            fault_df,
+            rupture_df,
+            distance_store,
+            nhm_data,
+            site.vs30,
+            site.z1p0 if hasattr(site, "z1p0") else None,
+            site.z2p5 if hasattr(site, "z2p5") else None,
+            site.name,
+            tect_type_model_dict,
+            max_dist,
+            keep_sigma_components=keep_sigma,
+            # Change this to be user argument...
+            use_directivity=True,
+            n_procs=1,
+            return_vals=True,
         )
+
+        return site.name, result
 
 
 def parse_args():
@@ -102,12 +160,12 @@ def parse_args():
     parser.add_argument("vs30_file")
     parser.add_argument("output_dir")
     parser.add_argument(
-        "--z-file",
-        help="File name of the Z data",
+        "--z-file", help="File name of the Z data",
     )
     parser.add_argument(
         "--periods",
         default=common.PERIOD,
+        type=float,
         nargs="+",
         help="Which pSA periods to calculate for",
     )
@@ -129,10 +187,7 @@ def parse_args():
         help="flag to keep sigma_inter and sigma_intra instead of sigma_total",
     )
     parser.add_argument(
-        "--suffix",
-        "-s",
-        help="suffix for the end of the imdb files",
-        default=None,
+        "--suffix", "-s", help="suffix for the end of the imdb files", default=None,
     )
     parser.add_argument(
         "--rupture_lookup",
@@ -140,15 +195,13 @@ def parse_args():
         help="flag to run rupture lookup function when creating the db",
         default=False,
     )
+    parser.add_argument("--n-procs", type=int, help="Number of processes to use", default=1)
 
     return parser.parse_args()
 
 
 def calculate_emp_flt():
-    args = None
-    if is_master:
-        args = parse_args()
-    args = comm.bcast(args, root=master)
+    args = parse_args()
     calculate_flt(
         args.nhm_ffp,
         args.site_source_db,
@@ -161,6 +214,7 @@ def calculate_emp_flt():
         args.keep_sigma,
         suffix=args.suffix,
         rupture_lookup=args.rupture_lookup,
+        n_procs=args.n_procs,
     )
 
 

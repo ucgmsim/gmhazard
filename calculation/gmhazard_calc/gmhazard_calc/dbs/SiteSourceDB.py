@@ -42,9 +42,17 @@ class SiteSourceDB(BaseDB):
         """Get the input stations/site info in the db"""
         return self._db["sites"]
 
+    @check_open
     def stored_stations(self):
         """Get the stations that have data stored in the db"""
-        pass
+        if not self._keys_cache:
+            self._keys_cache = set(self._db.keys())
+
+        return [
+            cur_key.split("_")[-1]
+            for cur_key in self._keys_cache
+            if cur_key.startswith("/distance")
+        ]
 
     @check_open
     def station_data(self, station_name: str):
@@ -73,6 +81,11 @@ class SiteSourceDB(BaseDB):
         """
         Checks if there is data stored for the station.
         If a station was used as an input but did not contain data it will return false.
+
+        Note: The first call to this function is very slow, therefore
+        this should only be used when doing multiple check.
+        Otherwise use station_data directly and check for None
+
         :param station_name: Station to be checked
         :return: True if station has data, False otherwise
         """
@@ -88,6 +101,11 @@ class SiteSourceDB(BaseDB):
         """
         Checks if there is directivity data stored for the station.
         If a station was used as an input but did not contain data it will return false.
+
+        Note: The first call to this function is very slow, therefore
+        this should only be used when doing multiple check.
+        Otherwise use station_directivity_data directly and check for None
+
         :param station_name: Station to be checked
         :return: True if station has directivity data, False otherwise
         """
