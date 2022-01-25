@@ -49,8 +49,7 @@ def calculate_flt(
 
     # Drop stations for which there is no distance data
     site_df = site_df.loc[np.isin(site_df.index.values, distance_stations)]
-    # n_stations = site_df.shape[0]
-    n_stations = 50
+    n_stations = site_df.shape[0]
 
     tect_type_model_dict = empirical_factory.read_model_dict(tect_type_model_dict_ffp)
 
@@ -99,8 +98,8 @@ def calculate_flt(
                     ],
                 )
 
-        print(f"Computed data for sites {ix * 1000} - {(ix * 1) * 1000}, "
-              f"took {time.time() - start_time} seconds; writing to DB")
+        print(f"Computed data for sites {ix * 1000} - {(ix + 1) * 1000}, "
+              f"took {time.time() - start_time:.2f} seconds; writing to DB")
         for cur_site_name, cur_im_data in im_data:
             common.write_result_to_db(cur_im_data, imdb_dict, cur_site_name)
 
