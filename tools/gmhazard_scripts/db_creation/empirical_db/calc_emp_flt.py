@@ -100,8 +100,10 @@ def calculate_flt(
 
         print(f"Computed data for sites {ix * 1000} - {(ix + 1) * 1000}, "
               f"took {time.time() - start_time:.2f} seconds; writing to DB")
-        for cur_site_name, cur_im_data in im_data:
-            common.write_result_to_db(cur_im_data, imdb_dict, cur_site_name)
+        # for cur_site_name, cur_im_data in im_data:
+        #     common.write_result_to_db(cur_im_data, imdb_dict, cur_site_name)
+        write_result_to_db(im_data, imdb_dict)
+        print("wtf")
 
     common.write_data_and_close(
         imdb_dict,
@@ -115,6 +117,16 @@ def calculate_flt(
         rupture_lookup=rupture_lookup,
     )
 
+def write_result_to_db(im_data, imdb_dict):
+    s_time = time.perf_counter()
+    for imdb_key in imdb_dict.keys():
+        imdb_dict[imdb_key].open()
+        for cur_site_name, cur_im_data in im_data:
+            cur_im_df = cur_im_data[imdb_key]
+            if not cur_im_df.empty:
+                imdb_dict[imdb_key].write_im_data(cur_site_name, cur_im_df)
+        imdb_dict[imdb_key].close()
+    print(f"Took {time.perf_counter() - s_time:.2f}s to write {len(im_data)} stations.")
 
 def _process_site(
     site,
