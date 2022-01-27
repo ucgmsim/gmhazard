@@ -1,8 +1,7 @@
+import os
 import argparse
-import time
 
 import numpy as np
-import os
 import pandas as pd
 from typing import Union, Dict
 
