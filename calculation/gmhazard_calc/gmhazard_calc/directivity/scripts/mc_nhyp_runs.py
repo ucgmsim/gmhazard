@@ -44,49 +44,65 @@ def perform_mp_directivity(
         gmhazard_calc.HypoMethod(method), nhypo, hypo_along_strike, hypo_down_dip
     )
 
-    total_fd = np.zeros((repeats, len(site_coords), 1))
-    total_fd_array = np.zeros((repeats, nhypo, len(site_coords), 1))
 
-    if repeat_n_procs == 1:
-        for i in range(repeats):
-            fdi, fdi_array, phi_red = directivity.compute_fault_directivity(
-                lon_lat_depth,
-                planes,
-                site_coords,
-                n_hypo_data,
-                fault.mw,
-                fault.rake,
-                periods=[period],
-                n_procs=hypo_n_procs,
-            )
+    if n_hypo_data.method in [gmhazard_calc.HypoMethod.MONTE_CARLO, gmhazard_calc.HypoMethod.LATIN_HYPERCUBE]:
+        total_fd = np.zeros((repeats, len(site_coords), 1))
+        total_fd_array = np.zeros((repeats, nhypo, len(site_coords), 1))
 
-        total_fd[i] = fdi
-        total_fd_array[i] = fdi_array
+        if repeat_n_procs == 1:
+            for i in range(repeats):
+                fdi, fdi_array, phi_red = directivity.compute_fault_directivity(
+                    lon_lat_depth,
+                    planes,
+                    site_coords,
+                    n_hypo_data,
+                    fault.mw,
+                    fault.rake,
+                    periods=[period],
+                    n_procs=hypo_n_procs,
+                )
+
+            total_fd[i] = fdi
+            total_fd_array[i] = fdi_array
+        else:
+            with mp.Pool(repeat_n_procs) as pool:
+                results = pool.starmap(
+                    directivity.compute_fault_directivity,
+                    [
+                        (
+                            lon_lat_depth,
+                            planes,
+                            site_coords,
+                            n_hypo_data,
+                            fault.mw,
+                            fault.rake,
+                            [period],
+                            1,
+                        )
+                        for ix in range(repeats)
+                    ],
+                )
+
+                for ix, cur_result in enumerate(results):
+                    total_fd[ix] = cur_result[0]
+                    total_fd_array[ix] = cur_result[1]
+
+        fdi_average = np.mean(total_fd, axis=0)
+        fdi_average = fdi_average.reshape((grid_space, grid_space))
     else:
-        with mp.Pool(repeat_n_procs) as pool:
-            results = pool.starmap(
-                directivity.compute_fault_directivity,
-                [
-                    (
-                        lon_lat_depth,
-                        planes,
-                        site_coords,
-                        n_hypo_data,
-                        fault.mw,
-                        fault.rake,
-                        [period],
-                        1,
-                    )
-                    for ix in range(repeats)
-                ],
-            )
-
-            for ix, cur_result in enumerate(results):
-                total_fd[ix] = cur_result[0]
-                total_fd_array[ix] = cur_result[1]
-
-    fdi_average = np.mean(total_fd, axis=0)
-    fdi_average = fdi_average.reshape((grid_space, grid_space))
+        fdi, fdi_array, phi_red = directivity.compute_fault_directivity(
+            lon_lat_depth,
+            planes,
+            site_coords,
+            n_hypo_data,
+            fault.mw,
+            fault.rake,
+            periods=[period],
+            n_procs=hypo_n_procs,
+        )
+        total_fd = fdi
+        fdi_average = fdi.reshape((100, 100))
+        total_fd_array = fdi_array
 
     title = f"{fault_name} Length={fault.length} Dip={fault.dip} Rake={fault.rake}"
     directivity.validation.plots.plot_fdi(
@@ -124,10 +140,10 @@ def parse_args():
         "--faults", default=faults, nargs="+", help="List of faults to calculate",
     )
     parser.add_argument(
-        "--nstrikes", default=None, nargs="+", help="List of hypocentres along strike",
+        "--nstrikes", default=None, nargs="+", type=int, help="List of hypocentres along strike",
     )
     parser.add_argument(
-        "--ndips", default=None, nargs="+", help="List of hypocentres down dip",
+        "--ndips", default=None, nargs="+", type=int, help="List of hypocentres down dip",
     )
     parser.add_argument(
         "--nhypos", default=None, nargs="+", type=int, help="List of hypocentre totals",
@@ -151,7 +167,7 @@ def parse_args():
     )
     parser.add_argument(
         "--repeat_n_procs",
-        default=4,
+        default=1,
         type=int,
         help="Number of processes to use to process the number of repeats."
         "Note: Only one of repeat_n_procs and hypo_n_procs can be greater than one",
@@ -170,7 +186,7 @@ def parse_args():
 if __name__ == "__main__":
     args, nhm_dict = parse_args()
 
-    n_hypo_comb = len(args.nhypos)
+    n_hypo_comb = len(args.nhypos) if args.nhypos is not None else len(args.nstrikes)
 
     start_time = time.time()
     for fault in args.faults:
