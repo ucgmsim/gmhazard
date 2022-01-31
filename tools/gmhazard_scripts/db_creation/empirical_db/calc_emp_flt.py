@@ -4,16 +4,16 @@
 Writes to multiple empirical DB depending on the config
 """
 import math
-import multiprocessing as mp
 import time
-from typing import Dict, Sequence
 import argparse
+import multiprocessing as mp
+from typing import Dict, Sequence
 
 import numpy as np
 import pandas as pd
 
-import gmhazard_calc as sc
 import common
+import gmhazard_calc as sc
 from empirical.util import empirical_factory
 
 
@@ -106,7 +106,7 @@ def calculate_flt(
             f"Computed data for sites {ix * 1000} - {(ix + 1) * 1000}, "
             f"took {time.time() - start_time:.2f} seconds; writing to DB"
         )
-        write_result_to_db(im_data, imdb_dict)
+        _write_result_to_db(im_data, imdb_dict)
 
     common.write_metadata_and_close(
         imdb_dict,
@@ -121,7 +121,7 @@ def calculate_flt(
     )
 
 
-def write_result_to_db(im_data, imdb_dict):
+def _write_result_to_db(im_data, imdb_dict):
     s_time = time.perf_counter()
     for imdb_key in imdb_dict.keys():
         imdb_dict[imdb_key].open()
@@ -179,8 +179,7 @@ def parse_args():
     parser.add_argument("vs30_file")
     parser.add_argument("output_dir")
     parser.add_argument(
-        "--z-file",
-        help="File name of the Z data",
+        "--z-file", help="File name of the Z data",
     )
     parser.add_argument(
         "--periods",
@@ -207,10 +206,7 @@ def parse_args():
         help="flag to keep sigma_inter and sigma_intra instead of sigma_total",
     )
     parser.add_argument(
-        "--suffix",
-        "-s",
-        help="suffix for the end of the imdb files",
-        default=None,
+        "--suffix", "-s", help="suffix for the end of the imdb files", default=None,
     )
     parser.add_argument(
         "--rupture_lookup",

@@ -52,7 +52,7 @@ def perform_mp_directivity(
 
         if repeat_n_procs == 1:
             for i in range(repeats):
-                fdi, fdi_array, phi_red = directivity.compute_fault_directivity(
+                fdi, fdi_array, _ = directivity.compute_fault_directivity(
                     lon_lat_depth,
                     planes,
                     site_coords,
@@ -91,7 +91,7 @@ def perform_mp_directivity(
         fdi_average = np.mean(total_fd, axis=0)
         fdi_average = fdi_average.reshape((grid_space, grid_space))
     else:
-        fdi, fdi_array, phi_red = directivity.compute_fault_directivity(
+        fdi, fdi_array, _ = directivity.compute_fault_directivity(
             lon_lat_depth,
             planes,
             site_coords,
@@ -174,11 +174,13 @@ def parse_args():
     parser.add_argument(
         "--period",
         default=im.period,
+        type=float,
         help="Period to calculate directivity for",
     )
     parser.add_argument(
         "--grid_space",
         default=grid_space,
+        type=int,
         help="Number of sites to do along each axis",
     )
     parser.add_argument(
