@@ -13,6 +13,7 @@ from gmhazard_calc import shared
 from gmhazard_calc import gm_data
 from gmhazard_calc import site_source
 from gmhazard_calc import constants as const
+from gmhazard_calc import exceptions
 from gmhazard_calc.im import IM
 from .HazardResult import BranchHazardResult, EnsembleHazardResult
 
@@ -290,14 +291,14 @@ def run_hazard_map(
 
     n_stations = stations_df.shape[0]
     if n_procs == 1:
-        excd_probs = []
+        im_values = []
         for ix, station_name in enumerate(stations_df.index.values):
-            excd_probs.append(
+            im_values.append(
                 _get_hazard(ensemble, station_name, im, exceedance, ix, n_stations)
             )
     else:
         with mp.Pool(n_procs) as p:
-            excd_probs = p.starmap(
+            im_values = p.starmap(
                 _get_hazard,
                 [
                     (ensemble, station_name, im, exceedance, ix, n_stations)
@@ -306,7 +307,7 @@ def run_hazard_map(
             )
 
     result_df = stations_df.copy()
-    result_df["value"] = excd_probs
+    result_df["value"] = im_values
     return result_df
 
 
@@ -381,7 +382,11 @@ def _get_hazard(
     """Computes the ensemble hazard curve for the specific station"""
     start_time = time.time()
     site_info = site.get_site_from_name(ensemble, station_name)
-    im_value = run_ensemble_hazard(ensemble, site_info, im).exceedance_to_im(exceedance)
+    try:
+        im_value = run_ensemble_hazard(ensemble, site_info, im).exceedance_to_im(exceedance)
+    except exceptions.ExceedanceOutOfRangeError as ex:
+        print(ex.message)
+        return np.nan
 
     print(
         f"Progress {ix}/{n_stations} - station {station_name} "
