@@ -222,7 +222,7 @@ def parse_args():
         action="store_true",
         type=bool,
         default=False,
-        help="Disable adding directivity adjustmen t",
+        help="Disable adding directivity adjustment",
     )
 
     return parser.parse_args()
