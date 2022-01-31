@@ -3,14 +3,13 @@ Compute directivity values multiple times specified by a repeating value
 To understand the standard deviation in results for the different number of hypocentres
 """
 import time
-import multiprocessing as mp
 import argparse
+import multiprocessing as mp
 from pathlib import Path
 
 import numpy as np
 
 from qcore import nhm
-
 import gmhazard_calc
 from gmhazard_calc.im import IM, IMType
 from gmhazard_calc import directivity
@@ -44,8 +43,10 @@ def perform_mp_directivity(
         gmhazard_calc.HypoMethod(method), nhypo, hypo_along_strike, hypo_down_dip
     )
 
-
-    if n_hypo_data.method in [gmhazard_calc.HypoMethod.MONTE_CARLO, gmhazard_calc.HypoMethod.LATIN_HYPERCUBE]:
+    if n_hypo_data.method in [
+        gmhazard_calc.HypoMethod.MONTE_CARLO,
+        gmhazard_calc.HypoMethod.LATIN_HYPERCUBE,
+    ]:
         total_fd = np.zeros((repeats, len(site_coords), 1))
         total_fd_array = np.zeros((repeats, nhypo, len(site_coords), 1))
 
@@ -62,8 +63,8 @@ def perform_mp_directivity(
                     n_procs=hypo_n_procs,
                 )
 
-            total_fd[i] = fdi
-            total_fd_array[i] = fdi_array
+                total_fd[i] = fdi
+                total_fd_array[i] = fdi_array
         else:
             with mp.Pool(repeat_n_procs) as pool:
                 results = pool.starmap(
@@ -118,38 +119,51 @@ def perform_mp_directivity(
         np.exp(total_fd_array),
     )
     np.save(
-        f"{output_dir}/{fault_name}_{nhypo}_fd_mc.npy", np.exp(total_fd),
+        f"{output_dir}/{fault_name}_{nhypo}_fd_mc.npy",
+        np.exp(total_fd),
     )
     np.save(
-        f"{output_dir}/{fault_name}_{nhypo}_fd_average.npy", np.exp(fdi_average),
+        f"{output_dir}/{fault_name}_{nhypo}_fd_average.npy",
+        np.exp(fdi_average),
     )
 
 
 def parse_args():
-    # nhm_dict, faults, im, grid_space, nhyps = common.default_variables()
-
-    im = IM(IMType.pSA, period=3.0)
-    nhm_dict = nhm.load_nhm("/mnt/data/work/seistech/sources/18p6/NZ_FLTmodel_2010.txt")
-    faults = ["AlpineK2T", "AlfMakuri", "Wairau", "ArielNorth", "Swedge1", "Ashley"]
-    nhyps = [3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30]
-    grid_space = 100
+    nhm_dict, faults, im, grid_space, nhyps = common.default_variables()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("output_dir")
     parser.add_argument(
-        "--faults", default=faults, nargs="+", help="List of faults to calculate",
+        "--faults",
+        default=faults,
+        nargs="+",
+        help="List of faults to calculate",
     )
     parser.add_argument(
-        "--nstrikes", default=None, nargs="+", type=int, help="List of hypocentres along strike",
+        "--nstrikes",
+        default=None,
+        nargs="+",
+        type=int,
+        help="List of hypocentres along strike",
     )
     parser.add_argument(
-        "--ndips", default=None, nargs="+", type=int, help="List of hypocentres down dip",
+        "--ndips",
+        default=None,
+        nargs="+",
+        type=int,
+        help="List of hypocentres down dip",
     )
     parser.add_argument(
-        "--nhypos", default=None, nargs="+", type=int, help="List of hypocentre totals",
+        "--nhypos",
+        default=None,
+        nargs="+",
+        type=int,
+        help="List of hypocentre totals",
     )
     parser.add_argument(
-        "--method", default="LATIN_HYPERCUBE", help="Method to place hypocentres",
+        "--method",
+        default="LATIN_HYPERCUBE",
+        help="Method to place hypocentres",
     )
     parser.add_argument(
         "--repeats",
@@ -158,7 +172,9 @@ def parse_args():
         help="Times to repeat directivity calculation",
     )
     parser.add_argument(
-        "--period", default=im.period, help="Period to calculate directivity for",
+        "--period",
+        default=im.period,
+        help="Period to calculate directivity for",
     )
     parser.add_argument(
         "--grid_space",
