@@ -101,7 +101,6 @@ def calc_nominal_strike(traces: np.ndarray):
     traces: np.ndarray
         Array of traces of points across a fault with the format [[lon, lat, depth],...]
     """
-
     # Extract just lat and lon for the start and end of the traces
     trace_start, trace_end = [traces[0][0], traces[0][1]], [
         traces[-1][0],
@@ -162,7 +161,7 @@ def compute_fault_directivity(
     if n_procs == 1:
         fdi, phired = [], []
         for ix, cur_planes in enumerate(hypo_planes):
-            cur_fdi, (cur_phi_red, cur_predictor_functions, cur_other) = _compute_directivity_effect(
+            cur_fdi, (cur_phi_red, _, __) = _compute_directivity_effect(
                 lon_lat_depth,
                 cur_planes,
                 plane_ind[ix],
@@ -197,21 +196,20 @@ def compute_fault_directivity(
                 ],
             )
 
-        # Combine results
+        # Select fdi and phi_red from the results
         fdi = [cur_result[0] for cur_result in results]
         phired = [cur_result[1][0] for cur_result in results]
 
+    # Combine results
     fdi = np.stack(fdi, axis=0)
     phired = np.stack(phired, axis=0)
 
+    # Apply weights if uniform grid
     if n_hypo_data.method == constants.HypoMethod.UNIFORM_GRID:
-        # Only apply weights if method type is uniform grid
-        fdi_average = weights[:, None, None] * fdi
-        phired_average = weights[:, None, None] * phired
-        fdi_average = np.sum(fdi_average, axis=0)
-        phired_average = np.sum(phired_average, axis=0)
+        fdi_average = np.sum(weights[:, None, None] * fdi, axis=0)
+        phired_average = np.sum(weights[:, None, None] * phired, axis=0)
+    # Otherwise use average
     else:
-        # Just average the fdi array for all other methods
         fdi_average = np.mean(fdi, axis=0)
         phired_average = np.mean(phired, axis=0)
 

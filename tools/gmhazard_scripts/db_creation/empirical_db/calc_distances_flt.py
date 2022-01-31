@@ -1,8 +1,7 @@
+import os
 import argparse
-import time
 
 import numpy as np
-import os
 import pandas as pd
 from typing import Union, Dict
 
@@ -165,7 +164,8 @@ def load_args():
     )
     parser.add_argument(
         "--n_procs",
-        help="Number of processes to use for the directivity calculation",
+        help="Number of processes to use for the directivity calculation, "
+        "does not affect distance calculation as it uses numba (uses all available cores)",
         type=int,
         default=4,
     )
