@@ -1,6 +1,7 @@
-import argparse
-import numpy as np
 import os
+import argparse
+
+import numpy as np
 import pandas as pd
 from typing import Union, Dict
 
@@ -9,18 +10,22 @@ from IM_calculation.source_site_dist import src_site_dist
 
 import gmhazard_calc as gc
 
-POINTS_PER_KILOMETER = (
-    1 / 0.1
-)  # 1km divided by distance between points (1km/0.1km gives 100m grid)
+# 1km divided by distance between points (1km/0.1km gives 100m grid)
+POINTS_PER_KILOMETER = 1 / 0.1
 
-RJB_MAX_DIST = 500  # Calculation distance is 200, but larger distances are required for simulation disaggregation
+# Calculation distance is 200, but larger
+# distances are required for simulation disaggregation
+RJB_MAX_DIST = 500
 STATION_TOO_FAR_KEY = -1
+
+DIR_SUPPORTED_TECTONIC_TYPYES = ["ACTIVE_SHALLOW", "VOLCANIC"]
 
 
 def compute_site_source_distances(
     stations: np.ndarray,
     faults: Dict[str, Union[nhm.NHMFault, dict]],
     calculate_directivity: bool = True,
+    n_procs: int = 1,
 ):
     """
     Computes the site-source distances for the given stations and faults
@@ -36,8 +41,12 @@ def compute_site_source_distances(
         The first format is used for calculating site-source distances for
         finite faults and the 2nd for computing site-source distances for
         point sources
-    calculate_directivity: bool
-        True to calculate directivity and return numpy array of site directivity amplification values per fault
+    calculate_directivity: bool, optional
+        True to calculate directivity and return numpy array of
+         site directivity amplification values per fault
+    n_procs: int, optional
+        Number of processes to use for the directivity
+        calculation
 
     Returns
     -------
@@ -60,7 +69,7 @@ def compute_site_source_distances(
         np.full(
             fill_value=0,
             shape=(len(faults), len(stations), len(gc.im.DEFAULT_PSA_PERIODS) * 2),
-            dtype=np.float64
+            dtype=np.float64,
         )
         if calculate_directivity
         else None
@@ -92,30 +101,30 @@ def compute_site_source_distances(
         rrup, rjb = src_site_dist.calc_rrup_rjb(srf_points, stations)
 
         too_far_mask = rjb > RJB_MAX_DIST
-
         distances[index, :]["fault_id"] = index
-
         distances[index, :]["rrup"][~too_far_mask] = rrup[~too_far_mask]
         distances[index, :]["rjb"][~too_far_mask] = rjb[~too_far_mask]
-
         distances[index, :]["rtvz"] = float("nan")
 
-        if calculate_directivity:
+        if (
+            calculate_directivity
+            and cur_fault_data.tectonic_type in DIR_SUPPORTED_TECTONIC_TYPYES
+        ):
             n_hypo_data = gc.directivity.NHypoData(
                 gc.constants.HypoMethod.LATIN_HYPERCUBE, nhypo=100
             )
-
             fd, _, phi_red = gc.directivity.compute_fault_directivity(
                 srf_points,
                 srf_header,
-                stations[:, :2],
+                stations[~too_far_mask, :2],
                 n_hypo_data,
                 cur_fault_data.mw,
                 cur_fault_data.rake,
+                n_procs=n_procs,
             )
 
-            directivity[index, :, :31] = fd
-            directivity[index, :, 31:] = phi_red
+            directivity[index, ~too_far_mask, :31] = fd
+            directivity[index, ~too_far_mask, 31:] = phi_red
 
         if srf_header is not None:
             (
@@ -143,15 +152,22 @@ def load_args():
         help="Path to the DB to be written",
     )
     parser.add_argument(
+        "station_file",
+        help="List of stations for a specific domain. Source to site distances "
+        "will be calculated for all stations in the station_file.",
+    )
+    parser.add_argument(
         "--nhm_file", type=str, help="Path to the NHM ERF", default=None
     )
     parser.add_argument(
         "--gcmt_ffp", type=str, help="Path to the GCMT csv file", default=None
     )
     parser.add_argument(
-        "station_file",
-        help="List of stations for a specific domain. Source to site distances "
-        "will be calculated for all stations in the station_file.",
+        "--n_procs",
+        help="Number of processes to use for the directivity calculation, "
+        "does not affect distance calculation as it uses numba (uses all available cores)",
+        type=int,
+        default=4,
     )
     parser.add_argument(
         "--no_directivity",
@@ -216,7 +232,10 @@ def main():
         fault_df = pd.DataFrame(sorted(nhm_data.keys()), columns=["fault_name"])
 
         site_source_distance_data, directivity_data = compute_site_source_distances(
-            stations.to_numpy(), nhm_data, calculate_directivity=args.directivity
+            stations.to_numpy(),
+            nhm_data,
+            calculate_directivity=args.directivity,
+            n_procs=args.n_procs,
         )
     else:
         fault_data_ffp = os.path.abspath(args.gcmt_ffp)

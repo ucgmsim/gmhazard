@@ -1,3 +1,4 @@
+import warnings
 import math
 from typing import Tuple
 
@@ -114,7 +115,10 @@ def bea20(
         T2[T2 < Tmin] = Tmin
         T2[tpos] = Tmin
 
-        omega = np.arctan(T2 / Ry)
+        # Don't raise a warning for divide by zero
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            omega = np.arctan(T2 / Ry)
         ftheta = np.nan_to_num(np.sin(omega), nan=1)
 
     # Distance taper
