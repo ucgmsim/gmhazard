@@ -61,9 +61,8 @@ def perform_mp_directivity(
                     periods=[period],
                     n_procs=hypo_n_procs,
                 )
-
-            total_fd[i] = fdi
-            total_fd_array[i] = fdi_array
+                total_fd[i] = fdi
+                total_fd_array[i] = fdi_array
         else:
             with mp.Pool(repeat_n_procs) as pool:
                 results = pool.starmap(
@@ -126,13 +125,13 @@ def perform_mp_directivity(
 
 
 def parse_args():
-    # nhm_dict, faults, im, grid_space, nhyps = common.default_variables()
+    nhm_dict, faults, im, grid_space, nhyps = common.default_variables()
 
-    im = IM(IMType.pSA, period=3.0)
-    nhm_dict = nhm.load_nhm("/mnt/data/work/seistech/sources/18p6/NZ_FLTmodel_2010.txt")
-    faults = ["AlpineK2T", "AlfMakuri", "Wairau", "ArielNorth", "Swedge1", "Ashley"]
-    nhyps = [3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30]
-    grid_space = 100
+    # im = IM(IMType.pSA, period=3.0)
+    # nhm_dict = nhm.load_nhm("/mnt/data/work/seistech/sources/18p6/NZ_FLTmodel_2010.txt")
+    # faults = ["AlpineK2T", "AlfMakuri", "Wairau", "ArielNorth", "Swedge1", "Ashley"]
+    # nhyps = [3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30]
+    # grid_space = 100
 
     parser = argparse.ArgumentParser()
     parser.add_argument("output_dir")
@@ -140,13 +139,25 @@ def parse_args():
         "--faults", default=faults, nargs="+", help="List of faults to calculate",
     )
     parser.add_argument(
-        "--nstrikes", default=None, nargs="+", type=int, help="List of hypocentres along strike",
+        "--nstrikes",
+        default=None,
+        type=int,
+        nargs="+",
+        help="List of hypocentres along strike",
     )
     parser.add_argument(
-        "--ndips", default=None, nargs="+", type=int, help="List of hypocentres down dip",
+        "--ndips",
+        default=None,
+        type=int,
+        nargs="+",
+        help="List of hypocentres down dip",
     )
     parser.add_argument(
-        "--nhypos", default=None, nargs="+", type=int, help="List of hypocentre totals",
+        "--nhypos",
+        default=None,
+        nargs="+",
+        type=int,
+        help="List of hypocentre totals",
     )
     parser.add_argument(
         "--method", default="LATIN_HYPERCUBE", help="Method to place hypocentres",

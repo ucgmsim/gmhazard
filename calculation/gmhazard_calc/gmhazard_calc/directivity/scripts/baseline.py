@@ -4,7 +4,6 @@ which can be used to compare against other methods to determine
 how close can you get to the 'expected' results
 """
 import time
-import multiprocessing as mp
 import argparse
 from pathlib import Path
 
@@ -22,6 +21,7 @@ def perform_mp_directivity(
     grid_space,
     nhm_dict,
     output_dir,
+    n_procs,
 ):
     print(f"Computing for {fault_name}")
 
@@ -37,6 +37,7 @@ def perform_mp_directivity(
         fault.mw,
         fault.rake,
         periods=[period],
+        n_procs=n_procs,
     )
 
     fdi = fdi.reshape(grid_space, grid_space)
@@ -79,16 +80,19 @@ def parse_args():
     parser.add_argument(
         "--nstrike",
         default=200,
+        type=int,
         help="Number of hypocentres along strike",
     )
     parser.add_argument(
         "--ndip",
         default=100,
+        type=int,
         help="Number of hypocentres down dip",
     )
     parser.add_argument(
         "--nhypo",
         default=20000,
+        type=int,
         help="How many hypocentres total",
     )
     parser.add_argument(
@@ -99,17 +103,20 @@ def parse_args():
     parser.add_argument(
         "--period",
         default=im.period,
+        type=float,
         help="Period to calculate directivity for",
     )
     parser.add_argument(
         "--grid_space",
         default=grid_space,
+        type=int,
         help="Number of sites to do along each axis",
     )
     parser.add_argument(
         "--n_procs",
         default=6,
         help="Number of processes to use",
+        type=int,
     )
 
     return parser.parse_args(), nhm_dict
@@ -124,20 +131,15 @@ if __name__ == "__main__":
 
     start_time = time.time()
 
-    with mp.Pool(processes=args.n_procs) as pool:
-        pool.starmap(
-            perform_mp_directivity,
-            [
-                (
-                    fault,
-                    n_hypo_data,
-                    args.period,
-                    args.grid_space,
-                    nhm_dict,
-                    args.output_dir,
-                )
-                for fault in args.faults
-            ],
-        )
+    for fault in args.faults:
+        perform_mp_directivity(
+                fault,
+                n_hypo_data,
+                args.period,
+                args.grid_space,
+                nhm_dict,
+                args.output_dir,
+                args.n_procs,
+            )
 
     print(f"FINISHED and took {time.time() - start_time}")

@@ -27,6 +27,7 @@ def std_mean_plots(
         )
 
         modes = ["std", "mean bias"]
+        # modes = ["std"]
 
         baseline_array = np.load(f"{baseline_dir}/{fault_name}_20000_fd.npy").reshape(
             (10000, 1)
@@ -44,9 +45,11 @@ def std_mean_plots(
                 else:
                     values = np.mean(ratio, axis=0).reshape((grid_space, grid_space))
 
-                ax1 = fig.add_subplot(2, 2, i + 1)
+                # ax1 = fig.add_subplot(2, 2, i + 1)
+                ax1 = fig.add_subplot(1, 1, i + 1)
                 if mode == "std":
-                    bounds = list(np.round(np.linspace(0, 0.05, 13), 3))
+                    # bounds = list(np.round(np.linspace(0, 0.05, 13), 3))
+                    bounds = list(np.round(np.linspace(0, 0.004, 13), 5))
                     if colour_mode == "contour":
                         c = plt.contourf(
                             x,
@@ -126,7 +129,7 @@ def std_mean_plots(
             if mode == "mean bias":
                 fig.savefig(f"{output_dir}/{fault_name}_mean_bias.png")
             else:
-                fig.savefig(f"{output_dir}/{fault_name}_{mode}.png")
+                fig.savefig(f"{output_dir}/{fault_name}_{mode}_contour.png")
             plt.close()
 
 
