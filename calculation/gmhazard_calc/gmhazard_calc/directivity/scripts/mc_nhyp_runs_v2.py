@@ -133,7 +133,7 @@ def parse_args():
     # nhyps = [3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30]
     # grid_space = 100
     faults = ["AlpineK2T"]
-    nhyps = [100]
+    nhyps = [50, 100]
 
     parser = argparse.ArgumentParser()
     parser.add_argument("output_dir")
@@ -162,7 +162,7 @@ def parse_args():
         help="List of hypocentre totals",
     )
     parser.add_argument(
-        "--method", default="LATIN_HYPERCUBE", help="Method to place hypocentres",
+        "--method", default="MONTE_CARLO", help="Method to place hypocentres",
     )
     parser.add_argument(
         "--repeats",
