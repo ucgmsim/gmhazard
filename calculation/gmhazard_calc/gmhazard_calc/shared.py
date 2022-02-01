@@ -225,7 +225,7 @@ def get_gm_prob_df(
     if im_data is None:
         return None
 
-    # Compute the ground motion probabilites and combine
+    # Compute the ground motion probabilities and combine
     # Parametric
     if im_data_type is constants.IMDataType.parametric:
         # Raise error if component not in the mapping so is not supported
