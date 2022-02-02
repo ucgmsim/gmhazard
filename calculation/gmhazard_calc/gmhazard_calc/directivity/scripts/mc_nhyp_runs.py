@@ -127,13 +127,8 @@ def perform_mp_directivity(
 def parse_args():
     nhm_dict, faults, im, grid_space, nhyps = common.default_variables()
 
-    # im = IM(IMType.pSA, period=3.0)
-    # nhm_dict = nhm.load_nhm("/mnt/data/work/seistech/sources/18p6/NZ_FLTmodel_2010.txt")
-    # faults = ["AlpineK2T", "AlfMakuri", "Wairau", "ArielNorth", "Swedge1", "Ashley"]
-    # nhyps = [3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 25, 30]
-    # grid_space = 100
-    faults = ["AlpineK2T"]
-    nhyps = [100]
+    faults = ["HopeCW"]
+    nhyps = [30, 100, 50, 25, 20, 15, 10, 9, 8, 7, 6, 5, 4, 3]
 
     parser = argparse.ArgumentParser()
     parser.add_argument("output_dir")
@@ -187,7 +182,7 @@ def parse_args():
     )
     parser.add_argument(
         "--hypo_n_procs",
-        default=24,
+        default=15,
         type=int,
         help="Number of processes to use for hypocentre computation. "
         "Note: Only one of repeat_n_procs and hypo_n_procs can be greater than one",
