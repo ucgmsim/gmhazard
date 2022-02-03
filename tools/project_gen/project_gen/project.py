@@ -287,7 +287,7 @@ def write_station_details(locations: Dict, dbs_dir: Path, project_id: str):
                     loc_data["lon"],
                     np.nan if z1p0 is None else z1p0,
                     np.nan if z2p5 is None else z2p5,
-                    0,
+                    0, # default sigma value - project gen doesn't use it
                 )
             )
 
