@@ -214,19 +214,14 @@ def plot_im_rrup(
                 for vs30 in vs30_values:
                     y_position = 0
                     for mag in mag_dict[tect_type]:
-                        color_index = 0
                         for model in models:
-                            # To match the color with global version
-                            if model.endswith("NZ"):
-                                color_index -= 1
                             ax[x_position, y_position].plot(
                                 rrup_values.get(tect_type),
                                 result_dict[tect_type][im][vs30][mag][model],
                                 label=model,
-                                color=const.DEFAULT_LABEL_COLOR[color_index],
+                                color=const.DEFAULT_LABEL_COLOR[model],
                                 linestyle="dashed" if model.endswith("NZ") else "solid",
                             )
-                            color_index += 1
 
                         ax[x_position, y_position].set_title(
                             f"{im} versus Rrup - Mw{mag}, Vs30-{vs30}"
@@ -288,21 +283,16 @@ def plot_psa_rrup(
             for vs30 in vs30_values:
                 y_position = 0
                 for mag in mag_dict[tect_type]:
-                    color_index = 0
                     for model in im_models[const.PSA_IM_NAME]:
-                        # To match the color with global version
-                        if model.endswith("NZ"):
-                            color_index -= 1
                         ax[x_position, y_position].plot(
                             rrup_values.get(tect_type),
                             result_dict[tect_type][const.PSA_IM_NAME][vs30][mag][
                                 psa_period
                             ][model],
                             label=model,
-                            color=const.DEFAULT_LABEL_COLOR[color_index],
+                            color=const.DEFAULT_LABEL_COLOR[model],
                             linestyle="dashed" if model.endswith("NZ") else "solid",
                         )
-                        color_index += 1
 
                     ax[x_position, y_position].set_title(
                         f"{im_label} versus Rrup - Mw{mag}, Vs30-{vs30}"

@@ -172,24 +172,19 @@ def plot_psha_psa_sigma(
     for tect_type, im_models in const.MODELS_DICT.items():
         x_position = 0
         fig, ax = plt.subplots(
-            len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 13.5), dpi=300
+            len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 8), dpi=300
         )
         for vs30 in vs30_values:
             y_position = 0
             for mag in mag_dict[tect_type]:
-                color_index = 0
                 for model in im_models[const.PSA_IM_NAME]:
-                    # To match the color with global version
-                    if model.endswith("NZ"):
-                        color_index -= 1
                     ax[x_position, y_position].plot(
                         period_values,
                         result_dict[tect_type][const.PSA_IM_NAME][vs30][mag][model],
                         label=model,
-                        color=const.DEFAULT_LABEL_COLOR[color_index],
+                        color=const.DEFAULT_LABEL_COLOR[model],
                         linestyle="dashed" if model.endswith("NZ") else "solid",
                     )
-                    color_index += 1
 
                 ax[x_position, y_position].set_title(
                     f"Sigma versus T - Mw{mag}, Vs30-{vs30}"
@@ -240,26 +235,20 @@ def plot_psha_psa(
     for tect_type, im_models in const.MODELS_DICT.items():
         x_position = 0
         fig, ax = plt.subplots(
-            len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 13.5), dpi=300
+            len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 18), dpi=300
         )
-        # plt.figure(figsize=(16, 9))
 
         for vs30 in vs30_values:
             y_position = 0
             for mag in mag_dict[tect_type]:
-                color_index = 0
                 for model in im_models[const.PSA_IM_NAME]:
-                    # To match the color with global version
-                    if model.endswith("NZ"):
-                        color_index -= 1
                     ax[x_position, y_position].plot(
                         period_values,
                         result_dict[tect_type][const.PSA_IM_NAME][vs30][mag][model],
                         label=model if x_position == 0 and y_position == 0 else None,
-                        color=const.DEFAULT_LABEL_COLOR[color_index],
+                        color=const.DEFAULT_LABEL_COLOR[model],
                         linestyle="dashed" if model.endswith("NZ") else "solid",
                     )
-                    color_index += 1
 
                 if len(im_models) > 1:
                     # Create DatFrame to make life easier
@@ -328,6 +317,8 @@ def plot_psha_psa(
                 ax[x_position, y_position].yaxis.set_label_text("SA [g]")
                 ax[x_position, y_position].set_xscale("log")
                 ax[x_position, y_position].set_yscale("log")
+                ax[x_position, y_position].margins(x=0)
+                ax[x_position, y_position].set_ylim([0.0001, 10])
                 ax[x_position, y_position].xaxis.grid(
                     True, which="both", linestyle="dotted"
                 )
