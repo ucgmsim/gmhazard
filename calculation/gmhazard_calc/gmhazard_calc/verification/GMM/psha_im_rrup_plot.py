@@ -208,7 +208,7 @@ def plot_im_rrup(
                 fig, ax = plt.subplots(
                     len(vs30_values),
                     len(mag_dict[tect_type]),
-                    figsize=(18, 13.5),
+                    figsize=(18, 18),
                     dpi=300,
                 )
                 for vs30 in vs30_values:
@@ -237,7 +237,8 @@ def plot_im_rrup(
                         ax[x_position, y_position].yaxis.set_label_text(f"{im}")
                         ax[x_position, y_position].set_xscale("log")
                         ax[x_position, y_position].set_yscale("log")
-                        ax[x_position, y_position].set_xlim(left=10)
+                        ax[x_position, y_position].margins(x=0)
+                        ax[x_position, y_position].set_ylim([0.0001, 10])
                         ax[x_position, y_position].xaxis.grid(
                             True, which="both", linestyle="dotted"
                         )
@@ -281,7 +282,7 @@ def plot_psa_rrup(
         for psa_period in psa_periods:
             x_position = 0
             fig, ax = plt.subplots(
-                len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 13.5), dpi=300
+                len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 18), dpi=300
             )
             im_label = f"SA({psa_period}s)"
             for vs30 in vs30_values:
@@ -312,7 +313,8 @@ def plot_psa_rrup(
                     ax[x_position, y_position].yaxis.set_label_text("SA [g]")
                     ax[x_position, y_position].set_xscale("log")
                     ax[x_position, y_position].set_yscale("log")
-                    ax[x_position, y_position].set_xlim(left=10)
+                    ax[x_position, y_position].margins(x=0)
+                    ax[x_position, y_position].set_ylim([0.0001, 10])
                     ax[x_position, y_position].xaxis.grid(
                         True, which="both", linestyle="dotted"
                     )
@@ -322,7 +324,7 @@ def plot_psa_rrup(
                     y_position += 1
                 x_position += 1
 
-            fig.tight_layout()
+            # fig.tight_layout()
             plt.savefig(
                 f"{plot_directory}/{tect_type}_{im_label.replace('.', 'p')}.png"
             )
@@ -332,10 +334,10 @@ def plot_psa_rrup(
 if __name__ == "__main__":
     mag_dict = {
         "ACTIVE_SHALLOW": [6, 7, 8],
-        "SUBDUCTION_SLAB": [6, 7],
+        "SUBDUCTION_SLAB": [6, 7, 8],
         "SUBDUCTION_INTERFACE": [7, 8, 9],
     }
-    vs30_lists = [200, 400, 760]
+    vs30_lists = [200, 300, 400, 760]
     psa_lists = [1.0, 3.0]
     # For ACTIVE_SHALLOW and INTERFACE
     # first_rrup_lists = np.linspace(1, 1000, 500)
@@ -343,13 +345,17 @@ if __name__ == "__main__":
     # For SLAB
     # second_rrup_lists = np.linspace(50, 1000, 500)
     second_rrup_lists = np.logspace(np.log10(50), np.log10(500), 100)
+    # For INTERFACE
+    third_rrup_lists = np.logspace(np.log10(10), np.log10(500), 100)
     rrup_dict = {
         "ACTIVE_SHALLOW": first_rrup_lists,
-        "SUBDUCTION_INTERFACE": first_rrup_lists,
+        "SUBDUCTION_INTERFACE": third_rrup_lists,
         "SUBDUCTION_SLAB": second_rrup_lists,
     }
     # Update the path to the directory to save plots
-    save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/verification_plots")
+    save_path = pathlib.Path(
+        "/home/tom/Documents/QuakeCoRE/resource/verification_plots"
+    )
     plot_directory = save_path / "im_rrup"
     plot_directory.mkdir(exist_ok=True, parents=True)
 
@@ -372,7 +378,5 @@ if __name__ == "__main__":
     )
 
     plot_done = time.time()
-    print("START NOW!: ", start_time)
     print("SET UP IS DONE!: ", setup_done - start_time)
-    print("START PLOTTING!: ", plot_start - start_time)
-    print("STOP PLOTTING!: ", plot_done - start_time)
+    print("PLOTTING DONE!: ", plot_done - plot_start)

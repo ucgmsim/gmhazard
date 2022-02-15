@@ -63,17 +63,17 @@ si_spectral_models = [
 ]
 MODELS_DICT = {
     "ACTIVE_SHALLOW": {
-        # "PGV": ["Br_10", "ASK_14", "BSSA_14", "CB_14", "CY_14"],
+        "PGV": ["Br_10", "ASK_14", "BSSA_14", "CB_14", "CY_14"],
         "PGA": ["Br_10", "ASK_14", "BSSA_14", "CB_14", "CY_14"],
         "pSA": ["Br_10", "ASK_14", "BSSA_14", "CB_14", "CY_14"],
     },
     "SUBDUCTION_SLAB": {
-        # "PGV": ["P_20", "K_20", "K_20_NZ"],
+        "PGV": ["P_20", "K_20", "K_20_NZ"],
         "PGA": ss_spectral_models,
         "pSA": ss_spectral_models,
     },
     "SUBDUCTION_INTERFACE": {
-        # "PGV": ["P_20", "K_20", "K_20_NZ"],
+        "PGV": ["P_20", "K_20", "K_20_NZ"],
         "PGA": si_spectral_models,
         "pSA": si_spectral_models,
     },
@@ -87,12 +87,13 @@ MODELS_DICT = {
 # }
 
 DEFAULT_LABEL_COLOR = [
-    "#d62728",
-    "#2ca02c",
-    "#ffe119",
-    "#0082c8",
-    "#ff7f0e",
+    "#000000",
     "#911eb4",
+    "#ff7f0e",
+    "#2ca02c",
+    "#0082c8",
+    "#d62728",
+    "#ffe119",
     "#46f0f0",
     "#f032e6",
     "#d2f53c",
@@ -106,5 +107,5 @@ DEFAULT_LABEL_COLOR = [
     "#ffd8b1",
     "#000080",
     "#808080",
-    "#000000",
+    
 ]

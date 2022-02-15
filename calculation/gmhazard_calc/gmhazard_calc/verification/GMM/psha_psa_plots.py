@@ -198,7 +198,8 @@ def plot_psha_psa_sigma(
                 ax[x_position, y_position].xaxis.set_label_text("Period [sec]")
                 ax[x_position, y_position].yaxis.set_label_text("Sigma [Ln Units]")
                 ax[x_position, y_position].set_xscale("log")
-                ax[x_position, y_position].set_ylim([0, 1])
+                ax[x_position, y_position].margins(x=0)
+                ax[x_position, y_position].set_ylim([0.0001, 10])
                 ax[x_position, y_position].xaxis.grid(
                     True, which="both", linestyle="dotted"
                 )
@@ -376,7 +377,7 @@ def plot_psha_median_psa(
     for tect_type, im_models in const.MODELS_DICT.items():
         x_position = 0
         fig, ax = plt.subplots(
-            len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 13.5), dpi=300
+            len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 18), dpi=300
         )
         for vs30 in vs30_values:
             y_position = 0
@@ -426,6 +427,8 @@ def plot_psha_median_psa(
                 ax[x_position, y_position].yaxis.set_label_text("SA [g]")
                 ax[x_position, y_position].set_xscale("log")
                 ax[x_position, y_position].set_yscale("log")
+                ax[x_position, y_position].margins(x=0)
+                ax[x_position, y_position].set_ylim([0.0001, 10])
                 ax[x_position, y_position].xaxis.grid(
                     True, which="both", linestyle="dotted"
                 )
@@ -581,17 +584,17 @@ def psa_median_plot(
 if __name__ == "__main__":
     """Update those inputs to get different outputs"""
     mag_dict = {
-        "ACTIVE_SHALLOW": [5, 6, 7, 8],
-        "SUBDUCTION_SLAB": [5, 6, 7],
-        "SUBDUCTION_INTERFACE": [5.0, 6.0, 7.0, 8.0, 9.0],
+        "ACTIVE_SHALLOW": [6, 7, 8],
+        "SUBDUCTION_SLAB": [6, 7, 8],
+        "SUBDUCTION_INTERFACE": [7, 8, 9],
     }
     vs30_list = [200, 300, 400, 760]
-    # period_list = np.linspace(0.01, 10, 200)
     period_list = np.logspace(-2, 1, num=100)
-    rrup = [50, 100, 200, 300, 400, 500]
+    # rrup = [50, 100, 200, 300, 400, 500]
+    rrup = [50]
     # Update the path to the directory to save plots
-    save_path = pathlib.Path("")
+    save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/resource/verification_plots")
 
-    # psa_sigma_plot(mag_dict, vs30_list, period_list, rrup, save_path)
+    psa_sigma_plot(mag_dict, vs30_list, period_list, rrup, save_path)
     psa_plot(mag_dict, vs30_list, period_list, rrup, save_path)
-    # psa_median_plot(mag_dict, vs30_list, period_list, rrup, save_path)
+    psa_median_plot(mag_dict, vs30_list, period_list, rrup, save_path)
