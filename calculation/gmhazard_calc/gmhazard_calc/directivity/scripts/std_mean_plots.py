@@ -26,8 +26,7 @@ def std_mean_plots(
             fault_name, nhm_dict, grid_space
         )
 
-        # modes = ["std", "mean bias"]
-        modes = ["std"]
+        modes = ["std", "mean bias"]
 
         baseline_array = np.load(f"{baseline_dir}/{fault_name}_20000_fd.npy").reshape(
             (10000, 1)
