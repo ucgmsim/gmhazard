@@ -3,14 +3,13 @@ Compute directivity values multiple times specified by a repeating value
 To understand the standard deviation in results for the different number of hypocentres
 """
 import time
-import multiprocessing as mp
 import argparse
+import multiprocessing as mp
 from pathlib import Path
 
 import numpy as np
 
 from qcore import nhm
-
 import gmhazard_calc
 from gmhazard_calc.im import IM, IMType
 from gmhazard_calc import directivity
@@ -44,14 +43,16 @@ def perform_mp_directivity(
         gmhazard_calc.HypoMethod(method), nhypo, hypo_along_strike, hypo_down_dip
     )
 
-
-    if n_hypo_data.method in [gmhazard_calc.HypoMethod.MONTE_CARLO, gmhazard_calc.HypoMethod.LATIN_HYPERCUBE]:
+    if n_hypo_data.method in [
+        gmhazard_calc.HypoMethod.MONTE_CARLO,
+        gmhazard_calc.HypoMethod.LATIN_HYPERCUBE,
+    ]:
         total_fd = np.zeros((repeats, len(site_coords), 1))
         total_fd_array = np.zeros((repeats, nhypo, len(site_coords), 1))
 
         if repeat_n_procs == 1:
             for i in range(repeats):
-                fdi, fdi_array, phi_red = directivity.compute_fault_directivity(
+                fdi, fdi_array, _ = directivity.compute_fault_directivity(
                     lon_lat_depth,
                     planes,
                     site_coords,
@@ -61,6 +62,7 @@ def perform_mp_directivity(
                     periods=[period],
                     n_procs=hypo_n_procs,
                 )
+
                 total_fd[i] = fdi
                 total_fd_array[i] = fdi_array
         else:
@@ -89,7 +91,7 @@ def perform_mp_directivity(
         fdi_average = np.mean(total_fd, axis=0)
         fdi_average = fdi_average.reshape((grid_space, grid_space))
     else:
-        fdi, fdi_array, phi_red = directivity.compute_fault_directivity(
+        fdi, fdi_array, _ = directivity.compute_fault_directivity(
             lon_lat_depth,
             planes,
             site_coords,
@@ -117,47 +119,51 @@ def perform_mp_directivity(
         np.exp(total_fd_array),
     )
     np.save(
-        f"{output_dir}/{fault_name}_{nhypo}_fd_mc.npy", np.exp(total_fd),
+        f"{output_dir}/{fault_name}_{nhypo}_fd_mc.npy",
+        np.exp(total_fd),
     )
     np.save(
-        f"{output_dir}/{fault_name}_{nhypo}_fd_average.npy", np.exp(fdi_average),
+        f"{output_dir}/{fault_name}_{nhypo}_fd_average.npy",
+        np.exp(fdi_average),
     )
 
 
 def parse_args():
     nhm_dict, faults, im, grid_space, nhyps = common.default_variables()
 
-    faults = ["HopeCW"]
-    nhyps = [30, 100, 50, 25, 20, 15, 10, 9, 8, 7, 6, 5, 4, 3]
-
     parser = argparse.ArgumentParser()
     parser.add_argument("output_dir")
     parser.add_argument(
-        "--faults", default=faults, nargs="+", help="List of faults to calculate",
+        "--faults",
+        default=faults,
+        nargs="+",
+        help="List of faults to calculate",
     )
     parser.add_argument(
         "--nstrikes",
         default=None,
-        type=int,
         nargs="+",
+        type=int,
         help="List of hypocentres along strike",
     )
     parser.add_argument(
         "--ndips",
         default=None,
-        type=int,
         nargs="+",
+        type=int,
         help="List of hypocentres down dip",
     )
     parser.add_argument(
         "--nhypos",
-        default=nhyps,
+        default=None,
         nargs="+",
         type=int,
         help="List of hypocentre totals",
     )
     parser.add_argument(
-        "--method", default="LATIN_HYPERCUBE", help="Method to place hypocentres",
+        "--method",
+        default="LATIN_HYPERCUBE",
+        help="Method to place hypocentres",
     )
     parser.add_argument(
         "--repeats",
@@ -166,11 +172,15 @@ def parse_args():
         help="Times to repeat directivity calculation",
     )
     parser.add_argument(
-        "--period", default=im.period, help="Period to calculate directivity for",
+        "--period",
+        default=im.period,
+        type=float,
+        help="Period to calculate directivity for",
     )
     parser.add_argument(
         "--grid_space",
         default=grid_space,
+        type=int,
         help="Number of sites to do along each axis",
     )
     parser.add_argument(
@@ -182,7 +192,7 @@ def parse_args():
     )
     parser.add_argument(
         "--hypo_n_procs",
-        default=15,
+        default=1,
         type=int,
         help="Number of processes to use for hypocentre computation. "
         "Note: Only one of repeat_n_procs and hypo_n_procs can be greater than one",

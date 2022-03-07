@@ -4,16 +4,16 @@
 Writes to multiple empirical DB depending on the config
 """
 import math
-import multiprocessing as mp
 import time
-from typing import Dict, Sequence
 import argparse
+import multiprocessing as mp
+from typing import Dict, Sequence
 
 import numpy as np
 import pandas as pd
 
-import gmhazard_calc as sc
 import common
+import gmhazard_calc as sc
 from empirical.util import empirical_factory
 
 
@@ -29,6 +29,7 @@ def calculate_flt(
     keep_sigma=False,
     suffix=None,
     rupture_lookup=False,
+    use_directivity: bool = True,
     n_procs: int = 1,
 ):
     nhm_data = sc.utils.flt_nhm_to_rup_df(nhm_ffp)
@@ -51,11 +52,12 @@ def calculate_flt(
     site_df = site_df.loc[np.isin(site_df.index.values, distance_stations)]
     n_stations = site_df.shape[0]
 
+    # Setup some extra data
     tect_type_model_dict = empirical_factory.read_model_dict(tect_type_model_dict_ffp)
-
     rupture_df = fault_df.copy(deep=True)
     rupture_df.columns = ["rupture_name"]
 
+    # Process stations in batch of 1000 (and save in between)
     for ix in range(math.ceil(n_stations / 1000)):
         cur_site_df = site_df.iloc[(ix * 1000) : (ix + 1) * 1000]
 
@@ -75,6 +77,7 @@ def calculate_flt(
                         imdb_dict,
                         nhm_data,
                         tect_type_model_dict,
+                        use_directivity,
                     )
                 )
         else:
@@ -93,19 +96,19 @@ def calculate_flt(
                             imdb_dict,
                             nhm_data,
                             tect_type_model_dict,
+                            use_directivity,
                         )
                         for _, cur_site in cur_site_df.iterrows()
                     ],
                 )
 
-        print(f"Computed data for sites {ix * 1000} - {(ix + 1) * 1000}, "
-              f"took {time.time() - start_time:.2f} seconds; writing to DB")
-        # for cur_site_name, cur_im_data in im_data:
-        #     common.write_result_to_db(cur_im_data, imdb_dict, cur_site_name)
-        write_result_to_db(im_data, imdb_dict)
-        print("wtf")
+        print(
+            f"Computed data for sites {ix * 1000} - {(ix + 1) * 1000}, "
+            f"took {time.time() - start_time:.2f} seconds; writing to DB"
+        )
+        _write_result_to_db(im_data, imdb_dict)
 
-    common.write_data_and_close(
+    common.write_metadata_and_close(
         imdb_dict,
         nhm_ffp,
         rupture_df,
@@ -117,7 +120,8 @@ def calculate_flt(
         rupture_lookup=rupture_lookup,
     )
 
-def write_result_to_db(im_data, imdb_dict):
+
+def _write_result_to_db(im_data, imdb_dict):
     s_time = time.perf_counter()
     for imdb_key in imdb_dict.keys():
         imdb_dict[imdb_key].open()
@@ -127,6 +131,7 @@ def write_result_to_db(im_data, imdb_dict):
                 imdb_dict[imdb_key].write_im_data(cur_site_name, cur_im_df)
         imdb_dict[imdb_key].close()
     print(f"Took {time.perf_counter() - s_time:.2f}s to write {len(im_data)} stations.")
+
 
 def _process_site(
     site,
@@ -139,6 +144,7 @@ def _process_site(
     imdb_dict,
     nhm_data,
     tect_type_model_dict: Dict,
+    use_directivity: bool,
 ):
     with sc.dbs.SiteSourceDB(site_source_db_ffp, writeable=False) as distance_store:
         max_dist = common.get_max_dist_zfac_scaled(site)
@@ -158,8 +164,7 @@ def _process_site(
             tect_type_model_dict,
             max_dist,
             keep_sigma_components=keep_sigma,
-            # Change this to be user argument...
-            use_directivity=True,
+            use_directivity=use_directivity,
             n_procs=1,
             return_vals=True,
         )
@@ -209,7 +214,16 @@ def parse_args():
         help="flag to run rupture lookup function when creating the db",
         default=False,
     )
-    parser.add_argument("--n-procs", type=int, help="Number of processes to use", default=1)
+    parser.add_argument(
+        "--n-procs", type=int, help="Number of processes to use", default=1
+    )
+    parser.add_argument(
+        "--no-directivity",
+        action="store_true",
+        type=bool,
+        default=False,
+        help="Disable adding directivity adjustment",
+    )
 
     return parser.parse_args()
 
@@ -229,6 +243,7 @@ def calculate_emp_flt():
         suffix=args.suffix,
         rupture_lookup=args.rupture_lookup,
         n_procs=args.n_procs,
+        use_directivity=not args.no_directivity,
     )
 
 

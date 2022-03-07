@@ -100,10 +100,7 @@ def create_project(
     erf_dir = ERF_DIR if erf_dir is None else erf_dir
 
     try:
-        projects_base_dir, scripts_dir = (
-            Path(projects_base_dir),
-            Path(scripts_dir),
-        )
+        projects_base_dir, scripts_dir = (Path(projects_base_dir), Path(scripts_dir))
         project_id = project_specs["id"]
 
         n_perturbations = project_specs.get("n_perturbations", 1)
@@ -137,7 +134,12 @@ def create_project(
                 erf_dir,
                 erf_pert_dir,
                 flt_erf_version,
-                list({str(im.im_type) for im in gmhazard_calc.im.to_im_list(project_config["ims"])}),
+                list(
+                    {
+                        str(im.im_type)
+                        for im in gmhazard_calc.im.to_im_list(project_config["ims"])
+                    }
+                ),
                 n_procs=n_procs,
                 z_ffp=z_ffp,
                 n_perturbations=n_perturbations,
@@ -254,14 +256,22 @@ def write_project_config(project_dir: Path, project_specs: Dict):
 def write_station_details(locations: Dict, dbs_dir: Path, project_id: str):
     """Writes the station location, vs30 and Z file"""
 
-    def write_file_data(station_detail_indexes: List, station_details: List, ffp: Path):
+    def write_file_data(
+        station_detail_indexes: List,
+        station_details: List,
+        ffp: Path,
+        header=None,
+        delim=" ",
+    ):
         """Writes lines into a given file path based on indexes in the station details"""
         lines = [
-            "".join(f"{cur_stat_details[index]} " for index in station_detail_indexes)
+            delim.join(f"{cur_stat_details[index]}" for index in station_detail_indexes)
             + "\n"
             for cur_stat_details in station_details
         ]
         with open(ffp, "w") as f:
+            if header:
+                f.write(header)
             f.writelines(lines)
 
     stations_details = []
@@ -277,6 +287,7 @@ def write_station_details(locations: Dict, dbs_dir: Path, project_id: str):
                     loc_data["lon"],
                     np.nan if z1p0 is None else z1p0,
                     np.nan if z2p5 is None else z2p5,
+                    0, # default sigma value - project gen doesn't use it
                 )
             )
 
@@ -290,7 +301,13 @@ def write_station_details(locations: Dict, dbs_dir: Path, project_id: str):
 
     z_ffp = dbs_dir / f"{project_id}.z"
     if not z_ffp.exists():
-        write_file_data([0, 4, 5], stations_details, z_ffp)
+        write_file_data(
+            [0, 4, 5, 6],
+            stations_details,
+            z_ffp,
+            header="Station_Name,Z_1.0(km),Z_2.5(km),sigma\n",
+            delim=",",
+        )
 
     return ll_ffp, vs30_ffp, z_ffp
 
@@ -355,7 +372,7 @@ def generate_dbs(
             "--z-file",
             str(z_ffp),
             "--im",
-            *im_types
+            *im_types,
         ]
         ds_timeout = (n_stations * (60 * 60 * 5)) / (min(n_procs - 1, n_stations))
         print(f"Using a timeout of {ds_timeout} seconds")
@@ -385,10 +402,14 @@ def generate_dbs(
             str(ll_ffp),
         ]
         print(f"Running command:\n\t{' '.join(calc_fault_distances_cmd)}")
-        flt_distance_result = subprocess.run(calc_fault_distances_cmd, capture_output=True)
+        flt_distance_result = subprocess.run(
+            calc_fault_distances_cmd, capture_output=True
+        )
         print("STDOUT:\n" + flt_distance_result.stdout.decode())
         print("STDERR:\n" + flt_distance_result.stderr.decode())
-        assert flt_distance_result.returncode == 0, "Fault site-source DB generation failed"
+        assert (
+            flt_distance_result.returncode == 0
+        ), "Fault site-source DB generation failed"
 
     if n_perturbations > 1:
         if erf_pert_dir is None or not (erf_pert_dir).exists():
@@ -419,11 +440,13 @@ def generate_dbs(
                 "--z-file",
                 str(z_ffp),
                 "--im",
-                *im_types
+                *im_types,
             ]
             if n_perturbations > 1:
                 flt_imdbs_cmd.extend(["-s", f"pert_{i:02}"])
-            print(f"Running command, {i + 1}/{n_perturbations}:\n\t{' '.join(flt_imdbs_cmd)}")
+            print(
+                f"Running command, {i + 1}/{n_perturbations}:\n\t{' '.join(flt_imdbs_cmd)}"
+            )
             flt_imdbs_result = subprocess.run(flt_imdbs_cmd, capture_output=True)
             print("STDOUT:\n" + flt_imdbs_result.stdout.decode())
             print("STDERR:\n" + flt_imdbs_result.stderr.decode())

@@ -130,7 +130,7 @@ def curate_im_list(tect_type_model_dict, model, periods):
     return get_im_list(im_types, periods)
 
 
-def write_data_and_close(
+def write_metadata_and_close(
     imdb_dict,
     nhm_ffp,
     rupture_df,

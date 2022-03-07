@@ -44,7 +44,9 @@ class SiteSourceDB(BaseDB):
 
     @check_open
     def stored_stations(self):
-        """Get the stations that have data stored in the db"""
+        """Get the stations that have distance
+        data stored in the db
+        """
         if not self._keys_cache:
             self._keys_cache = set(self._db.keys())
 
