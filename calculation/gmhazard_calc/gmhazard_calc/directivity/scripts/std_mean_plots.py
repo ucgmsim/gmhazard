@@ -45,11 +45,9 @@ def std_mean_plots(
                 else:
                     values = np.mean(ratio, axis=0).reshape((grid_space, grid_space))
 
-                # ax1 = fig.add_subplot(2, 2, i + 1)
-                ax1 = fig.add_subplot(1, 1, i + 1)
+                ax1 = fig.add_subplot(2, 2, i + 1)
                 if mode == "std":
-                    # bounds = list(np.round(np.linspace(0, 0.05, 13), 3))
-                    bounds = list(np.round(np.linspace(0, 0.004, 13), 5))
+                    bounds = list(np.round(np.linspace(0, 0.05, 13), 3))
                     if colour_mode == "contour":
                         c = plt.contourf(
                             x,
@@ -121,18 +119,6 @@ def std_mean_plots(
                 ax1.set_title(f"{nhyp} Hypocentres")
                 ax1.set_xlabel("Longitude")
                 ax1.set_ylabel("Latitude")
-                # site_x = [178.3, 178.35, 178.39, 178.43, 178.57, 178.6, 178.66, 178.72]
-                # site_y = [-38.8, -38.73, -38.65, -38.6, -38.44, -38.4, -38.33, -38.27]
-                # plt.plot(site_x, site_y, 'o', color='black', markersize=8)
-                # for site in range(8):
-                #     plt.annotate(f"{site+1}",
-                #                  (site_x[site], site_y[site]),
-                #                  textcoords="offset points",
-                #                  xytext=(0, 10),
-                #                  ha='center',
-                #                  fontsize=20,
-                #                  weight='bold'
-                #                  )
 
             plt.subplots_adjust(
                 left=0.1, bottom=0.1, right=0.95, top=0.90, wspace=0.40, hspace=0.35
@@ -141,7 +127,7 @@ def std_mean_plots(
             if mode == "mean bias":
                 fig.savefig(f"{output_dir}/{fault_name}_mean_bias.png")
             else:
-                fig.savefig(f"{output_dir}/{fault_name}_{mode}_contour2.png")
+                fig.savefig(f"{output_dir}/{fault_name}_{mode}.png")
             plt.close()
 
 

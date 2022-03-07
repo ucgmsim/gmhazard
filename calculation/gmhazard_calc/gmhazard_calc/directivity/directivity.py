@@ -152,7 +152,6 @@ def compute_fault_directivity(
     nominal_strike, nominal_strike2 = calc_nominal_strike(lon_lat_depth)
 
     # Customise the planes to set different hypocentres
-    print("Setting hypocentre locations")
     hypo_planes, plane_ind, weights = set_hypocentres(
         n_hypo_data,
         planes,
@@ -160,7 +159,6 @@ def compute_fault_directivity(
     )
 
     if n_procs == 1:
-        print(f"Computing without mp")
         fdi, phired = [], []
         for ix, cur_planes in enumerate(hypo_planes):
             cur_fdi, (cur_phi_red, _, __) = _compute_directivity_effect(
@@ -178,7 +176,6 @@ def compute_fault_directivity(
             fdi.append(cur_fdi)
             phired.append(cur_phi_red)
     else:
-        print(f"Computing using mp with {n_procs}")
         # Compute directivity for all hypocentres
         with mp.Pool(n_procs) as pool:
             results = pool.starmap(
