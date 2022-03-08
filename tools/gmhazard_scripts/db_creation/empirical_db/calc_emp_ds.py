@@ -13,6 +13,7 @@ import pandas as pd
 
 import gmhazard_calc as sc
 import common
+from empirical.util import empirical_factory
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
@@ -61,6 +62,7 @@ def calculate_ds(
     nhm_data = comm.bcast(nhm_data, root=master)
     rupture_df = comm.bcast(rupture_df, root=master)
     imdb_dict_copy = comm.bcast({key: None for key in imdb_dict.keys()}, root=master)
+    model_dict = empirical_factory.read_model_dict(model_dict_ffp)
 
     with sc.dbs.SiteSourceDB(site_source_db_ffp) as distance_store:
         fault_df = None
@@ -140,11 +142,12 @@ def calculate_ds(
                             site.z1p0 if hasattr(site, "z1p0") else None,
                             site.z2p5 if hasattr(site, "z2p5") else None,
                             site.name,
-                            model_dict_ffp,
+                            model_dict,
                             max_dist,
                             dist_filter_by_mag=True,
                             return_vals=True,
-                            n_procs=n_mp_proc
+                            n_procs=n_mp_proc,
+                            use_directivity=False,
                         ),
                         site.name,
                     )
@@ -157,7 +160,7 @@ def calculate_ds(
             )
 
     if is_master:
-        common.write_data_and_close(
+        common.write_metadata_and_close(
             imdb_dict,
             background_sources_ffp,
             rupture_df,

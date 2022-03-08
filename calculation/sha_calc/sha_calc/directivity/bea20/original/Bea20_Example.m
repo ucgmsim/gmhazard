@@ -77,7 +77,7 @@ Wuse=9.2; % down dip width in km
 Luse=3.4; % total rupture length in km
 ZtorUse=0; % Ztor, must be positive, in km
 Rz=ZtorUse./tand(Dipuse); % the distance on the surface from the rupture trace to the point po (only nonzero for Ztor>0 and Dip~=90)
-HypDep=6.2349; % hypocenter depth 
+HypDep=6.2349; % hypocenter depth
 
 % specify the coordinates of the epicenter and GC2 origin, po
 type.epi=[-2.6 -2.19]; % X, Y

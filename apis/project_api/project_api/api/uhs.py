@@ -5,6 +5,7 @@ import flask
 import numpy as np
 from flask_cors import cross_origin
 
+import api_utils as au
 import gmhazard_calc as sc
 import gmhazard_utils as su
 from project_api import server
@@ -15,14 +16,14 @@ from project_api import utils
 @server.app.route(const.PROJECT_UHS_RPS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_uhs_rps():
     server.app.logger.info(f"Received request at {const.PROJECT_UHS_RPS_ENDPOINT}")
 
     _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    project_id = su.api.get_check_keys(flask.request.args, ["project_id"])[0][0]
+    project_id = au.api.get_check_keys(flask.request.args, ["project_id"])[0][0]
     server.app.logger.debug(f"Request parameters {project_id}")
 
     return flask.jsonify(
@@ -33,14 +34,14 @@ def get_uhs_rps():
 @server.app.route(const.PROJECT_UHS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_ensemble_uhs():
     server.app.logger.info(f"Received request at {const.PROJECT_UHS_ENDPOINT}")
 
     _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    (project_id, station_id), optional_kwargs = su.api.get_check_keys(
+    (project_id, station_id), optional_kwargs = au.api.get_check_keys(
         flask.request.args, ("project_id", "station_id"), (("im_component", str),),
     )
     im_component = (
@@ -66,9 +67,9 @@ def get_ensemble_uhs():
 
     return flask.jsonify(
         {
-            **su.api.get_ensemble_uhs(
+            **au.api.get_ensemble_uhs(
                 uhs_results,
-                su.api.get_download_token(
+                au.api.get_download_token(
                     {
                         "project_id": project_id,
                         "station_id": station_id,
@@ -90,7 +91,7 @@ def get_ensemble_uhs():
 
 
 @server.app.route(const.PROJECT_UHS_DOWNLOAD_ENDPOINT, methods=["GET"])
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def download_ensemble_uhs():
     """Handles downloading of the UHS raw data"""
     server.app.logger.info(f"Received request at {const.PROJECT_UHS_DOWNLOAD_ENDPOINT}")
@@ -98,9 +99,9 @@ def download_ensemble_uhs():
     _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    (token), _ = su.api.get_check_keys(flask.request.args, ("uhs_token",))
+    (token), _ = au.api.get_check_keys(flask.request.args, ("uhs_token",))
 
-    payload = su.api.get_token_payload(token[0], server.DOWNLOAD_URL_SECRET_KEY)
+    payload = au.api.get_token_payload(token[0], server.DOWNLOAD_URL_SECRET_KEY)
     project_id, station_id, im_component = (
         payload["project_id"],
         payload["station_id"],
@@ -123,7 +124,7 @@ def download_ensemble_uhs():
     )
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        zip_ffp = su.api.create_uhs_download_zip(
+        zip_ffp = au.api.create_uhs_download_zip(
             uhs_results, nzs1170p5_results, tmp_dir
         )
 

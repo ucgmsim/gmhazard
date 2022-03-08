@@ -48,6 +48,18 @@ ACTIVE_SHALLOW:
       - BSSA_14
       - CB_14
       - CY_14
+  CAV:
+    geom:
+      - CB_10
+  AI:
+    geom:
+      - CB_12
+  Ds575:
+    geom:
+      - AS_16
+  Ds595:
+    geom:
+      - AS_16
 VOLCANIC:
   PGV:
     geom:
@@ -58,6 +70,18 @@ VOLCANIC:
   pSA:
     geom:
       - Br_10
+  CAV:
+    geom:
+      - CB_10 # These are only for shallow crustal in lieu of a more appropriate model
+  AI:
+    geom:
+      - CB_12 # These are only for shallow crustal in lieu of a more appropriate model
+  Ds575:
+    geom:
+      - AS_16 # These are only for shallow crustal in lieu of a more appropriate model
+  Ds595:
+    geom:
+      - AS_16 # These are only for shallow crustal in lieu of a more appropriate model
 SUBDUCTION_SLAB:
   PGV:
     geom:
@@ -84,6 +108,18 @@ SUBDUCTION_SLAB:
       - AG_20_NZ
       - K_20
       - K_20_NZ
+  CAV:
+    geom:
+      - CB_10 # These are only for shallow crustal in lieu of a more appropriate model
+  AI:
+    geom:
+      - CB_12 # These are only for shallow crustal in lieu of a more appropriate model
+  Ds575:
+    geom:
+      - AS_16 # These are only for shallow crustal in lieu of a more appropriate model
+  Ds595:
+    geom:
+      - AS_16 # These are only for shallow crustal in lieu of a more appropriate model
 SUBDUCTION_INTERFACE:
   PGV:
     geom:
@@ -100,7 +136,6 @@ SUBDUCTION_INTERFACE:
       - AG_20_NZ
       - K_20
       - K_20_NZ
-
   pSA:
     geom:
       - ZA_06
@@ -111,3 +146,15 @@ SUBDUCTION_INTERFACE:
       - AG_20_NZ
       - K_20
       - K_20_NZ
+  CAV:
+    geom:
+      - CB_10 # These are only for shallow crustal in lieu of a more appropriate model
+  AI:
+    geom:
+      - CB_12 # These are only for shallow crustal in lieu of a more appropriate model
+  Ds575:
+    geom:
+      - AS_16 # These are only for shallow crustal in lieu of a more appropriate model
+  Ds595:
+    geom:
+      - AS_16 # These are only for shallow crustal in lieu of a more appropriate model

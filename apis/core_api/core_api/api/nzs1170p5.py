@@ -3,7 +3,7 @@ import numpy as np
 from flask_cors import cross_origin
 
 import gmhazard_calc as sc
-import gmhazard_utils as su
+import api_utils as au
 from core_api import server
 from core_api import constants as const
 from core_api import utils
@@ -12,14 +12,14 @@ from core_api import utils
 @server.app.route(const.NZS1170p5_DEFAULT_PARAMS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_nzs1170p5_default_params():
     """Gets the default parameters for NZ Code NZS1170.5"""
     server.app.logger.info(
         f"Received request at {const.NZS1170p5_DEFAULT_PARAMS_ENDPOINT}"
     )
 
-    (ensemble_id, station), optional_params_dict = su.api.get_check_keys(
+    (ensemble_id, station), optional_params_dict = au.api.get_check_keys(
         flask.request.args, ("ensemble_id", "station"), ("vs30",)
     )
     user_vs30 = optional_params_dict.get("vs30")
@@ -44,13 +44,13 @@ def get_nzs1170p5_default_params():
 @server.app.route(const.NZS1170p5_HAZARD_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_nzs1170p5_hazard():
     """Retrieves the NZS1170p5 hazard for the station"""
     server.app.logger.info(f"Received request at {const.NZS1170p5_HAZARD_ENDPOINT}")
     cache = server.cache
 
-    (ensemble_id, station, im), optional_values_dict = su.api.get_check_keys(
+    (ensemble_id, station, im), optional_values_dict = au.api.get_check_keys(
         flask.request.args,
         ("ensemble_id", "station", "im"),
         (
@@ -78,7 +78,7 @@ def get_nzs1170p5_hazard():
     return flask.jsonify(
         {
             "nzs1170p5_hazard": nzs1170p5_hazard.to_dict(),
-            "download_token": su.api.get_download_token(
+            "download_token": au.api.get_download_token(
                 {
                     "type": "nzs1170p5",
                     "ensemble_id": ensemble_id,
@@ -95,12 +95,12 @@ def get_nzs1170p5_hazard():
 @server.app.route(const.NZS1170p5_UHS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_nzs1170p5_uhs():
     server.app.logger.info(f"Received request at {const.NZS1170p5_UHS_ENDPOINT}")
     cache = server.cache
 
-    (ensemble_id, station, exceedances), optional_kwargs = su.api.get_check_keys(
+    (ensemble_id, station, exceedances), optional_kwargs = au.api.get_check_keys(
         flask.request.args,
         ("ensemble_id", "station", "exceedances"),
         (
@@ -135,7 +135,7 @@ def get_nzs1170p5_uhs():
             )
             .replace(np.nan, "nan")
             .to_dict(),
-            "download_token": su.api.get_download_token(
+            "download_token": au.api.get_download_token(
                 {
                     "type": "nzs1170p5",
                     "ensemble_id": ensemble_id,
@@ -152,7 +152,7 @@ def get_nzs1170p5_uhs():
 @server.app.route(const.NZS1170p5_SOIL_CLASS_ENDPOINT, methods=["GET"])
 @cross_origin(expose_headers=["Content-Type", "Authorization"])
 @server.requires_auth
-@su.api.endpoint_exception_handling(server.app)
+@au.api.endpoint_exception_handling(server.app)
 def get_nzs1170p5_soil_class():
     """Gets the soil classes for NZ Code NZS1170p5"""
     server.app.logger.info(f"Received request at {const.NZS1170p5_SOIL_CLASS_ENDPOINT}")

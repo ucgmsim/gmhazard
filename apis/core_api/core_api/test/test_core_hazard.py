@@ -1,4 +1,4 @@
-import gmhazard_utils.src.test as tu
+import api_utils.test as tu
 from core_api import constants
 
 

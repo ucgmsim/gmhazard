@@ -2,6 +2,7 @@ import h5py
 import numpy as np
 
 from gmhazard_calc import utils
+from gmhazard_calc import im
 from gmhazard_calc import constants as const
 from .BaseDB import BaseDB, check_open
 
@@ -41,9 +42,19 @@ class SiteSourceDB(BaseDB):
         """Get the input stations/site info in the db"""
         return self._db["sites"]
 
+    @check_open
     def stored_stations(self):
-        """Get the stations that have data stored in the db"""
-        pass
+        """Get the stations that have distance
+        data stored in the db
+        """
+        if not self._keys_cache:
+            self._keys_cache = set(self._db.keys())
+
+        return [
+            cur_key.split("_")[-1]
+            for cur_key in self._keys_cache
+            if cur_key.startswith("/distance")
+        ]
 
     @check_open
     def station_data(self, station_name: str):
@@ -72,10 +83,35 @@ class SiteSourceDB(BaseDB):
         """
         Checks if there is data stored for the station.
         If a station was used as an input but did not contain data it will return false.
+
+        Note: The first call to this function is very slow, therefore
+        this should only be used when doing multiple check.
+        Otherwise use station_data directly and check for None
+
         :param station_name: Station to be checked
         :return: True if station has data, False otherwise
         """
         key = self.station_distance_h5_key(station_name)
+
+        if not self._keys_cache:
+            self._keys_cache = set(self._db.keys())
+
+        return key in self._keys_cache
+
+    @check_open
+    def has_station_directivity_data(self, station_name):
+        """
+        Checks if there is directivity data stored for the station.
+        If a station was used as an input but did not contain data it will return false.
+
+        Note: The first call to this function is very slow, therefore
+        this should only be used when doing multiple check.
+        Otherwise use station_directivity_data directly and check for None
+
+        :param station_name: Station to be checked
+        :return: True if station has directivity data, False otherwise
+        """
+        key = self.station_directivity_h5_key(station_name)
 
         if not self._keys_cache:
             self._keys_cache = set(self._db.keys())
@@ -98,6 +134,28 @@ class SiteSourceDB(BaseDB):
         pd.Series
         """
         raise NotImplementedError
+
+    @check_open
+    def station_directivity_data(self, station_name: str):
+        """Retrieves directivity data for a specific station/site
+
+        Parameters
+        ----------
+        station_name: str
+            The station name for which to retrieve the data
+
+        Returns
+        -------
+        pd.DataFrame
+            with the available faults as index and properties as columns
+        """
+        try:
+            df = self._db[self.station_directivity_h5_key(station_name)]
+        except KeyError:
+            return None
+
+        df.index = self.faults().fault_name
+        return df
 
     def write_attributes(self, erf_fname, station_list_fname, **kwargs):
         """
@@ -143,6 +201,28 @@ class SiteSourceDB(BaseDB):
                 "('fault_id', 'rjb', 'rrup', 'rx', 'ry', 'rtvz') and an index"
             )
 
+    @check_open
+    def write_site_directivity_data(self, station, directivity_df):
+        """
+        Writes directivity df data for each of the pSA IM's for both mu and sigma for a given site
+        """
+        pSA_columns = [
+            str(im.IM(im.IMType.pSA, period)) + mu_sigma
+            for mu_sigma in ["", "_sigma"]
+            for period in im.DEFAULT_PSA_PERIODS
+        ]
+        if utils.check_names(pSA_columns, directivity_df.columns.values):
+            self._db[self.station_directivity_h5_key(station)] = directivity_df
+        else:
+            raise ValueError(
+                f"Columns are not as expected. Must have {len(im.DEFAULT_PSA_PERIODS) * 2} columns "
+                "('pSA_0.01', ..., 'pSA_0.01_sigma', ...)"
+            )
+
     @staticmethod
     def station_distance_h5_key(name):
         return f"/distances/station_{name}"
+
+    @staticmethod
+    def station_directivity_h5_key(name):
+        return f"/directivity/station_{name}"

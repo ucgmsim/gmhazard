@@ -135,7 +135,7 @@ def store_empiricals(emp_folder, output_folder, ll_ffp, ds_erf_ffp, flt_nhm_ffp)
         imdb_flt_dict["Z06"].write_im_data(station_name, flt_z06_data)
 
     rupture_df = pd.DataFrame(flt_erf_df["rupture_name"])
-    common.write_data_and_close(
+    common.write_metadata_and_close(
         imdb_ds_dict,
         "NZBCK211_OpenSHA.txt",
         ds_rupture_df,
@@ -143,7 +143,7 @@ def store_empiricals(emp_folder, output_folder, ll_ffp, ds_erf_ffp, flt_nhm_ffp)
         "non_uniform_whole_nz_with_real_stations-hh400_v18p6.vs30",
         ims,
     )
-    common.write_data_and_close(
+    common.write_metadata_and_close(
         imdb_flt_dict,
         "NZ_FLTmodel_2010_v18p6.txt",
         rupture_df,

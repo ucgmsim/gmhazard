@@ -1,8 +1,8 @@
+import warnings
 import math
 from typing import Tuple
 
 import numpy as np
-import numpy.matlib
 
 
 def bea20(
@@ -13,9 +13,9 @@ def bea20(
     D: float,
     Tbot: float,
     Dbot: float,
-    Rake: float,
-    Dip: float,
-    Period: float,
+    rake: float,
+    dip: float,
+    periods: np.ndarray,
     rupture_type: int = 0,
 ):
     """
@@ -44,20 +44,20 @@ def bea20(
         The length of the bottom of the rupture plane (projected to the surface) in km.
     Dbot: float
         The vertical depth of the bottom of the rupture plane from the ground surface, including Ztor, in km.
-    Rake: float
-        The Rake of the fault
-    Dip: float
-        The Dip of the fault at the hypocentre
-    Period: float
-        Used for specifying the period for a pSA IM
-    rupture_type: float, optional
+    rake: float
+        The rake of the fault
+    dip: float
+        The dip of the fault at the hypocentre
+    periods: np.ndarray
+        Numpy array of periods to calculate fD for
+    rupture_type: int, optional
         0 for rupture_type based on rake (auto)
         1 for a strike slip
         2 for a oblique, reverse or normal
     """
-    # If not specified, determine rupture category from Rake angle
+    # If not specified, determine rupture category from rake angle
     if rupture_type == 0:
-        if (-30 <= Rake <= 30) or (-180 <= Rake <= -150) or (150 <= Rake <= 180):
+        if (-30 <= rake <= 30) or (-180 <= rake <= -150) or (150 <= rake <= 180):
             rupture_type = 1
         else:
             rupture_type = 2
@@ -76,8 +76,8 @@ def bea20(
     Ry[Ry < 0] = 0
 
     # Calculate S2
-    S = -S if rupture_type == 2 and Rake < 0 else S
-    Srake = S * math.cos(math.radians(Rake))
+    S = -S if rupture_type == 2 and rake < 0 else S
+    Srake = S * math.cos(math.radians(rake))
     D = max(D, 3)  # Gets the max value for D, 3 is the minimum
     S2 = np.sqrt(Srake ** 2 + D ** 2)
 
@@ -99,23 +99,26 @@ def bea20(
         tpos, tneg = T > 0, T <= 0
         phi = np.zeros(U.size)
 
-        phi[tneg] = np.degrees(np.arctan((np.abs(T[tneg]) + Tbot) / Dbot)) + Dip - 90
+        phi[tneg] = np.degrees(np.arctan((np.abs(T[tneg]) + Tbot) / Dbot)) + dip - 90
 
         t1 = tpos & (T < Tbot)
-        phi[t1] = 90 - Dip - np.degrees(np.arctan((Tbot - T[t1]) / Dbot))
+        phi[t1] = 90 - dip - np.degrees(np.arctan((Tbot - T[t1]) / Dbot))
 
         t2 = tpos & (T >= Tbot)
-        phi[t2] = 90 - Dip + np.degrees(np.arctan((T[t2] - Tbot) / Dbot))
+        phi[t2] = 90 - dip + np.degrees(np.arctan((T[t2] - Tbot) / Dbot))
 
         phi[phi > 45] = 45
         fphi = np.cos(2 * phi * np.pi / 180)
 
-        Tmin = 10 * (abs(math.cos(math.radians(Rake))) + 1)
+        Tmin = 10 * (abs(math.cos(math.radians(rake))) + 1)
         T2 = abs(T)
         T2[T2 < Tmin] = Tmin
         T2[tpos] = Tmin
 
-        omega = np.arctan(T2 / Ry)
+        # Don't raise a warning for divide by zero
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            omega = np.arctan(T2 / Ry)
         ftheta = np.nan_to_num(np.sin(omega), nan=1)
 
     # Distance taper
@@ -139,7 +142,6 @@ def bea20(
     # Calculate fD
 
     # Constants
-    Per = np.logspace(-2, 1, 1000)
     coefb = [-0.0336, 0.5469]  # mag dependence of bmax
     coefc = [0.2858, -1.2090]  # mag scaling of Tpeak
     coefd1 = [0.9928, -4.8300]  # mag dependence of fG0 for SOF=1
@@ -161,14 +163,12 @@ def bea20(
     Tpeak = 10 ** (coefc[1] + coefc[0] * M)
 
     # Period dependent coefficients: a and b
-    x = np.log10(Per / Tpeak)
+    x = np.log10(periods / Tpeak)
     b = bmax * np.exp((-(x ** 2)) / (2 * SigG ** 2))
     a = -b * fG0
 
-    # fd and fdi
+    # No longer calculating fdi, instead compute for all periods listed
     fD = (a + fG[:, np.newaxis] * b) * fdist[:, np.newaxis]
-    ti = np.argmin(np.abs(Per - Period))
-    fDi = fD[:, ti]
 
     PhiPer = [0.01, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1, 1.5, 2, 3, 4, 5, 7.5, 10]
     e1 = [
@@ -188,12 +188,12 @@ def bea20(
         0.188,
         0.199,
     ]
-    e1interp = np.interp(np.log(Per), np.log(PhiPer), e1)
+    e1interp = np.interp(np.log(periods), np.log(PhiPer), e1)
 
-    # phired and phiredi
-    PhiRed = np.matlib.repmat(e1interp, len(fD), 1)
+    # Computing phi_red for all periods
+    # Note: In the original matlab implementation this was only done for the period of interest
+    PhiRed = np.tile(e1interp, (len(fD), 1))
     PhiRed[np.invert(Footprint), :] = 0
-    PhiRedi = PhiRed[:, ti]
 
     predictor_functions = {
         "fG": fG,
@@ -203,7 +203,7 @@ def bea20(
         "fs2": fs2,
     }
     other = {
-        "Per": Per,
+        "periods": periods,
         "Rmax": Rmax,
         "Footprint": Footprint,
         "Tpeak": Tpeak,
@@ -212,4 +212,4 @@ def bea20(
         "S2": S2,
     }
 
-    return fD, fDi, PhiRed, PhiRedi, predictor_functions, other
+    return fD, PhiRed, predictor_functions, other
