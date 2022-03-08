@@ -328,7 +328,8 @@ if __name__ == "__main__":
         "SUBDUCTION_INTERFACE": [7, 8, 9],
     }
     vs30_lists = [200, 300, 400, 760]
-    psa_lists = [1.0, 3.0]
+    # psa_lists = [1.0, 3.0]
+    psa_lists = [0.01, 0.15, 0.17, 0.25, 0.5, 1.0]
     # For ACTIVE_SHALLOW and INTERFACE
     # first_rrup_lists = np.linspace(1, 1000, 500)
     first_rrup_lists = np.logspace(np.log10(1), np.log10(500), 100)
@@ -343,9 +344,10 @@ if __name__ == "__main__":
         "SUBDUCTION_SLAB": second_rrup_lists,
     }
     # Update the path to the directory to save plots
-    save_path = pathlib.Path(
-        "/home/tom/Documents/QuakeCoRE/resource/verification_plots"
-    )
+    # save_path = pathlib.Path(
+    #     "/home/tom/Documents/QuakeCoRE/resource/verification_plots"
+    # )
+    save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/resource/uhs_debug_data")
     plot_directory = save_path / "im_rrup"
     plot_directory.mkdir(exist_ok=True, parents=True)
 

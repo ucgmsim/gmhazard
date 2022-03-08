@@ -579,12 +579,16 @@ if __name__ == "__main__":
         "SUBDUCTION_SLAB": [6, 7, 8],
         "SUBDUCTION_INTERFACE": [7, 8, 9],
     }
-    vs30_list = [200, 300, 400, 760]
+    # vs30_list = [200, 300, 400, 760]
+    vs30_list = [200, 300, 760]
     period_list = np.logspace(-2, 1, num=100)
+    # period_list =np.array([0.15, 0.17, 0.25])
     # rrup = [50, 100, 200, 300, 400, 500]
-    rrup = [50]
+    # rrup = [50]
+    rrup = [20, 100]
     # Update the path to the directory to save plots
-    save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/resource/verification_plots")
+    # save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/resource/verification_plots")
+    save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/resource/uhs_debug_data")
 
     psa_sigma_plot(mag_dict, vs30_list, period_list, rrup, save_path)
     psa_plot(mag_dict, vs30_list, period_list, rrup, save_path)
