@@ -7,36 +7,6 @@ from scipy import stats
 from gmhazard_calc.constants import EventType
 
 
-class WeibullTruncatedStrikeSlip(stats.rv_continuous):
-    """Truncates the weibull distribution to between 0 and 1 for strike slip events"""
-
-    weibull = stats.weibull_min(scale=0.626, c=3.921)
-    divide = weibull.cdf(1)
-
-    def _pdf(self, x, *args):
-        return self.weibull.pdf(x, *args) / self.divide
-
-
-class WeibullTruncatedOblique(stats.rv_continuous):
-    """Truncates the weibull distribution to between 0 and 1 for oblique events"""
-
-    weibull = stats.weibull_min(scale=0.612, c=3.353)
-    divide = weibull.cdf(1)
-
-    def _pdf(self, x, *args):
-        return self.weibull.pdf(x, *args) / self.divide
-
-
-class GammaTruncated(stats.rv_continuous):
-    """Truncates the gamma distribution to between 0 and 1 for dip slip events"""
-
-    gamma = stats.gamma(a=7.364, scale=0.072)
-    divide = gamma.cdf(1)
-
-    def _pdf(self, x, *args):
-        return self.gamma.pdf(x, *args) / self.divide
-
-
 def mc_sampling(
     nhypo: int,
     planes: Sequence,
@@ -152,7 +122,10 @@ def uniform_grid(
     down_dip_distribution = _get_down_dip_distribution(event_type)
     # Assuming all widths in the planes are the same
     assert all([x["width"] == planes[0]["width"] for x in planes])
-    dip_weights = down_dip_distribution.pdf(down_dip_locations / planes[0]["width"]) * (
+
+    # Truncating the down dip distribution with cdf of max value
+    down_dip_locations_truncated = down_dip_locations * down_dip_distribution.cdf(1)
+    dip_weights = down_dip_distribution.pdf(down_dip_locations_truncated / planes[0]["width"]) * (
         1 / hypo_down_dip
     )
     combo_weights = (strike_weights[:, np.newaxis] * dip_weights).ravel()
@@ -215,7 +188,8 @@ def latin_hypercube_sampling(
     lhd = stats.qmc.LatinHypercube(2, seed=seed)
     lhd = lhd.random(nhypo)
     lhd[:, 0] = strike_distribution.ppf(lhd[:, 0])
-    lhd[:, 1] = down_dip_distribution.ppf(lhd[:, 1])
+    # Multiplying the lhd values by the cdf of max value to truncate distribution
+    lhd[:, 1] = down_dip_distribution.ppf(lhd[:, 1] * down_dip_distribution.cdf(1))
 
     hypo_planes, plane_ind = [], []
     plane_lengths = np.cumsum(np.asarray([plane["length"] for plane in planes]))
@@ -245,9 +219,8 @@ def _get_down_dip_distribution(event_type: EventType):
     Based on Weilbull or Gamma distributions depending on the EventType
     """
     if event_type == EventType.DIP_SLIP:
-        down_dip_distribution = GammaTruncated(a=0, b=1)
+        return stats.gamma(a=7.364, scale=0.072)
     elif event_type == EventType.STRIKE_SLIP:
-        down_dip_distribution = WeibullTruncatedStrikeSlip(a=0, b=1)
+        return stats.weibull_min(scale=0.626, c=3.921)
     else:
-        down_dip_distribution = WeibullTruncatedOblique(a=0, b=1)
-    return down_dip_distribution
+        return stats.weibull_min(scale=0.612, c=3.353)
