@@ -19,6 +19,7 @@ class NHypoData:
     correct number of hypocentre parameters
     for their method of placement
     """
+
     method: constants.HypoMethod
     nhypo: int = None
     hypo_along_strike: int = None
@@ -158,16 +159,38 @@ def compute_fault_directivity(
         constants.EventType.from_rake(rake),
     )
 
+    # Extract all hypocentre locations across strike
+    shyps = np.asarray(
+        [
+            plane["shyp"]
+            for hypo in hypo_planes
+            for plane in hypo
+            if plane["shyp"] != -999.9
+        ]
+    )
+    # Combine nominal strike to the end of the site coords for computation speed
+    combined_coords = np.concatenate([sites, nominal_strike, nominal_strike2])
+
+    # Calculate rx ry from GC2
+    rx, ry = src_site_dist.calc_rx_ry_GC2_multi_hypocentre(
+        lon_lat_depth, planes, combined_coords, origin_offsets=shyps
+    )
+
+    # Extract the nominal strike ry values
+    ry_start, ry_end = ry[:, -2], ry[:, -1]
+    # Remove nominal strike rx, ry values from rx, ry
+    rx, ry = rx[:, :-2], ry[:, :-2]
+
     if n_procs == 1:
         fdi, phired = [], []
         for ix, cur_planes in enumerate(hypo_planes):
             cur_fdi, (cur_phi_red, _, __) = _compute_directivity_effect(
-                lon_lat_depth,
                 cur_planes,
                 plane_ind[ix],
-                sites,
-                nominal_strike,
-                nominal_strike2,
+                rx[ix],
+                ry[ix],
+                ry_start[ix],
+                ry_end[ix],
                 mag,
                 rake,
                 periods,
@@ -182,12 +205,12 @@ def compute_fault_directivity(
                 _compute_directivity_effect,
                 [
                     (
-                        lon_lat_depth,
                         cur_planes,
                         plane_ind[ix],
-                        sites,
-                        nominal_strike,
-                        nominal_strike2,
+                        rx[ix],
+                        ry[ix],
+                        ry_start[ix],
+                        ry_end[ix],
                         mag,
                         rake,
                         periods,
@@ -217,12 +240,12 @@ def compute_fault_directivity(
 
 
 def _compute_directivity_effect(
-    lon_lat_depth: np.ndarray,
     planes: Sequence,
     plane_index: int,
-    sites: np.ndarray,
-    nominal_strike: np.ndarray,
-    nominal_strike2: np.ndarray,
+    rx: np.ndarray,
+    ry: np.ndarray,
+    ry_start: float,
+    ry_end: float,
     mag: float,
     rake: float,
     periods: Sequence[float],
@@ -233,21 +256,22 @@ def _compute_directivity_effect(
 
     Parameters
     ----------
-    lon_lat_depth: np.ndarray
-        Each point of the srf fault in an array with the format
-        [[lon, lat, depth],...]
     planes: List
         List of the planes that make up the fault
     plane_index: int
         The index in planes that the hypocentre is located in
-    sites: np.ndarray
-        Numpy array full of site lon/lat values [[lon, lat],...]
-    nominal_strike: np.ndarray
-        The nominal strike coordinates (edge of the fault)
-        with the highest longitiude value
-    nominal_strike2: np.ndarray
-        The nominal strike coordinates (edge of the fault)
-        with the lowest longitiude value
+    rx: np.ndarray
+        The GC2 coordinates in km. Equivalent to U.
+        A 1d array of length n where n is the number of sites.
+    ry: np.ndarray
+        The GC2 coordinates in km. Equivalent to T.
+        A 1d array of length n where n is the number of sites.
+    ry_start: float
+        Ry value at the starting point of nominal strike
+        (starting edge of the fault)
+    ry_end: float
+        Ry value at the ending point of nominal strike
+        (ending edge of the fault)
     mag: float
         The magnitude of the fault
     rake: float
@@ -255,19 +279,8 @@ def _compute_directivity_effect(
     periods: List[float]
         The periods to calculate for the bea20 model's fD
     """
-    # Calculate rx ry from GC2
-    rx, ry = src_site_dist.calc_rx_ry_GC2(
-        lon_lat_depth, planes, sites, hypocentre_origin=True
-    )
-
-    # Gets the s_max values from the two end points of the fault
-    rx_end, ry_end = src_site_dist.calc_rx_ry_GC2(
-        lon_lat_depth, planes, nominal_strike, hypocentre_origin=True
-    )
-    rx_end2, ry_end2 = src_site_dist.calc_rx_ry_GC2(
-        lon_lat_depth, planes, nominal_strike2, hypocentre_origin=True
-    )
-    s_max = (min(ry_end, ry_end2)[0], max(ry_end, ry_end2)[0])
+    # Gets the s_max ry values from the two end points of the fault in order
+    s_max = (min(ry_start, ry_end), max(ry_start, ry_end))
 
     # Trig to calculate extra features of the fault for directivity based on plane info
     z_tor = planes[plane_index]["dtop"]
