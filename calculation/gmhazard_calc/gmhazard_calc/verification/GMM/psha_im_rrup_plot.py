@@ -208,7 +208,7 @@ def plot_im_rrup(
                 fig, ax = plt.subplots(
                     len(vs30_values),
                     len(mag_dict[tect_type]),
-                    figsize=(18, 18),
+                    figsize=(18, 12),
                     dpi=300,
                 )
                 for vs30 in vs30_values:
@@ -230,9 +230,10 @@ def plot_im_rrup(
                         ax[x_position, y_position].legend(models)
                         ax[x_position, y_position].xaxis.set_label_text("Rrup [km]")
                         ax[x_position, y_position].yaxis.set_label_text(f"{im}")
-                        ax[x_position, y_position].set_xscale("log")
+                        # ax[x_position, y_position].set_xscale("log")
                         ax[x_position, y_position].set_yscale("log")
-                        ax[x_position, y_position].margins(x=0)
+                        # ax[x_position, y_position].margins(x=0)
+                        ax[x_position, y_position].set_xlim([10, 1000])
                         ax[x_position, y_position].set_ylim([0.0001, 10])
                         ax[x_position, y_position].xaxis.grid(
                             True, which="both", linestyle="dotted"
@@ -244,7 +245,7 @@ def plot_im_rrup(
                     x_position += 1
 
                 fig.tight_layout()
-                plt.savefig(f"{plot_directory}/{tect_type}_{im}.png")
+                plt.savefig(f"{plot_directory}/{tect_type}_{im}.png", transparent=True)
                 plt.close()
 
 
@@ -277,7 +278,7 @@ def plot_psa_rrup(
         for psa_period in psa_periods:
             x_position = 0
             fig, ax = plt.subplots(
-                len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 18), dpi=300
+                len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 12), dpi=300
             )
             im_label = f"SA({psa_period}s)"
             for vs30 in vs30_values:
@@ -316,7 +317,8 @@ def plot_psa_rrup(
 
             # fig.tight_layout()
             plt.savefig(
-                f"{plot_directory}/{tect_type}_{im_label.replace('.', 'p')}.png"
+                f"{plot_directory}/{tect_type}_{im_label.replace('.', 'p')}.png",
+                transparent=True,
             )
             plt.close()
 
@@ -327,17 +329,19 @@ if __name__ == "__main__":
         "SUBDUCTION_SLAB": [6, 7, 8],
         "SUBDUCTION_INTERFACE": [7, 8, 9],
     }
-    vs30_lists = [200, 300, 400, 760]
+    vs30_lists = [400, 760]
     # psa_lists = [1.0, 3.0]
-    psa_lists = [0.01, 0.15, 0.17, 0.25, 0.5, 1.0]
+    psa_lists = [0.2]
     # For ACTIVE_SHALLOW and INTERFACE
     # first_rrup_lists = np.linspace(1, 1000, 500)
-    first_rrup_lists = np.logspace(np.log10(1), np.log10(500), 100)
+    # first_rrup_lists = np.logspace(np.log10(1), np.log10(500), 100)
+    first_rrup_lists = np.linspace(10, 1000, 200)
     # For SLAB
     # second_rrup_lists = np.linspace(50, 1000, 500)
     second_rrup_lists = np.logspace(np.log10(50), np.log10(500), 100)
     # For INTERFACE
-    third_rrup_lists = np.logspace(np.log10(10), np.log10(500), 100)
+    # third_rrup_lists = np.logspace(np.log10(10), np.log10(1000), 100)
+    third_rrup_lists = np.linspace(10, 1000, 500)
     rrup_dict = {
         "ACTIVE_SHALLOW": first_rrup_lists,
         "SUBDUCTION_INTERFACE": third_rrup_lists,
@@ -364,7 +368,7 @@ if __name__ == "__main__":
     plot_start = time.time()
 
     # Plotting process
-    plot_im_rrup(vs30_lists, mag_dict, rrup_dict, computed_gmms_dict, plot_directory)
+    # plot_im_rrup(vs30_lists, mag_dict, rrup_dict, computed_gmms_dict, plot_directory)
     plot_psa_rrup(
         vs30_lists, mag_dict, psa_lists, rrup_dict, computed_gmms_dict, plot_directory,
     )

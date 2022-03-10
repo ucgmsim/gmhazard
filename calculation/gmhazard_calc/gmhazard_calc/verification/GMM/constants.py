@@ -42,9 +42,9 @@ PSA_IM_NAME = "pSA"
 
 # Based on db_creation/empirical_db/empirical_model_configs/21p10.yaml
 ss_spectral_models = [
-    "ZA_06",
-    "BCH_16",
-    "A_18",
+    # "ZA_06",
+    # "BCH_16",
+    # "A_18",
     "P_20",
     "AG_20",
     "AG_20_NZ",
@@ -52,9 +52,9 @@ ss_spectral_models = [
     "K_20_NZ",
 ]
 si_spectral_models = [
-    "ZA_06",
-    "BCH_16",
-    "A_18",
+    # "ZA_06",
+    # "BCH_16",
+    # "A_18",
     "P_20",
     "AG_20",
     "AG_20_NZ",

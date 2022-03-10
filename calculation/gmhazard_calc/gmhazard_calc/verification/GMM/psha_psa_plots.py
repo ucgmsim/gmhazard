@@ -235,7 +235,7 @@ def plot_psha_psa(
     for tect_type, im_models in const.MODELS_DICT.items():
         x_position = 0
         fig, ax = plt.subplots(
-            len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 18), dpi=300
+            len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 12), dpi=300
         )
 
         for vs30 in vs30_values:
@@ -339,7 +339,9 @@ def plot_psha_psa(
         fig.tight_layout()
         # fig.subplots_adjust(right=0.75)
         # plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", borderaxespad=0)
-        plt.savefig(f"{plot_directory}/{tect_type}_pSA_versus_T.png")
+        plt.savefig(
+            f"{plot_directory}/{tect_type}_pSA_versus_T.png", transparent=True,
+        )
         plt.close()
 
 
@@ -580,16 +582,16 @@ if __name__ == "__main__":
         "SUBDUCTION_INTERFACE": [7, 8, 9],
     }
     # vs30_list = [200, 300, 400, 760]
-    vs30_list = [200, 300, 760]
+    vs30_list = [300, 760]
     period_list = np.logspace(-2, 1, num=100)
     # period_list =np.array([0.15, 0.17, 0.25])
     # rrup = [50, 100, 200, 300, 400, 500]
     # rrup = [50]
-    rrup = [20, 100]
+    rrup = [75, 200]
     # Update the path to the directory to save plots
     # save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/resource/verification_plots")
     save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/resource/uhs_debug_data")
 
-    psa_sigma_plot(mag_dict, vs30_list, period_list, rrup, save_path)
+    # psa_sigma_plot(mag_dict, vs30_list, period_list, rrup, save_path)
     psa_plot(mag_dict, vs30_list, period_list, rrup, save_path)
-    psa_median_plot(mag_dict, vs30_list, period_list, rrup, save_path)
+    # psa_median_plot(mag_dict, vs30_list, period_list, rrup, save_path)
