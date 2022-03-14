@@ -21,9 +21,7 @@ Possible tectonic types
 - SUBDUCTION_INTERFACE
 - SUBDUCTION_SLAB
 """
-CONST_SITE_PARAMS = {
-    "rtvz": 0,
-}
+CONST_SITE_PARAMS = {"rtvz": 0, "z1p0": 0.0}
 
 CONST_FAULT_PARAMS = {
     "ACTIVE_SHALLOW": {"rake": 0, "dip": 90, "ztor": 0, "hdepth": 10, "zbot": 11,},
@@ -92,13 +90,12 @@ DEFAULT_LABEL_COLOR = {
     "BSSA_14": "#ff0000",
     "CB_14": "#0000ff",
     "CY_14": "#ff6f00",
-
     "ZA_06": "#000000",
     "BCH_16": "#911eb4",
     "A_18": "#ff6f00",
     "AG_20": "#00ff00",
     "AG_20_NZ": "#00ff00",
-    "K_20" : "#0000ff",
+    "K_20": "#0000ff",
     "K_20_NZ": "#0000ff",
     "P_20": "#ff0000",
 }
