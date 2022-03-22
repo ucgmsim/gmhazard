@@ -51,7 +51,7 @@ class SiteSourceDB(BaseDB):
             self._keys_cache = set(self._db.keys())
 
         return [
-            cur_key.split("_")[-1]
+            cur_key.split("_", maxsplit=1)[-1]
             for cur_key in self._keys_cache
             if cur_key.startswith("/distance")
         ]
