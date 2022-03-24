@@ -122,6 +122,8 @@ def calculate_ds(
             for i, n_rows, site, n_mp_proc in iter(
                 lambda: comm.sendrecv(value, dest=master), StopIteration
             ):
+                print("IN CALC_EMP_DS")
+                print(site)
                 comm_time = time.perf_counter() - s_time
                 wait_time += comm_time
                 if distance_store.has_station_data(site.name):
