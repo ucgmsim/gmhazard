@@ -51,6 +51,8 @@ class SiteSourceDB(BaseDB):
             self._keys_cache = set(self._db.keys())
 
         return [
+            # removes the '/distance/station_' at the start
+            # of the key to retrieve the station name
             cur_key.split("_", maxsplit=1)[-1]
             for cur_key in self._keys_cache
             if cur_key.startswith("/distance")
