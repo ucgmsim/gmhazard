@@ -7,6 +7,10 @@ from gmhazard_calc import constants as const
 from .BaseDB import BaseDB, check_open
 
 
+STATION_DIRECTIVITY = "/directivity/station"
+STATION_DISTANCE = "/distances/station"
+
+
 class SiteSourceDB(BaseDB):
     """Class that handles retrieving/writing data with a SiteSourceDB"""
 
@@ -51,11 +55,11 @@ class SiteSourceDB(BaseDB):
             self._keys_cache = set(self._db.keys())
 
         return [
-            # removes the '/distance/station_' at the start
+            # removes the '/distances/station_' at the start
             # of the key to retrieve the station name
             cur_key.split("_", maxsplit=1)[-1]
             for cur_key in self._keys_cache
-            if cur_key.startswith("/distance")
+            if cur_key.startswith(STATION_DISTANCE)
         ]
 
     @check_open
@@ -223,8 +227,8 @@ class SiteSourceDB(BaseDB):
 
     @staticmethod
     def station_distance_h5_key(name):
-        return f"/distances/station_{name}"
+        return f"{STATION_DISTANCE}_{name}"
 
     @staticmethod
     def station_directivity_h5_key(name):
-        return f"/directivity/station_{name}"
+        return f"{STATION_DIRECTIVITY}_{name}"
