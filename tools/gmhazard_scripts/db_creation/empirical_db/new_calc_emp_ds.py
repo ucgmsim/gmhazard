@@ -36,46 +36,51 @@ def calculate_ds(
     nhm_data = gc.utils.ds_nhm_to_rup_df(background_sources_ffp)
     rupture_df = pd.DataFrame(nhm_data["rupture_name"])
     imdb_dict, stations_calculated = common.open_imdbs(
-        model_dict_ffp,
-        output_dir,
-        gc.constants.SourceType.distributed,
-        suffix=suffix,
+        model_dict_ffp, output_dir, gc.constants.SourceType.distributed, suffix=suffix,
     )
     model_dict = empirical_factory.read_model_dict(model_dict_ffp)
-
-    imdb_dict_copy = {key: None for key in imdb_dict.keys()}
+    count = 0
     with gc.dbs.SiteSourceDB(site_source_db_ffp) as distance_store:
         fault_df, n_stations, site_df, _ = common.get_work(
             distance_store, vs30_ffp, z_ffp, None, 1, stations_calculated
         )
         for _, site in site_df.iterrows():
+            print(f"{count + 1} / {n_stations} started")
             max_dist = common.get_max_dist_zfac_scaled(site)
 
             value = (
                 common.new_calculate_emp_site(
                     ims,
                     psa_periods,
-                    imdb_dict_copy,
+                    imdb_dict,
                     fault_df,
-                    rupture_df,
                     distance_store,
                     nhm_data,
                     site.vs30,
+                    site.vs30measured if hasattr(site, "vs30measured") else None,
                     site.z1p0 if hasattr(site, "z1p0") else None,
                     site.z2p5 if hasattr(site, "z2p5") else None,
                     site.name,
                     model_dict,
                     max_dist,
                     dist_filter_by_mag=True,
-                    return_vals=True,
+                    return_vals=False,
                     use_directivity=False,
-                    n_procs=1,
                 ),
                 site.name,
             )
+            count += 1
 
-            breakpoint()
-
+    common.write_metadata_and_close(
+        imdb_dict,
+        background_sources_ffp,
+        rupture_df,
+        site_df,
+        vs30_ffp,
+        psa_periods,
+        ims,
+        model_dict_ffp,
+    )
 
 
 def parse_args():
@@ -85,8 +90,7 @@ def parse_args():
     parser.add_argument("vs30_file")
     parser.add_argument("output_dir")
     parser.add_argument(
-        "--z-file",
-        help="File name of the Z data",
+        "--z-file", help="File name of the Z data",
     )
     parser.add_argument(
         "--periods",
@@ -106,10 +110,7 @@ def parse_args():
         help="model dictionary to specify which model to use for each tect-type",
     )
     parser.add_argument(
-        "--suffix",
-        "-s",
-        help="suffix for the end of the imdb files",
-        default=None,
+        "--suffix", "-s", help="suffix for the end of the imdb files", default=None,
     )
 
     return parser.parse_args()

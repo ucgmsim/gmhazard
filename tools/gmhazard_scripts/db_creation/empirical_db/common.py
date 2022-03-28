@@ -219,6 +219,8 @@ def __process_rupture(
             fault, str(im_type), tect_type_model_dict
         )
         for GMM, __comp in GMMs:
+            print(GMM)
+            time.sleep(5)
             db_type = f"{GMM.name}_{fault.tect_type.name}"
             values = empirical_factory.compute_gmm(
                 fault,
@@ -254,7 +256,7 @@ def __process_rupture(
 
     print(rupture.rupture_name)
     print(fault_im_result_dict)
-    time.sleep(100)
+    time.sleep(5)
     return rupture.rupture_name, fault_im_result_dict
 
 
@@ -328,7 +330,7 @@ def calculate_emp_site(
 
     if n_procs == 1:
         results = []
-        for index, rupture in matching_df.iterrows():
+        for index, rupture in matching_df[:5].iterrows():
             results.append(
                 __process_rupture(
                     rupture,
@@ -369,6 +371,10 @@ def calculate_emp_site(
         ].index.values.item()
         for cur_gmm, cur_im_dict in cur_fault_im_dict.items():
             im_result_dict[cur_gmm][cur_rupture_id] = cur_im_dict
+            # if len(cur_im_dict) > 0:
+            #     # print(cur_im_dict)
+            #     # print(im_result_dict[cur_gmm][cur_rupture_id])
+            #     time.sleep(10)
 
     im_result_df_dict = {key: {} for key in imdb_dict.keys()}
     for imdb_key in imdb_dict.keys():
@@ -405,10 +411,10 @@ def new_calculate_emp_site(
     psa_periods,
     imdb_dict,
     fault_df,
-    rupture_df,
     distance_store,
     nhm_data,
     vs30,
+    vs30measured,
     z1p0,
     z2p5,
     station_name,
@@ -418,20 +424,7 @@ def new_calculate_emp_site(
     return_vals=False,
     keep_sigma_components=False,
     use_directivity=True,
-    n_procs: int = 1,
 ):
-    print(im_types)
-    print(psa_periods)
-    print(imdb_dict)
-    print(fault_df)
-    print(rupture_df)
-    print(distance_store)
-    print(nhm_data)
-    print(vs30)
-    print(z1p0)
-    print(z2p5)
-    print(station_name)
-    print(tect_type_model_dict)
     """
     Calculates (and writes) all empirical values for all ruptures in nhm_data at a given site.
     Where rjb values are <=200
@@ -453,11 +446,6 @@ def new_calculate_emp_site(
     :param use_directivity: flag to apply the directivity effect to each of the fault calculations. Applies only on pSA
     :return: if return vals is set - a Dictionary of dataframes are returned
     """
-    # Sets Z1.0 and Z2.5 to None if NaN
-    z1p0 = None if z1p0 is None or np.isnan(float(z1p0)) else z1p0
-    z2p5 = None if z1p0 is None or np.isnan(float(z2p5)) else z2p5
-    site = Site(vs30=vs30, z1p0=z1p0, z2p5=z2p5)
-
     distance_df = fault_df.merge(
         distance_store.station_data(station_name),
         left_on="fault_name",
@@ -480,11 +468,12 @@ def new_calculate_emp_site(
         max_dist = max_rjb
     matching_df = matching_df[matching_df["rjb"] < max_dist]
 
+    breakpoint()
     # Adding missing columns
-    matching_df["vs30"] = site.vs30
-    matching_df["vs30measured"] = site.vs30measured
-    matching_df["z1pt0"] = site.z1p0
-    matching_df["z2pt5"] = site.z2p5
+    matching_df["vs30"] = vs30
+    matching_df["vs30measured"] = vs30measured if vs30measured is not None else False
+    matching_df["z1pt0"] = None if z1p0 is None or np.isnan(float(z1p0)) else z1p0
+    matching_df["z2pt5"] = None if z1p0 is None or np.isnan(float(z2p5)) else z2p5
     matching_df["hypo_depth"] = matching_df["dbot"]
     matching_df["ztor"] = matching_df["dtop"]
     matching_df["rx"] = matching_df["rx"].fillna(0)
@@ -500,36 +489,26 @@ def new_calculate_emp_site(
         matching_df.loc[:, "rtvz"] = matching_df.loc[:, "rtvz"].fillna(0)
         matching_df.loc[matching_df["rtvz"] <= 0, "rtvz"] = 0
 
-    results = []
+    fault_im_result_dict = {key: [] for key in imdb_dict.keys()}
     for tect_type in matching_df["tect_type"].unique():
-        results.append(
-            __new_process_rupture(
-                matching_df,
-                im_types,
-                tect_type,
-                tect_type_model_dict,
-                directivity_df if use_directivity else None,
-                psa_periods,
-                keep_sigma_components,
-                {key: {} for key in imdb_dict.keys()},
-                use_directivity,
-            )
+        __new_process_rupture(
+            matching_df,
+            im_types,
+            tect_type,
+            tect_type_model_dict,
+            directivity_df if use_directivity else None,
+            psa_periods,
+            keep_sigma_components,
+            fault_im_result_dict,
+            use_directivity,
         )
-
-    breakpoint()
-    im_result_dict = {key: {} for key in imdb_dict.keys()}
-    for cur_rupture_name, cur_fault_im_dict in results:
-        cur_rupture_id = rupture_df[
-            rupture_df["rupture_name"] == cur_rupture_name
-        ].index.values.item()
-        for cur_gmm, cur_im_dict in cur_fault_im_dict.items():
-            im_result_dict[cur_gmm][cur_rupture_id] = cur_im_dict
 
     im_result_df_dict = {key: {} for key in imdb_dict.keys()}
-    for imdb_key in imdb_dict.keys():
-        im_result_df_dict[imdb_key] = pd.DataFrame.from_dict(
-            im_result_dict[imdb_key], orient="index"
-        )
+    for db_type, values in fault_im_result_dict.items():
+        try:
+            im_result_df_dict[db_type] = pd.concat(values, axis=1)
+        except:
+            im_result_df_dict[db_type] = pd.DataFrame({})
 
     if return_vals:
         return im_result_df_dict
@@ -549,15 +528,7 @@ def __new_process_rupture(
     use_directivity=True,
 ):
     """Helper MP function for calculate_emp_site"""
-    fault = Fault(
-        Mw=rupture.mag,
-        hdepth=rupture.dbot,
-        zbot=rupture.dbot,
-        ztor=rupture.dtop,
-        dip=rupture.dip,
-        rake=rupture.rake,
-        tect_type=classdef.TectType[tect_type],
-    )
+    fault = Fault(tect_type=classdef.TectType[tect_type])
 
     for im_type in im_types:
         GMMs = empirical_factory.determine_all_gmm(
@@ -565,14 +536,16 @@ def __new_process_rupture(
         )
         for GMM, __comp in GMMs:
             db_type = f"{GMM.name}_{fault.tect_type.name}"
-            # values = empirical_factory.compute_gmm(
-            #     fault,
-            #     site,
-            #     GMM,
-            #     str(im_type),
-            #     psa_periods if im_type is IMType.pSA else None,
-            # )
-
+            if GMM.name in (
+                "BCH_16",
+                "A_18",
+                "K_20",
+                "K_20_NZ",
+                "ZA_06",
+                "ASK_14",
+                "CB_14",
+            ):
+                continue
             answer = openquake_wrapper_vectorized.oq_run(
                 GMM,
                 classdef.TectType[tect_type],
@@ -580,11 +553,11 @@ def __new_process_rupture(
                 str(im_type),
                 psa_periods if im_type is IMType.pSA else None,
             )
-            answer = answer.set_index(rupture.loc[rupture["tect_type"] == fault.tect_type.name].index)
-            if len(fault_im_result_dict[db_type]) == 0:
-                fault_im_result_dict[db_type] = [answer]
-            else:
-                fault_im_result_dict[db_type].append(answer)
+            # answer = answer.set_index(
+            #     rupture.loc[rupture["tect_type"] == fault.tect_type.name].index
+            # )
+
+            fault_im_result_dict[db_type].append(answer)
             # fault_im_result_dict[db_type][f"{full_im_name}_sigma"] = stdev
 
             # for i, value in enumerate(values):
@@ -609,5 +582,5 @@ def __new_process_rupture(
             #         ] = sigma_intra
             #     else:
             #         fault_im_result_dict[db_type][f"{full_im_name}_sigma"] = stdev
-
-    return rupture.rupture_name, fault_im_result_dict
+    # breakpoint()
+    # return rupture.rupture_name, fault_im_result_dict
