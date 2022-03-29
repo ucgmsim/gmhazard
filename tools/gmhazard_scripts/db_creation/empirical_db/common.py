@@ -366,10 +366,6 @@ def calculate_emp_site(
         ].index.values.item()
         for cur_gmm, cur_im_dict in cur_fault_im_dict.items():
             im_result_dict[cur_gmm][cur_rupture_id] = cur_im_dict
-            # if len(cur_im_dict) > 0:
-            #     # print(cur_im_dict)
-            #     # print(im_result_dict[cur_gmm][cur_rupture_id])
-            #     time.sleep(10)
 
     im_result_df_dict = {key: {} for key in imdb_dict.keys()}
     for imdb_key in imdb_dict.keys():
@@ -529,14 +525,14 @@ def __new_process_rupture(
     fault_im_result_dict,
     use_directivity=True,
 ):
-    """Helper MP function for calculate_emp_site"""
+    """Helper function for new_calculate_emp_site"""
     fault = Fault(tect_type=classdef.TectType[tect_type])
 
     for im_type in im_types:
         GMMs = empirical_factory.determine_all_gmm(
             fault, str(im_type), tect_type_model_dict
         )
-        for GMM, __comp in GMMs:
+        for GMM, _ in GMMs:
             db_type = f"{GMM.name}_{fault.tect_type.name}"
             if GMM.name in ("K_20", "K_20_NZ", "ZA_06", "ASK_14", "CB_14",):
                 continue
@@ -556,13 +552,31 @@ def __new_process_rupture(
                 ].index,
                 inplace=True,
             )
-
             answer.columns = [
-                f"{'_'.join(col.split('_')[:2])}_sigma"
+                f"{'_'.join(col.split('_')[:2]) if im_type is IMType.pSA else im_type}_sigma"
                 if col.endswith("std_Total")
                 else col
                 for col in answer
             ]
-            fault_im_result_dict[db_type].append(
-                answer.loc[:, answer.columns.str.endswith(("mean", "sigma"))]
-            )
+
+            if keep_sigma_components:
+                new_columns = []
+                for col in answer:
+                    if col.endswith("std_Inter"):
+                        new_columns.append(
+                            f"{'_'.join(col.split('_')[:2]) if im_type is IMType.pSA else im_type}_sigma_inter"
+                        )
+                    elif col.endswith("std_Intra"):
+                        new_columns.append(
+                            f"{'_'.join(col.split('_')[:2]) if im_type is IMType.pSA else im_type}_sigma_intra"
+                        )
+                    else:
+                        new_columns.append(col)
+
+                answer.columns = new_columns
+
+                fault_im_result_dict[db_type].append(answer)
+            else:
+                fault_im_result_dict[db_type].append(
+                    answer.loc[:, answer.columns.str.endswith(("mean", "sigma"))]
+                )
