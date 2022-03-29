@@ -31,7 +31,6 @@ def calculate_ds(
 
     :return: None
     """
-    wait_time = 0.0
     # Setting up some data
     nhm_data = gc.utils.ds_nhm_to_rup_df(background_sources_ffp)
     rupture_df = pd.DataFrame(nhm_data["rupture_name"])
@@ -44,33 +43,39 @@ def calculate_ds(
         fault_df, n_stations, site_df, _ = common.get_work(
             distance_store, vs30_ffp, z_ffp, None, 1, stations_calculated
         )
-        for _, site in site_df.iterrows():
-            print(f"{count + 1} / {n_stations} started")
-            max_dist = common.get_max_dist_zfac_scaled(site)
+        for site, site_data in site_df.iterrows():
+            if distance_store.has_station_data(site):
+                print(f"Processing site {site}, {count + 1} / {n_stations}")
+                max_dist = common.get_max_dist_zfac_scaled(site_data)
+                value = (
+                    common.new_calculate_emp_site(
+                        ims,
+                        psa_periods,
+                        imdb_dict,
+                        fault_df,
+                        rupture_df,
+                        distance_store,
+                        nhm_data,
+                        site_data.vs30,
+                        site_data.vs30measured
+                        if hasattr(site_data, "vs30measured")
+                        else None,
+                        site_data.z1p0 if hasattr(site_data, "z1p0") else None,
+                        site_data.z2p5 if hasattr(site_data, "z2p5") else None,
+                        site_data.name,
+                        model_dict,
+                        max_dist,
+                        dist_filter_by_mag=True,
+                        return_vals=False,
+                        use_directivity=False,
+                    ),
+                    site_data.name,
+                )
+                count += 1
+            else:
+                print(f"Skipping site {site}")
 
-            value = (
-                common.new_calculate_emp_site(
-                    ims,
-                    psa_periods,
-                    imdb_dict,
-                    fault_df,
-                    distance_store,
-                    nhm_data,
-                    site.vs30,
-                    site.vs30measured if hasattr(site, "vs30measured") else None,
-                    site.z1p0 if hasattr(site, "z1p0") else None,
-                    site.z2p5 if hasattr(site, "z2p5") else None,
-                    site.name,
-                    model_dict,
-                    max_dist,
-                    dist_filter_by_mag=True,
-                    return_vals=False,
-                    use_directivity=False,
-                ),
-                site.name,
-            )
-            count += 1
-
+    print("Writing metadata")
     common.write_metadata_and_close(
         imdb_dict,
         background_sources_ffp,
@@ -81,6 +86,7 @@ def calculate_ds(
         ims,
         model_dict_ffp,
     )
+    print("Done")
 
 
 def parse_args():

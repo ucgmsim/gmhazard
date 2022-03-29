@@ -219,8 +219,6 @@ def __process_rupture(
             fault, str(im_type), tect_type_model_dict
         )
         for GMM, __comp in GMMs:
-            print(GMM)
-            time.sleep(5)
             db_type = f"{GMM.name}_{fault.tect_type.name}"
             values = empirical_factory.compute_gmm(
                 fault,
@@ -254,9 +252,6 @@ def __process_rupture(
                 else:
                     fault_im_result_dict[db_type][f"{full_im_name}_sigma"] = stdev
 
-    print(rupture.rupture_name)
-    print(fault_im_result_dict)
-    time.sleep(5)
     return rupture.rupture_name, fault_im_result_dict
 
 
@@ -330,7 +325,7 @@ def calculate_emp_site(
 
     if n_procs == 1:
         results = []
-        for index, rupture in matching_df[:5].iterrows():
+        for index, rupture in matching_df[:20].iterrows():
             results.append(
                 __process_rupture(
                     rupture,
@@ -381,6 +376,9 @@ def calculate_emp_site(
         im_result_df_dict[imdb_key] = pd.DataFrame.from_dict(
             im_result_dict[imdb_key], orient="index"
         )
+        if imdb_key.startswith("Br_10"):
+            print(pd.DataFrame.from_dict(im_result_dict[imdb_key], orient="index"))
+        time.sleep(5)
 
     if return_vals:
         return im_result_df_dict
@@ -411,6 +409,7 @@ def new_calculate_emp_site(
     psa_periods,
     imdb_dict,
     fault_df,
+    rupture_df,
     distance_store,
     nhm_data,
     vs30,
@@ -437,6 +436,7 @@ def new_calculate_emp_site(
     :param distance_store: site source distance h5 - to determine wether the site-source needs to be calculated
     :param nhm_data: rupture dataframe returned from utils.py from either a nhm background sources or fault file
     :param vs30: vs30 value at the given station
+    :param vs30measured: vs30 measured flag, Ture: measured, False: inferred
     :param z1p0: Z1.0 value at the given station
     :param z2p5: Z2.5 value at the given station
     :param station_name: the stations name for the specific station
@@ -462,13 +462,13 @@ def new_calculate_emp_site(
             dir_data, left_on="fault_name", right_index=True,
         )
 
-    if dist_filter_by_mag:
-        max_dist = np.minimum(np.interp(matching_df.mag, MAG, DIST), max_rjb)
-    else:
-        max_dist = max_rjb
+    max_dist = (
+        np.minimum(np.interp(matching_df.mag, MAG, DIST), max_rjb)
+        if dist_filter_by_mag
+        else max_rjb
+    )
     matching_df = matching_df[matching_df["rjb"] < max_dist]
 
-    breakpoint()
     # Adding missing columns
     matching_df["vs30"] = vs30
     matching_df["vs30measured"] = vs30measured if vs30measured is not None else False
@@ -484,7 +484,7 @@ def new_calculate_emp_site(
     if matching_df.get("rtvz") is None:
         matching_df["rtvz"] = 0
     else:
-        # OQ models we have, do not support Volcanic, hence rtvz will always be 0
+        # OQ models we use, do not support Volcanic, hence rtvz will always be 0
         # unless it is already specified
         matching_df.loc[:, "rtvz"] = matching_df.loc[:, "rtvz"].fillna(0)
         matching_df.loc[matching_df["rtvz"] <= 0, "rtvz"] = 0
@@ -493,6 +493,7 @@ def new_calculate_emp_site(
     for tect_type in matching_df["tect_type"].unique():
         __new_process_rupture(
             matching_df,
+            rupture_df,
             im_types,
             tect_type,
             tect_type_model_dict,
@@ -518,6 +519,7 @@ def new_calculate_emp_site(
 
 def __new_process_rupture(
     rupture,
+    rupture_df,
     im_types,
     tect_type,
     tect_type_model_dict,
@@ -536,51 +538,31 @@ def __new_process_rupture(
         )
         for GMM, __comp in GMMs:
             db_type = f"{GMM.name}_{fault.tect_type.name}"
-            if GMM.name in (
-                "BCH_16",
-                "A_18",
-                "K_20",
-                "K_20_NZ",
-                "ZA_06",
-                "ASK_14",
-                "CB_14",
-            ):
+            if GMM.name in ("K_20", "K_20_NZ", "ZA_06", "ASK_14", "CB_14",):
                 continue
+
+            filtered_rupture = rupture.loc[rupture["tect_type"] == fault.tect_type.name]
             answer = openquake_wrapper_vectorized.oq_run(
                 GMM,
                 classdef.TectType[tect_type],
-                rupture.loc[rupture["tect_type"] == fault.tect_type.name],
+                filtered_rupture,
                 str(im_type),
                 psa_periods if im_type is IMType.pSA else None,
             )
-            # answer = answer.set_index(
-            #     rupture.loc[rupture["tect_type"] == fault.tect_type.name].index
-            # )
 
-            fault_im_result_dict[db_type].append(answer)
-            # fault_im_result_dict[db_type][f"{full_im_name}_sigma"] = stdev
+            answer.set_index(
+                rupture_df[
+                    rupture_df["rupture_name"].isin(filtered_rupture["rupture_name"])
+                ].index,
+                inplace=True,
+            )
 
-            # for i, value in enumerate(values):
-            #     full_im_name = (
-            #         IM(im_type, period=psa_periods[i])
-            #         if im_type is IMType.pSA
-            #         else IM(im_type)
-            #     )
-            #     mean = np.log(value[0])
-            #     stdev, sigma_inter, sigma_intra = value[1]
-            #     if use_directivity and im_type is IMType.pSA:
-            #         mean += directivity_adjustment.loc[str(full_im_name)]
-            #         stdev += directivity_adjustment.loc[f"{full_im_name}_sigma"]
-            #
-            #     fault_im_result_dict[db_type][str(full_im_name)] = mean
-            #     if keep_sigma_components:
-            #         fault_im_result_dict[db_type][
-            #             f"{full_im_name}_sigma_inter"
-            #         ] = sigma_inter
-            #         fault_im_result_dict[db_type][
-            #             f"{full_im_name}_sigma_intra"
-            #         ] = sigma_intra
-            #     else:
-            #         fault_im_result_dict[db_type][f"{full_im_name}_sigma"] = stdev
-    # breakpoint()
-    # return rupture.rupture_name, fault_im_result_dict
+            answer.columns = [
+                f"{'_'.join(col.split('_')[:2])}_sigma"
+                if col.endswith("std_Total")
+                else col
+                for col in answer
+            ]
+            fault_im_result_dict[db_type].append(
+                answer.loc[:, answer.columns.str.endswith(("mean", "sigma"))]
+            )
