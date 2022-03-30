@@ -1,5 +1,6 @@
 import argparse
 import time
+import math
 
 import pandas as pd
 import numpy as np
@@ -68,31 +69,28 @@ def polish_rupture_context_df(
     to create a OQ's RuptureContext like DF to be used with OQ's Vectorized Wrapper
     """
     # Adding missing columns
+    # Site Parameters
     rupture_context_df["vs30"] = site_data.vs30
     rupture_context_df["vs30measured"] = (
         site_data.vs30measured if site_data.get("vs30measured") is not None else False
     )
     rupture_context_df["z1pt0"] = (
         None
-        if site_data.z1p0 is None or np.isnan(float(site_data.z1p0))
+        if site_data.get("z1p0") is None or np.isnan(float(site_data.z1p0))
         else site_data.z1p0
     )
     rupture_context_df["z2pt5"] = (
         None
-        if site_data.z1p0 is None or np.isnan(float(site_data.z2p5))
+        if site_data.get("z2p5") is None or np.isnan(float(site_data.z2p5))
         else site_data.z2p5
     )
+
+    # Rupture Parameter
     rupture_context_df[["hypo_depth", "ztor"]] = rupture_context_df[["dbot", "dtop"]]
-    # OQ uses ry0 term
+    rupture_context_df["width"] = 1
+
+    # Distance Parameter - OQ uses ry0 term
     rupture_context_df[["rx", "ry0"]] = rupture_context_df[["rx", "ry"]].fillna(0)
-    # rtvz for Br_10 model
-    if rupture_context_df.get("rtvz") is None:
-        rupture_context_df["rtvz"] = 0
-    else:
-        # OQ's Br_10 does not support Volcanic, hence rtvz will always be 0
-        # unless it is already specified
-        rupture_context_df["rtvz"] = rupture_context_df["rtvz"].fillna(0)
-        rupture_context_df.loc[rupture_context_df["rtvz"] <= 0, "rtvz"] = 0
 
     return rupture_context_df.loc[rupture_context_df["tect_type"] == tect_type]
 
@@ -137,7 +135,7 @@ def calculate_ds(
                 )
                 for GMM_idx, (GMM, _) in enumerate(GMMs):
                     db_type = f"{GMM.name}_{tect_type}"
-                    if GMM.name in ("K_20", "K_20_NZ", "ZA_06", "ASK_14", "CB_14",):
+                    if GMM.name in ("K_20", "K_20_NZ", "ZA_06"):
                         continue
                     print(f"Processing DB Type: {db_type}, {GMM_idx + 1} / {len(GMMs)}")
 
