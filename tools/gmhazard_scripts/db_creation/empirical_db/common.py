@@ -8,14 +8,12 @@ import multiprocessing as mp
 import numpy as np
 import pandas as pd
 
-from empirical.util import empirical_factory, classdef, openquake_wrapper_vectorized
-from empirical.util.classdef import Site, Fault, GMM, TectType
+from empirical.util import empirical_factory, classdef
+from empirical.util.classdef import Site, Fault
 from qcore import formats
 from gmhazard_calc.nz_code.nzs1170p5.nzs_zfactor_2016.ll2z import ll2z
-from gmhazard_calc.rupture import rupture as gc_rupture
 from gmhazard_calc.im import IM, IMType
-from gmhazard_calc import utils, dbs, directivity
-import sha_calc
+from gmhazard_calc import utils, dbs
 
 # fmt: off
 PERIOD = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8,
@@ -325,7 +323,7 @@ def calculate_emp_site(
 
     if n_procs == 1:
         results = []
-        for index, rupture in matching_df[:20].iterrows():
+        for index, rupture in matching_df.iterrows():
             results.append(
                 __process_rupture(
                     rupture,
@@ -372,9 +370,6 @@ def calculate_emp_site(
         im_result_df_dict[imdb_key] = pd.DataFrame.from_dict(
             im_result_dict[imdb_key], orient="index"
         )
-        if imdb_key.startswith("Br_10"):
-            print(pd.DataFrame.from_dict(im_result_dict[imdb_key], orient="index"))
-        time.sleep(5)
 
     if return_vals:
         return im_result_df_dict
