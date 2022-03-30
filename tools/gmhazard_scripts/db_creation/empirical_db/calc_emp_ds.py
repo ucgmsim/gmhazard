@@ -34,6 +34,69 @@ MAG = [
 DIST = [125, 150, 175, 200, 250, 300]
 
 
+def get_rupture_context_df(
+    distance_store: gc.dbs.SiteSourceDB,
+    fault_df: pd.DataFrame,
+    site: str,
+    site_data: pd.Series,
+    nhm_data: pd.DataFrame,
+    tect_type: str,
+):
+    """Creating the form of dataframe for the vectorized OQ Wrapper
+    By combining site, distance and rupture information
+    """
+    distance_df = fault_df.merge(
+        distance_store.station_data(site), left_on="fault_name", right_index=True,
+    )
+    rupture_df = nhm_data.merge(
+        distance_df, left_on="fault_name", right_on="fault_name"
+    )
+    max_dist = np.minimum(
+        np.interp(rupture_df.mag, MAG, DIST),
+        common.get_max_dist_zfac_scaled(site_data),
+    )
+    rupture_df = rupture_df[rupture_df["rjb"] < max_dist]
+
+    return polish_rupture_context_df(rupture_df, site_data, tect_type)
+
+
+def polish_rupture_context_df(
+    rupture_context_df: pd.DataFrame, site_data: pd.Series, tect_type: str,
+):
+    """
+    Combining the given rupture_context_df(Distance and Rupture) with Site information
+    to create a OQ's RuptureContext like DF to be used with OQ's Vectorized Wrapper
+    """
+    # Adding missing columns
+    rupture_context_df["vs30"] = site_data.vs30
+    rupture_context_df["vs30measured"] = (
+        site_data.vs30measured if site_data.get("vs30measured") is not None else False
+    )
+    rupture_context_df["z1pt0"] = (
+        None
+        if site_data.z1p0 is None or np.isnan(float(site_data.z1p0))
+        else site_data.z1p0
+    )
+    rupture_context_df["z2pt5"] = (
+        None
+        if site_data.z1p0 is None or np.isnan(float(site_data.z2p5))
+        else site_data.z2p5
+    )
+    rupture_context_df[["hypo_depth", "ztor"]] = rupture_context_df[["dbot", "dtop"]]
+    # OQ uses ry0 term
+    rupture_context_df[["rx", "ry0"]] = rupture_context_df[["rx", "ry"]].fillna(0)
+    # rtvz for Br_10 model
+    if rupture_context_df.get("rtvz") is None:
+        rupture_context_df["rtvz"] = 0
+    else:
+        # OQ's Br_10 does not support Volcanic, hence rtvz will always be 0
+        # unless it is already specified
+        rupture_context_df["rtvz"] = rupture_context_df["rtvz"].fillna(0)
+        rupture_context_df.loc[rupture_context_df["rtvz"] <= 0, "rtvz"] = 0
+
+    return rupture_context_df.loc[rupture_context_df["tect_type"] == tect_type]
+
+
 def calculate_ds(
     background_sources_ffp,
     site_source_db_ffp,
@@ -78,63 +141,18 @@ def calculate_ds(
                     print(f"Processing DB Type {db_type}, {GMM_idx + 1} / {len(GMMs)}")
 
                     for site in sites:
-                        site_data = site_df.loc[site]
-                        distance_df = fault_df.merge(
-                            distance_store.station_data(site),
-                            left_on="fault_name",
-                            right_index=True,
+                        rupture_context_df = get_rupture_context_df(
+                            distance_store,
+                            fault_df,
+                            site,
+                            site_df.loc[site],
+                            nhm_data,
+                            tect_type,
                         )
-                        matching_df = nhm_data.merge(
-                            distance_df, left_on="fault_name", right_on="fault_name"
-                        )
-
-                        max_dist = np.minimum(
-                            np.interp(matching_df.mag, MAG, DIST),
-                            common.get_max_dist_zfac_scaled(site_data),
-                        )
-
-                        matching_df = matching_df[matching_df["rjb"] < max_dist]
-                        # Adding missing columns
-                        matching_df["vs30"] = site_data.vs30
-                        matching_df["vs30measured"] = (
-                            site_data.vs30measured
-                            if site_data.get("vs30measured") is not None
-                            else False
-                        )
-                        matching_df["z1pt0"] = (
-                            None
-                            if site_data.z1p0 is None or np.isnan(float(site_data.z1p0))
-                            else site_data.z1p0
-                        )
-                        matching_df["z2pt5"] = (
-                            None
-                            if site_data.z1p0 is None or np.isnan(float(site_data.z2p5))
-                            else site_data.z2p5
-                        )
-                        matching_df["hypo_depth"] = matching_df["dbot"]
-                        matching_df["ztor"] = matching_df["dtop"]
-                        matching_df["rx"] = matching_df["rx"].fillna(0)
-                        # OQ uses ry0 term
-                        matching_df["ry0"] = matching_df["ry"].fillna(0)
-
-                        # rtvz
-                        if matching_df.get("rtvz") is None:
-                            matching_df["rtvz"] = 0
-                        else:
-                            # OQ's BR_10 does not support Volcanic, hence rtvz will always be 0
-                            # unless it is already specified
-                            matching_df.loc[:, "rtvz"] = matching_df.loc[
-                                :, "rtvz"
-                            ].fillna(0)
-                            matching_df.loc[matching_df["rtvz"] <= 0, "rtvz"] = 0
-
-                        filtered_rupture = matching_df.loc[
-                            matching_df["tect_type"] == tect_type
-                        ]
                         gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
                             GMM,
                             classdef.TectType[tect_type],
-                            filtered_rupture,
+                            rupture_context_df,
                             str(im),
                             psa_periods if im is gc.im.IMType.pSA else None,
                         )
@@ -142,7 +160,7 @@ def calculate_ds(
                         gmm_calculated_df.set_index(
                             rupture_df[
                                 rupture_df["rupture_name"].isin(
-                                    filtered_rupture["rupture_name"]
+                                    rupture_context_df["rupture_name"]
                                 )
                             ].index,
                             inplace=True,
@@ -200,7 +218,7 @@ def parse_args():
         default=common.IM_TYPE_LIST,
         nargs="+",
         help="Which IMs to calculate",
-        type=gc.im.gc.im.IMType,
+        type=gc.im.IMType,
     )
     parser.add_argument(
         "--model-dict",
