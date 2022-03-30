@@ -1,100 +1,30 @@
+#!/usr/bin/env python3
+"""Script to calculate IMs for empirical distributed seismicity
+
+Writes to multiple empirical DB depending on the config
+"""
 import argparse
+import math
 import time
+import threading
 
+from mpi4py import MPI
 import pandas as pd
-import numpy as np
 
+import gmhazard_calc as sc
 import common
-import gmhazard_calc as gc
-from empirical.util import empirical_factory, classdef, openquake_wrapper_vectorized
+from empirical.util import empirical_factory
 
-# fmt: off
-PERIOD = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8,
-          0.9, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]
-# fmt: on
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
+hostname = MPI.Get_processor_name()
+master = 0
+is_master = not rank
 
-IM_TYPE_LIST = [
-    gc.im.IMType.PGA,
-    gc.im.IMType.pSA,
-    gc.im.IMType.Ds595,
-    gc.im.IMType.Ds575,
-    gc.im.IMType.AI,
-    gc.im.IMType.CAV,
-    gc.im.IMType.PGV,
-]
-
-MAG = [
-    5.25,
-    5.75,
-    6.25,
-    6.75,
-    7.25,
-    8.0,
-]  # Definitions for the maximum magnitude / rjb relation
-DIST = [125, 150, 175, 200, 250, 300]
-
-
-def get_rupture_context_df(
-    distance_store: gc.dbs.SiteSourceDB,
-    fault_df: pd.DataFrame,
-    site: str,
-    site_data: pd.Series,
-    nhm_data: pd.DataFrame,
-    tect_type: str,
-):
-    """Creating the form of dataframe for the vectorized OQ Wrapper
-    By combining site, distance and rupture information
-    """
-    distance_df = fault_df.merge(
-        distance_store.station_data(site), left_on="fault_name", right_index=True,
-    )
-    rupture_df = nhm_data.merge(
-        distance_df, left_on="fault_name", right_on="fault_name"
-    )
-    max_dist = np.minimum(
-        np.interp(rupture_df.mag, MAG, DIST),
-        common.get_max_dist_zfac_scaled(site_data),
-    )
-    rupture_df = rupture_df[rupture_df["rjb"] < max_dist]
-
-    return polish_rupture_context_df(rupture_df, site_data, tect_type)
-
-
-def polish_rupture_context_df(
-    rupture_context_df: pd.DataFrame, site_data: pd.Series, tect_type: str,
-):
-    """
-    Combining the given rupture_context_df(Distance and Rupture) with Site information
-    to create a OQ's RuptureContext like DF to be used with OQ's Vectorized Wrapper
-    """
-    # Adding missing columns
-    rupture_context_df["vs30"] = site_data.vs30
-    rupture_context_df["vs30measured"] = (
-        site_data.vs30measured if site_data.get("vs30measured") is not None else False
-    )
-    rupture_context_df["z1pt0"] = (
-        None
-        if site_data.z1p0 is None or np.isnan(float(site_data.z1p0))
-        else site_data.z1p0
-    )
-    rupture_context_df["z2pt5"] = (
-        None
-        if site_data.z1p0 is None or np.isnan(float(site_data.z2p5))
-        else site_data.z2p5
-    )
-    rupture_context_df[["hypo_depth", "ztor"]] = rupture_context_df[["dbot", "dtop"]]
-    # OQ uses ry0 term
-    rupture_context_df[["rx", "ry0"]] = rupture_context_df[["rx", "ry"]].fillna(0)
-    # rtvz for Br_10 model
-    if rupture_context_df.get("rtvz") is None:
-        rupture_context_df["rtvz"] = 0
-    else:
-        # OQ's Br_10 does not support Volcanic, hence rtvz will always be 0
-        # unless it is already specified
-        rupture_context_df["rtvz"] = rupture_context_df["rtvz"].fillna(0)
-        rupture_context_df.loc[rupture_context_df["rtvz"] <= 0, "rtvz"] = 0
-
-    return rupture_context_df.loc[rupture_context_df["tect_type"] == tect_type]
+if size < 2:
+    print("This script is required to run with MPI and have n_procs >= 2")
+    exit()
 
 
 def calculate_ds(
@@ -108,97 +38,144 @@ def calculate_ds(
     model_dict_ffp,
     suffix=None,
 ):
-    nhm_data = gc.utils.ds_nhm_to_rup_df(background_sources_ffp)
-    rupture_df = pd.DataFrame(nhm_data["rupture_name"])
-    imdb_dict, _ = common.open_imdbs(
-        model_dict_ffp, output_dir, gc.constants.SourceType.distributed, suffix=suffix,
-    )
+    """
+    Calculate Empirical values for every site-fault pairing in the provided site_source_db.
+
+    Pairs the station name with the vs30 value in the provided vs30 file. Only sites that have vs30 values will be calculated.
+
+    Saves all IM values (median and sigma) for all ims specified to the imdb_path in pandas h5 format
+
+    :return: None
+    """
+    imdb_dict = {}
+    wait_time = 0.0
+    nhm_data, rupture_df = None, None
+    if is_master:
+        nhm_data = sc.utils.ds_nhm_to_rup_df(background_sources_ffp)
+        rupture_df = pd.DataFrame(nhm_data["rupture_name"])
+        imdb_dict, stations_calculated = common.open_imdbs(
+            model_dict_ffp,
+            output_dir,
+            sc.constants.SourceType.distributed,
+            suffix=suffix,
+        )
+    nhm_data = comm.bcast(nhm_data, root=master)
+    rupture_df = comm.bcast(rupture_df, root=master)
+    imdb_dict_copy = comm.bcast({key: None for key in imdb_dict.keys()}, root=master)
     model_dict = empirical_factory.read_model_dict(model_dict_ffp)
 
-    with gc.dbs.SiteSourceDB(site_source_db_ffp) as distance_store:
-        fault_df, _, site_df, _ = common.get_work(
-            distance_store, vs30_ffp, z_ffp, None, None
-        )
-        # Filter the site/station that the distance_store actually has
-        sites = [
-            site for site in site_df.index if distance_store.has_station_data(site)
-        ]
+    with sc.dbs.SiteSourceDB(site_source_db_ffp) as distance_store:
+        fault_df = None
+        if is_master:
+            # For DS, master is getting all of the work and then distributing it to slaves. Hence why size is 1.
+            fault_df, n_stations, site_df, work = common.get_work(
+                distance_store, vs30_ffp, z_ffp, rank, 1, stations_calculated
+            )
+        fault_df = comm.bcast(fault_df, root=master)
 
-        for im_idx, im in enumerate(ims):
-            print(f"Processing IM: {im}, {im_idx + 1} / {len(ims)}")
-            for tect_idx, tect_type in enumerate(nhm_data["tect_type"].unique()):
-                print(
-                    f"Processing Tectonic Type: {tect_type}, {tect_idx + 1} / {len(nhm_data['tect_type'].unique())}"
-                )
-                GMMs = empirical_factory.determine_all_gmm(
-                    classdef.Fault(tect_type=classdef.TectType[tect_type]),
-                    str(im),
-                    model_dict,
-                )
-                for GMM_idx, (GMM, _) in enumerate(GMMs):
-                    db_type = f"{GMM.name}_{tect_type}"
-                    if GMM.name in ("K_20", "K_20_NZ", "ZA_06", "ASK_14", "CB_14",):
-                        continue
-                    print(f"Processing DB Type: {db_type}, {GMM_idx + 1} / {len(GMMs)}")
+        status = MPI.Status()
+        if is_master:
+            nslaves = size - 1
+            n_rows = len(work)
+            print(f"{n_rows} stations to compute")
 
-                    for site in sites:
-                        rupture_context_df = get_rupture_context_df(
-                            distance_store,
+            # Determine number of MP processes to use per site
+            n_mp_proc = math.ceil(size / n_rows) if size > n_rows else 1
+            print(f"Using {n_mp_proc} MP processes per station")
+
+            i = 0
+            results = []
+            writer = threading.Thread(
+                None, print, "writer", ("Writer thread started")
+            )  # create the thread object to check if it is running below
+            while nslaves:
+                value, station_name = comm.recv(source=MPI.ANY_SOURCE, status=status)
+                slave_id = status.Get_source()
+
+                # next job - gives work before storing data
+                if i < n_rows:
+                    msg = (i, n_rows, work.iloc[i], n_mp_proc)
+                    comm.send(obj=msg, dest=slave_id)
+                    i += 1
+                else:
+                    comm.send(obj=StopIteration, dest=slave_id)
+                    nslaves -= 1
+
+                if station_name is None:
+                    print(f"Rank {slave_id} asking for work")
+                else:
+                    print(f"Received site {station_name} from {slave_id}")
+                    results.append((value, imdb_dict, station_name))
+                    if not writer.is_alive():
+                        writer = threading.Thread(
+                            None, write_results_to_db, "writer", (results,)
+                        )
+                        writer.start()
+                        results = []
+            if len(results) > 0:
+                write_results_to_db(results)
+            writer.join()
+            print("all done")
+        else:
+            value = (None, None)
+            s_time = time.perf_counter()
+            for i, n_rows, site, n_mp_proc in iter(
+                lambda: comm.sendrecv(value, dest=master), StopIteration
+            ):
+                comm_time = time.perf_counter() - s_time
+                wait_time += comm_time
+                if distance_store.has_station_data(site.name):
+                    print(
+                        f"Processing site {i + 1} / {n_rows} - Rank: {rank} - {hostname} - waited for {comm_time:.2f}s"
+                    )
+                    max_dist = common.get_max_dist_zfac_scaled(site)
+                    value = (
+                        common.calculate_emp_site(
+                            ims,
+                            psa_periods,
+                            imdb_dict_copy,
                             fault_df,
-                            site,
-                            site_df.loc[site],
+                            rupture_df,
+                            distance_store,
                             nhm_data,
-                            tect_type,
-                        )
-                        gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
-                            GMM,
-                            classdef.TectType[tect_type],
-                            rupture_context_df,
-                            str(im),
-                            psa_periods if im is gc.im.IMType.pSA else None,
-                        )
-                        # Matching the index with rupture_df
-                        # to have a right rupture label
-                        gmm_calculated_df.set_index(
-                            rupture_df[
-                                rupture_df["rupture_name"].isin(
-                                    rupture_context_df["rupture_name"]
-                                )
-                            ].index,
-                            inplace=True,
-                        )
-                        gmm_calculated_df.columns = [
-                            f"{'_'.join(col.split('_')[:2]) if im is gc.im.IMType.pSA else im}_sigma"
-                            if col.endswith("std_Total")
-                            else col
-                            for col in gmm_calculated_df
-                        ]
+                            site.vs30,
+                            site.z1p0 if hasattr(site, "z1p0") else None,
+                            site.z2p5 if hasattr(site, "z2p5") else None,
+                            site.name,
+                            model_dict,
+                            max_dist,
+                            dist_filter_by_mag=True,
+                            return_vals=True,
+                            n_procs=n_mp_proc,
+                            use_directivity=False,
+                        ),
+                        site.name,
+                    )
+                else:
+                    print(f"Skipping site {i} - Rank: {rank}")
+                print(f"total time for station: {time.perf_counter() - s_time:.2f}s")
+                s_time = time.perf_counter()
+            print(
+                f"rank: {rank} - {hostname} complete. Total time waited {wait_time:.2f}s"
+            )
 
-                        # Write an im_df to the given station/site
-                        imdb_dict[db_type].open()
-                        imdb_dict[db_type].add_im_data(
-                            site,
-                            gmm_calculated_df.loc[
-                                :,
-                                gmm_calculated_df.columns.str.endswith(
-                                    ("mean", "sigma")
-                                ),
-                            ],
-                        )
-                        imdb_dict[db_type].close()
+    if is_master:
+        common.write_metadata_and_close(
+            imdb_dict,
+            background_sources_ffp,
+            rupture_df,
+            site_df,
+            vs30_ffp,
+            psa_periods,
+            ims,
+            model_dict_ffp,
+        )
 
-    print("Writing metadata")
-    common.write_metadata_and_close(
-        imdb_dict,
-        background_sources_ffp,
-        rupture_df,
-        site_df,
-        vs30_ffp,
-        psa_periods,
-        ims,
-        model_dict_ffp,
-    )
-    print("Done")
+
+def write_results_to_db(results):
+    for result in results:
+        print(f"Writing {result[2]}")
+        common.write_result_to_db(*result)
 
 
 def parse_args():
@@ -208,7 +185,8 @@ def parse_args():
     parser.add_argument("vs30_file")
     parser.add_argument("output_dir")
     parser.add_argument(
-        "--z-file", help="File name of the Z data",
+        "--z-file",
+        help="File name of the Z data",
     )
     parser.add_argument(
         "--periods",
@@ -217,26 +195,27 @@ def parse_args():
         help="Which pSA periods to calculate for",
     )
     parser.add_argument(
-        "--im",
-        default=common.IM_TYPE_LIST,
-        nargs="+",
-        help="Which IMs to calculate",
-        type=gc.im.IMType,
+        "--im", default=common.IM_TYPE_LIST, nargs="+", help="Which IMs to calculate", type=sc.im.IMType,
     )
     parser.add_argument(
         "--model-dict",
         help="model dictionary to specify which model to use for each tect-type",
     )
     parser.add_argument(
-        "--suffix", "-s", help="suffix for the end of the imdb files", default=None,
+        "--suffix",
+        "-s",
+        help="suffix for the end of the imdb files",
+        default=None,
     )
 
     return parser.parse_args()
 
 
 def calculate_emp_ds():
-    args = parse_args()
-    start = time.time()
+    args = None
+    if is_master:
+        args = parse_args()
+    args = comm.bcast(args, root=master)
     calculate_ds(
         args.background_txt,
         args.site_source_db,
@@ -248,7 +227,6 @@ def calculate_emp_ds():
         args.model_dict,
         suffix=args.suffix,
     )
-    print(f"Finished in {(time.time() - start) / 60}")
 
 
 if __name__ == "__main__":
