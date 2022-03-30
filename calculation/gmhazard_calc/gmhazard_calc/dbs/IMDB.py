@@ -211,7 +211,8 @@ class IMDB(BaseDB):
 
             # Create updated
             cur_df = pd.concat([cur_df, im_df], axis=1)
-
+        else:
+            cur_df = im_df
         # Write
         self.write_im_data(station_name, cur_df)
 
@@ -343,7 +344,10 @@ class IMDBParametric(IMDB):
 
     @check_open
     def im_data(
-        self, station: str, im: Optional[Union[List[IM], IM]] = None, incl_within_between_sigma: bool = False,
+        self,
+        station: str,
+        im: Optional[Union[List[IM], IM]] = None,
+        incl_within_between_sigma: bool = False,
     ) -> Union[pd.DataFrame, pd.Series, None]:
         """Retrieves the IM parameters for the ruptures
         at a specific site
@@ -383,10 +387,12 @@ class IMDBParametric(IMDB):
             lookup_indices = fileh.root.ruptures.table.read_coordinates(
                 df.index.values
             )["values_block_0"].reshape(-1)
-            df.index = (
-                fileh.root.ruptures.meta.values_block_0.meta.table.read_coordinates(
-                    lookup_indices
-                )["values"].astype(str)
+            df.index = fileh.root.ruptures.meta.values_block_0.meta.table.read_coordinates(
+                lookup_indices
+            )[
+                "values"
+            ].astype(
+                str
             )
 
         if im is not None:
@@ -395,7 +401,14 @@ class IMDBParametric(IMDB):
             if incl_within_between_sigma:
                 single_im_columns = ["mu", "between_event_sigma", "within_event_sigma"]
                 im_columns = list(
-                    (itertools.chain(*[(f"{im}", f"{im}_sigma_inter", f"{im}_sigma_intra") for im in set(ims)]))
+                    (
+                        itertools.chain(
+                            *[
+                                (f"{im}", f"{im}_sigma_inter", f"{im}_sigma_intra")
+                                for im in set(ims)
+                            ]
+                        )
+                    )
                 )
             else:
                 single_im_columns = ["mu", "sigma"]
@@ -513,7 +526,9 @@ class IMDBNonParametric(IMDB):
 
         simulations = self.simulations()
         df["realisation"] = simulations.iloc[df.index.values].values
-        df["fault"] = np.stack(np.char.split(df.realisation.values.astype(str), "_", maxsplit=1))[:, 0]
+        df["fault"] = np.stack(
+            np.char.split(df.realisation.values.astype(str), "_", maxsplit=1)
+        )[:, 0]
         df.sort_values(["fault", "realisation"], inplace=True)
 
         # Create hierarchical dataframe index (fault, realisation)
