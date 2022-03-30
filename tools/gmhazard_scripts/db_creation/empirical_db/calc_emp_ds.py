@@ -116,18 +116,19 @@ def calculate_ds(
     model_dict = empirical_factory.read_model_dict(model_dict_ffp)
 
     with gc.dbs.SiteSourceDB(site_source_db_ffp) as distance_store:
-        fault_df, n_stations, site_df, _ = common.get_work(
+        fault_df, _, site_df, _ = common.get_work(
             distance_store, vs30_ffp, z_ffp, None, None
         )
+        # Filter the site/station that the distance_store actually has
         sites = [
             site for site in site_df.index if distance_store.has_station_data(site)
         ]
 
         for im_idx, im in enumerate(ims):
-            print(f"Processing IM {im}, {im_idx + 1} / {len(ims)}")
+            print(f"Processing IM: {im}, {im_idx + 1} / {len(ims)}")
             for tect_idx, tect_type in enumerate(nhm_data["tect_type"].unique()):
                 print(
-                    f"Processing Tectonic Type {tect_type}, {tect_idx + 1} / {len(nhm_data['tect_type'].unique())}"
+                    f"Processing Tectonic Type: {tect_type}, {tect_idx + 1} / {len(nhm_data['tect_type'].unique())}"
                 )
                 GMMs = empirical_factory.determine_all_gmm(
                     classdef.Fault(tect_type=classdef.TectType[tect_type]),
@@ -138,7 +139,7 @@ def calculate_ds(
                     db_type = f"{GMM.name}_{tect_type}"
                     if GMM.name in ("K_20", "K_20_NZ", "ZA_06", "ASK_14", "CB_14",):
                         continue
-                    print(f"Processing DB Type {db_type}, {GMM_idx + 1} / {len(GMMs)}")
+                    print(f"Processing DB Type: {db_type}, {GMM_idx + 1} / {len(GMMs)}")
 
                     for site in sites:
                         rupture_context_df = get_rupture_context_df(
@@ -156,7 +157,8 @@ def calculate_ds(
                             str(im),
                             psa_periods if im is gc.im.IMType.pSA else None,
                         )
-
+                        # Matching the index with rupture_df
+                        # to have a right rupture label
                         gmm_calculated_df.set_index(
                             rupture_df[
                                 rupture_df["rupture_name"].isin(
@@ -172,6 +174,7 @@ def calculate_ds(
                             for col in gmm_calculated_df
                         ]
 
+                        # Write an im_df to the given station/site
                         imdb_dict[db_type].open()
                         imdb_dict[db_type].add_im_data(
                             site,
