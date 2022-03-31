@@ -228,15 +228,15 @@ class EnsembleUHSResult(BaseUHSResult):
         return data_dir
 
     @classmethod
-    def load(cls, data_dir: Path):
+    def load(cls, data_dir: Path, ensemble=None):
         """Loads a EnsembleUHSResult from a specified directory
         This also loads the BranchUHSResults and percentiles"""
         metadata, site_info, period_values, sa_values = cls._load_data(data_dir)
 
         with open(data_dir / cls.METADATA_FN, "r") as f:
             metadata = json.load(f)
-        ensemble = gm_data.Ensemble.load(metadata["ensemble_params"])
-
+        if ensemble is None:
+            ensemble = gm_data.Ensemble.load(metadata["ensemble_params"])
         # Load the branches, each directory in the branch_uhs folder
         branches_ffp = data_dir / "branch_uhs"
         branch_uhs = (

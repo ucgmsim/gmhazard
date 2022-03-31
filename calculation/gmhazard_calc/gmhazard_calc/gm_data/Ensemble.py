@@ -203,8 +203,8 @@ class Ensemble:
     @property
     def fault_rupture_df(self):
         return self.rupture_df_id.loc[
-               self.rupture_df_id.rupture_type == const.SourceType.fault.value, :
-               ]
+            self.rupture_df_id.rupture_type == const.SourceType.fault.value, :
+        ]
 
     def get_rupture_id_indices(self, rupture_ids: np.ndarray):
         """Gets the rupture_id_ix values for the given rupture_ids
@@ -240,7 +240,8 @@ class Ensemble:
 
         # Ensure that there are no duplicates in the lookup
         assert (
-            self._rupture_id_ix_lookup.index.unique().size == self._rupture_id_ix_lookup.size
+            self._rupture_id_ix_lookup.index.unique().size
+            == self._rupture_id_ix_lookup.size
         )
 
         # Get indices
@@ -248,7 +249,9 @@ class Ensemble:
 
     def get_rupture_ids(self, rupture_id_ind: np.ndarray):
         """Convert rupture id indices to rupture ids"""
-        result = self._rupture_id_ix_lookup.iloc[rupture_id_ind].index.values.astype(str)
+        result = self._rupture_id_ix_lookup.iloc[rupture_id_ind].index.values.astype(
+            str
+        )
 
         return result
 
@@ -328,7 +331,6 @@ class Ensemble:
                 config_ffp=config_ffp,
                 use_im_data_cache=ensemble_params["use_im_data_cache"],
             )
-
         return cls(
             ensemble_params["name"],
             use_im_data_cache=ensemble_params["use_im_data_cache"],
