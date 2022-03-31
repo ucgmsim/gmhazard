@@ -331,6 +331,7 @@ class Ensemble:
                 config_ffp=config_ffp,
                 use_im_data_cache=ensemble_params["use_im_data_cache"],
             )
+
         return cls(
             ensemble_params["name"],
             use_im_data_cache=ensemble_params["use_im_data_cache"],
