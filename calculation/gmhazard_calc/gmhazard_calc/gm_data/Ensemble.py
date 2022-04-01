@@ -1,6 +1,5 @@
 import os
 import hashlib
-import time
 from glob import glob
 from typing import Dict, TYPE_CHECKING
 
@@ -155,8 +154,6 @@ class Ensemble:
             self.__load_rupture_df()
             self.__load_stations()
 
-
-
     @property
     def stations(self):
         """Dataframe of available stations in the ensemble, defined as
@@ -167,13 +164,11 @@ class Ensemble:
 
         return self._stations
 
-
     @property
     def ims(self):
         if self._ims is None:
             self.__load_ims()
         return self._ims
-
 
     @property
     def rupture_df_id_ix(self) -> pd.DataFrame:
@@ -193,8 +188,8 @@ class Ensemble:
     @property
     def fault_rupture_df(self):
         return self.rupture_df_id.loc[
-               self.rupture_df_id.rupture_type == const.SourceType.fault.value, :
-               ]
+            self.rupture_df_id.rupture_type == const.SourceType.fault.value, :
+        ]
 
     @property
     def station_ffp(self):
@@ -234,7 +229,8 @@ class Ensemble:
 
         # Ensure that there are no duplicates in the lookup
         assert (
-            self._rupture_id_ix_lookup.index.unique().size == self._rupture_id_ix_lookup.size
+            self._rupture_id_ix_lookup.index.unique().size
+            == self._rupture_id_ix_lookup.size
         )
 
         # Get indices
@@ -242,7 +238,9 @@ class Ensemble:
 
     def get_rupture_ids(self, rupture_id_ind: np.ndarray):
         """Convert rupture id indices to rupture ids"""
-        result = self._rupture_id_ix_lookup.iloc[rupture_id_ind].index.values.astype(str)
+        result = self._rupture_id_ix_lookup.iloc[rupture_id_ind].index.values.astype(
+            str
+        )
 
         return result
 
