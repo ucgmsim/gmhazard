@@ -36,7 +36,7 @@ class IMEnsemble:
         ensemble: "Ensemble",
         config: Dict,
         use_im_data_cache: bool = False,
-        lazy_loading: bool = True
+        lazy_loading: bool = True,
     ):
         self._im_types = [im_types] if isinstance(im_types, IMType) else im_types
         self._config = config
@@ -69,8 +69,6 @@ class IMEnsemble:
             self.__load_ims()
 
         return self._ims
-
-
 
     @property
     def stations(self) -> pd.DataFrame:
@@ -164,6 +162,4 @@ class IMEnsemble:
             *[set(branch.stations) for branch in self.branches_dict.values()]
         ).intersection(self.ensemble.stations_ll_df.index)
 
-        self._stations = self.ensemble.stations_ll_df.loc[
-            branch_stations
-        ].sort_index()
+        self._stations = self.ensemble.stations_ll_df.loc[branch_stations].sort_index()
