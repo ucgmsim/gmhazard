@@ -81,11 +81,11 @@ class Leaf:
                 # Stations
                 if cur_imdb_ffp in self.flt_imdb_ffps:
                     self._flt_stations.append(
-                        cur_imdb.sites().index.values.astype(np.unicode)
+                        cur_imdb.sites().index.values.astype(str)
                     )
                 elif cur_imdb_ffp in self.ds_imdb_ffps:
                     self._ds_stations.append(
-                        cur_imdb.sites().index.values.astype(np.unicode)
+                        cur_imdb.sites().index.values.astype(str)
                     )
 
                 # IMs (intersection of IMs across all dbs)

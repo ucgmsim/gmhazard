@@ -18,7 +18,7 @@ class IMEnsemble:
 
     Parameters
     ----------
-    ims: sequence of IMType or IMType
+    im_types: sequence of IMType or IMType
         The IMs this IM-Ensemble supports
     ensemble: Ensemble
         The parent ensemble
@@ -32,13 +32,13 @@ class IMEnsemble:
 
     def __init__(
         self,
-        ims: Union[Sequence[IMType], IMType],
+        im_types: Union[Sequence[IMType], IMType],
         ensemble: "Ensemble",
         config: Dict,
         use_im_data_cache: bool = False,
+        lazy_loading: bool = True,
     ):
-
-        self.ims = [ims] if isinstance(ims, IMType) else ims
+        self._im_types = [im_types] if isinstance(im_types, IMType) else im_types
         self._config = config
         self.ensemble = ensemble
 
@@ -56,33 +56,25 @@ class IMEnsemble:
         }
 
         self._stations, self._rupture_df = None, None
+        self._ims = None
 
-        if IMType.pSA in self.ims:
-            self.ims = set(list(self.branches[0].ims))
-            for cur_branch in self.branches:
-                self.ims.intersection_update(list(cur_branch.ims))
-        else:
-            self.ims = [IM(im) for im in self.ims]
+        if not lazy_loading:
+            self.__load_ims()
+            self.__load_rupture_df()
+            self.__load_stations()
 
-        # Apply IM Components
-        self.ims = np.asarray(
-            [
-                IM(cur_im.im_type, period=cur_im.period, component=cur_comp)
-                for cur_im in self.ims
-                for cur_comp in IM_COMPONENT_MAPPING[cur_im.im_type]
-            ]
-        )
+    @property
+    def ims(self):
+        if self._ims is None:
+            self.__load_ims()
+
+        return self._ims
 
     @property
     def stations(self) -> pd.DataFrame:
         if self._stations is None:
-            branch_stations = set.intersection(
-                *[set(branch.stations) for branch in self.branches_dict.values()]
-            ).intersection(self.ensemble.stations_ll_df.index)
+            self.__load_stations()
 
-            self._stations = self.ensemble.stations_ll_df.loc[
-                branch_stations
-            ].sort_index()
         return self._stations
 
     @property
@@ -147,3 +139,27 @@ class IMEnsemble:
                 self._rupture_df = self._rupture_df.loc[
                     ~self._rupture_df.index.duplicated()
                 ]
+
+    def __load_ims(self):
+        if IMType.pSA in self._im_types:
+            self._ims = set(list(self.branches[0].ims))
+            for cur_branch in self.branches:
+                self._ims.intersection_update(list(cur_branch.ims))
+        else:
+            self._ims = [IM(im) for im in self._im_types]
+
+        # Apply IM Components
+        self._ims = np.asarray(
+            [
+                IM(cur_im.im_type, period=cur_im.period, component=cur_comp)
+                for cur_im in self._ims
+                for cur_comp in IM_COMPONENT_MAPPING[cur_im.im_type]
+            ]
+        )
+
+    def __load_stations(self):
+        branch_stations = set.intersection(
+            *[set(branch.stations) for branch in self.branches_dict.values()]
+        ).intersection(self.ensemble.stations_ll_df.index)
+
+        self._stations = self.ensemble.stations_ll_df.loc[branch_stations].sort_index()

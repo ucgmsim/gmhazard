@@ -99,9 +99,6 @@ class Ensemble:
             for im_string in self._config["datasets"]
         }
         self.im_ensembles = list(self.im_ensembles_dict.values())
-        self.ims = list(
-            set(np.concatenate([im_ensemble.ims for im_ensemble in self.im_ensembles]))
-        )
 
         # Load the vs30 values
         self.vs30_df = (
@@ -133,6 +130,7 @@ class Ensemble:
         self.ds_ssddb_ffp = self._config["ds_ssdb"]
 
         self._stations, self._rupture_df = None, None
+        self._ims = None
 
         # Create the rupture_id lookup, needed as rupture_ids are very long and
         # therefore use a significant amount of memory for ensembles with
@@ -166,24 +164,11 @@ class Ensemble:
 
         return self._stations
 
-    def __load_stations(self):
-        station_ids = set(list(self.im_ensembles[0].stations.index.values.astype(str)))
-        for cur_im_ensemble in self.im_ensembles[1:]:
-            station_ids.intersection_update(
-                list(cur_im_ensemble.stations.index.values.astype(str))
-            )
-        self._stations = self.stations_ll_df.loc[list(station_ids)]
-
-    def __load_rupture_df(self):
-        for im_ensemble in self.im_ensembles:
-            if self._rupture_df is None:
-                self._rupture_df = im_ensemble.rupture_df_id_ix
-            else:
-                # Append and drop duplicates
-                self._rupture_df = self._rupture_df.append(im_ensemble.rupture_df_id_ix)
-                self._rupture_df = self._rupture_df.loc[
-                    ~self._rupture_df.index.duplicated()
-                ]
+    @property
+    def ims(self):
+        if self._ims is None:
+            self.__load_ims()
+        return self._ims
 
     @property
     def rupture_df_id_ix(self) -> pd.DataFrame:
@@ -203,8 +188,12 @@ class Ensemble:
     @property
     def fault_rupture_df(self):
         return self.rupture_df_id.loc[
-               self.rupture_df_id.rupture_type == const.SourceType.fault.value, :
-               ]
+            self.rupture_df_id.rupture_type == const.SourceType.fault.value, :
+        ]
+
+    @property
+    def station_ffp(self):
+        return self._config["stations"]
 
     def get_rupture_id_indices(self, rupture_ids: np.ndarray):
         """Gets the rupture_id_ix values for the given rupture_ids
@@ -240,7 +229,8 @@ class Ensemble:
 
         # Ensure that there are no duplicates in the lookup
         assert (
-            self._rupture_id_ix_lookup.index.unique().size == self._rupture_id_ix_lookup.size
+            self._rupture_id_ix_lookup.index.unique().size
+            == self._rupture_id_ix_lookup.size
         )
 
         # Get indices
@@ -248,7 +238,9 @@ class Ensemble:
 
     def get_rupture_ids(self, rupture_id_ind: np.ndarray):
         """Convert rupture id indices to rupture ids"""
-        result = self._rupture_id_ix_lookup.iloc[rupture_id_ind].index.values.astype(str)
+        result = self._rupture_id_ix_lookup.iloc[rupture_id_ind].index.values.astype(
+            str
+        )
 
         return result
 
@@ -334,6 +326,26 @@ class Ensemble:
             use_im_data_cache=ensemble_params["use_im_data_cache"],
         )
 
-    @property
-    def station_ffp(self):
-        return self._config["stations"]
+    def __load_stations(self):
+        station_ids = set(list(self.im_ensembles[0].stations.index.values.astype(str)))
+        for cur_im_ensemble in self.im_ensembles[1:]:
+            station_ids.intersection_update(
+                list(cur_im_ensemble.stations.index.values.astype(str))
+            )
+        self._stations = self.stations_ll_df.loc[list(station_ids)]
+
+    def __load_rupture_df(self):
+        for im_ensemble in self.im_ensembles:
+            if self._rupture_df is None:
+                self._rupture_df = im_ensemble.rupture_df_id_ix
+            else:
+                # Append and drop duplicates
+                self._rupture_df = self._rupture_df.append(im_ensemble.rupture_df_id_ix)
+                self._rupture_df = self._rupture_df.loc[
+                    ~self._rupture_df.index.duplicated()
+                ]
+
+    def __load_ims(self):
+        self._ims = list(
+            set(np.concatenate([im_ensemble.ims for im_ensemble in self.im_ensembles]))
+        )
