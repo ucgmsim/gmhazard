@@ -1,13 +1,14 @@
 import argparse
 import time
-import math
 
 import pandas as pd
 import numpy as np
 
 import common
 import gmhazard_calc as gc
-from empirical.util import empirical_factory, classdef, openquake_wrapper_vectorized
+from empirical.util import classdef
+from empirical.util import empirical_factory
+from empirical.util import openquake_wrapper_vectorized
 
 # fmt: off
 PERIOD = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8,
