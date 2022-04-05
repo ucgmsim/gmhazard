@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 
 import flask
-import yaml
 from flask_cors import cross_origin
 
 import api_utils as au
@@ -53,12 +52,7 @@ def get_available_sites():
 
     # Load the project config
     project = utils.get_project(version_str, project_id)
-    # Read the project_id yaml which includes lat&lon information
-    with open(
-        Path(project.ensemble_ffp.rsplit("/", maxsplit=1)[0]) / f"{project_id}.yaml"
-    ) as f:
-        config = yaml.safe_load(f)
-    locations = config["project_parameters"]["locations"]
+    locations = project.config["project_parameters"]["locations"]
 
     loc_dict = {}
     for loc_id, loc_data in project.locations.items():
