@@ -1,6 +1,7 @@
 import base64
 import tempfile
 import json
+import time
 from pathlib import Path
 
 import flask
@@ -52,32 +53,44 @@ def get_available_sites():
     server.app.logger.debug(f"Request parameters {project_id}")
 
     # Load the project config
+    start = time.time()
     project = utils.get_project(version_str, project_id)
+    print(f"Loading project took about {time.time() - start}")
 
     ## Hack: Have lat/lon in the project config file later
+    start2 = time.time()
     ensemble = sc.gm_data.Ensemble(project_id, config_ffp=project.ensemble_ffp)
+    print(f"Loading ensemble took about {time.time() - start2}")
 
     loc_dict = {}
-
+    start3 = time.time()
     for loc_id, loc_data in project.locations.items():
-        cur_site_info = sc.site.get_site_from_name(
-            ensemble,
-            pg.utils.create_station_id(
+        # cur_site_info = sc.site.get_site_from_name(
+        #     ensemble,
+        #     pg.utils.create_station_id(
+        #         loc_id,
+        #         loc_data.vs30_values[0],
+        #         None if loc_data.z1p0_values is None else loc_data.z1p0_values[0],
+        #         None if loc_data.z2p5_values is None else loc_data.z2p5_values[0],
+        #     ),
+        # )
+        station_id = pg.utils.create_station_id(
                 loc_id,
                 loc_data.vs30_values[0],
                 None if loc_data.z1p0_values is None else loc_data.z1p0_values[0],
                 None if loc_data.z2p5_values is None else loc_data.z2p5_values[0],
-            ),
-        )
+            )
+        start4 = time.time()
         loc_dict[loc_id] = {
             "name": loc_data.name,
             "vs30": loc_data.vs30_values,
             "Z1.0": loc_data.z1p0_values,
             "Z2.5": loc_data.z2p5_values,
-            "lat": cur_site_info.lat,
-            "lon": cur_site_info.lon,
+            "lat": ensemble.stations.lat[station_id],
+            "lon": ensemble.stations.lon[station_id]
         }
-
+        print(f"To create a single loc_id dict {loc_id}, took about {time.time() - start4}")
+    print(f"Creating a dictionary took about {time.time() - start3}")
     return flask.jsonify(loc_dict)
 
 
