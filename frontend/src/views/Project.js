@@ -67,7 +67,7 @@ const Project = () => {
         <Tab
           eventKey="gms"
           title="Ground Motion Selection"
-          disabled={invalidTab() || !hasPermission("admin")}
+          disabled={invalidTab()}
           tabClassName="gms-tab"
         >
           <TwoColumnView cpanel={GMSForm} viewer={GMSViewer} />
