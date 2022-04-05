@@ -15,7 +15,6 @@ import { ScenarioForm, ScenarioViewer } from "components/Project/Scenarios";
 
 const Project = () => {
   const {
-    hasPermission,
     projectId,
     projectLocation,
     projectVS30,
