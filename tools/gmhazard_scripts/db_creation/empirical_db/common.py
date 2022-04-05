@@ -12,13 +12,14 @@ from empirical.util import empirical_factory, classdef
 from empirical.util.classdef import Site, Fault
 from qcore import formats
 from gmhazard_calc.nz_code.nzs1170p5.nzs_zfactor_2016.ll2z import ll2z
+from gmhazard_calc.rupture import rupture as gc_rupture
 from gmhazard_calc.im import IM, IMType
-
-from gmhazard_calc import utils
-from gmhazard_calc import dbs
+from gmhazard_calc import utils, dbs, directivity
+import sha_calc
 
 # fmt: off
-PERIOD = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.9, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]
+PERIOD = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8,
+          0.9, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]
 # fmt: on
 
 IM_TYPE_LIST = [
@@ -102,7 +103,7 @@ def get_work(distance_store, vs30_file, z_file, rank, size, stations_calculated=
     fault_df["fault_name"] = fault_df["fault_name"].astype("category")
 
     n_stations = len(site_to_do_df)
-    work = site_to_do_df[rank::size]
+    work = site_to_do_df[rank::size] if rank is not None and size is not None else None
 
     return fault_df, n_stations, site_df, work
 
@@ -129,7 +130,7 @@ def curate_im_list(tect_type_model_dict, model, periods):
     return get_im_list(im_types, periods)
 
 
-def write_data_and_close(
+def write_metadata_and_close(
     imdb_dict,
     nhm_ffp,
     rupture_df,
@@ -138,6 +139,7 @@ def write_data_and_close(
     psa_periods=None,
     ims=None,
     tect_type_model_dict_ffp=None,
+    rupture_lookup=False,
 ):
     """
     Writes metadata, rupture_df and closes the IMDBs for the ones opened by open_imdbs
@@ -147,6 +149,7 @@ def write_data_and_close(
     :param site_df: site dataframe to save in IMDB - what sites were the input for creating this IMDB
     :param vs30_ffp: filepath to vs30 file
     :param ims: List of IMs these DBs contain
+    :param rupture_lookup: Flag to add rupture lookup data to the imdb
     :return: None
     """
 
@@ -169,6 +172,8 @@ def write_data_and_close(
             ims=np.asarray(im_list, dtype=str),
         )
         imdb_dict[imdb_keys].close()
+        if rupture_lookup:
+            imdb_dict[imdb_keys].add_rupture_lookup(imdb_dict[imdb_keys].db_ffp, 1)
 
 
 def get_max_dist_zfac_scaled(site):
@@ -182,9 +187,11 @@ def __process_rupture(
     site,
     im_types,
     tect_type_model_dict,
+    directivity_adjustment,
     psa_periods,
     keep_sigma_components,
     fault_im_result_dict,
+    use_directivity=True,
 ):
     """Helper MP function for calculate_emp_site"""
     fault = Fault(
@@ -220,7 +227,7 @@ def __process_rupture(
                 str(im_type),
                 psa_periods if im_type is IMType.pSA else None,
             )
-            if not im_type is IMType.pSA:
+            if im_type is not IMType.pSA:
                 values = [values]
             for i, value in enumerate(values):
                 full_im_name = (
@@ -230,6 +237,9 @@ def __process_rupture(
                 )
                 mean = np.log(value[0])
                 stdev, sigma_inter, sigma_intra = value[1]
+                if use_directivity and im_type is IMType.pSA:
+                    mean += directivity_adjustment.loc[str(full_im_name)]
+                    stdev += directivity_adjustment.loc[f"{full_im_name}_sigma"]
 
                 fault_im_result_dict[db_type][str(full_im_name)] = mean
                 if keep_sigma_components:
@@ -257,11 +267,12 @@ def calculate_emp_site(
     z1p0,
     z2p5,
     station_name,
-    tect_type_model_dict_ffp,
+    tect_type_model_dict,
     max_rjb=MAX_RJB,
     dist_filter_by_mag=False,
     return_vals=False,
     keep_sigma_components=False,
+    use_directivity=True,
     n_procs: int = 1,
 ):
     """
@@ -282,14 +293,13 @@ def calculate_emp_site(
     :param tect_type_model_dict_ffp: the relation between tectonic type and which empirical model(s) to use
     :param return_vals: flag to return the values instead of writing them to the DB - specifically for the single
                         writer MPI paradigm
+    :param use_directivity: flag to apply the directivity effect to each of the fault calculations. Applies only on pSA
     :return: if return vals is set - a Dictionary of dataframes are returned
     """
     # Sets Z1.0 and Z2.5 to None if NaN
     z1p0 = None if z1p0 is None or np.isnan(float(z1p0)) else z1p0
     z2p5 = None if z1p0 is None or np.isnan(float(z2p5)) else z2p5
     site = Site(vs30=vs30, z1p0=z1p0, z2p5=z2p5)
-
-    tect_type_model_dict = empirical_factory.read_model_dict(tect_type_model_dict_ffp)
 
     distance_df = fault_df.merge(
         distance_store.station_data(station_name),
@@ -301,28 +311,54 @@ def calculate_emp_site(
         distance_df, left_on="fault_name", right_on="fault_name"
     )
 
+    dir_data = distance_store.station_directivity_data(station_name)
+    if use_directivity and dir_data is not None:
+        directivity_df = fault_df.merge(
+            dir_data,
+            left_on="fault_name",
+            right_index=True,
+        )
+
     if dist_filter_by_mag:
         max_dist = np.minimum(np.interp(matching_df.mag, MAG, DIST), max_rjb)
     else:
         max_dist = max_rjb
     matching_df = matching_df[matching_df["rjb"] < max_dist]
 
-    with mp.Pool(n_procs) as p:
-        results = p.starmap(
-            __process_rupture,
-            [
-                (
+    if n_procs == 1:
+        results = []
+        for index, rupture in matching_df.iterrows():
+            results.append(__process_rupture(
                     rupture,
                     site,
                     im_types,
                     tect_type_model_dict,
+                    directivity_df.iloc[index] if use_directivity else None,
                     psa_periods,
                     keep_sigma_components,
                     {key: {} for key in imdb_dict.keys()},
+                    use_directivity,
                 )
-                for index, rupture in matching_df.iterrows()
-            ],
-        )
+            )
+    else:
+        with mp.Pool(n_procs) as p:
+            results = p.starmap(
+                __process_rupture,
+                [
+                    (
+                        rupture,
+                        site,
+                        im_types,
+                        tect_type_model_dict,
+                        directivity_df.iloc[index] if use_directivity else None,
+                        psa_periods,
+                        keep_sigma_components,
+                        {key: {} for key in imdb_dict.keys()},
+                        use_directivity,
+                    )
+                    for index, rupture in matching_df.iterrows()
+                ],
+            )
 
     im_result_dict = {key: {} for key in imdb_dict.keys()}
     for cur_rupture_name, cur_fault_im_dict in results:

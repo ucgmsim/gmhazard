@@ -1,1 +1,1 @@
-from .rupture import rupture_df_from_erf, rupture_name_to_id, rupture_id_to_ix, rupture_name_to_id_ix, rupture_id_ix_to_rupture_id
+from .rupture import rupture_df_from_erf, rupture_name_to_id, rupture_id_to_ix, rupture_name_to_id_ix, rupture_id_ix_to_rupture_id, get_fault_header_points

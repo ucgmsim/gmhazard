@@ -1,5 +1,6 @@
 import gmhazard_calc.dbs as dbs
 import gmhazard_calc.disagg as disagg
+import gmhazard_calc.directivity as directivity
 import gmhazard_calc.gm_data as gm_data
 import gmhazard_calc.gms as gms
 import gmhazard_calc.hazard as hazard

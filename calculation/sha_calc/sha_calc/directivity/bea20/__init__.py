@@ -1,2 +1,1 @@
 from .bea20 import bea20
-from .directivity import compute_fault_directivity, compute_directivity_srf_single, compute_directivity_srf_multi

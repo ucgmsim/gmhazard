@@ -80,13 +80,9 @@ class Leaf:
             with dbs.IMDB.get_imdb(cur_imdb_ffp) as cur_imdb:
                 # Stations
                 if cur_imdb_ffp in self.flt_imdb_ffps:
-                    self._flt_stations.append(
-                        cur_imdb.sites().index.values.astype(np.unicode)
-                    )
+                    self._flt_stations.append(cur_imdb.sites().index.values.astype(str))
                 elif cur_imdb_ffp in self.ds_imdb_ffps:
-                    self._ds_stations.append(
-                        cur_imdb.sites().index.values.astype(np.unicode)
-                    )
+                    self._ds_stations.append(cur_imdb.sites().index.values.astype(str))
 
                 # IMs (intersection of IMs across all dbs)
                 if self._ims is None:
