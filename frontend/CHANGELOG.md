@@ -4,6 +4,7 @@
 
 - Add an external link to the UC disclaimer/copyright page.
 - Update Scenario's tooltip message.
+- Temporarily remove the Framework Documents tab.
 
 ## December 13, 2021
 
