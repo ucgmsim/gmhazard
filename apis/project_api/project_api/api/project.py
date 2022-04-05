@@ -67,8 +67,8 @@ def get_available_sites():
             "vs30": loc_data.vs30_values,
             "Z1.0": loc_data.z1p0_values,
             "Z2.5": loc_data.z2p5_values,
-            "lat": locations[loc_id]["lat"],
-            "lon": locations[loc_id]["lon"],
+            "lat": float(locations[loc_id]["lat"]),
+            "lon": float(locations[loc_id]["lon"]),
         }
 
     return flask.jsonify(loc_dict)
