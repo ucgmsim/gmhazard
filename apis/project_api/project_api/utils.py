@@ -168,7 +168,8 @@ def load_uhs_data(results_dir: Path, rps: List[int]):
     ensemble = sc.uhs.EnsembleUHSResult.load(results_dir / f"uhs_{rps[0]}").ensemble
 
     uhs_results = [
-        sc.uhs.EnsembleUHSResult.load(results_dir / f"uhs_{rp}") for rp in rps
+        sc.uhs.EnsembleUHSResult.load(results_dir / f"uhs_{rp}", ensemble=ensemble)
+        for rp in rps
     ]
 
     nzs1170p5_results = [
