@@ -70,7 +70,7 @@ const ScenarioForm = () => {
       <div className="form-group form-section-title">
         Scenarios
         <GuideTooltip
-          explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_HAZARD"]} // TODO - Correct message for Scenarios
+          explanation={CONSTANTS.TOOLTIP_MESSAGES["SCENARIOS"]}
         />
       </div>
       <div className="form-group">
