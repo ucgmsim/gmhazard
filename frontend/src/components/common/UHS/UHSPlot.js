@@ -58,11 +58,8 @@ const UHSPlot = ({
     let nzCodeDataCounter = 0;
 
     for (let [curExcd, curData] of Object.entries(nzs1170p5Data)) {
-      // The object contains the value of NaN, so we dont plot
-      if (Object.values(curData).includes("nan")) {
-        continue;
-        // Else we plot
-      } else {
+      // Plots only if it does not include nan
+      if (!Object.values(curData).includes("nan")) {
         let curPlotData = getPlotData(curData);
         // Convert the Annual exdance reate to Return period in a string format
         let displayRP = (1 / Number(curExcd)).toString();
@@ -89,23 +86,25 @@ const UHSPlot = ({
     // UHS scatter objs
     let dataCounter = 0;
     for (let [curExcd, curData] of Object.entries(uhsData)) {
-      let displayRP = (1 / Number(curExcd)).toString();
-      scatterObjs.push({
-        x: curData.period_values,
-        y: curData.sa_values,
-        type: "scatter",
-        mode: "lines",
-        line: { color: "blue" },
-        name: createLegendLabel(false),
-        legendgroup: "site-specific",
-        showlegend: dataCounter === 0 ? true : false,
-        hoverinfo: "none",
-        hovertemplate:
-          `<b>Site-specific [RP ${displayRP}]</b><br><br>` +
-          "%{xaxis.title.text}: %{x}<br>" +
-          "%{yaxis.title.text}: %{y}<extra></extra>",
-      });
-      dataCounter += 1;
+      if (!curData.sa_values.includes("nan")) {
+        let displayRP = (1 / Number(curExcd)).toString();
+        scatterObjs.push({
+          x: curData.period_values,
+          y: curData.sa_values,
+          type: "scatter",
+          mode: "lines",
+          line: { color: "blue" },
+          name: createLegendLabel(false),
+          legendgroup: "site-specific",
+          showlegend: dataCounter === 0 ? true : false,
+          hoverinfo: "none",
+          hovertemplate:
+            `<b>Site-specific [RP ${displayRP}]</b><br><br>` +
+            "%{xaxis.title.text}: %{x}<br>" +
+            "%{yaxis.title.text}: %{y}<extra></extra>",
+        });
+        dataCounter += 1;
+      }
     }
 
     return (
@@ -123,6 +122,11 @@ const UHSPlot = ({
           margin: PLOT_MARGIN,
           hovermode: "closest",
           hoverlabel: { bgcolor: "#FFF" },
+          legend: {
+            x: 1,
+            xanchor: "right",
+            y: 1,
+          },
         }}
         useResizeHandler={true}
         config={{
