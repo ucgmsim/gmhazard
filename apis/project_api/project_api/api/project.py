@@ -7,7 +7,6 @@ import flask
 from flask_cors import cross_origin
 
 import api_utils as au
-import gmhazard_calc as sc
 import gmhazard_utils as su
 import project_gen as pg
 from project_api import utils
@@ -53,29 +52,17 @@ def get_available_sites():
 
     # Load the project config
     project = utils.get_project(version_str, project_id)
-
-    ## Hack: Have lat/lon in the project config file later
-    ensemble = sc.gm_data.Ensemble(project_id, config_ffp=project.ensemble_ffp)
+    locations = project.config["project_parameters"]["locations"]
 
     loc_dict = {}
-
     for loc_id, loc_data in project.locations.items():
-        cur_site_info = sc.site.get_site_from_name(
-            ensemble,
-            pg.utils.create_station_id(
-                loc_id,
-                loc_data.vs30_values[0],
-                None if loc_data.z1p0_values is None else loc_data.z1p0_values[0],
-                None if loc_data.z2p5_values is None else loc_data.z2p5_values[0],
-            ),
-        )
         loc_dict[loc_id] = {
             "name": loc_data.name,
             "vs30": loc_data.vs30_values,
             "Z1.0": loc_data.z1p0_values,
             "Z2.5": loc_data.z2p5_values,
-            "lat": cur_site_info.lat,
-            "lon": cur_site_info.lon,
+            "lat": float(locations[loc_id]["lat"]),
+            "lon": float(locations[loc_id]["lon"]),
         }
 
     return flask.jsonify(loc_dict)
@@ -162,7 +149,8 @@ def get_download_all_token():
     return flask.jsonify(
         {
             "download_token": au.api.get_download_token(
-                {"project_id": project_id}, server.DOWNLOAD_URL_SECRET_KEY,
+                {"project_id": project_id},
+                server.DOWNLOAD_URL_SECRET_KEY,
             )
         }
     )
@@ -246,5 +234,7 @@ def download_all(token):
         )
 
         return flask.send_file(
-            zip_ffp, as_attachment=True, attachment_filename=f"{project_id}_data.zip",
+            zip_ffp,
+            as_attachment=True,
+            attachment_filename=f"{project_id}_data.zip",
         )
