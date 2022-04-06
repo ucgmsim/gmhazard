@@ -63,7 +63,7 @@ class BaseUHSResult:
             "station": self.site_info.station_name,
             "exceedance": self.exceedance,
             "period_values": self.period_values.tolist(),
-            "sa_values": self.sa_values.tolist(),
+            "sa_values": ["nan" if np.isnan(sa_value) else sa_value for sa_value in self.sa_values],
         }
 
     def _save(self, data_dir: Path, metadata: Dict = None):
@@ -192,7 +192,7 @@ class EnsembleUHSResult(BaseUHSResult):
                 key: {
                     exceedance: sa_value for exceedance, sa_value in value.iteritems()
                 }
-                for key, value in self.percentiles.items()
+                for key, value in self.percentiles.fillna("nan").items()
             }
         else:
             percentiles = None
@@ -306,4 +306,4 @@ class EnsembleUHSResult(BaseUHSResult):
 
         return pd.DataFrame(
             index=periods, data=np.asarray(sa_values).T, columns=column_values
-        ).sort_index()
+        ).sort_index().fillna("nan")
