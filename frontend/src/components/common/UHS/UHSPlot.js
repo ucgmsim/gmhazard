@@ -8,13 +8,7 @@ import { ErrorMessage } from "components/common";
 
 import "assets/style/UHSPlot.css";
 
-const UHSPlot = ({
-  from,
-  uhsData,
-  nzs1170p5Data,
-  showNZS1170p5 = true,
-  extra,
-}) => {
+const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
   if (uhsData !== null && !uhsData.hasOwnProperty("error")) {
     const createLegendLabel = (isNZCode) => {
       const selectedRPs = extra.selectedRPs;
@@ -30,7 +24,7 @@ const UHSPlot = ({
       /*
         Only display to legend the RP that has values if its for Projects
       */
-      if (from === "projects") {
+      if (extra.from === "project") {
         const dataToCheck = isNZCode === true ? nzs1170p5Data : uhsData;
         for (let i = 0; i < selectedRPs.length; i++) {
           if (

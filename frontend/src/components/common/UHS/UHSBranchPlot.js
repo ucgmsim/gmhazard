@@ -9,13 +9,12 @@ import { ErrorMessage } from "components/common";
 import "assets/style/UHSPlot.css";
 
 const UHSBranchPlot = ({
-  from,
   uhsData,
   uhsBranchData,
   nzs1170p5Data,
   rp,
-  showNZS1170p5 = true,
   extra,
+  showNZS1170p5 = true,
 }) => {
   if (uhsData !== null && !uhsData.hasOwnProperty("error")) {
     const createLegendLabel = (isNZCode) => {
