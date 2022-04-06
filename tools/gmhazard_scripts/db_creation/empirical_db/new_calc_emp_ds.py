@@ -1,5 +1,6 @@
 import argparse
 import time
+from typing import List, Optional
 
 import pandas as pd
 import numpy as np
@@ -59,53 +60,46 @@ def get_rupture_context_df(
     )
     rupture_df = rupture_df[rupture_df["rjb"] < max_dist]
 
-    return polish_rupture_context_df(rupture_df, site_data, tect_type)
-
-
-def polish_rupture_context_df(
-    rupture_context_df: pd.DataFrame, site_data: pd.Series, tect_type: str,
-):
-    """
-    Combining the given rupture_context_df(Distance and Rupture) with Site information
-    to create a OQ's RuptureContext like DF to be used with OQ's Vectorized Wrapper
-    """
     # Adding missing columns
     # Site Parameters
-    rupture_context_df["vs30"] = site_data.vs30
-    rupture_context_df["vs30measured"] = (
-        site_data.vs30measured if site_data.get("vs30measured") is not None else False
+    rupture_df["vs30"] = (
+        classdef.VS30_DEFAULT
+        if np.isnan(site_data.get("vs30", default=np.nan))
+        else float(site_data.vs30)
     )
-    rupture_context_df["z1pt0"] = (
-        None
-        if site_data.get("z1p0") is None or np.isnan(float(site_data.z1p0))
-        else site_data.z1p0
+    rupture_df["vs30measured"] = site_data.get("vs30measured", default=False)
+    rupture_df["z1pt0"] = (
+        classdef.estimate_z1p0(site_data.vs30)
+        if np.isnan(float(site_data.get("z1p0", default=np.nan)))
+        else float(site_data.z1p0)
     )
-    rupture_context_df["z2pt5"] = (
-        None
-        if site_data.get("z2p5") is None or np.isnan(float(site_data.z2p5))
-        else site_data.z2p5
+    rupture_df["z2pt5"] = (
+        classdef.estimate_z2p5(z1p0=rupture_df["z1pt0"].iloc[0])
+        if np.isnan(float(site_data.get("z2p5", default=np.nan)))
+        else float(site_data.z2p5)
     )
 
     # Rupture Parameter
-    rupture_context_df[["hypo_depth", "ztor"]] = rupture_context_df[["dbot", "dtop"]]
-    rupture_context_df["width"] = 1
+    rupture_df[["hypo_depth", "ztor"]] = rupture_df[["dbot", "dtop"]]
+    rupture_df["width"] = 1
 
     # Distance Parameter - OQ uses ry0 term
-    rupture_context_df[["rx", "ry0"]] = rupture_context_df[["rx", "ry"]].fillna(0)
+    rupture_df[["rx", "ry0"]] = rupture_df[["rx", "ry"]].fillna(0)
 
-    return rupture_context_df.loc[rupture_context_df["tect_type"] == tect_type]
+    return rupture_df.loc[rupture_df["tect_type"] == tect_type]
 
 
 def calculate_ds(
-    background_sources_ffp,
-    site_source_db_ffp,
-    vs30_ffp,
-    z_ffp,
-    ims,
-    psa_periods,
-    output_dir,
-    model_dict_ffp,
-    suffix=None,
+    background_sources_ffp: str,
+    site_source_db_ffp: str,
+    vs30_ffp: str,
+    output_dir: str,
+    z_ffp: Optional[str],
+    ims: Optional[List[gc.im.IMType]],
+    psa_periods: Optional[List[float]],
+
+    model_dict_ffp: Optional[str],
+    suffix:Optional[str] = None,
 ):
     nhm_data = gc.utils.ds_nhm_to_rup_df(background_sources_ffp)
     rupture_df = pd.DataFrame(nhm_data["rupture_name"])
