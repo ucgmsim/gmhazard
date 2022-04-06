@@ -81,7 +81,6 @@ def get_rupture_context_df(
 
     # Rupture Parameter
     rupture_df[["hypo_depth", "ztor"]] = rupture_df[["dbot", "dtop"]]
-    rupture_df["width"] = 1
 
     # Distance Parameter - OQ uses ry0 term
     rupture_df[["rx", "ry0"]] = rupture_df[["rx", "ry"]].fillna(0)
@@ -233,11 +232,11 @@ def calculate_emp_ds():
         args.background_txt,
         args.site_source_db,
         args.vs30_file,
-        args.z_file,
-        args.im,
-        args.periods,
         args.output_dir,
-        args.model_dict,
+        z_ffp=args.z_file,
+        ims=args.im,
+        psa_periods=args.periods,
+        model_dict_ffp=args.model_dict,
         suffix=args.suffix,
     )
     print(f"Finished in {(time.time() - start) / 60}")
