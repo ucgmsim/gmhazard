@@ -97,9 +97,8 @@ def calculate_ds(
     z_ffp: Optional[str],
     ims: Optional[List[gc.im.IMType]],
     psa_periods: Optional[List[float]],
-
     model_dict_ffp: Optional[str],
-    suffix:Optional[str] = None,
+    suffix: Optional[str] = None,
 ):
     nhm_data = gc.utils.ds_nhm_to_rup_df(background_sources_ffp)
     rupture_df = pd.DataFrame(nhm_data["rupture_name"])
