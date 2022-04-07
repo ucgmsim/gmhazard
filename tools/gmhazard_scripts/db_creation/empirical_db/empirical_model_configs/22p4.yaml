@@ -1,4 +1,4 @@
-#select a empirical model for the tect-type and intensity measure
+# select an empirical model for the tect-type and intensity measure
 # current valid options are:
 # Br_10 -- Bradley 2010
 # ZA_06 -- Zhao 2006
@@ -91,8 +91,6 @@ SUBDUCTION_SLAB:
   PGA:
     geom:
       - ZA_06
-      - BCH_16
-      - A_18  # ZA06 or BCH16
       - P_20
       - AG_20
       - AG_20_NZ
@@ -101,8 +99,6 @@ SUBDUCTION_SLAB:
   pSA:
     geom:
       - ZA_06
-      - BCH_16
-      - A_18  # ZA06 or BCH16
       - P_20
       - AG_20
       - AG_20_NZ
@@ -129,8 +125,6 @@ SUBDUCTION_INTERFACE:
   PGA:
     geom:
       - ZA_06
-      - BCH_16
-      - A_18  # ZA06 or BCH16
       - P_20
       - AG_20
       - AG_20_NZ
@@ -139,8 +133,6 @@ SUBDUCTION_INTERFACE:
   pSA:
     geom:
       - ZA_06
-      - BCH_16
-      - A_18  # ZA06 or BCH16
       - P_20
       - AG_20
       - AG_20_NZ
