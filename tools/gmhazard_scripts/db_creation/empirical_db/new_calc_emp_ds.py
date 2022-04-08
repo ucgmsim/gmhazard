@@ -1,9 +1,12 @@
 import argparse
 import time
 from typing import List, Optional
+from enum import Enum
+from pathlib import Path
 
 import pandas as pd
 import numpy as np
+import yaml
 
 import common
 import gmhazard_calc as gc
@@ -37,20 +40,15 @@ MAG = [
 DIST = [125, 150, 175, 200, 250, 300]
 
 
-def get_rupture_context_df(
-    distance_store: gc.dbs.SiteSourceDB,
-    fault_df: pd.DataFrame,
-    site: str,
+def create_rupture_context_df(
+    distance_df: pd.DataFrame,
     site_data: pd.Series,
     nhm_data: pd.DataFrame,
-    tect_type: str,
+    tect_type: Enum,
 ):
     """Creating the form of dataframe for the vectorized OQ Wrapper
     By combining site, distance and rupture information
     """
-    distance_df = fault_df.merge(
-        distance_store.station_data(site), left_on="fault_name", right_index=True,
-    )
     rupture_df = nhm_data.merge(
         distance_df, left_on="fault_name", right_on="fault_name"
     )
@@ -62,33 +60,24 @@ def get_rupture_context_df(
 
     # Adding missing columns
     # Site Parameters
-    rupture_df["vs30"] = (
-        classdef.VS30_DEFAULT
-        if np.isnan(site_data.get("vs30", default=np.nan))
-        else float(site_data.vs30)
-    )
+    rupture_df["vs30"] = site_data.vs30
     rupture_df["vs30measured"] = site_data.get("vs30measured", default=False)
-    rupture_df["z1pt0"] = (
-        classdef.estimate_z1p0(site_data.vs30)
-        if np.isnan(float(site_data.get("z1p0", default=np.nan)))
-        else float(site_data.z1p0)
-    )
-    rupture_df["z2pt5"] = (
-        classdef.estimate_z2p5(z1p0=rupture_df["z1pt0"].iloc[0])
-        if np.isnan(float(site_data.get("z2p5", default=np.nan)))
-        else float(site_data.z2p5)
-    )
+    rupture_df["z1pt0"] = site_data.z1p0
+    rupture_df["z2pt5"] = site_data.z2p5
 
     # Rupture Parameter
+    # hypo_depth is not dbot but can be used as a proxy for point source
+    # if there is only a single point then the dtop, dbot and hypo_depth
+    # are at the same point
     rupture_df[["hypo_depth", "ztor"]] = rupture_df[["dbot", "dtop"]]
 
     # Distance Parameter - OQ uses ry0 term
     rupture_df[["rx", "ry0"]] = rupture_df[["rx", "ry"]].fillna(0)
 
-    return rupture_df.loc[rupture_df["tect_type"] == tect_type]
+    return rupture_df.loc[rupture_df["tect_type"] == tect_type.name]
 
 
-def calculate_ds(
+def calculate_emp_ds(
     background_sources_ffp: str,
     site_source_db_ffp: str,
     vs30_ffp: str,
@@ -101,25 +90,31 @@ def calculate_ds(
 ):
     nhm_data = gc.utils.ds_nhm_to_rup_df(background_sources_ffp)
     rupture_df = pd.DataFrame(nhm_data["rupture_name"])
-    imdb_dict, _ = common.open_imdbs(
-        model_dict_ffp, output_dir, gc.constants.SourceType.distributed, suffix=suffix,
-    )
     model_dict = empirical_factory.read_model_dict(model_dict_ffp)
 
     with gc.dbs.SiteSourceDB(site_source_db_ffp) as distance_store:
+        # TODO: simplify the get_work() - removing MPI
         fault_df, _, site_df, _ = common.get_work(
             distance_store, vs30_ffp, z_ffp, None, None
         )
+
+        # Check to see if any site's Z1.0 or Z2.5 is NaN
+        if np.any(np.isnan(site_df.z1p0.values)):
+            raise ValueError("Z1.0 cannot be NaN")
+        if np.any(np.isnan(site_df.z2p5.values)):
+            raise ValueError("Z2.5 cannot be NaN")
+
         # Filter the site/station that the distance_store actually has
         sites = [
             site for site in site_df.index if distance_store.has_station_data(site)
         ]
+        tect_types = nhm_data["tect_type"].unique()
 
         for im_idx, im in enumerate(ims):
             print(f"Processing IM: {im}, {im_idx + 1} / {len(ims)}")
-            for tect_idx, tect_type in enumerate(nhm_data["tect_type"].unique()):
+            for tect_idx, tect_type in enumerate(tect_types):
                 print(
-                    f"Processing Tectonic Type: {tect_type}, {tect_idx + 1} / {len(nhm_data['tect_type'].unique())}"
+                    f"Processing Tectonic Type: {tect_type}, {tect_idx + 1} / {len(tect_types)}"
                 )
                 GMMs = empirical_factory.determine_all_gmm(
                     classdef.Fault(tect_type=classdef.TectType[tect_type]),
@@ -127,69 +122,80 @@ def calculate_ds(
                     model_dict,
                 )
                 for GMM_idx, (GMM, _) in enumerate(GMMs):
-                    db_type = f"{GMM.name}_{tect_type}"
-                    if GMM.name in ("K_20", "K_20_NZ", "ZA_06"):
+                    # TODO: Check those models
+                    if GMM.name in ("K_20", "K_20_NZ", "ZA_06", "CB_14", "ASK_14"):
                         continue
-                    print(f"Processing DB Type: {db_type}, {GMM_idx + 1} / {len(GMMs)}")
 
-                    for site in sites:
-                        rupture_context_df = get_rupture_context_df(
-                            distance_store,
-                            fault_df,
-                            site,
-                            site_df.loc[site],
-                            nhm_data,
-                            tect_type,
-                        )
-                        gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
-                            GMM,
-                            classdef.TectType[tect_type],
-                            rupture_context_df,
-                            str(im),
-                            psa_periods if im is gc.im.IMType.pSA else None,
-                        )
-                        # Matching the index with rupture_df
-                        # to have a right rupture label
-                        gmm_calculated_df.set_index(
-                            rupture_df[
-                                rupture_df["rupture_name"].isin(
-                                    rupture_context_df["rupture_name"]
-                                )
-                            ].index,
-                            inplace=True,
-                        )
-                        gmm_calculated_df.columns = [
-                            f"{'_'.join(col.split('_')[:2]) if im is gc.im.IMType.pSA else im}_sigma"
-                            if col.endswith("std_Total")
-                            else col
-                            for col in gmm_calculated_df
-                        ]
-
-                        # Write an im_df to the given station/site
-                        imdb_dict[db_type].open()
-                        imdb_dict[db_type].add_im_data(
-                            site,
-                            gmm_calculated_df.loc[
-                                :,
-                                gmm_calculated_df.columns.str.endswith(
-                                    ("mean", "sigma")
+                    db_type = f"{GMM.name}_{tect_type}"
+                    suffix = f"_{suffix}" if suffix else ""
+                    # Create a DB if not exists
+                    imdb = gc.dbs.IMDBParametric(
+                        str(Path(output_dir) / f"{db_type}_ds{suffix}.db"),
+                        writeable=True,
+                        source_type=gc.constants.SourceType.distributed,
+                    )
+                    print(
+                        f"Processing Model: {GMM.name} for {tect_type}, {GMM_idx + 1} / {len(GMMs)}"
+                    )
+                    with imdb as imdb:
+                        for site in sites:
+                            rupture_context_df = create_rupture_context_df(
+                                fault_df.merge(
+                                    distance_store.station_data(site),
+                                    left_on="fault_name",
+                                    right_index=True,
                                 ),
-                            ],
-                        )
-                        imdb_dict[db_type].close()
+                                site_df.loc[site],
+                                nhm_data,
+                                classdef.TectType[tect_type],
+                            )
+                            gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
+                                GMM,
+                                classdef.TectType[tect_type],
+                                rupture_context_df,
+                                str(im),
+                                psa_periods if im is gc.im.IMType.pSA else None,
+                            )
+                            # Matching the index with rupture_df
+                            # to have a right rupture label
+                            gmm_calculated_df.set_index(
+                                rupture_df[
+                                    rupture_df["rupture_name"].isin(
+                                        rupture_context_df["rupture_name"]
+                                    )
+                                ].index,
+                                inplace=True,
+                            )
+                            gmm_calculated_df.columns = [
+                                f"{'_'.join(col.split('_')[:2]) if im is gc.im.IMType.pSA else im}_sigma"
+                                if col.endswith("std_Total")
+                                else col
+                                for col in gmm_calculated_df
+                            ]
 
-    print("Writing metadata")
-    common.write_metadata_and_close(
-        imdb_dict,
-        background_sources_ffp,
-        rupture_df,
-        site_df,
-        vs30_ffp,
-        psa_periods,
-        ims,
-        model_dict_ffp,
-    )
-    print("Done")
+                            # Write an im_df to the given station/site
+                            imdb.add_im_data(
+                                site,
+                                gmm_calculated_df.loc[
+                                    :,
+                                    gmm_calculated_df.columns.str.endswith(
+                                        ("mean", "sigma")
+                                    ),
+                                ],
+                            )
+
+                        print(f"Writing metadata for Model: {GMM.name}")
+                        imdb.write_sites(site_df[["lat", "lon"]])
+                        imdb.write_rupture_data(rupture_df)
+                        im_list = common.curate_im_list(
+                            yaml.safe_load(open(model_dict_ffp)), db_type, psa_periods
+                        )
+                        imdb.write_attributes(
+                            Path(background_sources_ffp).name,
+                            Path(vs30_ffp).name,
+                            ims=np.asarray(im_list, dtype=str),
+                        )
+                        print(f"Writing metadata for Model: {GMM.name} is done.")
 
 
 def parse_args():
@@ -225,10 +231,10 @@ def parse_args():
     return parser.parse_args()
 
 
-def calculate_emp_ds():
+if __name__ == "__main__":
     args = parse_args()
     start = time.time()
-    calculate_ds(
+    calculate_emp_ds(
         args.background_txt,
         args.site_source_db,
         args.vs30_file,
@@ -240,7 +246,3 @@ def calculate_emp_ds():
         suffix=args.suffix,
     )
     print(f"Finished in {(time.time() - start) / 60}")
-
-
-if __name__ == "__main__":
-    calculate_emp_ds()
