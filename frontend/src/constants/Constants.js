@@ -406,9 +406,9 @@ export const TOOLTIP_MESSAGES = {
   PROJECTS_GMS_EXCEEDANCE_RATE_LEVEL:
     "Select the exceedance rate of the conditioning IM at which to perform Ground Motion Selection.",
   HAZARD_GMS_IM_LEVEL_EXCEEDANCE_RATE:
-    "Set the value of the Conditioning IM. This can be done by either specifying this directly as the ‘IM level’, or indirectly by specifying the Exceedance Rate from which the hazard curve is used to obtain the IM level.",
+    "Set the value of the Conditioning IM. This can be done by either specifying this directly as the 'IM level', or indirectly by specifying the Exceedance Rate from which the hazard curve is used to obtain the IM level.",
   HAZARD_GMS_IM_VECTOR:
-    "Select the intensity measures to include in the IM vector. Default weights for each intensity measure are assigned, which can be edited in the ‘Advanced’ fields.",
+    "Select the intensity measures to include in the IM vector. Default weights for each intensity measure are assigned, which can be edited in the 'Advanced' fields.",
   PROJECTS_GMS_IM_VECTOR:
     "Select the intensity measures to include in the IM vector.",
   HAZARD_GMS_NUM_GMS: "Set the number of ground motions for selection.",
@@ -417,12 +417,14 @@ export const TOOLTIP_MESSAGES = {
   HAZARD_GMS_CAUSAL_PARAMS_BOUNDS:
     "Specify the minimum and maximum allowable values of Magnitude, Rupture Distance, and 30m-averaged shear-wave velocity.",
   HAZARD_GMS_WEIGHTS:
-    "Weights for each intensity measure in the ‘IM Vector’ used in the misfit calculation for ground-motion selection. Select the ‘renormalise’ button to normalise the weights to 1.0.",
+    "Weights for each intensity measure in the 'IM Vector' used in the misfit calculation for ground-motion selection. Select the 'renormalise' button to normalise the weights to 1.0.",
   HAZARD_GMS_DB:
     "Select one or more databases from which prospective ground motions can be selected.",
   HAZARD_GMS_REPLICATES:
     "The number of replicates performed. This attempts to overcome statistical artifacts due to the use of Monte Carlo simulation within the ground-motion selection method. A larger number will give more stable results, but compute time will increase proportionately.",
-
+  // Scenario tab
+  SCENARIOS:
+    "Select the component of interest to view response spectra for the selected scenario ruptures.",
   // Inside tab
   INNER_TAB_SITE_SELECTION:
     "This tab allows the specification of basic information about the site, including the location (Lat, Lon), and site conditions.",

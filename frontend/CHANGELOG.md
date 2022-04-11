@@ -4,6 +4,14 @@
 
 - UHS section now only displays plots that do not have any NaN.
 
+## April 6, 2022
+
+### Add UC disclaimer - ([PR #64](https://github.com/ucgmsim/gmhazard/pull/64))
+
+- Add an external link to the UC disclaimer/copyright page.
+- Update Scenario's tooltip message.
+- Temporarily remove the Framework Documents tab.
+
 ## December 13, 2021
 
 ### Reset the Hazard Curve data before sending a new request - ([PR #45](https://github.com/ucgmsim/gmhazard/pull/45))
