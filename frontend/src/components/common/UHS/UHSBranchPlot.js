@@ -9,13 +9,12 @@ import { ErrorMessage } from "components/common";
 import "assets/style/UHSPlot.css";
 
 const UHSBranchPlot = ({
-  from,
   uhsData,
   uhsBranchData,
   nzs1170p5Data,
   rp,
-  showNZS1170p5 = true,
   extra,
+  showNZS1170p5 = true,
 }) => {
   if (uhsData !== null && !uhsData.hasOwnProperty("error")) {
     const createLegendLabel = (isNZCode) => {
@@ -31,22 +30,25 @@ const UHSBranchPlot = ({
     let dataCounter = 0;
     if (uhsBranchData !== null) {
       for (let curData of Object.values(uhsBranchData)) {
-        scatterObjs.push({
-          x: curData.period_values,
-          y: curData.sa_values,
-          type: "scatter",
-          mode: "lines",
-          line: { color: "grey", width: 0.8 },
-          name: "Branches",
-          legendgroup: "branches",
-          showlegend: dataCounter === 0 ? true : false,
-          hoverinfo: "none",
-          hovertemplate:
-            `<b>${curData.branch_name}</b><br><br>` +
-            "%{xaxis.title.text}: %{x}<br>" +
-            "%{yaxis.title.text}: %{y}<extra></extra>",
-        });
-        dataCounter += 1;
+        // Skip any plots if it contains nan
+        if (!curData.sa_values.includes("nan")) {
+          scatterObjs.push({
+            x: curData.period_values,
+            y: curData.sa_values,
+            type: "scatter",
+            mode: "lines",
+            line: { color: "grey", width: 0.8 },
+            name: "Branches",
+            legendgroup: "branches",
+            showlegend: dataCounter === 0 ? true : false,
+            hoverinfo: "none",
+            hovertemplate:
+              `<b>${curData.branch_name}</b><br><br>` +
+              "%{xaxis.title.text}: %{x}<br>" +
+              "%{yaxis.title.text}: %{y}<extra></extra>",
+          });
+          dataCounter += 1;
+        }
       }
     }
 
@@ -74,28 +76,31 @@ const UHSBranchPlot = ({
     }
 
     // UHS scatter objs
-    scatterObjs.push({
-      x: uhsData.period_values,
-      y: uhsData.sa_values,
-      type: "scatter",
-      mode: "lines",
-      line: { color: "blue" },
-      name: createLegendLabel(false),
-      legendgroup: "site-specific",
-      showlegend: true,
-      hoverinfo: "none",
-      hovertemplate:
-        `<b>Site-specific [RP ${rp}]</b><br><br>` +
-        "%{xaxis.title.text}: %{x}<br>" +
-        "%{yaxis.title.text}: %{y}<extra></extra>",
-    });
+    if (!uhsData.sa_values.includes("nan")) {
+      scatterObjs.push({
+        x: uhsData.period_values,
+        y: uhsData.sa_values,
+        type: "scatter",
+        mode: "lines",
+        line: { color: "blue" },
+        name: createLegendLabel(false),
+        legendgroup: "site-specific",
+        showlegend: true,
+        hoverinfo: "none",
+        hovertemplate:
+          `<b>Site-specific [RP ${rp}]</b><br><br>` +
+          "%{xaxis.title.text}: %{x}<br>" +
+          "%{yaxis.title.text}: %{y}<extra></extra>",
+      });
+    }
 
     // For Percentiles
     if (uhsData.percentiles) {
       const percentile16 = getPlotData(uhsData.percentiles["16th"]);
       const percentile84 = getPlotData(uhsData.percentiles["84th"]);
-      scatterObjs.push(
-        {
+
+      if (!percentile16.values.includes("nan")) {
+        scatterObjs.push({
           x: percentile16.index,
           y: percentile16.values,
           type: "scatter",
@@ -107,8 +112,10 @@ const UHSBranchPlot = ({
             "<b>16<sup>th</sup> percentile</b><br><br>" +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
-        },
-        {
+        });
+      }
+      if (!percentile84.values.includes("nan")) {
+        scatterObjs.push({
           x: percentile84.index,
           y: percentile84.values,
           type: "scatter",
@@ -120,8 +127,8 @@ const UHSBranchPlot = ({
             "<b>84<sup>th</sup> percentile</b><br><br>" +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
-        }
-      );
+        });
+      }
     }
 
     return (
@@ -139,6 +146,11 @@ const UHSBranchPlot = ({
           margin: PLOT_MARGIN,
           hovermode: "closest",
           hoverlabel: { bgcolor: "#FFF" },
+          legend: {
+            x: 1,
+            xanchor: "right",
+            y: 1,
+          },
         }}
         useResizeHandler={true}
         config={{

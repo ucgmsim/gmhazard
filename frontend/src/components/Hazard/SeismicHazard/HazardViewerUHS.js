@@ -248,8 +248,8 @@ const HazardViewerUHS = () => {
                     from={"non-projects"}
                     uhsData={uhsData}
                     nzs1170p5Data={uhsNZS1170p5Data}
-                    showNZS1170p5={showUHSNZS1170p5}
                     extra={extraInfo}
+                    showNZS1170p5={showUHSNZS1170p5}
                   />
                 </Fragment>
               )}
@@ -304,12 +304,12 @@ const HazardViewerUHS = () => {
                         : uhsBranchData[localSelectedRP["value"]]
                     }
                     nzs1170p5Data={uhsNZS1170p5Data[localSelectedRP["value"]]}
-                    showNZS1170p5={showUHSNZS1170p5}
                     rp={renderSigfigs(
                       1 / Number(localSelectedRP["value"]),
                       CONSTANTS.APP_UI_SIGFIGS
                     )}
                     extra={extraInfo}
+                    showNZS1170p5={showUHSNZS1170p5}
                   />
                 </Fragment>
               )}
