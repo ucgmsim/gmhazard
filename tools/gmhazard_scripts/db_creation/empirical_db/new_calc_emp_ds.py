@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pandas as pd
 import numpy as np
-import yaml
 
 import common
 import gmhazard_calc as gc
@@ -124,13 +123,18 @@ def calculate_emp_ds(
                 for GMM_idx, (GMM, _) in enumerate(GMMs):
                     # TODO: Check those models
                     if GMM.name in ("K_20", "K_20_NZ", "ZA_06", "CB_14", "ASK_14"):
+                        print(f"{GMM.name} is currently not supported.")
                         continue
 
                     db_type = f"{GMM.name}_{tect_type}"
-                    suffix = f"_{suffix}" if suffix else ""
                     # Create a DB if not exists
                     imdb = gc.dbs.IMDBParametric(
-                        str(Path(output_dir) / f"{db_type}_ds{suffix}.db"),
+                        str(
+                            Path(output_dir)
+                            / gc.utils.create_parametric_db_name(
+                                db_type, gc.constants.SourceType.distributed, suffix
+                            )
+                        ),
                         writeable=True,
                         source_type=gc.constants.SourceType.distributed,
                     )
@@ -166,6 +170,8 @@ def calculate_emp_ds(
                                 ].index,
                                 inplace=True,
                             )
+                            if im is gc.im.IMType.pSA:
+                                breakpoint()
                             gmm_calculated_df.columns = [
                                 f"{'_'.join(col.split('_')[:2]) if im is gc.im.IMType.pSA else im}_sigma"
                                 if col.endswith("std_Total")
@@ -184,18 +190,16 @@ def calculate_emp_ds(
                                 ],
                             )
 
-                        print(f"Writing metadata for Model: {GMM.name}")
-                        imdb.write_sites(site_df[["lat", "lon"]])
-                        imdb.write_rupture_data(rupture_df)
-                        im_list = common.curate_im_list(
-                            yaml.safe_load(open(model_dict_ffp)), db_type, psa_periods
-                        )
-                        imdb.write_attributes(
-                            Path(background_sources_ffp).name,
-                            Path(vs30_ffp).name,
-                            ims=np.asarray(im_list, dtype=str),
-                        )
-                        print(f"Writing metadata for Model: {GMM.name} is done.")
+                    print(f"Writing metadata for Model: {GMM.name}")
+                    common.write_metadata(
+                        imdb,
+                        site_df,
+                        background_sources_ffp,
+                        vs30_ffp,
+                        rupture_df,
+                        common.curate_im_list(model_dict, db_type, psa_periods),
+                    )
+                    print(f"Writing metadata for Model: {GMM.name} is done.")
 
 
 def parse_args():

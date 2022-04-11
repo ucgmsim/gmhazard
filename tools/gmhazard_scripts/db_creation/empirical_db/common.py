@@ -4,6 +4,7 @@ This file contains functions used by both calc_emp_ds.py and calculate_emp_flt.p
 import os
 import time
 import multiprocessing as mp
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -155,23 +156,43 @@ def write_metadata_and_close(
         psa_periods = list()
     tect_type_model_dict = empirical_factory.read_model_dict(tect_type_model_dict_ffp)
 
-    for imdb_keys in imdb_dict.keys():
-        imdb_dict[imdb_keys].open()
-        imdb_dict[imdb_keys].write_sites(site_df[["lat", "lon"]])
-        imdb_dict[imdb_keys].write_rupture_data(rupture_df)
+    for imdb_key in imdb_dict.keys():
         im_list = (
             get_im_list(ims, psa_periods)
             if tect_type_model_dict_ffp is None
-            else curate_im_list(tect_type_model_dict, imdb_keys, psa_periods)
+            else curate_im_list(tect_type_model_dict, imdb_key, psa_periods)
         )
-        imdb_dict[imdb_keys].write_attributes(
+
+        write_metadata(
+            imdb_dict[imdb_key],
+            site_df,
+            nhm_ffp,
+            vs30_ffp,
+            rupture_df,
+            im_list
+        )
+
+        if rupture_lookup:
+            imdb_dict[imdb_key].add_rupture_lookup(imdb_dict[imdb_key].db_ffp, 1)
+
+
+def write_metadata(
+    imdb: dbs.IMDBParametric,
+    site_df: pd.DataFrame,
+    nhm_ffp: str,
+    vs30_ffp: str,
+    rupture_df: pd.DataFrame,
+    im_list: List
+):
+    """Helper function to write a metadata"""
+    with imdb as imdb:
+        imdb.write_sites(site_df[["lat", "lon"]])
+        imdb.write_rupture_data(rupture_df)
+        imdb.write_attributes(
             os.path.basename(nhm_ffp),
             os.path.basename(vs30_ffp),
             ims=np.asarray(im_list, dtype=str),
         )
-        imdb_dict[imdb_keys].close()
-        if rupture_lookup:
-            imdb_dict[imdb_keys].add_rupture_lookup(imdb_dict[imdb_keys].db_ffp, 1)
 
 
 def get_max_dist_zfac_scaled(site):
