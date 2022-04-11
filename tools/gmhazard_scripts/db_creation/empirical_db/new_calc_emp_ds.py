@@ -173,13 +173,13 @@ def calculate_emp_ds(
 
                             # Relabel the columns
                             # PGA_mean -> PGA
-                            # PGA_std_Total -> PGA_sigma
                             gmm_calculated_df.columns = [
                                 f"{'_'.join(col.split('_')[:2]) if im is gc.im.IMType.pSA else im}"
                                 if col.endswith("mean")
                                 else col
                                 for col in gmm_calculated_df
                             ]
+                            # PGA_std_Total -> PGA_sigma
                             gmm_calculated_df.columns = [
                                 f"{'_'.join(col.split('_')[:2]) if im is gc.im.IMType.pSA else im}_sigma"
                                 if col.endswith("std_Total")
