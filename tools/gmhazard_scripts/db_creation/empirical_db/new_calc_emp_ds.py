@@ -170,22 +170,33 @@ def calculate_emp_ds(
                                 ].index,
                                 inplace=True,
                             )
-                            if im is gc.im.IMType.pSA:
-                                breakpoint()
-                            gmm_calculated_df.columns = [
-                                f"{'_'.join(col.split('_')[:2]) if im is gc.im.IMType.pSA else im}_sigma"
-                                if col.endswith("std_Total")
-                                else col
-                                for col in gmm_calculated_df
-                            ]
+
+                            # Relabel the columns
+                            # gmm_calculated_df has 4N columns where N is the number of IM
+                            # each IM has the following labels
+                            # mean, std_Total, std_Inter, std_Intra
+                            new_columns = []
+                            for idx, col in enumerate(gmm_calculated_df):
+                                if idx % 4 == 0:
+                                    new_columns.append(
+                                        f"{'_'.join(col.split('_')[:2]) if im is gc.im.IMType.pSA else im}"
+                                    )
+                                elif idx % 4 == 1:
+                                    new_columns.append(
+                                        f"{'_'.join(col.split('_')[:2]) if im is gc.im.IMType.pSA else im}_sigma"
+                                    )
+                                else:
+                                    new_columns.append(col)
+                            gmm_calculated_df.columns = new_columns
 
                             # Write an im_df to the given station/site
                             imdb.add_im_data(
                                 site,
                                 gmm_calculated_df.loc[
                                     :,
-                                    gmm_calculated_df.columns.str.endswith(
-                                        ("mean", "sigma")
+                                    # Only mean and std_Total are needed
+                                    ~gmm_calculated_df.columns.str.endswith(
+                                        ("std_Inter", "std_Intra")
                                     ),
                                 ],
                             )
