@@ -104,9 +104,8 @@ def calculate_emp_ds(
             raise ValueError("Z2.5 cannot be NaN")
 
         # Filter the site/station that the distance_store actually has
-        sites = [
-            site for site in site_df.index if distance_store.has_station_data(site)
-        ]
+        sites = site_df.index[np.isin(site_df.index, distance_store.stored_stations())]
+
         tect_types = nhm_data["tect_type"].unique()
 
         for im_idx, im in enumerate(ims):
