@@ -177,7 +177,9 @@ def calculate_emp_ds(
                             )
                             # PGA_std_Total -> PGA_sigma
                             gmm_calculated_df.columns = np.char.replace(
-                                gmm_calculated_df.columns.values.astype(str), "_std_Total", "_sigma"
+                                gmm_calculated_df.columns.values.astype(str),
+                                "_std_Total",
+                                "_sigma",
                             )
 
                             # Write an im_df to the given station/site
@@ -186,9 +188,7 @@ def calculate_emp_ds(
                                 gmm_calculated_df.loc[
                                     :,
                                     # Only mean and std_Total are needed
-                                    ~gmm_calculated_df.columns.str.contains(
-                                        "_std"
-                                    ),
+                                    ~gmm_calculated_df.columns.str.contains("_std"),
                                 ],
                             )
 
