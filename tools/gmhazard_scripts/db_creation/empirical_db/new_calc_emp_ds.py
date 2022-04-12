@@ -187,7 +187,7 @@ def calculate_emp_ds(
                                 site,
                                 gmm_calculated_df.loc[
                                     :,
-                                    # Only mean and std_Total are needed
+                                    # Only mean and sigma(std_Total) are needed
                                     ~gmm_calculated_df.columns.str.contains("_std"),
                                 ],
                             )
