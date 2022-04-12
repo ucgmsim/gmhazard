@@ -1,5 +1,6 @@
 div.sw-version,
-div.build-date {
+div.build-date,
+div.copyright-disclaimer {
   font-size: x-small;
   text-align: center;
 }

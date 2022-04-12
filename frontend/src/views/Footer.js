@@ -11,6 +11,15 @@ const Footer = () => {
       <div className="build-date">
         Build Date: {process.env.REACT_APP_BUILD_DATE}
       </div>
+      <div className="copyright-disclaimer">
+        <a
+          href="https://www.canterbury.ac.nz/theuni/copyright/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Disclaimer
+        </a>
+      </div>
     </Fragment>
   );
 };
