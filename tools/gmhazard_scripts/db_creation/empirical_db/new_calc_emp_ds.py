@@ -172,19 +172,13 @@ def calculate_emp_ds(
 
                             # Relabel the columns
                             # PGA_mean -> PGA
-                            gmm_calculated_df.columns = [
-                                f"{'_'.join(col.split('_')[:2]) if im is gc.im.IMType.pSA else im}"
-                                if col.endswith("mean")
-                                else col
-                                for col in gmm_calculated_df
-                            ]
+                            gmm_calculated_df.columns = np.char.rstrip(
+                                gmm_calculated_df.columns.values.astype(str), "_mean"
+                            )
                             # PGA_std_Total -> PGA_sigma
-                            gmm_calculated_df.columns = [
-                                f"{'_'.join(col.split('_')[:2]) if im is gc.im.IMType.pSA else im}_sigma"
-                                if col.endswith("std_Total")
-                                else col
-                                for col in gmm_calculated_df
-                            ]
+                            gmm_calculated_df.columns = np.char.replace(
+                                gmm_calculated_df.columns.values.astype(str), "_std_Total", "_sigma"
+                            )
 
                             # Write an im_df to the given station/site
                             imdb.add_im_data(
@@ -192,8 +186,8 @@ def calculate_emp_ds(
                                 gmm_calculated_df.loc[
                                     :,
                                     # Only mean and std_Total are needed
-                                    ~gmm_calculated_df.columns.str.endswith(
-                                        ("std_Inter", "std_Intra")
+                                    ~gmm_calculated_df.columns.str.contains(
+                                        "_std"
                                     ),
                                 ],
                             )
@@ -257,4 +251,4 @@ if __name__ == "__main__":
         model_dict_ffp=args.model_dict,
         suffix=args.suffix,
     )
-    print(f"Finished in {(time.time() - start) / 60}")
+    print(f"Finished in {(time.time() - start) / 60:.2f} minutes")
