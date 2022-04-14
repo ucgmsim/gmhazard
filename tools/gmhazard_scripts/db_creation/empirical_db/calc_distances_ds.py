@@ -25,8 +25,6 @@ rank = comm.Get_rank()
 size = comm.Get_size()
 master = 0
 is_master = not rank
-h_dist_f = numba.njit(geo.get_distances)
-
 
 def calculate_distances(background_file, ll_file, ssddb_path):
     """
@@ -64,7 +62,7 @@ def calculate_distances(background_file, ll_file, ssddb_path):
                 f"Processing site {(site_df.index.get_loc(site_index) + 1)} / {n_stations} - Rank: {rank}"
             )
 
-            rjb = h_dist_f(
+            rjb = geo.get_distances(
                 background_data[["source_lon", "source_lat"]].values, site.lon, site.lat
             )
             mask = rjb <= MAX_RJB
