@@ -13,20 +13,6 @@ from empirical.util import classdef
 from empirical.util import empirical_factory
 from empirical.util import openquake_wrapper_vectorized
 
-# fmt: off
-PERIOD = [0.01, 0.02, 0.03, 0.04, 0.05, 0.075, 0.1, 0.12, 0.15, 0.17, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8,
-          0.9, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.5, 10.0]
-# fmt: on
-
-IM_TYPE_LIST = [
-    gc.im.IMType.PGA,
-    gc.im.IMType.pSA,
-    gc.im.IMType.Ds595,
-    gc.im.IMType.Ds575,
-    gc.im.IMType.AI,
-    gc.im.IMType.CAV,
-    gc.im.IMType.PGV,
-]
 
 MAG = [
     5.25,
@@ -121,7 +107,7 @@ def calculate_emp_ds(
                 )
                 for GMM_idx, (GMM, _) in enumerate(GMMs):
                     # TODO: Check those models
-                    if GMM.name in ("K_20", "K_20_NZ", "ZA_06", "CB_14", "ASK_14"):
+                    if GMM.name in ("K_20", "K_20_NZ", "CB_14", "ASK_14"):
                         print(f"{GMM.name} is currently not supported.")
                         continue
 
