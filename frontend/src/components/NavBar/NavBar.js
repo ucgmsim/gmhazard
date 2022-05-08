@@ -43,14 +43,15 @@ const MainNav = () => {
         Projects
       </NavLink>
 
-      <NavLink
+      {/* Disable for now as it's still in draft */}
+      {/* <NavLink
         tag={RouterNavLink}
         to="/framework-docs"
         exact
         activeClassName="router-link-exact-active"
       >
         Framework Documents
-      </NavLink>
+      </NavLink> */}
     </Nav>
   );
 };

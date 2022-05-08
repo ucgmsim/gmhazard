@@ -202,7 +202,6 @@ const HazardViewerUHS = () => {
               showErrorMessage.isError === false && (
                 <Fragment>
                   <UHSPlot
-                    from={"projects"}
                     uhsData={uhsData}
                     nzs1170p5Data={uhsNZS1170p5Data}
                     extra={extraInfo}
@@ -255,7 +254,6 @@ const HazardViewerUHS = () => {
               showErrorMessage.isError === false && (
                 <Fragment>
                   <UHSBranchPlot
-                    from={"projects"}
                     uhsData={uhsData[localSelectedRP["value"]]}
                     uhsBranchData={
                       uhsBranchData === undefined || uhsBranchData === null

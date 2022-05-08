@@ -211,8 +211,9 @@ def parse_args():
     parser.add_argument(
         "--rupture_lookup",
         "-rl",
-        help="flag to run rupture lookup function when creating the db",
+        action="store_true",
         default=False,
+        help="flag to run rupture lookup function when creating the db",
     )
     parser.add_argument(
         "--n-procs", type=int, help="Number of processes to use", default=1
@@ -220,7 +221,6 @@ def parse_args():
     parser.add_argument(
         "--no-directivity",
         action="store_true",
-        type=bool,
         default=False,
         help="Disable adding directivity adjustment",
     )
