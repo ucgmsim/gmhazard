@@ -176,15 +176,14 @@ def __get_pSA_values(
             except ValueError:
                 pSA_percentiles.append([np.nan, np.nan])
 
-        try:
-            pSA_branch_values.append(
-                [
-                    cur_branch.exceedance_to_im(cur_exceedance)
-                    for cur_branch in hazard_branches.values()
-                ]
-            )
-        except exceptions.ExceedanceOutOfRangeError as ex:
-            pSA_branch_values.append(np.full(len(hazard_branches), np.nan))
+        temp = []
+        for cur_branch in hazard_branches.values():
+            try:
+                temp.append(cur_branch.exceedance_to_im(cur_exceedance))
+            except exceptions.ExceedanceOutOfRangeError:
+                temp.append(np.nan)
+
+        pSA_branch_values.append(temp)
 
     return (
         np.asarray(pSA_values),
