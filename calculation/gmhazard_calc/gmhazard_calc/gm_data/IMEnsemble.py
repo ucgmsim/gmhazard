@@ -158,8 +158,8 @@ class IMEnsemble:
         )
 
     def __load_stations(self):
-        branch_stations = set.intersection(
+        branch_stations = list(set.intersection(
             *[set(branch.stations) for branch in self.branches_dict.values()]
-        ).intersection(self.ensemble.stations_ll_df.index)
+        ).intersection(self.ensemble.stations_ll_df.index))
 
         self._stations = self.ensemble.stations_ll_df.loc[branch_stations].sort_index()
