@@ -13,7 +13,6 @@ from empirical.util import classdef
 from empirical.util import empirical_factory
 from empirical.util import openquake_wrapper_vectorized
 
-
 MAG = [
     5.25,
     5.75,
@@ -55,6 +54,8 @@ def create_rupture_context_df(
     # if there is only a single point then the dtop, dbot and hypo_depth
     # are at the same point
     rupture_df[["hypo_depth", "ztor"]] = rupture_df[["dbot", "dtop"]]
+    # zbot is not dbot but can be used as a proxy for point source, same reason above
+    rupture_df["zbot"] = rupture_df["dbot"]
 
     # Distance Parameter - OQ uses ry0 term
     rupture_df[["rx", "ry0"]] = rupture_df[["rx", "ry"]].fillna(0)
@@ -106,11 +107,6 @@ def calculate_emp_ds(
                     model_dict,
                 )
                 for GMM_idx, (GMM, _) in enumerate(GMMs):
-                    # TODO: Check those models
-                    if GMM.name in ("K_20", "K_20_NZ", "CB_14", "ASK_14"):
-                        print(f"{GMM.name} is currently not supported.")
-                        continue
-
                     db_type = f"{GMM.name}_{tect_type}"
                     # Create a DB if not exists
                     imdb = gc.dbs.IMDBParametric(
