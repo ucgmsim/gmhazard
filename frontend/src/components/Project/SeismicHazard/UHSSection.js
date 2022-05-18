@@ -54,7 +54,7 @@ const UHSSection = () => {
             htmlFor="uhs-return-period"
             className="control-label"
           >
-            Return Period
+            Return Period (years)
           </label>
           <Select
             id="uhs-return-period"

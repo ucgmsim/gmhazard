@@ -350,7 +350,7 @@ const SiteSelectionForm = () => {
 
       <div className="form-group form-section-title">
         <span>
-          V<sub>S30</sub>
+          V<sub>S30</sub> (m/s)
         </span>
         <GuideTooltip
           explanation={
@@ -375,7 +375,7 @@ const SiteSelectionForm = () => {
 
       <div className="form-group form-section-title">
         <span>
-          Z<sub>1.0</sub> | Z<sub>2.5</sub>
+          Z<sub>1.0</sub> | Z<sub>2.5</sub> (km)
         </span>
         <GuideTooltip
           explanation={
