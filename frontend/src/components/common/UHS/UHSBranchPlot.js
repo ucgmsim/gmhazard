@@ -82,7 +82,7 @@ const UHSBranchPlot = ({
         y: uhsData.sa_values,
         type: "scatter",
         mode: "lines",
-        line: { color: "blue" },
+        line: { color: "red" },
         name: createLegendLabel(false),
         legendgroup: "site-specific",
         showlegend: true,
@@ -105,7 +105,7 @@ const UHSBranchPlot = ({
           y: percentile16.values,
           type: "scatter",
           mode: "lines",
-          line: { color: "black", dash: "dash" },
+          line: { color: "red", dash: "dash" },
           name: "16th Percentile",
           hoverinfo: "none",
           hovertemplate:
@@ -120,7 +120,7 @@ const UHSBranchPlot = ({
           y: percentile84.values,
           type: "scatter",
           mode: "lines",
-          line: { color: "black", dash: "dash" },
+          line: { color: "red", dash: "dash" },
           name: "84th Percentile",
           hoverinfo: "none",
           hovertemplate:

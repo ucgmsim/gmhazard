@@ -87,7 +87,7 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
           y: curData.sa_values,
           type: "scatter",
           mode: "lines",
-          line: { color: "blue" },
+          line: { color: "red" },
           name: createLegendLabel(false),
           legendgroup: "site-specific",
           showlegend: dataCounter === 0 ? true : false,
