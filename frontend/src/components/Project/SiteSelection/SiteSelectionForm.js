@@ -367,7 +367,6 @@ const SiteSelectionForm = () => {
               ? "Please select the Location first..."
               : "Loading..."
           }
-          isVs30={true}
           resettable={false}
           resetOnChange={localLocation}
         />

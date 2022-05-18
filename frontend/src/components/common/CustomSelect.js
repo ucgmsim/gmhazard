@@ -40,8 +40,6 @@ const CustomSelect = ({
       let tempOptions =
         isProjectID === true
           ? createProjectIDArray(options)
-          : isVs30 === true
-          ? createVs30Array(options)
           : isZ === true
           ? createZArray(options)
           : createSelectArray(options);
