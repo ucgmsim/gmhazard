@@ -161,7 +161,7 @@ const SiteSelectionViewer = () => {
               showErrorMessage.isError === false && (
                 <ImageMap
                   header={
-                    "Regional Vs30 predictions in the vicinity of the site.(Foster et al.)"
+                    "Regional Vs30 predictions in the vicinity of the site.(Foster et al. 2019)"
                   }
                   src={vs30Map}
                   alt={"Vs30 Map"}
