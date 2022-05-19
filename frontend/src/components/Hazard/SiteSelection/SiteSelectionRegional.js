@@ -106,7 +106,7 @@ const SiteSelectionRegional = () => {
         showErrorMessage.isError === false && (
           <ImageMap
             header={
-              "Looking at a map with the source locations and historical events from Geonet in the 2003-present period."
+              "Looking at a map with the source locations and historical events from GeoNet in the 2003-present period."
             }
             src={contextPlot}
             alt={"Regional Map"}

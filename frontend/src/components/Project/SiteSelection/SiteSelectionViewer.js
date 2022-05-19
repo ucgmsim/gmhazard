@@ -130,7 +130,7 @@ const SiteSelectionViewer = () => {
               showErrorMessage.isError === false && (
                 <ImageMap
                   header={
-                    "Source locations and historical events, 2003-present period.(from Geonet)"
+                    "Source locations and historical events, 2003-present period.(from GeoNet)"
                   }
                   src={regionalMap}
                   alt={"Regional Map"}
