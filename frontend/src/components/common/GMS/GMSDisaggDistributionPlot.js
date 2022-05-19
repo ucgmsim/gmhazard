@@ -43,7 +43,7 @@ const GMSDisaggDistributionPlot = ({
     y: contribution,
     mode: "lines",
     name: "Disaggregation distribution",
-    line: { color: "red" },
+    line: { color: "red", dash: "dot" },
     type: "scatter",
     showlegend: true,
   });
@@ -59,7 +59,7 @@ const GMSDisaggDistributionPlot = ({
       legendgroup: label,
       name: "Lower and upper bound limits",
       mode: "lines",
-      line: { color: "red", dash: "dot" },
+      line: { color: "grey", dash: "dot" },
       type: "scatter",
     },
     {
@@ -68,7 +68,7 @@ const GMSDisaggDistributionPlot = ({
       legendgroup: label,
       name: "Lower and upper bound limits",
       mode: "lines",
-      line: { color: "red", dash: "dot" },
+      line: { color: "grey", dash: "dot" },
       type: "scatter",
       showlegend: false,
     }
