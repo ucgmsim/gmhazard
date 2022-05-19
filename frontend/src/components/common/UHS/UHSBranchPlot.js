@@ -137,9 +137,11 @@ const UHSBranchPlot = ({
         data={scatterObjs}
         layout={{
           xaxis: {
+            type: "log",
             title: { text: "Period (s)" },
           },
           yaxis: {
+            type: "log",
             title: { text: "Spectral acceleration (g)" },
           },
           autosize: true,

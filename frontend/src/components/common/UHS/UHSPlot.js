@@ -107,9 +107,11 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
         data={scatterObjs}
         layout={{
           xaxis: {
+            type: "log",
             title: { text: "Period (s)" },
           },
           yaxis: {
+            type: "log",
             title: { text: "Spectral acceleration (g)" },
           },
           autosize: true,
