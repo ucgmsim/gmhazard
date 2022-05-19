@@ -45,11 +45,11 @@ const HazardEnsemblePlot = ({
         y: plotData["ds"].values,
         type: "scatter",
         mode: "lines",
-        name: "Distributed",
+        name: "Distributed Seismicity",
         line: { color: "green" },
         hoverinfo: "none",
         hovertemplate:
-          "<b>Distributed</b><br><br>" +
+          "<b>Distributed Seismicity</b><br><br>" +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       },
