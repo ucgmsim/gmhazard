@@ -206,7 +206,8 @@ def get_distance_from_site_info(ensemble: gm_data.Ensemble, site_info: site.Site
 
 def get_soil_class(vs30: float):
     """Gets the soil class for the specified vs30
-    Commented by Brendon and Robin on 23/05/2022
+    Updated by Brendon and Robin on 23/05/2022
+    Original post: https://uceqeng.slack.com/files/U3S75KRUH/F03FMJHM45D/image.png
     """
     assert not np.isnan(vs30), "NaN vs30 values are not allowed"
 
