@@ -450,13 +450,13 @@ export const GMS_LABELS = {
 // Projects' Metadata
 export const NZTA_SOIL_CLASS = {
   A: "A - rock",
-  D: "B - soft or deep soil",
+  D: "D - soft or deep soil",
 };
 export const NZS_SOIL_CLASS = {
   A: "A - rock",
   B: "B - weak rock",
   C: "C - intermediate soil",
-  D: "B - soft or deep soil",
+  D: "D - soft or deep soil",
   E: "E - very soft",
 };
 
