@@ -130,7 +130,7 @@ const SiteSelectionViewer = () => {
               showErrorMessage.isError === false && (
                 <ImageMap
                   header={
-                    "Source locations and historical events, 2003-present period.(from GeoNet)"
+                    "Source locations and historical events, 2003-present period. (from GeoNet)"
                   }
                   src={regionalMap}
                   alt={"Regional Map"}
@@ -161,7 +161,7 @@ const SiteSelectionViewer = () => {
               showErrorMessage.isError === false && (
                 <ImageMap
                   header={
-                    "Regional Vs30 predictions in the vicinity of the site.(Foster et al. 2019)"
+                    "Regional Vs30 predictions in the vicinity of the site. (Foster et al. 2019)"
                   }
                   src={vs30Map}
                   alt={"Vs30 Map"}
