@@ -89,12 +89,6 @@ def test_hazard(config):
 
         for im in ims:
             for station_name in ensembles[ensemble_id]["station_names"]:
-                for radius in ensembles[ensemble_id]["z_factor_radius"]:
-                    site_info = site.get_site_from_name(ens, station_name)
-                    nz_code_result = nz_code.nzs1170p5.run_ensemble_nzs1170p5(
-                        ens, site_info, im, z_factor_radius=radius
-                    )
-
                 bench_data_file = (
                     pathlib.Path(__file__).resolve().parent
                     / f"bench_data/nzs1170p5/{ensemble_id}"
@@ -102,17 +96,22 @@ def test_hazard(config):
                     / f"{im.file_format()}_{im.component}.csv"
                 )
                 bench_data = pd.read_csv(bench_data_file, index_col=0)
-
-                results.append(
-                    test_data(
-                        im,
-                        station_name,
-                        ensemble_id,
-                        radius,
-                        nz_code_result,
-                        bench_data,
+                for radius in ensembles[ensemble_id]["z_factor_radius"]:
+                    site_info = site.get_site_from_name(ens, station_name)
+                    nz_code_result = nz_code.nzs1170p5.run_ensemble_nzs1170p5(
+                        ens, site_info, im, z_factor_radius=radius
                     )
-                )
+
+                    results.append(
+                        test_data(
+                            im,
+                            station_name,
+                            ensemble_id,
+                            radius,
+                            nz_code_result,
+                            bench_data,
+                        )
+                    )
 
     if np.sum(results) > 0:
         raise AssertionError(
