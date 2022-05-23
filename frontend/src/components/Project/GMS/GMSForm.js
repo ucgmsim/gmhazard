@@ -75,7 +75,7 @@ const GMSForm = () => {
         />
       </div>
       <div className="form-group form-section-title">
-        Exceedance rate level (/years)
+        Exceedance rate level (years<sup>-1</sup>)
         <GuideTooltip
           explanation={
             CONSTANTS.TOOLTIP_MESSAGES["PROJECTS_GMS_EXCEEDANCE_RATE_LEVEL"]
