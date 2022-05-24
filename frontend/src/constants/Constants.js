@@ -41,8 +41,10 @@ export const CORE_API_SCENARIOS_ENDPOINT =
 export const CORE_API_SCENARIOS_DOWNLOAD_ENDPOINT =
   "/coreAPI/scenario/ensemble_scenario/download";
 
-// This endpoint will eventually replace when we implement DB properly
-// As this function reads from Available_Project table (A bridge table between User and Project)
+/* 
+This endpoint will eventually replace when we implement DB properly
+As this function reads from Available_Project table (A bridge table between User and Project)
+*/
 export const PROJECT_API_PROJECT_IDS_ENDPOINT = "/projectAPI/ids/get";
 export const PROJECT_API_SITES_ENDPOINT = "/projectAPI/sites/get";
 export const PROJECT_API_IMS_ENDPOINT = "/projectAPI/ims/get";
@@ -110,7 +112,7 @@ export const INTERMEDIATE_API_ALL_PRIVATE_PROJECTS_ENDPOINT =
 export const INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT =
   "/intermediateAPI/project/public/get/all";
 
-/* Labels */
+// Labels
 export const HAZARD_ANALYSIS = "Hazard Analysis";
 export const SITE_SELECTION = "Site Selection";
 export const SEISMIC_HAZARD = "Seismic Hazard";
@@ -125,6 +127,18 @@ export const FAULT_DISTRIBUTED_SEISMICITY_CONTRIBUTION =
 export const DOWNLOAD_DATA = "Download data";
 export const RETURN_PERIOD_WITH_UNIT = "Return Period (years)"
 export const GET_BUTTON = "Get"
+export const GMS_IM_DISTRIBUTIONS_PLOT = "IM Distributions"
+export const GMS_CONDITIONING_IM_NAME = "Conditioning IM Name"
+export const VIBRATION_PERIOD = "Vibration Period"
+export const EXCEEDANCE_RATE_LEVEL = "Exceedance rate level"
+export const IM_VECTOR = "IM Vector"
+export const CAUSAL_PARAMETERS = "Causal Parameters"
+
+// Units in labels
+export const SECONDS = "(s)"
+export const KILOMETRE = "(km)"
+export const METRE_PER_SECOND = "(m/s)"
+export const YEARS = "(years)"
 
 export const APP_LOCATION_DEFAULT_ENSEMBLE = "v20p5emp";
 
@@ -143,8 +157,8 @@ export const ENV = process.env.REACT_APP_ENV;
 export const SITE_SELECTION_VS30_TITLE = "VS30";
 
 /* 
-  Guide Messages
-  Site Selection - Regional & Vs30
+Guide Messages
+Site Selection - Regional & Vs30
 */
 export const SITE_SELECTION_VS30_MSG =
   "Please do the following steps to see an image.";
@@ -162,8 +176,8 @@ export const SITE_SELECTION_REGIONAL_INSTRUCTION = [
 ];
 
 /*
-  Map Box
-  Default coordinates needed, so I put our coordinates (UC Engineering Core Building)
+Map Box
+Default coordinates needed, so I put our coordinates (UC Engineering Core Building)
 */
 export const DEFAULT_MAPBOX_LAT = -43.521463221980085;
 export const DEFAULT_MAPBOX_LNG = 172.58361319646755;
@@ -179,8 +193,8 @@ export const RETURN_PERIOD = "Return Period";
 export const ANNUAL_PROBABILITY = "Annual Probability";
 
 /* 
-  Guide messages
-  Seismic Hazard - Hazard Viewer
+Guide messages
+Seismic Hazard - Hazard Viewer
 */
 export const HAZARD_CURVE_GUIDE_MSG =
   "Please do the following steps to see plots.";
@@ -216,8 +230,8 @@ export const PROJECT_UNIFORM_HAZARD_SPECTRUM_INSTRUCTION = [
 ];
 
 /* 
-  Guide messages
-  GMS
+Guide messages
+GMS
 */
 export const GMS_VIEWER_GUIDE_MSG =
   "Please do the following steps to see plots.";
@@ -237,8 +251,8 @@ export const PROJECT_GMS_VIEWER_GUIDE_INSTRUCTION = [
 ];
 
 /*
-  Guide messages
-  Scenarios
+Guide messages
+Scenarios
 */
 export const SCENARIO_VIEWER_GUIDE_MSG =
   "Please do the following steps to see plots.";

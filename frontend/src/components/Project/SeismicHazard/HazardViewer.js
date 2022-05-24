@@ -3,6 +3,7 @@ import React, { Fragment, useEffect, useState, useContext } from "react";
 import { Tabs, Tab } from "react-bootstrap";
 
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 
 import {
   HazardViewerHazardCurve,

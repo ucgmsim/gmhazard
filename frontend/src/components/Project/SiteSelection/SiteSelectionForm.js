@@ -405,7 +405,7 @@ const SiteSelectionForm = () => {
           disabled={invalidInputs()}
           onClick={() => setGlobalVariables()}
         >
-          Get
+          {CONSTANTS.GET_BUTTON}
         </button>
       </div>
     </Fragment>

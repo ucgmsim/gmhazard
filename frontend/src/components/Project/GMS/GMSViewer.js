@@ -251,7 +251,10 @@ const GmsViewer = () => {
   return (
     <div className="gms-viewer">
       <Tabs defaultActiveKey="GMSIMDistributionsPlot">
-        <Tab eventKey="GMSIMDistributionsPlot" title="IM Distributions">
+        <Tab
+          eventKey="GMSIMDistributionsPlot"
+          title={CONSTANTS.GMS_IM_DISTRIBUTIONS_PLOT}
+        >
           {projectGMSGetClick === null && (
             <GuideMessage
               header={CONSTANTS.GMS}
@@ -289,7 +292,7 @@ const GmsViewer = () => {
               </Fragment>
             )}
         </Tab>
-        <Tab eventKey="GMSCausalParamPlot" title="Causal Parameters">
+        <Tab eventKey="GMSCausalParamPlot" title={CONSTANTS.CAUSAL_PARAMETERS}>
           {projectGMSGetClick === null && (
             <GuideMessage
               header={CONSTANTS.GMS}

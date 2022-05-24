@@ -9,6 +9,7 @@ import React, {
 import Select from "react-select";
 
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 
 import { GuideTooltip } from "components/common";
 import { createSelectArray } from "utils/Utils";
@@ -95,10 +96,10 @@ const IMCustomSelect = ({
         placeholder={
           localOptions.length === 0
             ? placeholder
-            : title === "Vibration Period (s)" &&
+            : title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` &&
               selectedIM["value"] === "pSA"
             ? "Select period..."
-            : title === "Vibration Period (s)" &&
+            : title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` &&
               selectedIM["value"] !== "pSA"
             ? "N/A"
             : title === "Component" && localOptions.length > 1
@@ -111,9 +112,10 @@ const IMCustomSelect = ({
           localOptions.length === 0 ||
           (selectedIM !== null &&
             selectedIM["value"] !== "pSA" &&
-            title === "Vibration Period (s)") ||
+            title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}`) ||
           (selectedIM === null &&
-            (title === "Vibration Period (s)" || title === "Component"))
+            (title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` ||
+              title === "Component"))
         }
         menuPlacement="auto"
         menuPortalTarget={document.body}

@@ -61,7 +61,7 @@ const DisaggregationSection = () => {
           disabled={invalidInputsWithNonpSA() || invalidInputWithpSA()}
           onClick={() => getDisagg()}
         >
-          Get
+          {CONSTANTS.GET_BUTTON}
         </button>
       </div>
     </Fragment>

@@ -89,7 +89,7 @@ const HazardCurveSection = () => {
 
       <div className="form-group">
         <IMCustomSelect
-          title="Vibration Period (s)"
+          title={`${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}`}
           setSelect={setLocalSelectedIMPeriod}
           options={periodOptions}
           selectedIM={localSelectedIM}
@@ -115,7 +115,7 @@ const HazardCurveSection = () => {
           disabled={invalidGetBtn()}
           onClick={() => setProjectHazardCurveGetClick(uuidv4())}
         >
-          Get
+          {CONSTANTS.GET_BUTTON}
         </button>
       </div>
     </Fragment>

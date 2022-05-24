@@ -565,7 +565,7 @@ const GMSForm = () => {
 
         <div className="im-custom-form-group">
           <CustomSelect
-            title="Conditioning IM Name"
+            title={CONSTANTS.GMS_CONDITIONING_IM_NAME}
             setSelect={setSelectedIMType}
             options={availableIMs}
             guideMSG={
@@ -576,7 +576,7 @@ const GMSForm = () => {
 
         <div className="im-custom-form-group">
           <IMCustomSelect
-            title="Vibration Period"
+            title={`${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}`}
             setSelect={setSelectedIMPeriod}
             options={availablePeriods}
             selectedIM={selectedIMType}
@@ -591,7 +591,7 @@ const GMSForm = () => {
             htmlFor="im-level"
             className="control-label"
           >
-            IM / Exceedance rate level
+            IM / {CONSTANTS.EXCEEDANCE_RATE_LEVEL}
           </label>
           <GuideTooltip
             explanation={
@@ -672,7 +672,7 @@ const GMSForm = () => {
             htmlFor="im-vector"
             className="control-label"
           >
-            IM Vector
+            {CONSTANTS.IM_VECTOR}
           </label>
           <GuideTooltip
             explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_GMS_IM_VECTOR"]}

@@ -90,7 +90,7 @@ const HazardCurveSection = () => {
       </div>
       <div className="im-custom-form-group">
         <IMCustomSelect
-          title="Vibration Period"
+          title={`${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}`}
           setSelect={setLocalSelectedIMPeriod}
           options={periodOptions}
           selectedIM={localSelectedIM}
