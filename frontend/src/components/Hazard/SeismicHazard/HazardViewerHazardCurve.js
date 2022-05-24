@@ -358,7 +358,7 @@ const HazardViewerHazardCurve = () => {
   return (
     <div className="hazard-curve-viewer">
       <Tabs defaultActiveKey="ensemble" className="pivot-tabs">
-        <Tab eventKey="ensemble" title="Ensemble branches">
+        <Tab eventKey="ensemble" title={CONSTANTS.ENSEMBLE_BRANCHES}>
           {hazardCurveComputeClick === null && (
             <GuideMessage
               header={CONSTANTS.HAZARD_CURVE}
@@ -395,7 +395,10 @@ const HazardViewerHazardCurve = () => {
             )}
         </Tab>
 
-        <Tab eventKey="fault" title="Fault/distributed seismicity contribution">
+        <Tab
+          eventKey="fault"
+          title={CONSTANTS.FAULT_DISTRIBUTED_SEISMICITY_CONTRIBUTION}
+        >
           {hazardCurveComputeClick === null && (
             <GuideMessage
               header={CONSTANTS.HAZARD_CURVE}

@@ -96,7 +96,7 @@ const UHSSection = () => {
     <Fragment>
       <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
         <div className="form-group form-section-title">
-          Uniform Hazard Spectrum
+          {CONSTANTS.UNIFORM_HAZARD_SPECTRUM}
           <GuideTooltip
             explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_UHS"]}
           />

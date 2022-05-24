@@ -47,7 +47,7 @@ const HazardViewer = () => {
         className="hazard-viewer-tabs"
         onSelect={(key) => setSelectedTab(key)}
       >
-        <Tab eventKey="hazardCurve" title="Hazard Curve">
+        <Tab eventKey="hazardCurve" title={CONSTANTS.HAZARD_CURVE}>
           <HazardViewerHazardCurve />
         </Tab>
 
@@ -55,7 +55,7 @@ const HazardViewer = () => {
           <HazardViewerDisaggregation />
         </Tab>
 
-        <Tab eventKey="uhs" title="Uniform Hazard Spectrum">
+        <Tab eventKey="uhs" title={CONSTANTS.UNIFORM_HAZARD_SPECTRUM}>
           <HazardViewerUHS />
         </Tab>
       </Tabs>

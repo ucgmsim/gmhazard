@@ -43,7 +43,7 @@ const UHSSection = () => {
     <Fragment>
       <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
         <div className="form-group form-section-title">
-          Uniform Hazard Spectrum
+          {CONSTANTS.UNIFORM_HAZARD_SPECTRUM}
           <GuideTooltip
             explanation={CONSTANTS.TOOLTIP_MESSAGES["PROJECT_UHS"]}
           />
@@ -54,7 +54,7 @@ const UHSSection = () => {
             htmlFor="uhs-return-period"
             className="control-label"
           >
-            Return Period (years)
+            {CONSTANTS.RETURN_PERIOD_WITH_UNIT}
           </label>
           <Select
             id="uhs-return-period"
@@ -80,7 +80,7 @@ const UHSSection = () => {
           disabled={localRPs.length === 0 || isPSANotInIMList(projectIMs)}
           onClick={() => getUHS()}
         >
-          Get
+          {CONSTANTS.GET_BUTTON}
         </button>
       </div>
     </Fragment>

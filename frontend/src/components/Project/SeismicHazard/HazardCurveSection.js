@@ -74,7 +74,7 @@ const HazardCurveSection = () => {
   return (
     <Fragment>
       <div className="form-group form-section-title">
-        Hazard Curve
+        {CONSTANTS.HAZARD_CURVE}
         <GuideTooltip
           explanation={CONSTANTS.TOOLTIP_MESSAGES["PROJECT_HAZARD"]}
         />

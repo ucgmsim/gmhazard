@@ -61,7 +61,7 @@ const HazardViewer = () => {
           </Tab>
         ) : null}
         {hasPermission("hazard:uhs") ? (
-          <Tab eventKey="uhs" title="Uniform Hazard Spectrum">
+          <Tab eventKey="uhs" title={CONSTANTS.UNIFORM_HAZARD_SPECTRUM}>
             <HazardViewerUHS />
           </Tab>
         ) : null}

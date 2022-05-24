@@ -119,10 +119,12 @@ export const SCENARIOS = "Scenarios";
 export const HAZARD_CURVE = "Hazard Curve";
 export const DISAGGREGATION = "Disaggregation";
 export const UNIFORM_HAZARD_SPECTRUM = "Uniform Hazard Spectrum";
-export const ENSEMBLE_BRANCHES = "Ensemble Branches";
+export const ENSEMBLE_BRANCHES = "Ensemble branches";
 export const FAULT_DISTRIBUTED_SEISMICITY_CONTRIBUTION =
   "Fault/distributed seismicity contribution";
 export const DOWNLOAD_DATA = "Download data";
+export const RETURN_PERIOD_WITH_UNIT = "Return Period (years)"
+export const GET_BUTTON = "Get"
 
 export const APP_LOCATION_DEFAULT_ENSEMBLE = "v20p5emp";
 
