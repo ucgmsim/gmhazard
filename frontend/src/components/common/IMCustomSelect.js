@@ -95,12 +95,10 @@ const IMCustomSelect = ({
         placeholder={
           localOptions.length === 0
             ? placeholder
-            : title === "Vibration Period" &&
-              selectedIM != null &&
+            : title === "Vibration Period (s)" &&
               selectedIM["value"] === "pSA"
             ? "Select period..."
-            : title === "Vibration Period" &&
-              selectedIM != null &&
+            : title === "Vibration Period (s)" &&
               selectedIM["value"] !== "pSA"
             ? "N/A"
             : title === "Component" && localOptions.length > 1
@@ -113,9 +111,9 @@ const IMCustomSelect = ({
           localOptions.length === 0 ||
           (selectedIM !== null &&
             selectedIM["value"] !== "pSA" &&
-            title === "Vibration Period") ||
+            title === "Vibration Period (s)") ||
           (selectedIM === null &&
-            (title === "Vibration Period" || title === "Component"))
+            (title === "Vibration Period (s)" || title === "Component"))
         }
         menuPlacement="auto"
         menuPortalTarget={document.body}

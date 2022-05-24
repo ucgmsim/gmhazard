@@ -32,9 +32,10 @@ const UHSBranchPlot = ({
       for (let curData of Object.values(uhsBranchData)) {
         // Skip any plots if it contains nan
         if (!curData.sa_values.includes("nan")) {
+          // The first value is from PGA, hence do not inlcude
           scatterObjs.push({
-            x: curData.period_values,
-            y: curData.sa_values,
+            x: curData.period_values.slice(1),
+            y: curData.sa_values.slice(1),
             type: "scatter",
             mode: "lines",
             line: { color: "grey", width: 0.8 },
@@ -77,12 +78,13 @@ const UHSBranchPlot = ({
 
     // UHS scatter objs
     if (!uhsData.sa_values.includes("nan")) {
+      // The first value is from PGA, hence do not inlcude
       scatterObjs.push({
-        x: uhsData.period_values,
-        y: uhsData.sa_values,
+        x: uhsData.period_values.slice(1),
+        y: uhsData.sa_values.slice(1),
         type: "scatter",
         mode: "lines",
-        line: { color: "blue" },
+        line: { color: "red" },
         name: createLegendLabel(false),
         legendgroup: "site-specific",
         showlegend: true,
@@ -98,14 +100,14 @@ const UHSBranchPlot = ({
     if (uhsData.percentiles) {
       const percentile16 = getPlotData(uhsData.percentiles["16th"]);
       const percentile84 = getPlotData(uhsData.percentiles["84th"]);
-
+      // The first value is from PGA, hence do not inlcude
       if (!percentile16.values.includes("nan")) {
         scatterObjs.push({
-          x: percentile16.index,
-          y: percentile16.values,
+          x: percentile16.index.slice(1),
+          y: percentile16.values.slice(1),
           type: "scatter",
           mode: "lines",
-          line: { color: "black", dash: "dash" },
+          line: { color: "red", dash: "dash" },
           name: "16th Percentile",
           hoverinfo: "none",
           hovertemplate:
@@ -116,11 +118,11 @@ const UHSBranchPlot = ({
       }
       if (!percentile84.values.includes("nan")) {
         scatterObjs.push({
-          x: percentile84.index,
-          y: percentile84.values,
+          x: percentile84.index.slice(1),
+          y: percentile84.values.slice(1),
           type: "scatter",
           mode: "lines",
-          line: { color: "black", dash: "dash" },
+          line: { color: "red", dash: "dash" },
           name: "84th Percentile",
           hoverinfo: "none",
           hovertemplate:
@@ -137,9 +139,11 @@ const UHSBranchPlot = ({
         data={scatterObjs}
         layout={{
           xaxis: {
+            type: "log",
             title: { text: "Period (s)" },
           },
           yaxis: {
+            type: "log",
             title: { text: "Spectral acceleration (g)" },
           },
           autosize: true,

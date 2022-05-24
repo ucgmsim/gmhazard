@@ -82,12 +82,13 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
     for (let [curExcd, curData] of Object.entries(uhsData)) {
       if (!curData.sa_values.includes("nan")) {
         let displayRP = (1 / Number(curExcd)).toString();
+        // The first value is from PGA, hence do not inlcude
         scatterObjs.push({
-          x: curData.period_values,
-          y: curData.sa_values,
+          x: curData.period_values.slice(1),
+          y: curData.sa_values.slice(1),
           type: "scatter",
           mode: "lines",
-          line: { color: "blue" },
+          line: { color: "red" },
           name: createLegendLabel(false),
           legendgroup: "site-specific",
           showlegend: dataCounter === 0 ? true : false,
@@ -107,9 +108,11 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
         data={scatterObjs}
         layout={{
           xaxis: {
+            type: "log",
             title: { text: "Period (s)" },
           },
           yaxis: {
+            type: "log",
             title: { text: "Spectral acceleration (g)" },
           },
           autosize: true,

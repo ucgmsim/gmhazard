@@ -107,11 +107,6 @@ const ContributionTable = ({ meanData, contributionData }) => {
           </thead>
           <tbody>
             {contributionTableRows}
-            <tr className="contrib-ellipsis">
-              <td colSpan="5" className="contrib-ellipsis">
-                (more..)
-              </td>
-            </tr>
           </tbody>
         </table>
       </div>

@@ -50,7 +50,7 @@ const HazardBranchPlot = ({
       y: ensTotalData.values,
       type: "scatter",
       mode: "lines",
-      line: { color: "black" },
+      line: { color: "red" },
       name: "Ensemble mean",
       hoverinfo: "none",
       hovertemplate:
@@ -118,7 +118,7 @@ const HazardBranchPlot = ({
           y: percentile16.values,
           type: "scatter",
           mode: "lines",
-          line: { color: "black", dash: "dash" },
+          line: { color: "red", dash: "dash" },
           name: "16th Percentile",
           hoverinfo: "none",
           hovertemplate:
@@ -131,7 +131,7 @@ const HazardBranchPlot = ({
           y: percentile84.values,
           type: "scatter",
           mode: "lines",
-          line: { color: "black", dash: "dash" },
+          line: { color: "red", dash: "dash" },
           name: "84th Percentile",
           hoverinfo: "none",
           hovertemplate:

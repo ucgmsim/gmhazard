@@ -32,7 +32,7 @@ const HazardEnsemblePlot = ({
         type: "scatter",
         mode: "lines",
         name: "Fault",
-        line: { color: "red" },
+        line: { color: "black" },
         hoverinfo: "none",
         hovertemplate:
           "<b>Fault</b><br><br>" +
@@ -45,11 +45,11 @@ const HazardEnsemblePlot = ({
         y: plotData["ds"].values,
         type: "scatter",
         mode: "lines",
-        name: "Distributed",
+        name: "Distributed Seismicity",
         line: { color: "green" },
         hoverinfo: "none",
         hovertemplate:
-          "<b>Distributed</b><br><br>" +
+          "<b>Distributed Seismicity</b><br><br>" +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       },
@@ -60,7 +60,7 @@ const HazardEnsemblePlot = ({
         type: "scatter",
         mode: "lines",
         name: "Total",
-        line: { color: "black" },
+        line: { color: "red" },
         hoverinfo: "none",
         hovertemplate:
           "<b>Total</b><br><br>" +
@@ -130,7 +130,7 @@ const HazardEnsemblePlot = ({
           type: "scatter",
           mode: "lines",
           name: "16th Percentile",
-          line: { color: "black", dash: "dash" },
+          line: { color: "red", dash: "dash" },
           hoverinfo: "none",
           hovertemplate:
             "<b>16<sup>th</sup> percentiles</b><br><br>" +
@@ -144,7 +144,7 @@ const HazardEnsemblePlot = ({
           type: "scatter",
           mode: "lines",
           name: "84th Percentile",
-          line: { color: "black", dash: "dash" },
+          line: { color: "red", dash: "dash" },
           hoverinfo: "none",
           hovertemplate:
             "<b>84<sup>th</sup> percentiles</b><br><br>" +

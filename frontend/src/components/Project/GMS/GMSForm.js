@@ -61,7 +61,7 @@ const GMSForm = () => {
         />
       </div>
       <div className="form-group form-section-title">
-        Vibration Period
+        Vibration Period (s)
         <GuideTooltip
           explanation={CONSTANTS.TOOLTIP_MESSAGES["GMS_VIBRATION_PERIOD"]}
         />
@@ -75,7 +75,7 @@ const GMSForm = () => {
         />
       </div>
       <div className="form-group form-section-title">
-        Exceedance rate level
+        Exceedance rate level (years<sup>-1</sup>)
         <GuideTooltip
           explanation={
             CONSTANTS.TOOLTIP_MESSAGES["PROJECTS_GMS_EXCEEDANCE_RATE_LEVEL"]

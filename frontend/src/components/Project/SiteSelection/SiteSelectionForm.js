@@ -350,7 +350,7 @@ const SiteSelectionForm = () => {
 
       <div className="form-group form-section-title">
         <span>
-          V<sub>S30</sub>
+          V<sub>S30</sub> (m/s)
         </span>
         <GuideTooltip
           explanation={
@@ -367,7 +367,6 @@ const SiteSelectionForm = () => {
               ? "Please select the Location first..."
               : "Loading..."
           }
-          isVs30={true}
           resettable={false}
           resetOnChange={localLocation}
         />
@@ -375,7 +374,7 @@ const SiteSelectionForm = () => {
 
       <div className="form-group form-section-title">
         <span>
-          Z<sub>1.0</sub> | Z<sub>2.5</sub>
+          Z<sub>1.0</sub> | Z<sub>2.5</sub> (km)
         </span>
         <GuideTooltip
           explanation={

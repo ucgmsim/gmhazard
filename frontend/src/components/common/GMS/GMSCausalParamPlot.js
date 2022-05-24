@@ -57,7 +57,7 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
         legendgroup: metadata,
         name: "Lower and upper bound limits",
         mode: "lines",
-        line: { color: "red", dash: "dot" },
+        line: { color: "grey", dash: "dot" },
         type: "scatter",
       },
       {
@@ -69,7 +69,7 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
         legendgroup: metadata,
         name: "Lower and upper bound limits",
         mode: "lines",
-        line: { color: "red", dash: "dot" },
+        line: { color: "grey", dash: "dot" },
         type: "scatter",
         showlegend: false,
       }
