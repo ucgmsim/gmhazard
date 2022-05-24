@@ -341,7 +341,7 @@ const SiteSelectionForm = () => {
           placeholder={
             localProjectId === null
               ? "Please select the Project ID first..."
-              : "Loading..."
+              : `${CONSTANTS.PLACEHOLDER_LOADING}`
           }
           resettable={false}
           resetOnChange={localProjectId}
@@ -365,7 +365,7 @@ const SiteSelectionForm = () => {
           placeholder={
             localLocation === null
               ? "Please select the Location first..."
-              : "Loading..."
+              : `${CONSTANTS.PLACEHOLDER_LOADING}`
           }
           resettable={false}
           resetOnChange={localLocation}
@@ -389,7 +389,7 @@ const SiteSelectionForm = () => {
           placeholder={
             localVS30 === null
               ? "Please select the Vs30 first..."
-              : "Loading..."
+              : `${CONSTANTS.PLACEHOLDER_LOADING}`
           }
           isZ={true}
           resettable={false}

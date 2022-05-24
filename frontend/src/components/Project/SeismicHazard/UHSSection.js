@@ -1,14 +1,14 @@
 import React, { useState, useContext, useEffect, Fragment } from "react";
 
 import Select from "react-select";
-import makeAnimated from "react-select/animated";
 import { v4 as uuidv4 } from "uuid";
+import makeAnimated from "react-select/animated";
 
-import * as CONSTANTS from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 
-import { createSelectArray, isPSANotInIMList } from "utils/Utils";
 import { GuideTooltip } from "components/common";
+import { createSelectArray, isPSANotInIMList } from "utils/Utils";
 
 const UHSSection = () => {
   const {
@@ -61,7 +61,11 @@ const UHSSection = () => {
             closeMenuOnSelect={false}
             components={animatedComponents}
             isMulti
-            placeholder={rpOptions.length === 0 ? "Not available" : "Select..."}
+            placeholder={
+              rpOptions.length === 0
+                ? `${CONSTANTS.PLACEHOLDER_NOT_AVAILABLE}`
+                : `${CONSTANTS.PLACEHOLDER_SELECT_SIGN}`
+            }
             value={localRPs.length === 0 ? [] : localRPs}
             onChange={(value) => setLocalRPs(value || [])}
             options={rpOptions}

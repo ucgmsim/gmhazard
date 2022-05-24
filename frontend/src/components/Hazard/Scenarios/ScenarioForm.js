@@ -68,7 +68,7 @@ const ScenarioForm = () => {
   return (
     <Fragment>
       <div className="form-group form-section-title">
-        Scenarios
+        {CONSTNATS.SCENARIOS}
         <GuideTooltip explanation={CONSTANTS.TOOLTIP_MESSAGES["SCENARIOS"]} />
       </div>
       <div className="form-group">
@@ -77,7 +77,7 @@ const ScenarioForm = () => {
           setSelect={setLocalSelectedIMComponent}
           options={scenarioIMComponentOptions}
           selectedIM={"pSA"}
-          placeholder={"Loading..."}
+          placeholder={`${CONSTANTS.PLACEHOLDER_LOADING}`}
         />
       </div>
 
@@ -99,7 +99,7 @@ const ScenarioForm = () => {
           htmlFor="scenario-ruptures"
           className="control-label"
         >
-          Scenarios
+          {CONSTNATS.SCENARIOS}
         </label>
         <Select
           id="hazard-scenarios-select"
@@ -107,7 +107,9 @@ const ScenarioForm = () => {
           components={animatedComponents}
           isMulti
           placeholder={
-            localRuptureOptions.length === 0 ? "Not available" : "Select..."
+            localRuptureOptions.length === 0
+              ? `${CONSTANTS.PLACEHOLDER_NOT_AVAILABLE}`
+              : `${CONSTANTS.PLACEHOLDER_SELECT_SIGN}`
           }
           value={localRuptures.length === 0 ? [] : localRuptures}
           onChange={(value) => setLocalRuptures(value || [])}

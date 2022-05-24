@@ -74,7 +74,7 @@ const Project = () => {
 
         <Tab
           eventKey="scenario"
-          title="Scenarios"
+          title={CONSTNATS.SCENARIOS}
           disabled={invalidTab()}
           tabClassName="scenarios-tab"
         >

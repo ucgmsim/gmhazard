@@ -134,6 +134,11 @@ export const EXCEEDANCE_RATE_LEVEL = "Exceedance rate level"
 export const IM_VECTOR = "IM Vector"
 export const CAUSAL_PARAMETERS = "Causal Parameters"
 
+export const PLACEHOLDER_NOT_AVAILABLE = "Not available"
+export const PLACEHOLDER_SELECT_SIGN = "Select..."
+export const PLACEHOLDER_LOADING = "Loading..."
+
+
 // Units in labels
 export const SECONDS = "(s)"
 export const KILOMETRE = "(km)"

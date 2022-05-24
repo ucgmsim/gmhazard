@@ -18,7 +18,7 @@ const IMCustomSelect = ({
   title = null,
   setSelect,
   options,
-  placeholder = "Loading...",
+  placeholder = `${CONSTANTS.PLACEHOLDER_LOADING}`,
   guideMSG = null,
   selectedIM = null,
   resettable = true,
@@ -104,7 +104,7 @@ const IMCustomSelect = ({
             ? "N/A"
             : title === "Component" && localOptions.length > 1
             ? "Select component..."
-            : "Select..."
+            : `${CONSTANTS.PLACEHOLDER_SELECT_SIGN}`
         }
         onChange={(e) => setSelect(e)}
         options={localOptions}

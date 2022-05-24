@@ -9,6 +9,7 @@ import React, {
 import Select from "react-select";
 
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 
 import { GuideTooltip } from "components/common";
 import {
@@ -22,7 +23,7 @@ const CustomSelect = ({
   title = null,
   setSelect,
   options,
-  placeholder = "Loading...",
+  placeholder = `${CONSTANTS.PLACEHOLDER_LOADING}`,
   guideMSG = null,
   isProjectID = false,
   isVs30 = false,
@@ -92,7 +93,11 @@ const CustomSelect = ({
 
       <Select
         ref={selectInputRef}
-        placeholder={localOptions.length === 0 ? placeholder : "Select..."}
+        placeholder={
+          localOptions.length === 0
+            ? placeholder
+            : `${CONSTANTS.PLACEHOLDER_SELECT_SIGN}`
+        }
         onChange={(e) => setSelect(e)}
         options={localOptions}
         isDisabled={localOptions.length === 0}

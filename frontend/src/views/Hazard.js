@@ -68,7 +68,7 @@ const Hazard = () => {
         {hasPermission("hazard:scenarios") ? (
           <Tab
             eventKey="scenarios"
-            title="Scenarios"
+            title={CONSTNATS.SCENARIOS}
             disabled={invalidTab()}
             tabClassName="scenarios-tab"
           >
