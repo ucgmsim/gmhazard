@@ -125,33 +125,46 @@ export const ENSEMBLE_BRANCHES = "Ensemble branches";
 export const FAULT_DISTRIBUTED_SEISMICITY_CONTRIBUTION =
   "Fault/distributed seismicity contribution";
 export const DOWNLOAD_DATA = "Download data";
-export const RETURN_PERIOD_WITH_UNIT = "Return Period (years)"
-export const GET_BUTTON = "Get"
-export const GMS_IM_DISTRIBUTIONS_PLOT = "IM Distributions"
-export const GMS_CONDITIONING_IM_NAME = "Conditioning IM Name"
-export const VIBRATION_PERIOD = "Vibration Period"
-export const EXCEEDANCE_RATE_LEVEL = "Exceedance rate level"
-export const IM_VECTOR = "IM Vector"
-export const CAUSAL_PARAMETERS = "Causal Parameters"
-export const INTENSITY_MEASURE = "Intensity Measure"
-export const EPSILON = "Epsilon"
-export const FAULT_DISTRIBUTED_SEISMICITY = "Fault/distributed seismicity"
-export const SOURCE_CONTRIBUTIONS = "Source contributions"
-export const MEAN_HAZARDS = "Mean Hazards"
-export const EPISTEMIC_UNCERTAINTY = "Epistemic Uncertainty"
+export const RETURN_PERIOD_WITH_UNIT = "Return Period (years)";
+export const GET_BUTTON = "Get";
+export const GMS_IM_DISTRIBUTIONS_PLOT = "IM Distributions";
+export const GMS_CONDITIONING_IM_NAME = "Conditioning IM Name";
+export const VIBRATION_PERIOD = "Vibration Period";
+export const EXCEEDANCE_RATE_LEVEL = "Exceedance rate level";
+export const IM_VECTOR = "IM Vector";
+export const CAUSAL_PARAMETERS = "Causal Parameters";
+export const INTENSITY_MEASURE = "Intensity Measure";
+export const EPSILON = "Epsilon";
+export const FAULT_DISTRIBUTED_SEISMICITY = "Fault/distributed seismicity";
+export const SOURCE_CONTRIBUTIONS = "Source contributions";
+export const MEAN_HAZARDS = "Mean Hazards";
+export const EPISTEMIC_UNCERTAINTY = "Epistemic Uncertainty";
+export const PROJECT_NAME = "Project Name";
+export const LOCATION = "Location";
+export const REGIONAL = "Regional";
 
-export const PLACEHOLDER_NOT_AVAILABLE = "Not available"
-export const PLACEHOLDER_SELECT_SIGN = "Select..."
-export const PLACEHOLDER_LOADING = "Loading..."
+export const REGIONAL_MAP_DESCRIPTION =
+  "Source locations (Lichfield, 2014) and historical events (Geonet, 2003-present)";
+export const REGIONAL_MAP_IMG_ALT = "Regional Map"
+export const VS30_MAP_DESCRIPTION = "Regional Vs30 predictions in the vicinity of the site. (Foster et al. 2019)"
+export const VS30_MAP_IMG_ALT = "Vs30 Map"
 
-export const COMPONENT = "Component"
+export const PLACEHOLDER_NOT_AVAILABLE = "Not available";
+export const PLACEHOLDER_SELECT_SIGN = "Select...";
+export const PLACEHOLDER_LOADING = "Loading...";
+export const PLACESHOLDER_SELECT_PROJECT_ID =
+  "Please select the Project ID first...";
+export const PLACEHOLDER_SELECT_LOCATION =
+  "Please select the Location first...";
+export const PLACEHOLDER_SELECT_VS30 = "Please select the Vs30 first...";
 
+export const COMPONENT = "Component";
 
 // Units in labels
-export const SECONDS = "(s)"
-export const KILOMETRE = "(km)"
-export const METRE_PER_SECOND = "(m/s)"
-export const YEARS = "(years)"
+export const SECONDS = "(s)";
+export const KILOMETRE = "(km)";
+export const METRE_PER_SECOND = "(m/s)";
+export const YEARS = "(years)";
 
 export const APP_LOCATION_DEFAULT_ENSEMBLE = "v20p5emp";
 
