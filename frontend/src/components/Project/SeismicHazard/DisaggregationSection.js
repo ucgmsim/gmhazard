@@ -39,14 +39,14 @@ const DisaggregationSection = () => {
   return (
     <Fragment>
       <div className="form-group form-section-title">
-        Disaggregation
+        {CONSTANTS.DISAGGREGATION}
         <GuideTooltip
           explanation={CONSTANTS.TOOLTIP_MESSAGES["PROJECT_DISAGG"]}
         />
       </div>
       <div className="form-group">
         <CustomSelect
-          title="Return Period (years)"
+          title={`${CONSTANTS.RETURN_PERIOD} ${CONSTANTS.YEARS}`}
           value={localSelectedRP}
           setSelect={setLocalSelectedRP}
           options={projectDisagRPs}

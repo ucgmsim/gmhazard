@@ -2,8 +2,8 @@ import React, { useState, useEffect, useContext, Fragment } from "react";
 
 import { v4 as uuidv4 } from "uuid";
 
-import * as CONSTANTS from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 
 import { IMCustomSelect, GuideTooltip } from "components/common";
 
@@ -83,7 +83,7 @@ const HazardCurveSection = () => {
       </div>
       <div className="im-custom-form-group">
         <IMCustomSelect
-          title="Intensity Measure"
+          title={CONSTANTS.INTENSITY_MEASURE}
           setSelect={setLocalSelectedIM}
           options={IMs}
         />
@@ -100,7 +100,7 @@ const HazardCurveSection = () => {
 
       <div className="form-group">
         <IMCustomSelect
-          title="Component"
+          title={CONSTANTS.COMPONENT}
           setSelect={setLocalSelectedIMComponent}
           selectedIM={localSelectedIM}
           options={componentOptions}

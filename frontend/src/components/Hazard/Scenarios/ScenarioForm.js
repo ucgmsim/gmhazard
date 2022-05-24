@@ -4,8 +4,8 @@ import { v4 as uuidv4 } from "uuid";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 
-import * as CONSTANTS from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 
 import { IMCustomSelect, GuideTooltip } from "components/common";
 import { createSelectArray } from "utils/Utils";
@@ -68,12 +68,12 @@ const ScenarioForm = () => {
   return (
     <Fragment>
       <div className="form-group form-section-title">
-        {CONSTNATS.SCENARIOS}
+        {CONSTANTS.SCENARIOS}
         <GuideTooltip explanation={CONSTANTS.TOOLTIP_MESSAGES["SCENARIOS"]} />
       </div>
       <div className="form-group">
         <IMCustomSelect
-          title="Component"
+          title={CONSTANTS.COMPONENT}
           setSelect={setLocalSelectedIMComponent}
           options={scenarioIMComponentOptions}
           selectedIM={"pSA"}
@@ -99,7 +99,7 @@ const ScenarioForm = () => {
           htmlFor="scenario-ruptures"
           className="control-label"
         >
-          {CONSTNATS.SCENARIOS}
+          {CONSTANTS.SCENARIOS}
         </label>
         <Select
           id="hazard-scenarios-select"

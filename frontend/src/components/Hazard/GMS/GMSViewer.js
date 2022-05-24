@@ -369,7 +369,7 @@ const GMSViewer = () => {
         >
           {GMSComputeClick === null && (
             <GuideMessage
-              header={CONSTANTS.GMS}
+              header={CONSTANTS.GROUND_MOTION_SELECTION}
               body={CONSTANTS.GMS_VIEWER_GUIDE_MSG}
               instruction={CONSTANTS.GMS_VIEWER_GUIDE_INSTRUCTION}
             />
@@ -413,7 +413,7 @@ const GMSViewer = () => {
         <Tab eventKey="GMSCausalParamPlot" title={CONSTANTS.CAUSAL_PARAMETERS}>
           {GMSComputeClick === null && (
             <GuideMessage
-              header={CONSTANTS.GMS}
+              header={CONSTANTS.GROUND_MOTION_SELECTION}
               body={CONSTANTS.GMS_VIEWER_GUIDE_MSG}
               instruction={CONSTANTS.GMS_VIEWER_GUIDE_INSTRUCTION}
             />

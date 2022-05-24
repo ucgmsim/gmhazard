@@ -52,7 +52,7 @@ const HazardViewer = () => {
           <HazardViewerHazardCurve />
         </Tab>
 
-        <Tab eventKey="disagg" title="Disaggregation">
+        <Tab eventKey="disagg" title={CONSTANTS.DISAGGREGATION}>
           <HazardViewerDisaggregation />
         </Tab>
 

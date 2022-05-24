@@ -74,12 +74,12 @@ const ScenarioForm = () => {
   return (
     <Fragment>
       <div className="form-group form-section-title">
-        {CONSTNATS.SCENARIOS}
+        {CONSTANTS.SCENARIOS}
         <GuideTooltip explanation={CONSTANTS.TOOLTIP_MESSAGES["SCENARIOS"]} />
       </div>
       <div className="form-group">
         <IMCustomSelect
-          title="Component"
+          title={CONSTANTS.COMPONENT}
           setSelect={setLocalSelectedIMComponent}
           options={projectScenarioIMComponentOptions}
           selectedIM={"pSA"}

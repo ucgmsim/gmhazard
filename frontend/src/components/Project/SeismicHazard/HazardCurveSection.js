@@ -81,7 +81,7 @@ const HazardCurveSection = () => {
       </div>
       <div className="form-group">
         <IMCustomSelect
-          title="Intensity Measure"
+          title={CONSTANTS.INTENSITY_MEASURE}
           setSelect={setLocalSelectedIM}
           options={projectIMs}
         />
@@ -99,7 +99,7 @@ const HazardCurveSection = () => {
 
       <div className="form-group">
         <IMCustomSelect
-          title="Component"
+          title={CONSTANTS.COMPONENT}
           setSelect={setLocalSelectedIMComponent}
           selectedIM={localSelectedIM}
           options={componentOptions}

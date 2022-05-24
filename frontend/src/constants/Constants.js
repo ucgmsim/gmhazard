@@ -116,7 +116,7 @@ export const INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT =
 export const HAZARD_ANALYSIS = "Hazard Analysis";
 export const SITE_SELECTION = "Site Selection";
 export const SEISMIC_HAZARD = "Seismic Hazard";
-export const GMS = "Ground Motion Selection";
+export const GROUND_MOTION_SELECTION = "Ground Motion Selection";
 export const SCENARIOS = "Scenarios";
 export const HAZARD_CURVE = "Hazard Curve";
 export const DISAGGREGATION = "Disaggregation";
@@ -133,10 +133,18 @@ export const VIBRATION_PERIOD = "Vibration Period"
 export const EXCEEDANCE_RATE_LEVEL = "Exceedance rate level"
 export const IM_VECTOR = "IM Vector"
 export const CAUSAL_PARAMETERS = "Causal Parameters"
+export const INTENSITY_MEASURE = "Intensity Measure"
+export const EPSILON = "Epsilon"
+export const FAULT_DISTRIBUTED_SEISMICITY = "Fault/distributed seismicity"
+export const SOURCE_CONTRIBUTIONS = "Source contributions"
+export const MEAN_HAZARDS = "Mean Hazards"
+export const EPISTEMIC_UNCERTAINTY = "Epistemic Uncertainty"
 
 export const PLACEHOLDER_NOT_AVAILABLE = "Not available"
 export const PLACEHOLDER_SELECT_SIGN = "Select..."
 export const PLACEHOLDER_LOADING = "Loading..."
+
+export const COMPONENT = "Component"
 
 
 // Units in labels

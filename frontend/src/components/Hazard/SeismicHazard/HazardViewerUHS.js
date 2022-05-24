@@ -220,7 +220,7 @@ const HazardViewerUHS = () => {
   return (
     <div className="uhs-viewer">
       <Tabs defaultActiveKey="allRP" className="pivot-tabs">
-        <Tab eventKey="allRP" title="Mean Hazards">
+        <Tab eventKey="allRP" title={CONSTANTS.MEAN_HAZARDS}>
           <div className="tab-content">
             {uhsComputeClick === null && (
               <GuideMessage
@@ -255,7 +255,7 @@ const HazardViewerUHS = () => {
               )}
           </div>
         </Tab>
-        <Tab eventKey="specificRP" title="Epistemic Uncertainty">
+        <Tab eventKey="specificRP" title={CONSTANTS.EPISTEMIC_UNCERTAINTY}>
           <div className="tab-content">
             {uhsComputeClick === null && (
               <GuideMessage

@@ -40,7 +40,7 @@ const IMCustomSelect = ({
         setSelect is from parents, hence no need to set again
         in parents component
       */
-      if (options.length === 1 && title === "Component") {
+      if (options.length === 1 && title === `${CONSTANTS.COMPONENT}`) {
         setSelect(tempOptions[0]);
         selectInputRef.current.select.setValue(tempOptions[0]);
       }
@@ -102,7 +102,7 @@ const IMCustomSelect = ({
             : title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` &&
               selectedIM["value"] !== "pSA"
             ? "N/A"
-            : title === "Component" && localOptions.length > 1
+            : title === `${CONSTANTS.COMPONENT}` && localOptions.length > 1
             ? "Select component..."
             : `${CONSTANTS.PLACEHOLDER_SELECT_SIGN}`
         }
@@ -115,7 +115,7 @@ const IMCustomSelect = ({
             title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}`) ||
           (selectedIM === null &&
             (title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` ||
-              title === "Component"))
+              title === `${CONSTANTS.COMPONENT}`))
         }
         menuPlacement="auto"
         menuPortalTarget={document.body}

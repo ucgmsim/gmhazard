@@ -1,11 +1,11 @@
 import React, { Fragment, useState, useEffect, useContext } from "react";
 
-import { Tabs, Tab } from "react-bootstrap";
 import $ from "jquery";
+import { Tabs, Tab } from "react-bootstrap";
 
-import { useAuth0 } from "components/common/ReactAuth0SPA";
 import { GlobalContext } from "context";
 import * as CONSTANTS from "constants/Constants";
+import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
   LoadingSpinner,
@@ -236,7 +236,7 @@ const HazardViewerDisaggregation = () => {
   return (
     <div className="disaggregation-viewer">
       <Tabs defaultActiveKey="epsilon" className="pivot-tabs">
-        <Tab eventKey="epsilon" title="Epsilon">
+        <Tab eventKey="epsilon" title={CONSTANTS.EPSILON}>
           {disaggComputeClick === null && (
             <GuideMessage
               header={CONSTANTS.DISAGGREGATION}
@@ -268,7 +268,7 @@ const HazardViewerDisaggregation = () => {
             )}
         </Tab>
 
-        <Tab eventKey="fault" title="Fault/distributed seismicity">
+        <Tab eventKey="fault" title={CONSTANTS.FAULT_DISTRIBUTED_SEISMICITY}>
           {disaggComputeClick === null && (
             <GuideMessage
               header={CONSTANTS.DISAGGREGATION}
@@ -300,7 +300,7 @@ const HazardViewerDisaggregation = () => {
             )}
         </Tab>
 
-        <Tab eventKey="contributions" title="Source contributions">
+        <Tab eventKey="contributions" title={CONSTANTS.SOURCE_CONTRIBUTIONS}>
           {disaggComputeClick === null && (
             <GuideMessage
               header={CONSTANTS.DISAGGREGATION}

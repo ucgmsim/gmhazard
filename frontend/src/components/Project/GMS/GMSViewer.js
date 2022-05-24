@@ -5,8 +5,8 @@ import Select from "react-select";
 import dompurify from "dompurify";
 
 import { GlobalContext } from "context";
-import { useAuth0 } from "components/common/ReactAuth0SPA";
 import * as CONSTANTS from "constants/Constants";
+import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
   LoadingSpinner,
@@ -257,7 +257,7 @@ const GmsViewer = () => {
         >
           {projectGMSGetClick === null && (
             <GuideMessage
-              header={CONSTANTS.GMS}
+              header={CONSTANTS.GROUND_MOTION_SELECTION}
               body={CONSTANTS.GMS_VIEWER_GUIDE_MSG}
               instruction={CONSTANTS.PROJECT_GMS_VIEWER_GUIDE_INSTRUCTION}
             />
@@ -295,7 +295,7 @@ const GmsViewer = () => {
         <Tab eventKey="GMSCausalParamPlot" title={CONSTANTS.CAUSAL_PARAMETERS}>
           {projectGMSGetClick === null && (
             <GuideMessage
-              header={CONSTANTS.GMS}
+              header={CONSTANTS.GROUND_MOTION_SELECTION}
               body={CONSTANTS.GMS_VIEWER_GUIDE_MSG}
               instruction={CONSTANTS.PROJECT_GMS_VIEWER_GUIDE_INSTRUCTION}
             />
