@@ -15,7 +15,6 @@ import { GuideTooltip } from "components/common";
 import {
   createSelectArray,
   createProjectIDArray,
-  createVs30Array,
   createZArray,
 } from "utils/Utils";
 
@@ -26,7 +25,6 @@ const CustomSelect = ({
   placeholder = `${CONSTANTS.PLACEHOLDER_LOADING}`,
   guideMSG = null,
   isProjectID = false,
-  isVs30 = false,
   isZ = false,
   resettable = true,
   resetOnChange = null,
