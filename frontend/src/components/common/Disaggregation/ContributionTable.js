@@ -60,10 +60,12 @@ const ContributionTable = ({ meanData, contributionData }) => {
             <table className="table thead-dark table-striped table-bordered mt-2 w-auto">
               <thead>
                 <tr>
-                  <th scope="col">IM</th>
-                  <th scope="col">Mean Magnitude</th>
-                  <th scope="col">Mean Rrup (km)</th>
-                  <th scope="col">Mean Epsilon</th>
+                  <th scope="col">{CONSTANTS.INTENSITY_MEASURE}</th>
+                  <th scope="col">{CONSTANTS.MEAN_MAGNITUDE}</th>
+                  <th scope="col">
+                    {CONSTANTS.MEAN_RRUP} {CONSTANTS.KILOMETRE}
+                  </th>
+                  <th scope="col">{CONSTANTS.MEAN_EPSILON}</th>
                 </tr>
               </thead>
               <tbody>
@@ -98,16 +100,18 @@ const ContributionTable = ({ meanData, contributionData }) => {
         <table className="table thead-dark table-striped table-bordered mt-2 w-auto">
           <thead>
             <tr>
-              <th scope="col">Name</th>
-              <th scope="col">Contribution (%)</th>
-              <th scope="col">Annual recurrence rate</th>
-              <th scope="col">Magnitude</th>
-              <th scope="col">Rrup (km)</th>
+              <th scope="col">{CONSTANTS.NAME}</th>
+              <th scope="col">
+                {CONSTANTS.CONTRIBUTION} {CONSTANTS.PERCENTAGE}
+              </th>
+              <th scope="col">{CONSTANTS.ANNUAL_RECURRENCE_RATE}</th>
+              <th scope="col">{CONSTANTS.MAGNITUDE}</th>
+              <th scope="col">
+                {CONSTANTS.RRUP} {CONSTANTS.KILOMETRE}
+              </th>
             </tr>
           </thead>
-          <tbody>
-            {contributionTableRows}
-          </tbody>
+          <tbody>{contributionTableRows}</tbody>
         </table>
       </div>
     );
