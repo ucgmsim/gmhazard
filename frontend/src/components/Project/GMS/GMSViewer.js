@@ -1,8 +1,8 @@
 import React, { Fragment, useContext, useEffect, useState } from "react";
 
-import { Tabs, Tab } from "react-bootstrap";
 import Select from "react-select";
 import dompurify from "dompurify";
+import { Tabs, Tab } from "react-bootstrap";
 
 import { GlobalContext } from "context";
 import * as CONSTANTS from "constants/Constants";
@@ -100,8 +100,8 @@ const GmsViewer = () => {
       }));
       // Insert spectra, disagg distribution plots before any IM
       localIMs.splice(0, 0, {
-        value: "spectra",
-        label: "Pseudo acceleration response spectra",
+        value: `${CONSTANTS.SPECTRA}`,
+        label: `${CONSTANTS.PSEUDO_ACCELERATION_RESPONSE_SPECTRA}`,
       });
 
       setLocalIMVectors(localIMs);
@@ -121,7 +121,7 @@ const GmsViewer = () => {
       }));
 
       tempmetadata.splice(0, 0, {
-        value: "mwrrupplot",
+        value: `${CONSTANTS.MAG_RRUP_PLOT}`,
         label: `Magnitude and rupture distance (Mw-R${"rup".sub()}) distribution`,
       });
       setLocalmetadata(tempmetadata);
@@ -281,7 +281,7 @@ const GmsViewer = () => {
                   menuPlacement="auto"
                   menuPortalTarget={document.body}
                 />
-                {specifiedIM.value === "spectra" ? (
+                {specifiedIM.value === `${CONSTANTS.SPECTRA}` ? (
                   <GMSSpectraPlot GMSSpectraData={GMSSpectraData} />
                 ) : (
                   <GMSIMDistributionsPlot
@@ -327,7 +327,7 @@ const GmsViewer = () => {
                     );
                   }}
                 />
-                {specifiedMetadata.value === "mwrrupplot" ? (
+                {specifiedMetadata.value === `${CONSTANTS.MAG_RRUP_PLOT}` ? (
                   <GMSMwRrupPlot
                     metadata={computedGMS["selected_gms_metadata"]}
                     bounds={mwRrupBounds}

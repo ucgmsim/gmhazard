@@ -3,8 +3,12 @@ import React from "react";
 import Plot from "react-plotly.js";
 
 import { getPlotData } from "utils/Utils";
-import { PLOT_MARGIN, PLOT_CONFIG } from "constants/Constants";
 import { ErrorMessage } from "components/common";
+import {
+  PLOT_MARGIN,
+  PLOT_CONFIG,
+  DISTRIBUTED_SEISMICITY,
+} from "constants/Constants";
 
 import "assets/style/HazardPlots.css";
 
@@ -45,11 +49,11 @@ const HazardEnsemblePlot = ({
         y: plotData["ds"].values,
         type: "scatter",
         mode: "lines",
-        name: "Distributed Seismicity",
+        name: DISTRIBUTED_SEISMICITY,
         line: { color: "green" },
         hoverinfo: "none",
         hovertemplate:
-          "<b>Distributed Seismicity</b><br><br>" +
+          `<b>${DISTRIBUTED_SEISMICITY}</b><br><br>` +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       },

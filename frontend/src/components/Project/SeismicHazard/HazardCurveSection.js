@@ -93,7 +93,7 @@ const HazardCurveSection = () => {
           setSelect={setLocalSelectedIMPeriod}
           options={periodOptions}
           selectedIM={localSelectedIM}
-          placeholder={"Please select the Intensity Measure first."}
+          placeholder={CONSTANTS.PLACEHOLDER_SELECT_IM}
         />
       </div>
 
@@ -103,7 +103,7 @@ const HazardCurveSection = () => {
           setSelect={setLocalSelectedIMComponent}
           selectedIM={localSelectedIM}
           options={componentOptions}
-          placeholder={"Please select the Intensity Measure first."}
+          placeholder={CONSTANTS.PLACEHOLDER_SELECT_IM}
         />
       </div>
 

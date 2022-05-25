@@ -228,8 +228,8 @@ const GMSViewer = () => {
     }));
 
     localIMs.splice(0, 0, {
-      value: "spectra",
-      label: "Pseudo acceleration response spectra",
+      value: `${CONSTANTS.SPECTRA}`,
+      label: `${CONSTANTS.PSEUDO_ACCELERATION_RESPONSE_SPECTRA}`,
     });
     setLocalIMVectors(localIMs);
 
@@ -254,7 +254,7 @@ const GMSViewer = () => {
         );
 
       tempmetadata.splice(0, 0, {
-        value: "mwrrupplot",
+        value: `${CONSTANTS.MAG_RRUP_PLOT}`,
         label: `Magnitude and rupture distance (Mw-R${"rup".sub()}) distribution`,
       });
       tempmetadata.splice(1, 0, {
@@ -395,7 +395,7 @@ const GMSViewer = () => {
                       menuPlacement="auto"
                       menuPortalTarget={document.body}
                     />
-                    {specifiedIM.value === "spectra" ? (
+                    {specifiedIM.value === `${CONSTANTS.SPECTRA}` ? (
                       <GMSSpectraPlot GMSSpectraData={GMSSpectraData} />
                     ) : (
                       <GMSIMDistributionsPlot
@@ -447,7 +447,8 @@ const GMSViewer = () => {
                         );
                       }}
                     />
-                    {specifiedMetadata.value === "mwrrupplot" ? (
+                    {specifiedMetadata.value ===
+                    `${CONSTANTS.MAG_RRUP_PLOT}` ? (
                       <GMSMwRrupPlot
                         metadata={computedGMS["selected_gms_metadata"]}
                         bounds={mwRrupBounds}

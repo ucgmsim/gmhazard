@@ -125,7 +125,6 @@ export const ENSEMBLE_BRANCHES = "Ensemble branches";
 export const FAULT_DISTRIBUTED_SEISMICITY_CONTRIBUTION =
   "Fault/distributed seismicity contribution";
 export const DOWNLOAD_DATA = "Download data";
-export const RETURN_PERIOD_WITH_UNIT = "Return Period (years)";
 export const GET_BUTTON = "Get";
 export const GMS_IM_DISTRIBUTIONS_PLOT = "IM Distributions";
 export const GMS_CONDITIONING_IM_NAME = "Conditioning IM Name";
@@ -142,12 +141,19 @@ export const EPISTEMIC_UNCERTAINTY = "Epistemic Uncertainty";
 export const PROJECT_NAME = "Project Name";
 export const LOCATION = "Location";
 export const REGIONAL = "Regional";
+export const DISTRIBUTED_SEISMICITY = "Distributed Seismicity"
 
 export const REGIONAL_MAP_DESCRIPTION =
   "Source locations (Lichfield, 2014) and historical events (Geonet, 2003-present)";
 export const REGIONAL_MAP_IMG_ALT = "Regional Map"
 export const VS30_MAP_DESCRIPTION = "Regional Vs30 predictions in the vicinity of the site. (Foster et al. 2019)"
 export const VS30_MAP_IMG_ALT = "Vs30 Map"
+export const EPSILON_DISAGG_PLOT_ALT = "Epsilon disagg plot"
+export const SOURCE_DISAGG_PLOT_ALT = "Source disagg plot"
+
+export const SPECTRA = "spectra"
+export const PSEUDO_ACCELERATION_RESPONSE_SPECTRA = "Pseudo acceleration response spectra"
+export const MAG_RRUP_PLOT = "mwrrupplot"
 
 export const PLACEHOLDER_NOT_AVAILABLE = "Not available";
 export const PLACEHOLDER_SELECT_SIGN = "Select...";
@@ -157,7 +163,10 @@ export const PLACESHOLDER_SELECT_PROJECT_ID =
 export const PLACEHOLDER_SELECT_LOCATION =
   "Please select the Location first...";
 export const PLACEHOLDER_SELECT_VS30 = "Please select the Vs30 first...";
+export const PLACEHOLDER_SELECT_IM = "Please select the Intensity Measure first..."
 
+export const SHOW_MORE = "Show More..."
+export const SHOW_LESS = "Show Less..."
 export const COMPONENT = "Component";
 
 // Units in labels

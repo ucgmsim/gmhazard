@@ -53,7 +53,7 @@ const HazardViewerDisaggregation = () => {
   const [disaggMeanData, setDisaggMeanData] = useState(null);
   const [disaggContributionData, setDisaggContributionData] = useState(null);
   const [rowsToggled, setRowsToggled] = useState(true);
-  const [toggleText, setToggleText] = useState("Show More...");
+  const [toggleText, setToggleText] = useState(CONSTANTS.SHOW_MORE);
 
   // For download data button
   const [downloadToken, setDownloadToken] = useState("");
@@ -166,7 +166,7 @@ const HazardViewerDisaggregation = () => {
               const extraInfo = responseData["extra_info"];
               try {
                 extraInfo.rupture_name["distributed_seismicity"] =
-                  "Distributed Seismicity";
+                  CONSTANTS.DISTRIBUTED_SEISMICITY;
               } catch (err) {
                 console.log(err.message);
               }
@@ -230,7 +230,7 @@ const HazardViewerDisaggregation = () => {
       $("tr.contrib-ellipsis td.hidden").removeClass("hidden");
     }
 
-    setToggleText(rowsToggled ? "Show Less..." : "Show More...");
+    setToggleText(rowsToggled ? CONSTANTS.SHOW_LESS : CONSTANTS.SHOW_MORE);
   };
 
   return (
@@ -262,7 +262,7 @@ const HazardViewerDisaggregation = () => {
                 <img
                   className="img-fluid rounded mx-auto d-block"
                   src={`data:image/png;base64,${disaggPlotData.eps}`}
-                  alt="Epsilon disagg plot"
+                  alt={CONSTANTS.EPSILON_DISAGG_PLOT_ALT}
                 />
               </Fragment>
             )}
@@ -294,7 +294,7 @@ const HazardViewerDisaggregation = () => {
                 <img
                   className="img-fluid rounded mx-auto d-block"
                   src={`data:image/png;base64,${disaggPlotData.src}`}
-                  alt="Source disagg plot"
+                  alt={CONSTANTS.SOURCE_DISAGG_PLOT_ALT}
                 />
               </Fragment>
             )}
