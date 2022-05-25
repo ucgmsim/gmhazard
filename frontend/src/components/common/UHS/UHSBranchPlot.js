@@ -19,8 +19,8 @@ const UHSBranchPlot = ({
   if (uhsData !== null && !uhsData.hasOwnProperty("error")) {
     const createLegendLabel = (isNZCode) => {
       return isNZCode === true
-        ? "NZS1170.5 [RP = " + rp + "]"
-        : "Site-specific [RP = " + rp + "]";
+        ? `${CONSTANTS.NZS1170P5} [RP = " + ${rp} + "]`
+        : `${CONSTANTS.SITE_SPECIFIC} [RP = " + ${rp} + "]`;
     };
 
     // Creating the scatter objects
@@ -39,7 +39,7 @@ const UHSBranchPlot = ({
             type: "scatter",
             mode: "lines",
             line: { color: "grey", width: 0.8 },
-            name: "Branches",
+            name: `${CONSTANTS.BRANCHES}`,
             legendgroup: "branches",
             showlegend: dataCounter === 0 ? true : false,
             hoverinfo: "none",
@@ -70,7 +70,7 @@ const UHSBranchPlot = ({
         showlegend: true,
         hoverinfo: "none",
         hovertemplate:
-          `<b>NZS1170.5 [RP ${rp}]</b><br><br>` +
+          `<b>${CONSTANTS.NZS1170P5} [RP ${rp}]</b><br><br>` +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       });
@@ -90,7 +90,7 @@ const UHSBranchPlot = ({
         showlegend: true,
         hoverinfo: "none",
         hovertemplate:
-          `<b>Site-specific [RP ${rp}]</b><br><br>` +
+          `<b>${CONSTANTS.SITE_SPECIFIC} [RP ${rp}]</b><br><br>` +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       });
@@ -108,10 +108,10 @@ const UHSBranchPlot = ({
           type: "scatter",
           mode: "lines",
           line: { color: "red", dash: "dash" },
-          name: "16th Percentile",
+          name: `${CONSTANTS.LOWER_PERCENTILE}`,
           hoverinfo: "none",
           hovertemplate:
-            "<b>16<sup>th</sup> percentile</b><br><br>" +
+            `<b>${CONSTANTS.LOWER_PERCENTILE}</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
@@ -123,10 +123,10 @@ const UHSBranchPlot = ({
           type: "scatter",
           mode: "lines",
           line: { color: "red", dash: "dash" },
-          name: "84th Percentile",
+          name: `${CONSTANTS.UPPER_PERCENTILE}`,
           hoverinfo: "none",
           hovertemplate:
-            "<b>84<sup>th</sup> percentile</b><br><br>" +
+            `<b>${CONSTANTS.UPPER_PERCENTILE}</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });

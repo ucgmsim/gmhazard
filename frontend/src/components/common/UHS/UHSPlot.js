@@ -19,7 +19,9 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
         Depends on the isNZCode status, newLabel starts with NZ Code - or an empty string
       */
       let newLabel =
-        isNZCode === true ? "NZS1170.5 [RP = " : "Site-specific [RP = ";
+        isNZCode === true
+          ? `${CONSTANTS.NZS1170P5} [RP = `
+          : `${CONSTANTS.SITE_SPECIFIC} [RP = `;
 
       /*
         Only display to legend the RP that has values if its for Projects
@@ -69,7 +71,7 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
           showlegend: nzCodeDataCounter === 0 ? true : false,
           hoverinfo: "none",
           hovertemplate:
-            `<b>NZS1170.5 [RP ${displayRP}]</b><br><br>` +
+            `<b>${CONSTANTS.NZS1170P5} [RP ${displayRP}]</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
@@ -94,7 +96,7 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
           showlegend: dataCounter === 0 ? true : false,
           hoverinfo: "none",
           hovertemplate:
-            `<b>Site-specific [RP ${displayRP}]</b><br><br>` +
+            `<b>${CONSTANTS.SITE_SPECIFIC} [RP ${displayRP}]</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
