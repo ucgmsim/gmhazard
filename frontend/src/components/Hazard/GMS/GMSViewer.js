@@ -1,8 +1,8 @@
 import React, { Fragment, useContext, useState, useEffect } from "react";
 
-import { Tabs, Tab } from "react-bootstrap";
 import Select from "react-select";
 import dompurify from "dompurify";
+import { Tabs, Tab } from "react-bootstrap";
 
 import { GlobalContext } from "context";
 import * as CONSTANTS from "constants/Constants";
@@ -255,11 +255,13 @@ const GMSViewer = () => {
 
       tempmetadata.splice(0, 0, {
         value: `${CONSTANTS.MAG_RRUP_PLOT}`,
-        label: `Magnitude and rupture distance (Mw-R${"rup".sub()}) distribution`,
+        label: `${CONSTANTS.MAGNITUDE} and ${
+          CONSTANTS.RUPTURE_DISTANCE
+        } (Mw-R${"rup".sub()}) distribution`,
       });
       tempmetadata.splice(1, 0, {
         value: "availablegms",
-        label: "Available ground motions",
+        label: `${CONSTANTS.AVAILABLE_GROUND_MOTIONS}`,
       });
 
       // Set the first Metadata as a default metadata for plot

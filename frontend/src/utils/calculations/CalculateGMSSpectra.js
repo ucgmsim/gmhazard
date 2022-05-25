@@ -1,3 +1,4 @@
+import * as CONSTANTS from "constants/Constants";
 import { sortIMs } from "utils/Utils";
 
 export const calculateGMSSpectra = (gmsData, numGMs) => {
@@ -173,7 +174,7 @@ export const calculateGMSSpectra = (gmsData, numGMs) => {
         y: yCoords,
         legendgroup: "Realisations",
         mode: "lines",
-        name: "Realisations",
+        name: `${CONSTANTS.REALISATIONS}`,
         line: { color: "blue", width: 0.7 },
         type: "scatter",
         showlegend: i === 0 ? true : false,
@@ -197,7 +198,7 @@ export const calculateGMSSpectra = (gmsData, numGMs) => {
         y: yCoords,
         legendgroup: "Selected GMs",
         mode: "lines",
-        name: "Selected Ground Motions",
+        name: `${CONSTANTS.SELECTED_GM}`,
         line: { color: "black", width: 0.7 },
         type: "scatter",
         showlegend: i === 0 ? true : false,

@@ -122,7 +122,9 @@ const GmsViewer = () => {
 
       tempmetadata.splice(0, 0, {
         value: `${CONSTANTS.MAG_RRUP_PLOT}`,
-        label: `Magnitude and rupture distance (Mw-R${"rup".sub()}) distribution`,
+        label: `${CONSTANTS.MAGNITUDE} and ${
+          CONSTANTS.RUPTURE_DISTANCE
+        } (Mw-R${"rup".sub()}) distribution`,
       });
       setLocalmetadata(tempmetadata);
 

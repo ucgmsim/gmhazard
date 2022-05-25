@@ -141,19 +141,44 @@ export const EPISTEMIC_UNCERTAINTY = "Epistemic Uncertainty";
 export const PROJECT_NAME = "Project Name";
 export const LOCATION = "Location";
 export const REGIONAL = "Regional";
-export const DISTRIBUTED_SEISMICITY = "Distributed Seismicity"
+export const DISTRIBUTED_SEISMICITY = "Distributed Seismicity";
 
 export const REGIONAL_MAP_DESCRIPTION =
   "Source locations (Lichfield, 2014) and historical events (Geonet, 2003-present)";
-export const REGIONAL_MAP_IMG_ALT = "Regional Map"
-export const VS30_MAP_DESCRIPTION = "Regional Vs30 predictions in the vicinity of the site. (Foster et al. 2019)"
-export const VS30_MAP_IMG_ALT = "Vs30 Map"
-export const EPSILON_DISAGG_PLOT_ALT = "Epsilon disagg plot"
-export const SOURCE_DISAGG_PLOT_ALT = "Source disagg plot"
+export const REGIONAL_MAP_IMG_ALT = "Regional Map";
+export const VS30_MAP_DESCRIPTION =
+  "Regional Vs30 predictions in the vicinity of the site. (Foster et al. 2019)";
+export const VS30_MAP_IMG_ALT = "Vs30 Map";
+export const EPSILON_DISAGG_PLOT_ALT = "Epsilon disagg plot";
+export const SOURCE_DISAGG_PLOT_ALT = "Source disagg plot";
 
-export const SPECTRA = "spectra"
-export const PSEUDO_ACCELERATION_RESPONSE_SPECTRA = "Pseudo acceleration response spectra"
-export const MAG_RRUP_PLOT = "mwrrupplot"
+export const SPECTRA = "spectra";
+export const PSEUDO_ACCELERATION_RESPONSE_SPECTRA =
+  "Pseudo acceleration response spectra";
+export const MAG_RRUP_PLOT = "mwrrupplot";
+
+export const MEAN_MAGNITUDE = "Mean Magnitude";
+export const MEAN_RRUP = "Mean Rrup";
+export const MEAN_EPSILON = "Mean Epsilon";
+export const NAME = "Name";
+export const CONTRIBUTION = "Contribution";
+export const ANNUAL_RECURRENCE_RATE = "Annual recurrence rate";
+export const MAGNITUDE = "Magnitude";
+export const RRUP = "Rrup";
+
+export const LOWER_AND_UPPER_BOUND_LIMITS = "Lower and upper bound limits";
+export const REFERENCE_POINT = "Reference Point";
+export const CUMULATIVE_PROB_CDF = "Cumulative Probability, CDF";
+export const SHORTEN_SELECTED_GM = "Selected GMs";
+export const SELECTED_GM = "Selected Ground Motions";
+export const REALISATIONS = "Realisations";
+export const GCIM = "GCIM";
+export const SPECTRAL_ACCELERATION = "Spectral acceleration";
+export const BOUNDS = "Bounds";
+export const RUPTURE_DISTANCE = "Rupture distance";
+export const AVAILABLE_GROUND_MOTIONS = "Available ground motions"
+export const DISAGGREGATION_DSITRIBUTION = "Disaggregation distribution"
+export const SITE_SPECIFIC = "Site-Specific"
 
 export const PLACEHOLDER_NOT_AVAILABLE = "Not available";
 export const PLACEHOLDER_SELECT_SIGN = "Select...";
@@ -163,10 +188,11 @@ export const PLACESHOLDER_SELECT_PROJECT_ID =
 export const PLACEHOLDER_SELECT_LOCATION =
   "Please select the Location first...";
 export const PLACEHOLDER_SELECT_VS30 = "Please select the Vs30 first...";
-export const PLACEHOLDER_SELECT_IM = "Please select the Intensity Measure first..."
+export const PLACEHOLDER_SELECT_IM =
+  "Please select the Intensity Measure first...";
 
-export const SHOW_MORE = "Show More..."
-export const SHOW_LESS = "Show Less..."
+export const SHOW_MORE = "Show More...";
+export const SHOW_LESS = "Show Less...";
 export const COMPONENT = "Component";
 
 // Units in labels
@@ -174,6 +200,8 @@ export const SECONDS = "(s)";
 export const KILOMETRE = "(km)";
 export const METRE_PER_SECOND = "(m/s)";
 export const YEARS = "(years)";
+export const PERCENTAGE = "(%)";
+export const G_FORCE = "(g)";
 
 export const APP_LOCATION_DEFAULT_ENSEMBLE = "v20p5emp";
 
@@ -492,8 +520,8 @@ export const TOOLTIP_URL = {
 
 // GMS Labels
 export const GMS_LABELS = {
-  mag: "Magnitude (Mw)",
-  rrup: `Rupture distance (R${"rup".sub()})`,
+  mag: `${MAGNITUDE} (Mw)`,
+  rrup: `${RUPTURE_DISTANCE} (R${"rup".sub()})`,
   sf: "Scale factor (SF)",
   vs30: `30m-averaged shear-wave velocity (V${"s30".sub()})`,
 };

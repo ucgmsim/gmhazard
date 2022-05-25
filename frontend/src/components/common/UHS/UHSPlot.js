@@ -3,8 +3,8 @@ import React from "react";
 import Plot from "react-plotly.js";
 
 import { getPlotData } from "utils/Utils.js";
-import { PLOT_MARGIN, PLOT_CONFIG } from "constants/Constants";
 import { ErrorMessage } from "components/common";
+import * as CONSTANTS from "constants/Constants";
 
 import "assets/style/UHSPlot.css";
 
@@ -113,10 +113,12 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
           },
           yaxis: {
             type: "log",
-            title: { text: "Spectral acceleration (g)" },
+            title: {
+              text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.G_FORCE}`,
+            },
           },
           autosize: true,
-          margin: PLOT_MARGIN,
+          margin: CONSTANTS.PLOT_MARGIN,
           hovermode: "closest",
           hoverlabel: { bgcolor: "#FFF" },
           legend: {
@@ -127,7 +129,7 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
         }}
         useResizeHandler={true}
         config={{
-          ...PLOT_CONFIG,
+          ...CONSTANTS.PLOT_CONFIG,
           toImageButtonOptions: {
             filename:
               extra.from === "hazard"

@@ -2,7 +2,7 @@ import React from "react";
 
 import Plot from "react-plotly.js";
 
-import { PLOT_MARGIN, PLOT_CONFIG } from "constants/Constants";
+import * as CONSTANTS from "constants/Constants";
 
 import "assets/style/GMSPlot.css";
 
@@ -26,8 +26,10 @@ const GMSMwRrupPlot = ({
       mode: "markers",
       name:
         numGMs !== null
-          ? `Selected GMs, N${"gm".sub()}=${numGMs}`
-          : `Selected GMs, N${"gm".sub()}=${metadata["mag"].length}`,
+          ? `${CONSTANTS.SHORTEN_SELECTED_GM}, N${"gm".sub()}=${numGMs}`
+          : `${CONSTANTS.SHORTEN_SELECTED_GM}, N${"gm".sub()}=${
+              metadata["mag"].length
+            }`,
       marker: { symbol: "square-open" },
       line: { color: "black" },
       type: "scatter",
@@ -38,7 +40,7 @@ const GMSMwRrupPlot = ({
       y: bounds.topBoundY,
       legendgroup: "Bounds",
       mode: "lines",
-      name: "Bounds",
+      name: `${CONSTANTS.BOUNDS}`,
       line: { color: "red", dash: "dot" },
       type: "scatter",
       showlegend: true,
@@ -48,7 +50,7 @@ const GMSMwRrupPlot = ({
       y: bounds.rightBoundY,
       legendgroup: "Bounds",
       mode: "lines",
-      name: "Bounds",
+      name: `${CONSTANTS.BOUNDS}`,
       line: { color: "red", dash: "dot" },
       type: "scatter",
       showlegend: false,
@@ -58,7 +60,7 @@ const GMSMwRrupPlot = ({
       y: bounds.bottomBoundY,
       legendgroup: "Bounds",
       mode: "lines",
-      name: "Bounds",
+      name: `${CONSTANTS.BOUNDS}`,
       line: { color: "red", dash: "dot" },
       type: "scatter",
       showlegend: false,
@@ -68,7 +70,7 @@ const GMSMwRrupPlot = ({
       y: bounds.leftBoundY,
       legendgroup: "Bounds",
       mode: "lines",
-      name: "Bounds",
+      name: `${CONSTANTS.BOUNDS}`,
       line: { color: "red", dash: "dot" },
       type: "scatter",
       showlegend: false,
@@ -152,21 +154,25 @@ const GMSMwRrupPlot = ({
       layout={{
         xaxis: {
           type: "log",
-          title: { text: `Rupture distance, R${"rup".sub()} (km)` },
+          title: {
+            text: `${CONSTANTS.RUPTURE_DISTANCE}, R${"rup".sub()} ${
+              CONSTANTS.KILOMETRE
+            }`,
+          },
           showexponent: "first",
           exponentformat: "power",
           range: [Math.log10(rangeXMin), Math.log10(rangeXMax)],
           autorange: false,
         },
         yaxis: {
-          title: { text: `Magnitude, M${"W".sub()}` },
+          title: { text: `${CONSTANTS.MAGNITUDE}, M${"W".sub()}` },
           autorange: true,
         },
         autosize: true,
-        margin: PLOT_MARGIN,
+        margin: CONSTANTS.PLOT_MARGIN,
       }}
       useResizeHandler={true}
-      config={PLOT_CONFIG}
+      config={CONSTANTS.PLOT_CONFIG}
     />
   );
 };
