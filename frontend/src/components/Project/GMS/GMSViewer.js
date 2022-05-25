@@ -100,7 +100,7 @@ const GmsViewer = () => {
       }));
       // Insert spectra, disagg distribution plots before any IM
       localIMs.splice(0, 0, {
-        value: `${CONSTANTS.SPECTRA}`,
+        value: "spectra",
         label: `${CONSTANTS.PSEUDO_ACCELERATION_RESPONSE_SPECTRA}`,
       });
 
@@ -121,7 +121,7 @@ const GmsViewer = () => {
       }));
 
       tempmetadata.splice(0, 0, {
-        value: `${CONSTANTS.MAG_RRUP_PLOT}`,
+        value: "mwrrupplot",
         label: `${CONSTANTS.MAGNITUDE} and ${
           CONSTANTS.RUPTURE_DISTANCE
         } (Mw-R${"rup".sub()}) distribution`,
@@ -283,7 +283,7 @@ const GmsViewer = () => {
                   menuPlacement="auto"
                   menuPortalTarget={document.body}
                 />
-                {specifiedIM.value === `${CONSTANTS.SPECTRA}` ? (
+                {specifiedIM.value === "spectra" ? (
                   <GMSSpectraPlot GMSSpectraData={GMSSpectraData} />
                 ) : (
                   <GMSIMDistributionsPlot
@@ -329,7 +329,7 @@ const GmsViewer = () => {
                     );
                   }}
                 />
-                {specifiedMetadata.value === `${CONSTANTS.MAG_RRUP_PLOT}` ? (
+                {specifiedMetadata.value === "mwrrupplot" ? (
                   <GMSMwRrupPlot
                     metadata={computedGMS["selected_gms_metadata"]}
                     bounds={mwRrupBounds}
