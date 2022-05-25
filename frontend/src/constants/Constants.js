@@ -113,6 +113,7 @@ export const INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT =
   "/intermediateAPI/project/public/get/all";
 
 // Labels
+// General usage
 export const HAZARD_ANALYSIS = "Hazard Analysis";
 export const SITE_SELECTION = "Site Selection";
 export const SEISMIC_HAZARD = "Seismic Hazard";
@@ -142,7 +143,9 @@ export const PROJECT_NAME = "Project Name";
 export const LOCATION = "Location";
 export const REGIONAL = "Regional";
 export const DISTRIBUTED_SEISMICITY = "Distributed Seismicity";
+export const COMPONENT = "Component";
 
+// Images and plots labels
 export const REGIONAL_MAP_DESCRIPTION =
   "Source locations (Lichfield, 2014) and historical events (Geonet, 2003-present)";
 export const REGIONAL_MAP_IMG_ALT = "Regional Map";
@@ -151,6 +154,18 @@ export const VS30_MAP_DESCRIPTION =
 export const VS30_MAP_IMG_ALT = "Vs30 Map";
 export const EPSILON_DISAGG_PLOT_ALT = "Epsilon disagg plot";
 export const SOURCE_DISAGG_PLOT_ALT = "Source disagg plot";
+
+// Hazard Curve labels
+export const FAULT = "Fault";
+export const BRANCHES = "Branches";
+export const ENSEMBLE_MEAN = "Ensemble mean";
+export const TOTAL = "Total";
+export const NZS1170P5 = "NZS1170.5";
+export const NZTA = "NZTA";
+export const ANNUAL_RATE_OF_EXCEEDANCE = "Annual rate of exceedance";
+export const LOWER_PERCENTILE = "16<sup>th</sup> percentile";
+export const UPPER_PERCENTILE = "84<sup>th</sup> percentile";
+export const ROTD_FIFTY = "RotD50";
 
 // Disaggregation labels
 export const MEAN_MAGNITUDE = "Mean Magnitude";
@@ -161,6 +176,8 @@ export const CONTRIBUTION = "Contribution";
 export const ANNUAL_RECURRENCE_RATE = "Annual recurrence rate";
 export const MAGNITUDE = "Magnitude";
 export const RRUP = "Rrup";
+export const SHOW_MORE = "Show More...";
+export const SHOW_LESS = "Show Less...";
 
 // GMS labels
 export const PSEUDO_ACCELERATION_RESPONSE_SPECTRA =
@@ -181,18 +198,6 @@ export const SITE_SPECIFIC = "Site-specific";
 export const GET_CAUSAL_PARAMS_BOUNDS = "Get causal parameters bounds";
 export const GET_IM_VECTOR_WEIGHTS = "Get IM vector weights";
 
-// Hazard Curve labels
-export const FAULT = "Fault";
-export const BRANCHES = "Branches";
-export const ENSEMBLE_MEAN = "Ensemble mean";
-export const TOTAL = "Total";
-export const NZS1170P5 = "NZS1170.5";
-export const NZTA = "NZTA";
-export const ANNUAL_RATE_OF_EXCEEDANCE = "Annual rate of exceedance";
-export const LOWER_PERCENTILE = "16<sup>th</sup> percentile";
-export const UPPER_PERCENTILE = "84<sup>th</sup> percentile";
-export const ROTD_FIFTY = "RotD50"
-
 // Select's placeholders
 export const PLACEHOLDER_NOT_AVAILABLE = "Not available";
 export const PLACEHOLDER_SELECT_SIGN = "Select...";
@@ -207,10 +212,6 @@ export const PLACEHOLDER_SELECT_IM =
 export const PLACEHOLDER_SELECT_PERIOD = "Select period...";
 export const PLACEHOLDER_NOT_APPLICABLE = "N/A";
 export const PLACEHOLDER_SELECT_COMPONENT = "Select component...";
-
-export const SHOW_MORE = "Show More...";
-export const SHOW_LESS = "Show Less...";
-export const COMPONENT = "Component";
 
 // Units in labels
 export const SECONDS = "(s)";
