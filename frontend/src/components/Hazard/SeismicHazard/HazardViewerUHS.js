@@ -111,7 +111,9 @@ const HazardViewerUHS = () => {
             exceedances: `${getExceedances().join(",")}`,
             calc_percentiles: 1,
             im_component:
-              selectedIMComponent === null ? "RotD50" : selectedIMComponent,
+              selectedIMComponent === null
+                ? `${CONSTANTS.ROTD_FIFTY}`
+                : selectedIMComponent,
           });
           if (vs30 !== defaultVS30) {
             queryString += `&vs30=${vs30}`;
@@ -148,7 +150,7 @@ const HazardViewerUHS = () => {
                     z_factor: selectedNZS1170p5ZFactor,
                     im_component:
                       selectedIMComponent === null
-                        ? "RotD50"
+                        ? `${CONSTANTS.ROTD_FIFTY}`
                         : selectedIMComponent,
                   }),
                 {

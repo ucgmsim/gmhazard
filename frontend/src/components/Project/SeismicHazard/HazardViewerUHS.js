@@ -104,7 +104,7 @@ const HazardViewerUHS = () => {
         rp: `${getSelectedRP().join(",")}`,
         im_component:
           projectSelectedIMComponent === null
-            ? "RotD50"
+            ? `${CONSTANTS.ROTD_FIFTY}`
             : projectSelectedIMComponent,
       });
 

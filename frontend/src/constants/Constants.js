@@ -191,6 +191,7 @@ export const NZTA = "NZTA";
 export const ANNUAL_RATE_OF_EXCEEDANCE = "Annual rate of exceedance";
 export const LOWER_PERCENTILE = "16<sup>th</sup> percentile";
 export const UPPER_PERCENTILE = "84<sup>th</sup> percentile";
+export const ROTD_FIFTY = "RotD50"
 
 // Select's placeholders
 export const PLACEHOLDER_NOT_AVAILABLE = "Not available";
