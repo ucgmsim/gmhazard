@@ -538,8 +538,8 @@ export const TOOLTIP_URL = {
 
 // GMS Labels
 export const GMS_LABELS = {
-  mag: `${MAGNITUDE} (Mw)`,
-  rrup: `${RUPTURE_DISTANCE} (R${"rup".sub()})`,
+  mag: "Magnitude (Mw)",
+  rrup: `Rupture distance (R${"rup".sub()})`,
   sf: "Scale factor (SF)",
   vs30: `30m-averaged shear-wave velocity (V${"s30".sub()})`,
 };
