@@ -40,7 +40,7 @@ const HazardCurveSection = () => {
           IMDict[localSelectedIM["value"]]["periods"].sort((a, b) => a - b)
         );
       } else {
-        setPeriodOptions(["N/A"]);
+        setPeriodOptions([`${CONSTANTS.PLACEHOLDER_NOT_APPLICABLE}`]);
       }
       setComponentOptions(IMDict[localSelectedIM["value"]]["components"]);
     }

@@ -98,12 +98,12 @@ const IMCustomSelect = ({
             ? placeholder
             : title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` &&
               selectedIM["value"] === "pSA"
-            ? "Select period..."
+            ? `${CONSTANTS.PLACEHOLDER_SELECT_PERIOD}`
             : title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` &&
               selectedIM["value"] !== "pSA"
-            ? "N/A"
+            ? `${CONSTANTS.PLACEHOLDER_NOT_APPLICABLE}`
             : title === `${CONSTANTS.COMPONENT}` && localOptions.length > 1
-            ? "Select component..."
+            ? `${CONSTANTS.PLACEHOLDER_SELECT_COMPONENT}`
             : `${CONSTANTS.PLACEHOLDER_SELECT_SIGN}`
         }
         onChange={(e) => setSelect(e)}

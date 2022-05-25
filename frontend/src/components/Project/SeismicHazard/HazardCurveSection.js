@@ -36,7 +36,7 @@ const HazardCurveSection = () => {
           )
         );
       } else {
-        setPeriodOptions(["N/A"]);
+        setPeriodOptions([`${CONSTANTS.PLACEHOLDER_NOT_APPLICABLE}`]);
       }
       setComponentOptions(
         projectIMDict[localSelectedIM["value"]]["components"]
