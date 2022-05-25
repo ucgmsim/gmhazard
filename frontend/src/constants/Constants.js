@@ -152,11 +152,7 @@ export const VS30_MAP_IMG_ALT = "Vs30 Map";
 export const EPSILON_DISAGG_PLOT_ALT = "Epsilon disagg plot";
 export const SOURCE_DISAGG_PLOT_ALT = "Source disagg plot";
 
-export const SPECTRA = "spectra";
-export const PSEUDO_ACCELERATION_RESPONSE_SPECTRA =
-  "Pseudo acceleration response spectra";
-export const MAG_RRUP_PLOT = "mwrrupplot";
-
+// Disaggregation labels
 export const MEAN_MAGNITUDE = "Mean Magnitude";
 export const MEAN_RRUP = "Mean Rrup";
 export const MEAN_EPSILON = "Mean Epsilon";
@@ -166,6 +162,11 @@ export const ANNUAL_RECURRENCE_RATE = "Annual recurrence rate";
 export const MAGNITUDE = "Magnitude";
 export const RRUP = "Rrup";
 
+// GMS labels
+export const SPECTRA = "spectra";
+export const PSEUDO_ACCELERATION_RESPONSE_SPECTRA =
+  "Pseudo acceleration response spectra";
+export const MAG_RRUP_PLOT = "mwrrupplot";
 export const LOWER_AND_UPPER_BOUND_LIMITS = "Lower and upper bound limits";
 export const REFERENCE_POINT = "Reference Point";
 export const CUMULATIVE_PROB_CDF = "Cumulative Probability, CDF";
@@ -179,6 +180,17 @@ export const RUPTURE_DISTANCE = "Rupture distance";
 export const AVAILABLE_GROUND_MOTIONS = "Available ground motions"
 export const DISAGGREGATION_DSITRIBUTION = "Disaggregation distribution"
 export const SITE_SPECIFIC = "Site-Specific"
+
+// Hazard Curve labels
+export const FAULT = "Fault"
+export const BRANCHES = "Branches"
+export const ENSEMBLE_MEAN = "Ensemble mean"
+export const TOTAL = "Total"
+export const NZS1170P5 = "NZS1170.5"
+export const NZTA = "NZTA"
+export const ANNUAL_RATE_OF_EXCEEDANCE = "Annual rate of exceedance"
+export const LOWER_PERCENTILE = "16<sup>th</sup> percentile"
+export const UPPER_PERCENTILE = "84<sup>th</sup> percentile"
 
 export const PLACEHOLDER_NOT_AVAILABLE = "Not available";
 export const PLACEHOLDER_SELECT_SIGN = "Select...";

@@ -63,7 +63,7 @@ const HazardForm = () => {
               onChange={(e) => setNZCodeRadio(e.target.value)}
             />
             <label className="form-check-label" htmlFor="nzs1170p5">
-              NZS1170.5
+              ${CONSTANTS.NZS1170P5}
               <GuideTooltip
                 explanation={
                   CONSTANTS.TOOLTIP_MESSAGES["HAZARD_NZS1170P5_CODE"]
@@ -83,7 +83,7 @@ const HazardForm = () => {
               onChange={(e) => setNZCodeRadio(e.target.value)}
             />
             <label className="form-check-label" htmlFor="nzta">
-              NZTA
+            ${CONSTANTS.NZTA}
               <GuideTooltip
                 explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_NZTA_CODE"]}
               />
