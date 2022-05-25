@@ -1,14 +1,14 @@
 import React, { Fragment, useState, useEffect, useContext } from "react";
 
-import { v4 as uuidv4 } from "uuid";
 import Select from "react-select";
+import { v4 as uuidv4 } from "uuid";
 import makeAnimated from "react-select/animated";
 
 import { GlobalContext } from "context";
 import * as CONSTANTS from "constants/Constants";
 
-import { IMCustomSelect, GuideTooltip } from "components/common";
 import { createSelectArray } from "utils/Utils";
+import { IMCustomSelect, GuideTooltip } from "components/common";
 
 const ScenarioForm = () => {
   const animatedComponents = makeAnimated();
