@@ -422,7 +422,7 @@ const NZS1170p5Section = () => {
             }
             onClick={() => onClickDefaultSoilClass()}
           >
-            Use Default
+            {CONSTANTS.USE_DEFAULT}
           </button>
         </div>
 
@@ -467,7 +467,7 @@ const NZS1170p5Section = () => {
             }
             onClick={() => onClickDefaultZFactor()}
           >
-            Use Default
+            {CONSTANTS.USE_DEFAULT}
           </button>
         </div>
 

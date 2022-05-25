@@ -198,7 +198,7 @@ const NZTASection = () => {
             }
             onClick={() => onClickDefaultSoilClass()}
           >
-            Use Default
+            {CONSTANTS.USE_DEFAULT}
           </button>
         </div>
 

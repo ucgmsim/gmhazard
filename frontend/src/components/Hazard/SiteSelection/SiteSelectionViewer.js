@@ -16,7 +16,7 @@ const SiteSelectionViewer = () => {
       <Tab.Container defaultActiveKey="map">
         <Nav variant="tabs">
           <Nav.Item>
-            <Nav.Link eventKey="map">Map</Nav.Link>
+            <Nav.Link eventKey="map">{CONSTANTS.MAP}</Nav.Link>
           </Nav.Item>
           <Nav.Item>
             <Nav.Link eventKey="regional">{CONSTANTS.REGIONAL}</Nav.Link>

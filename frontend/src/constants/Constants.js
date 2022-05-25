@@ -155,6 +155,15 @@ export const VS30_MAP_IMG_ALT = "Vs30 Map";
 export const EPSILON_DISAGG_PLOT_ALT = "Epsilon disagg plot";
 export const SOURCE_DISAGG_PLOT_ALT = "Source disagg plot";
 
+// Site Selection and project create
+export const USE_DEFAULT = "Use Default"
+export const MAP = "Map"
+export const LATITUDE = "Latitude"
+export const LONGITUDE = "Longitude"
+export const LATITUDE_HELPER_TEXT = "Latitude must be within the range of NZ."
+export const LONGITUDE_HELPER_TEXT = "Longitude must be within the range of NZ."
+export const SITE_CONDITIONS = "Site Conditions"
+
 // Hazard Curve labels
 export const FAULT = "Fault";
 export const BRANCHES = "Branches";
@@ -220,6 +229,10 @@ export const METRE_PER_SECOND = "(m/s)";
 export const YEARS = "(years)";
 export const PERCENTAGE = "(%)";
 export const G_FORCE = "(g)";
+
+// Units in adornment - units in input field
+export const ADORNMENT_KILOMETRE = "km"
+export const ADORNMENT_METRE_PER_SECOND = "m/s"
 
 export const APP_LOCATION_DEFAULT_ENSEMBLE = "v20p5emp";
 
