@@ -116,7 +116,7 @@ const HazardCurveSection = () => {
           disabled={invalidInputs()}
           onClick={() => setHazardCurveComputeClick(uuidv4())}
         >
-          Compute
+          {CONSTANTS.COMPUTE_BUTTON}
         </button>
       </div>
       <div className="form-group">
@@ -125,7 +125,7 @@ const HazardCurveSection = () => {
           checked={showHazardNZCode}
           onChange={() => setShowHazardNZCode(!showHazardNZCode)}
         />
-        <span className="show-nzs1170p5">&nbsp;Show NZ Code</span>
+        <span className="show-nzs1170p5">&nbsp;{CONSTANTS.SHOW_NZ_CODE}</span>
       </div>
     </Fragment>
   );

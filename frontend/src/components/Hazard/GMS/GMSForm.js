@@ -727,7 +727,7 @@ const GMSForm = () => {
             onClick={() => computeGMS()}
             disabled={invalidInputs()}
           >
-            Compute
+            {CONSTANTS.COMPUTE_BUTTON}
           </button>
         </div>
 

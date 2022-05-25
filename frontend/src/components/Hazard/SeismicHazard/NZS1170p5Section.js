@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, Fragment } from "react";
 
-import TextField from "@material-ui/core/TextField";
 import Select from "react-select";
+import TextField from "@material-ui/core/TextField";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { GlobalContext } from "context";
@@ -48,7 +48,7 @@ const NZS1170p5Section = () => {
   } = useContext(GlobalContext);
 
   const [computeButton, setComputeButton] = useState({
-    text: "Compute",
+    text: `${CONSTANTS.COMPUTE_BUTTON}`,
     isFetching: false,
   });
 
@@ -185,14 +185,14 @@ const NZS1170p5Section = () => {
 
         setIsNZS1170p5Computed(true);
         setComputeButton({
-          text: "Compute",
+          text: `${CONSTANTS.COMPUTE_BUTTON}`,
           isFetching: false,
         });
       })
       .catch((error) => {
         if (error.name !== "AbortError") {
           setComputeButton({
-            text: "Compute",
+            text: `${CONSTANTS.COMPUTE_BUTTON}`,
             isFetching: false,
           });
         }
@@ -247,14 +247,14 @@ const NZS1170p5Section = () => {
 
         setIsNZS1170p5Computed(true);
         setComputeButton({
-          text: "Compute",
+          text: `${CONSTANTS.COMPUTE_BUTTON}`,
           isFetching: false,
         });
       })
       .catch((error) => {
         if (error.name !== "AbortError") {
           setComputeButton({
-            text: "Compute",
+            text: `${CONSTANTS.COMPUTE_BUTTON}`,
             isFetching: false,
           });
         }
@@ -314,14 +314,14 @@ const NZS1170p5Section = () => {
 
         setIsNZS1170p5Computed(true);
         setComputeButton({
-          text: "Compute",
+          text: `${CONSTANTS.COMPUTE_BUTTON}`,
           isFetching: false,
         });
       })
       .catch((error) => {
         if (error.name !== "AbortError") {
           setComputeButton({
-            text: "Compute",
+            text: `${CONSTANTS.COMPUTE_BUTTON}`,
             isFetching: false,
           });
         }
@@ -382,7 +382,7 @@ const NZS1170p5Section = () => {
               htmlFor="soil-class"
               className="control-label label-soil-class"
             >
-              Soil Class
+              {CONSTANTS.SOIL_CLASS}
             </label>
             <Select
               id="soil-class"
@@ -410,7 +410,7 @@ const NZS1170p5Section = () => {
               setSelectedNZS1170p5SoilClass(localSelectedSoilClass)
             }
           >
-            Set Soil Class
+            {CONSTANTS.SET_SOIL_CLASS}
           </button>
           <button
             id="soil-class-default-button"

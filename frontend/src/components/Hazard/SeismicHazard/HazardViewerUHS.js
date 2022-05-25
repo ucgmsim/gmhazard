@@ -1,11 +1,11 @@
 import React, { Fragment, useEffect, useState, useContext } from "react";
 
-import { Tabs, Tab } from "react-bootstrap";
 import Select from "react-select";
+import { Tabs, Tab } from "react-bootstrap";
 
-import { useAuth0 } from "components/common/ReactAuth0SPA";
-import * as CONSTANTS from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
+import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
   UHSPlot,

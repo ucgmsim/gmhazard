@@ -127,6 +127,7 @@ export const FAULT_DISTRIBUTED_SEISMICITY_CONTRIBUTION =
   "Fault/distributed seismicity contribution";
 export const DOWNLOAD_DATA = "Download data";
 export const GET_BUTTON = "Get";
+export const COMPUTE_BUTTON = "Compute"
 export const GMS_IM_DISTRIBUTIONS_PLOT = "IM Distributions";
 export const GMS_CONDITIONING_IM_NAME = "Conditioning IM Name";
 export const VIBRATION_PERIOD = "Vibration Period";
@@ -144,6 +145,14 @@ export const LOCATION = "Location";
 export const REGIONAL = "Regional";
 export const DISTRIBUTED_SEISMICITY = "Distributed Seismicity";
 export const COMPONENT = "Component";
+export const NZ_CODE = "NZ Code"
+export const SHOW_NZ_CODE ="Show NZ Code"
+export const SHOW_NZS1170P5 = "Show NZS1170.5"
+export const SOIL_CLASS = "Soil Class"
+export const SET_SOIL_CLASS = "Set Soil Class"
+export const ADD = "Add"
+export const RATE = "Rate"
+export const DELETE = "Delete"
 
 // Images and plots labels
 export const REGIONAL_MAP_DESCRIPTION =
@@ -187,6 +196,11 @@ export const MAGNITUDE = "Magnitude";
 export const RRUP = "Rrup";
 export const SHOW_MORE = "Show More...";
 export const SHOW_LESS = "Show Less...";
+export const ANNUAL_EXCEEDANCE_RATE = "Annual Exceedance Rate"
+export const ANNUAL_EXCEEDANCE_RATE_HELPER_TEXT = "Annual Exceedance Rate must be between 0 and 1. (0 < X < 1)"
+
+// UHS labels
+export const UHS_TABLE_HELP_TEXT = "Add one or more rates for calculation"
 
 // GMS labels
 export const PSEUDO_ACCELERATION_RESPONSE_SPECTRA =

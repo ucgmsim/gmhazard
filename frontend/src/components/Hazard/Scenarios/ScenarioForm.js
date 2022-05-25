@@ -89,7 +89,7 @@ const ScenarioForm = () => {
           disabled={localSelectedIMComponent === null}
           onClick={() => setScenarioComputeClick(uuidv4())}
         >
-          Compute
+          {CONSTANTS.COMPUTE_BUTTON}
         </button>
       </div>
 
