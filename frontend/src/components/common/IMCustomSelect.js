@@ -97,9 +97,11 @@ const IMCustomSelect = ({
           localOptions.length === 0
             ? placeholder
             : title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` &&
+              selectedIM !== null &&
               selectedIM["value"] === "pSA"
             ? `${CONSTANTS.PLACEHOLDER_SELECT_PERIOD}`
             : title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` &&
+              selectedIM !== null &&
               selectedIM["value"] !== "pSA"
             ? `${CONSTANTS.PLACEHOLDER_NOT_APPLICABLE}`
             : title === `${CONSTANTS.COMPONENT}` && localOptions.length > 1
