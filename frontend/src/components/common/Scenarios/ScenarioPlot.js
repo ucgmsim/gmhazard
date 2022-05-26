@@ -2,16 +2,18 @@ import React from "react";
 
 import Plot from "react-plotly.js";
 
-import { PLOT_MARGIN, PLOT_CONFIG } from "constants/Constants";
 import { ErrorMessage } from "components/common";
+import { PLOT_MARGIN, PLOT_CONFIG } from "constants/Constants";
 
 import "assets/style/ScenarioPlot.css";
 
 const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
   if (scenarioData !== null && !scenarioData.hasOwnProperty("error")) {
-    const percentileData16 = scenarioData["ensemble_scenario"]["percentiles"]["16th"];
-    const percentileData50 = scenarioData["ensemble_scenario"]["percentiles"]["50th"];
-    const percentileData84 = scenarioData["ensemble_scenario"]["percentiles"]["84th"];
+    const percentileData16 =
+      scenarioData["ensemble_scenario"]["percentiles"]["16th"];
+    const percentileData50 = scenarioData["ensemble_scenario"]["mu_data"];
+    const percentileData84 =
+      scenarioData["ensemble_scenario"]["percentiles"]["84th"];
     const ims = scenarioData["ensemble_scenario"]["ims"];
     const scatterObjs = [];
     const deafultColours = [
@@ -30,10 +32,10 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
     // Gets all the periods if PGA or pSA else adds IM's for the x values
     const x_values = [];
     ims.forEach((IM) => {
-      if (IM === "PGA") x_values.push("0")
-      else if (IM.includes("pSA")) x_values.push(IM.split("_")[1])
-      else x_values.push(IM)
-  })
+      if (IM === "PGA") x_values.push("0");
+      else if (IM.includes("pSA")) x_values.push(IM.split("_")[1]);
+      else x_values.push(IM);
+    });
 
     let colourCounter = 0;
     for (let [curRup, curData] of Object.entries(percentileData50)) {
@@ -44,7 +46,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
           type: "scatter",
           mode: "lines",
           line: { color: deafultColours[colourCounter % 10] },
-          name: `Scenario ${curRup} [16, 50, 84 %ile]`,
+          name: `Scenario ${curRup} [mean and 16<sup>th</sup>, 84<sup>th</sup> percentile]`,
           legendgroup: `${curRup}`,
           showlegend: true,
           hoverinfo: "none",
