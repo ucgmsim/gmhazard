@@ -277,17 +277,17 @@ export const PLACEHOLDER_NOT_APPLICABLE = "N/A";
 export const PLACEHOLDER_SELECT_COMPONENT = "Select component...";
 
 // Units in labels
-export const SECONDS = "(s)";
-export const KILOMETRE = "(km)";
-export const METRE_PER_SECOND = "(m/s)";
-export const YEARS = "(years)";
-export const PERCENTAGE = "(%)";
-export const G_FORCE = "(g)";
+export const SECONDS_UNIT = "(s)";
+export const KILOMETRE_UNIT = "(km)";
+export const METRE_PER_SECOND_UNIT = "(m/s)";
+export const YEARS_UNIT = "(years)";
+export const PERCENTAGE_UNIT = "(%)";
+export const G_FORCE_UNIT = "(g)";
 export const MAGNITUDE_UNIT = "(Mw)";
 
 // Units in adornment - units in input field
-export const ADORNMENT_KILOMETRE = "km";
-export const ADORNMENT_METRE_PER_SECOND = "m/s";
+export const ADORNMENT_KILOMETRE_UNIT = "km";
+export const ADORNMENT_METRE_PER_SECOND_UNIT = "m/s";
 
 export const APP_LOCATION_DEFAULT_ENSEMBLE = "v20p5emp";
 

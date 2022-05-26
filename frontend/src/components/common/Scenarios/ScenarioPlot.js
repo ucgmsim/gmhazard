@@ -116,7 +116,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
           yaxis: {
             type: "log",
             title: {
-              text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.G_FORCE}`,
+              text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.G_FORCE_UNIT}`,
             },
           },
           autosize: true,

@@ -63,7 +63,7 @@ const ContributionTable = ({ meanData, contributionData }) => {
                   <th scope="col">{CONSTANTS.INTENSITY_MEASURE}</th>
                   <th scope="col">{CONSTANTS.MEAN_MAGNITUDE}</th>
                   <th scope="col">
-                    {CONSTANTS.MEAN_RRUP} {CONSTANTS.KILOMETRE}
+                    {CONSTANTS.MEAN_RRUP} {CONSTANTS.KILOMETRE_UNIT}
                   </th>
                   <th scope="col">{CONSTANTS.MEAN_EPSILON}</th>
                 </tr>
@@ -102,12 +102,12 @@ const ContributionTable = ({ meanData, contributionData }) => {
             <tr>
               <th scope="col">{CONSTANTS.NAME}</th>
               <th scope="col">
-                {CONSTANTS.CONTRIBUTION} {CONSTANTS.PERCENTAGE}
+                {CONSTANTS.CONTRIBUTION} {CONSTANTS.PERCENTAGE_UNIT}
               </th>
               <th scope="col">{CONSTANTS.ANNUAL_RECURRENCE_RATE}</th>
               <th scope="col">{CONSTANTS.MAGNITUDE}</th>
               <th scope="col">
-                {CONSTANTS.RRUP} {CONSTANTS.KILOMETRE}
+                {CONSTANTS.RRUP} {CONSTANTS.KILOMETRE_UNIT}
               </th>
             </tr>
           </thead>

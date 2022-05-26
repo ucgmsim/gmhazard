@@ -146,7 +146,7 @@ const SiteConditions = () => {
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    {CONSTANTS.ADORNMENT_METRE_PER_SECOND}
+                    {CONSTANTS.ADORNMENT_METRE_PER_SECOND_UNIT}
                   </InputAdornment>
                 ),
                 readOnly: locationSetClick === null || vs30 === "",

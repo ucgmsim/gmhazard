@@ -576,7 +576,7 @@ const GMSForm = () => {
 
         <div className="im-custom-form-group">
           <IMCustomSelect
-            title={`${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}`}
+            title={`${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS_UNIT}`}
             setSelect={setSelectedIMPeriod}
             options={availablePeriods}
             selectedIM={selectedIMType}
@@ -803,7 +803,7 @@ const GMSForm = () => {
                       </tr>
                       <tr>
                         <th scope="row">
-                          {CONSTANTS.RUPTURE_DISTANCE} {CONSTANTS.KILOMETRE}
+                          {CONSTANTS.RUPTURE_DISTANCE} {CONSTANTS.KILOMETRE_UNIT}
                         </th>
                         <td>
                           <input
@@ -824,7 +824,7 @@ const GMSForm = () => {
                       </tr>
                       <tr>
                         <th scope="row">
-                          V<sub>S30</sub> {CONSTANTS.METRE_PER_SECOND}
+                          V<sub>S30</sub> {CONSTANTS.METRE_PER_SECOND_UNIT}
                         </th>
                         <td>
                           <input

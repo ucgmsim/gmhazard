@@ -76,7 +76,7 @@ const SiteSelectionBasinDepth = () => {
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    {CONSTANTS.ADORNMENT_KILOMETRE}
+                    {CONSTANTS.ADORNMENT_KILOMETRE_UNIT}
                   </InputAdornment>
                 ),
                 readOnly: locationSetClick === null || Z1p0 === "",
@@ -122,7 +122,7 @@ const SiteSelectionBasinDepth = () => {
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    {CONSTANTS.ADORNMENT_KILOMETRE}
+                    {CONSTANTS.ADORNMENT_KILOMETRE_UNIT}
                   </InputAdornment>
                 ),
                 readOnly: locationSetClick === null || Z2p5 === "",

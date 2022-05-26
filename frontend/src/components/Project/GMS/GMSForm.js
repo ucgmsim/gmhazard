@@ -61,7 +61,7 @@ const GMSForm = () => {
         />
       </div>
       <div className="form-group form-section-title">
-        {CONSTANTS.VIBRATION_PERIOD} {CONSTANTS.SECONDS}
+        {CONSTANTS.VIBRATION_PERIOD} {CONSTANTS.SECONDS_UNIT}
         <GuideTooltip
           explanation={CONSTANTS.TOOLTIP_MESSAGES["GMS_VIBRATION_PERIOD"]}
         />

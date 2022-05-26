@@ -96,11 +96,11 @@ const IMCustomSelect = ({
         placeholder={
           localOptions.length === 0
             ? placeholder
-            : title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` &&
+            : title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS_UNIT}` &&
               selectedIM !== null &&
               selectedIM["value"] === "pSA"
             ? `${CONSTANTS.PLACEHOLDER_SELECT_PERIOD}`
-            : title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` &&
+            : title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS_UNIT}` &&
               selectedIM !== null &&
               selectedIM["value"] !== "pSA"
             ? `${CONSTANTS.PLACEHOLDER_NOT_APPLICABLE}`
@@ -114,9 +114,9 @@ const IMCustomSelect = ({
           localOptions.length === 0 ||
           (selectedIM !== null &&
             selectedIM["value"] !== "pSA" &&
-            title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}`) ||
+            title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS_UNIT}`) ||
           (selectedIM === null &&
-            (title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` ||
+            (title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS_UNIT}` ||
               title === `${CONSTANTS.COMPONENT}`))
         }
         menuPlacement="auto"
