@@ -127,12 +127,12 @@ export const FAULT_DISTRIBUTED_SEISMICITY_CONTRIBUTION =
   "Fault/distributed seismicity contribution";
 export const DOWNLOAD_DATA = "Download data";
 export const GET_BUTTON = "Get";
-export const COMPUTE_BUTTON = "Compute"
+export const COMPUTE_BUTTON = "Compute";
 export const GMS_IM_DISTRIBUTIONS_PLOT = "IM Distributions";
 export const GMS_CONDITIONING_IM_NAME = "Conditioning IM Name";
 export const VIBRATION_PERIOD = "Vibration Period";
 export const EXCEEDANCE_RATE = "Exceedance rate";
-export const IM_LEVEL = "IM level"
+export const IM_LEVEL = "IM level";
 export const IM_VECTOR = "IM Vector";
 export const CAUSAL_PARAMETERS = "Causal Parameters";
 export const INTENSITY_MEASURE = "Intensity Measure";
@@ -146,17 +146,17 @@ export const LOCATION = "Location";
 export const REGIONAL = "Regional";
 export const DISTRIBUTED_SEISMICITY = "Distributed Seismicity";
 export const COMPONENT = "Component";
-export const NZ_CODE = "NZ Code"
-export const SHOW_NZ_CODE ="Show NZ Code"
-export const SHOW_NZS1170P5 = "Show NZS1170.5"
-export const SOIL_CLASS = "Soil Class"
-export const SET_SOIL_CLASS = "Set Soil Class"
-export const ADD = "Add"
-export const RATE = "Rate"
-export const DELETE = "Delete"
-export const ADVANCED = "Advanced"
-export const MINIMUM = "Min"
-export const MAXIMUM = "Max"
+export const NZ_CODE = "NZ Code";
+export const SHOW_NZ_CODE = "Show NZ Code";
+export const SHOW_NZS1170P5 = "Show NZS1170.5";
+export const SOIL_CLASS = "Soil Class";
+export const SET_SOIL_CLASS = "Set Soil Class";
+export const ADD = "Add";
+export const RATE = "Rate";
+export const DELETE = "Delete";
+export const ADVANCED = "Advanced";
+export const MINIMUM = "Min";
+export const MAXIMUM = "Max";
 
 // Images and plots labels
 export const REGIONAL_MAP_DESCRIPTION =
@@ -169,13 +169,14 @@ export const EPSILON_DISAGG_PLOT_ALT = "Epsilon disagg plot";
 export const SOURCE_DISAGG_PLOT_ALT = "Source disagg plot";
 
 // Site Selection and project create
-export const USE_DEFAULT = "Use Default"
-export const MAP = "Map"
-export const LATITUDE = "Latitude"
-export const LONGITUDE = "Longitude"
-export const LATITUDE_HELPER_TEXT = "Latitude must be within the range of NZ."
-export const LONGITUDE_HELPER_TEXT = "Longitude must be within the range of NZ."
-export const SITE_CONDITIONS = "Site Conditions"
+export const USE_DEFAULT = "Use Default";
+export const MAP = "Map";
+export const LATITUDE = "Latitude";
+export const LONGITUDE = "Longitude";
+export const LATITUDE_HELPER_TEXT = "Latitude must be within the range of NZ.";
+export const LONGITUDE_HELPER_TEXT =
+  "Longitude must be within the range of NZ.";
+export const SITE_CONDITIONS = "Site Conditions";
 
 // Hazard Curve labels
 export const FAULT = "Fault";
@@ -200,11 +201,12 @@ export const MAGNITUDE = "Magnitude";
 export const RRUP = "Rrup";
 export const SHOW_MORE = "Show More...";
 export const SHOW_LESS = "Show Less...";
-export const ANNUAL_EXCEEDANCE_RATE = "Annual Exceedance Rate"
-export const ANNUAL_EXCEEDANCE_RATE_HELPER_TEXT = "Annual Exceedance Rate must be between 0 and 1. (0 < X < 1)"
+export const ANNUAL_EXCEEDANCE_RATE = "Annual Exceedance Rate";
+export const ANNUAL_EXCEEDANCE_RATE_HELPER_TEXT =
+  "Annual Exceedance Rate must be between 0 and 1. (0 < X < 1)";
 
 // UHS labels
-export const UHS_TABLE_HELP_TEXT = "Add one or more rates for calculation"
+export const UHS_TABLE_HELP_TEXT = "Add one or more rates for calculation";
 
 // GMS labels
 export const PSEUDO_ACCELERATION_RESPONSE_SPECTRA =
@@ -224,12 +226,12 @@ export const DISAGGREGATION_DSITRIBUTION = "Disaggregation distribution";
 export const SITE_SPECIFIC = "Site-specific";
 export const GET_CAUSAL_PARAMS_BOUNDS = "Get causal parameters bounds";
 export const GET_IM_VECTOR_WEIGHTS = "Get IM vector weights";
-export const NUMBER_OF_GROUND_MOTIONS = "Number of Ground Motions"
-export const CAUSAL_PARAMS_BOUNDS = "Causal parameters bounds"
-export const SCALE_FACTOR = "Scale Factor"
-export const WEIGHTS = "Weights"
-export const DATABASE = "Database"
-export const REPLICATES = "Replicates"
+export const NUMBER_OF_GROUND_MOTIONS = "Number of Ground Motions";
+export const CAUSAL_PARAMS_BOUNDS = "Causal parameters bounds";
+export const SCALE_FACTOR = "Scale Factor";
+export const WEIGHTS = "Weights";
+export const DATABASE = "Database";
+export const REPLICATES = "Replicates";
 
 // Select's placeholders
 export const PLACEHOLDER_NOT_AVAILABLE = "Not available";
@@ -253,11 +255,11 @@ export const METRE_PER_SECOND = "(m/s)";
 export const YEARS = "(years)";
 export const PERCENTAGE = "(%)";
 export const G_FORCE = "(g)";
-export const MAGNITUDE_UNIT = "(Mw)"
+export const MAGNITUDE_UNIT = "(Mw)";
 
 // Units in adornment - units in input field
-export const ADORNMENT_KILOMETRE = "km"
-export const ADORNMENT_METRE_PER_SECOND = "m/s"
+export const ADORNMENT_KILOMETRE = "km";
+export const ADORNMENT_METRE_PER_SECOND = "m/s";
 
 export const APP_LOCATION_DEFAULT_ENSEMBLE = "v20p5emp";
 
