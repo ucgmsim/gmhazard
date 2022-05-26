@@ -114,7 +114,6 @@ export const INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT =
 
 // Labels
 // General usage
-export const HAZARD_ANALYSIS = "Hazard Analysis";
 export const SITE_SELECTION = "Site Selection";
 export const SEISMIC_HAZARD = "Seismic Hazard";
 export const GROUND_MOTION_SELECTION = "Ground Motion Selection";
@@ -157,6 +156,21 @@ export const DELETE = "Delete";
 export const ADVANCED = "Advanced";
 export const MINIMUM = "Min";
 export const MAXIMUM = "Max";
+export const DISTRIBUTION = "distribution";
+export const MORE_DETAIL = "More detail";
+export const MEDIAN = "Median"
+
+// Navbar
+export const LOGIN = "Log in";
+export const LOGOUT = "Log out";
+export const VERSION = "Version";
+export const PROFILE = "Profile";
+export const CREATE = "Create";
+export const PERMISSION_CONFIG = "Permission Config";
+export const HOME = "Home";
+export const HAZARD_ANALYSIS = "Hazard Analysis";
+export const PROJECTS = "Projects";
+export const FRAMEWORK_DOCUMENTS = "Framework Documents";
 
 // Images and plots labels
 export const REGIONAL_MAP_DESCRIPTION =
@@ -177,6 +191,8 @@ export const LATITUDE_HELPER_TEXT = "Latitude must be within the range of NZ.";
 export const LONGITUDE_HELPER_TEXT =
   "Longitude must be within the range of NZ.";
 export const SITE_CONDITIONS = "Site Conditions";
+export const Z_FACTOR = "Z Factor";
+export const SET_Z_FACTOR = "Set Z-factor";
 
 // Hazard Curve labels
 export const FAULT = "Fault";
@@ -234,6 +250,16 @@ export const WEIGHTS = "Weights";
 export const DATABASE = "Database";
 export const REPLICATES = "Replicates";
 export const PSEUDO_SPECTRAL_ACCELERATION = "Pseudo spectral acceleration";
+export const GMS_PLOT_RRUP_AXIS_LABEL =
+  "Rupture distance, R<sub>rup</sub> (km)";
+export const GMS_PLOT_MAG_AXIS_LABEL = "Magnitude, M<sub>w</sub>";
+export const NUMBER_OF_GROUND_MOTIONS_SUBSCRIPT = "N<sub>gm</sub>";
+export const MW_RRUP_PLOT_DISAGG_MEAN_VALUES_LABEL =
+  "Mean M<sub>w</sub>-R<sub>rup</sub> of disaggregation distribution<br>16<sup>th</sup> to 84<sup>th</sup> percentile M<sub>w</sub>-R<sub>rup</sub> limits";
+export const MW_RRUP_PLOT_SELECTED_GMS_METADATA_LABEL =
+  "Mean M<sub>w</sub>-R<sub>rup</sub> of selected GMs<br>16<sup>th</sup> to 84<sup>th</sup> percentile M<sub>w</sub>-R<sub>rup</sub> limits";
+export const MW_RRUP_PLOT_DROPDOWN_LABEL =
+  "Magnitude and Rupture distance (M<sub>w</sub>-R<sub>rup</sub>) distribution";
 
 // Select's placeholders
 export const PLACEHOLDER_NOT_AVAILABLE = "Not available";
@@ -581,9 +607,9 @@ export const TOOLTIP_URL = {
 // GMS Labels
 export const GMS_LABELS = {
   mag: "Magnitude (Mw)",
-  rrup: `Rupture distance (R${"rup".sub()})`,
+  rrup: "Rupture distance (R<sub>rup</sub>)",
   sf: "Scale factor (SF)",
-  vs30: `30m-averaged shear-wave velocity (V${"s30".sub()})`,
+  vs30: "30m-averaged shear-wave velocity (V<sub>s30</sub>)",
 };
 
 // Projects' Metadata

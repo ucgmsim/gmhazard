@@ -117,14 +117,12 @@ const GmsViewer = () => {
       const metadata = ["mag", "rrup", "sf", "vs30"];
       let tempmetadata = metadata.map((metadata) => ({
         value: metadata,
-        label: `${CONSTANTS.GMS_LABELS[metadata]} distribution`,
+        label: `${CONSTANTS.GMS_LABELS[metadata]} ${CONSTANTS.DISTRIBUTION}`,
       }));
 
       tempmetadata.splice(0, 0, {
         value: "mwrrupplot",
-        label: `${CONSTANTS.MAGNITUDE} and ${
-          CONSTANTS.RUPTURE_DISTANCE
-        } (Mw-R${"rup".sub()}) distribution`,
+        label: `${CONSTANTS.MW_RRUP_PLOT_DROPDOWN_LABEL}`,
       });
       setLocalmetadata(tempmetadata);
 

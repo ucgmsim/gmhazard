@@ -433,7 +433,7 @@ const NZS1170p5Section = () => {
               htmlFor="z-factor"
               className="control-label"
             >
-              Z Factor
+              {CONSTANTS.Z_FACTOR}
             </label>
             <TextField
               id="z-factor"
@@ -455,7 +455,7 @@ const NZS1170p5Section = () => {
             }
             onClick={() => setSelectedNZS1170p5ZFactor(localZFactor)}
           >
-            Set Z-factor
+            {CONSTANTS.SET_Z_FACTOR}
           </button>
           <button
             id="vs30-use-default"
