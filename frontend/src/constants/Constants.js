@@ -218,6 +218,7 @@ export const SHORTEN_SELECTED_GM = "Selected GMs";
 export const SELECTED_GM = "Selected Ground Motions";
 export const REALISATIONS = "Realisations";
 export const GCIM = "GCIM";
+export const KS_BOUNDS = "KS_BOUNDS";
 export const SPECTRAL_ACCELERATION = "Spectral acceleration";
 export const BOUNDS = "Bounds";
 export const RUPTURE_DISTANCE = "Rupture distance";
@@ -232,6 +233,7 @@ export const SCALE_FACTOR = "Scale Factor";
 export const WEIGHTS = "Weights";
 export const DATABASE = "Database";
 export const REPLICATES = "Replicates";
+export const PSEUDO_SPECTRAL_ACCELERATION = "Pseudo spectral acceleration";
 
 // Select's placeholders
 export const PLACEHOLDER_NOT_AVAILABLE = "Not available";
