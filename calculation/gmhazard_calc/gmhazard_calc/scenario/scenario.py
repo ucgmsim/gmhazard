@@ -36,78 +36,31 @@ def run_ensemble_scenario(
     EnsembleScenarioResult
     """
     ims = shared.get_SA_ims(ensemble.ims, component=im_component)
-
     scenario_branches = run_branches_scenario(ensemble, ims, site_info)
 
-    # Combine the branches according to their weights
-    mu, sigma, weights = None, None, []
+    # Calculate mu
+    mu = sum(cur_scenario.branch.weight * cur_scenario.mu_data for cur_scenario in scenario_branches)
+
+    # Calculate variance / sigma
+    variance = 0
     for cur_scenario in scenario_branches:
-        cur_mu = cur_scenario.branch.weight * cur_scenario.mu_data
-        cur_sigma = cur_scenario.branch.weight * cur_scenario.sigma_data
-        weights.append(cur_scenario.branch.weight)
-        if mu is None:
-            mu, sigma = cur_mu, cur_sigma
+        weighted_variance = cur_scenario.branch.weight * np.square(cur_scenario.sigma_data)
+        weighted_variance.columns = mu.columns
+        variance += weighted_variance
+        variance += np.square(cur_scenario.branch.weight) * np.square(cur_scenario.mu_data - mu)
+    sigma = np.sqrt(variance)
 
-            # Creates a multi-index dataframe with IM / Rupture as indexes and one column for the branch
-            # Values for this dataframe is the Scenario Branch IM data
-            im_branch_ruptures = pd.concat(
-                [
-                    pd.DataFrame(
-                        val,
-                        index=cur_scenario.mu_data.index.values,
-                        columns=[cur_scenario.branch.name],
-                    )
-                    for val in cur_scenario.mu_data.T.values
-                ],
-                keys=cur_scenario.mu_data,
-            )
-        else:
-            mu = mu.add(cur_mu)
-            sigma = sigma.add(cur_sigma)
+    # Get above and below std
+    below_std = np.exp(-sigma) * mu
+    above_std = np.exp(sigma) * mu
+    below_std.columns = [f"{im}_16th" for im in ims]
+    above_std.columns = [f"{im}_84th" for im in ims]
 
-            # Creates a multi-index dataframe with IM / Rupture as indexes and one column for the branch
-            # Values for this dataframe is the Scenario Branch IM data
-            # Add another branch to the dataframe as a new column via join
-            im_branch_ruptures = im_branch_ruptures.join(
-                pd.concat(
-                    [
-                        pd.DataFrame(
-                            val,
-                            index=cur_scenario.mu_data.index.values,
-                            columns=[cur_scenario.branch.name],
-                        )
-                        for val in cur_scenario.mu_data.T.values
-                    ],
-                    keys=cur_scenario.mu_data,
-                )
-            )
-
-    # Calculating Percentiles
-    im_branch_ruptures, weights = np.asarray(im_branch_ruptures), np.asarray(weights)
-    weights = np.repeat(weights[None, ...], len(im_branch_ruptures), 0)
-
-    # Sorting
-    sort_ind = np.argsort(im_branch_ruptures, axis=1)
-    im_branch_ruptures = np.take_along_axis(im_branch_ruptures, sort_ind, 1)
-    weights = np.take_along_axis(weights, sort_ind, 1)
-
-    # Inverse CDF lookup
-    cdf_x, cdf_y = im_branch_ruptures, np.cumsum(weights, axis=1)
-    x_values = sha_calc.shared.query_non_parametric_multi_cdf_invs(
-        [0.16, 0.5, 0.84], cdf_x, cdf_y
-    )
-
-    # Combining Percentiles
-    x_values = np.stack(x_values, axis=1)
-    split_ruptures_on_im = np.split(x_values, len(ims))
-    percentiles = pd.DataFrame()
-    for i in range(0, len(split_ruptures_on_im)):
-        cur_im_df = pd.DataFrame(
-            split_ruptures_on_im[i],
-            columns=[f"{ims[i]}_16th", f"{ims[i]}_50th", f"{ims[i]}_84th"],
-            index=mu.index,
-        )
-        percentiles = cur_im_df if percentiles.empty else percentiles.join(cur_im_df)
+    # Set percentiles in correct order
+    percentiles = below_std.join(above_std)
+    # Gets an interleaved order of columns between both below_std and above_std
+    ordered_columns = list(sum(zip(below_std.columns, above_std.columns), ()))
+    percentiles = percentiles[ordered_columns]
 
     return EnsembleScenarioResult(
         ensemble, scenario_branches, site_info, ims, mu, percentiles

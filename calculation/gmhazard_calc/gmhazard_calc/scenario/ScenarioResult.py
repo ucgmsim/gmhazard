@@ -204,11 +204,6 @@ class EnsembleScenarioResult(ScenarioResult):
                 ]
                 .transpose()
                 .to_dict(orient="list"),
-                "50th": self.percentiles.loc[
-                    :, self.percentiles.columns.str.endswith("_50th")
-                ]
-                .transpose()
-                .to_dict(orient="list"),
                 "84th": self.percentiles.loc[
                     :, self.percentiles.columns.str.endswith("_84th")
                 ]
