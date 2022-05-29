@@ -44,6 +44,7 @@ pga_psa:
 pga_psa_gms:
   ims:
     - PGA
+    - PGV
     - pSA_0.01
     - pSA_0.02
     - pSA_0.03
