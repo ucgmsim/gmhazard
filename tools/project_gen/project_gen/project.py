@@ -31,7 +31,7 @@ MODEL_CONFIG_PATH = (
     / "db_creation"
     / "empirical_db"
     / "empirical_model_configs"
-    / "21p10.yaml"
+    / "22p5.yaml"
 )
 EMPIRICAL_WEIGHT_CONFIG_PATH = (
     SCRIPTS_DIR / "ensemble_creation" / "gmm_weights_21p10.yaml"
@@ -162,8 +162,8 @@ def create_project(
             return
 
         # Generate the PSHA project data and GMS
-        psha.gen_psha_project_data(project_dir, n_procs=n_procs, use_mp=use_mp)
-        pg.gen_gms_project_data(project_dir, n_procs=n_procs)
+        # psha.gen_psha_project_data(project_dir, n_procs=n_procs, use_mp=use_mp)
+        # pg.gen_gms_project_data(project_dir, n_procs=n_procs)
     except Exception as ex:
         print(f"Failed to create new project, due to an exception:\n{ex}")
         print(f"Traceback:\n{traceback.format_exc()}")
@@ -358,11 +358,8 @@ def generate_dbs(
     else:
         ds_db_dir.mkdir(exist_ok=True)
         ds_imdbs_cmd = [
-            "mpirun",
-            "-np",
-            str(n_procs),
             "python",
-            str(empirical_db_scripts_dir / "calc_emp_ds.py"),
+            str(empirical_db_scripts_dir / "new_calc_emp_ds.py"),
             str(erf_dir / "NZBCK2015_Chch50yearsAftershock_OpenSHA_modType4.txt"),
             str(ds_site_source_db_ffp),
             str(vs30_ffp),
