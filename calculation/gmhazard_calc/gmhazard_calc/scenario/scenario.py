@@ -39,15 +39,22 @@ def run_ensemble_scenario(
     scenario_branches = run_branches_scenario(ensemble, ims, site_info)
 
     # Calculate mu
-    mu = sum(cur_scenario.branch.weight * cur_scenario.mu_data for cur_scenario in scenario_branches)
+    mu = sum(
+        cur_scenario.branch.weight * cur_scenario.mu_data
+        for cur_scenario in scenario_branches
+    )
 
     # Calculate variance / sigma
     variance = 0
     for cur_scenario in scenario_branches:
-        weighted_variance = cur_scenario.branch.weight * np.square(cur_scenario.sigma_data)
+        weighted_variance = cur_scenario.branch.weight * np.square(
+            cur_scenario.sigma_data
+        )
         weighted_variance.columns = mu.columns
         variance += weighted_variance
-        variance += np.square(cur_scenario.branch.weight) * np.square(cur_scenario.mu_data - mu)
+        variance += np.square(cur_scenario.branch.weight) * np.square(
+            cur_scenario.mu_data - mu
+        )
     sigma = np.sqrt(variance)
 
     # Get above and below std
@@ -56,7 +63,6 @@ def run_ensemble_scenario(
     below_std.columns = [f"{im}_16th" for im in ims]
     above_std.columns = [f"{im}_84th" for im in ims]
 
-    # Set percentiles in correct order
     percentiles = below_std.join(above_std)
     # Gets an interleaved order of columns between both below_std and above_std
     ordered_columns = list(sum(zip(below_std.columns, above_std.columns), ()))
