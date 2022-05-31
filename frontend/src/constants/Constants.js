@@ -41,8 +41,10 @@ export const CORE_API_SCENARIOS_ENDPOINT =
 export const CORE_API_SCENARIOS_DOWNLOAD_ENDPOINT =
   "/coreAPI/scenario/ensemble_scenario/download";
 
-// This endpoint will eventually replace when we implement DB properly
-// As this function reads from Available_Project table (A bridge table between User and Project)
+/* 
+This endpoint will eventually replace when we implement DB properly
+As this function reads from Available_Project table (A bridge table between User and Project)
+*/
 export const PROJECT_API_PROJECT_IDS_ENDPOINT = "/projectAPI/ids/get";
 export const PROJECT_API_SITES_ENDPOINT = "/projectAPI/sites/get";
 export const PROJECT_API_IMS_ENDPOINT = "/projectAPI/ims/get";
@@ -110,19 +112,114 @@ export const INTERMEDIATE_API_ALL_PRIVATE_PROJECTS_ENDPOINT =
 export const INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT =
   "/intermediateAPI/project/public/get/all";
 
-/* Labels */
+// Labels
+// General usage
 export const HAZARD_ANALYSIS = "Hazard Analysis";
 export const SITE_SELECTION = "Site Selection";
 export const SEISMIC_HAZARD = "Seismic Hazard";
-export const GMS = "Ground Motion Selection";
+export const GROUND_MOTION_SELECTION = "Ground Motion Selection";
 export const SCENARIOS = "Scenarios";
 export const HAZARD_CURVE = "Hazard Curve";
 export const DISAGGREGATION = "Disaggregation";
 export const UNIFORM_HAZARD_SPECTRUM = "Uniform Hazard Spectrum";
-export const ENSEMBLE_BRANCHES = "Ensemble Branches";
+export const ENSEMBLE_BRANCHES = "Ensemble branches";
 export const FAULT_DISTRIBUTED_SEISMICITY_CONTRIBUTION =
   "Fault/distributed seismicity contribution";
 export const DOWNLOAD_DATA = "Download data";
+export const GET_BUTTON = "Get";
+export const GMS_IM_DISTRIBUTIONS_PLOT = "IM Distributions";
+export const GMS_CONDITIONING_IM_NAME = "Conditioning IM Name";
+export const VIBRATION_PERIOD = "Vibration Period";
+export const EXCEEDANCE_RATE_LEVEL = "Exceedance rate level";
+export const IM_VECTOR = "IM Vector";
+export const CAUSAL_PARAMETERS = "Causal Parameters";
+export const INTENSITY_MEASURE = "Intensity Measure";
+export const EPSILON = "Epsilon";
+export const FAULT_DISTRIBUTED_SEISMICITY = "Fault/distributed seismicity";
+export const SOURCE_CONTRIBUTIONS = "Source contributions";
+export const MEAN_HAZARDS = "Mean Hazards";
+export const EPISTEMIC_UNCERTAINTY = "Epistemic Uncertainty";
+export const PROJECT_NAME = "Project Name";
+export const LOCATION = "Location";
+export const REGIONAL = "Regional";
+export const DISTRIBUTED_SEISMICITY = "Distributed Seismicity";
+export const COMPONENT = "Component";
+
+// Images and plots labels
+export const REGIONAL_MAP_DESCRIPTION =
+  "Source locations (Lichfield, 2014) and historical events (Geonet, 2003-present)";
+export const REGIONAL_MAP_IMG_ALT = "Regional Map";
+export const VS30_MAP_DESCRIPTION =
+  "Regional Vs30 predictions in the vicinity of the site. (Foster et al. 2019)";
+export const VS30_MAP_IMG_ALT = "Vs30 Map";
+export const EPSILON_DISAGG_PLOT_ALT = "Epsilon disagg plot";
+export const SOURCE_DISAGG_PLOT_ALT = "Source disagg plot";
+
+// Hazard Curve labels
+export const FAULT = "Fault";
+export const BRANCHES = "Branches";
+export const ENSEMBLE_MEAN = "Ensemble mean";
+export const TOTAL = "Total";
+export const NZS1170P5 = "NZS1170.5";
+export const NZTA = "NZTA";
+export const ANNUAL_RATE_OF_EXCEEDANCE = "Annual rate of exceedance";
+export const LOWER_PERCENTILE = "16<sup>th</sup> percentile";
+export const UPPER_PERCENTILE = "84<sup>th</sup> percentile";
+export const ROTD_FIFTY = "RotD50";
+
+// Disaggregation labels
+export const MEAN_MAGNITUDE = "Mean Magnitude";
+export const MEAN_RRUP = "Mean Rrup";
+export const MEAN_EPSILON = "Mean Epsilon";
+export const NAME = "Name";
+export const CONTRIBUTION = "Contribution";
+export const ANNUAL_RECURRENCE_RATE = "Annual recurrence rate";
+export const MAGNITUDE = "Magnitude";
+export const RRUP = "Rrup";
+export const SHOW_MORE = "Show More...";
+export const SHOW_LESS = "Show Less...";
+
+// GMS labels
+export const PSEUDO_ACCELERATION_RESPONSE_SPECTRA =
+  "Pseudo acceleration response spectra";
+export const LOWER_AND_UPPER_BOUND_LIMITS = "Lower and upper bound limits";
+export const REFERENCE_POINT = "Reference Point";
+export const CUMULATIVE_PROB_CDF = "Cumulative Probability, CDF";
+export const SHORTEN_SELECTED_GM = "Selected GMs";
+export const SELECTED_GM = "Selected Ground Motions";
+export const REALISATIONS = "Realisations";
+export const GCIM = "GCIM";
+export const SPECTRAL_ACCELERATION = "Spectral acceleration";
+export const BOUNDS = "Bounds";
+export const RUPTURE_DISTANCE = "Rupture distance";
+export const AVAILABLE_GROUND_MOTIONS = "Available ground motions";
+export const DISAGGREGATION_DSITRIBUTION = "Disaggregation distribution";
+export const SITE_SPECIFIC = "Site-specific";
+export const GET_CAUSAL_PARAMS_BOUNDS = "Get causal parameters bounds";
+export const GET_IM_VECTOR_WEIGHTS = "Get IM vector weights";
+
+// Select's placeholders
+export const PLACEHOLDER_NOT_AVAILABLE = "Not available";
+export const PLACEHOLDER_SELECT_SIGN = "Select...";
+export const PLACEHOLDER_LOADING = "Loading...";
+export const PLACESHOLDER_SELECT_PROJECT_ID =
+  "Please select the Project ID first...";
+export const PLACEHOLDER_SELECT_LOCATION =
+  "Please select the Location first...";
+export const PLACEHOLDER_SELECT_VS30 = "Please select the Vs30 first...";
+export const PLACEHOLDER_SELECT_IM =
+  "Please select the Intensity Measure first...";
+export const PLACEHOLDER_SELECT_PERIOD = "Select period...";
+export const PLACEHOLDER_NOT_APPLICABLE = "N/A";
+export const PLACEHOLDER_SELECT_COMPONENT = "Select component...";
+
+// Units in labels
+export const SECONDS = "(s)";
+export const KILOMETRE = "(km)";
+export const METRE_PER_SECOND = "(m/s)";
+export const YEARS = "(years)";
+export const PERCENTAGE = "(%)";
+export const G_FORCE = "(g)";
 
 export const APP_LOCATION_DEFAULT_ENSEMBLE = "v20p5emp";
 
@@ -141,8 +238,8 @@ export const ENV = process.env.REACT_APP_ENV;
 export const SITE_SELECTION_VS30_TITLE = "VS30";
 
 /* 
-  Guide Messages
-  Site Selection - Regional & Vs30
+Guide Messages
+Site Selection - Regional & Vs30
 */
 export const SITE_SELECTION_VS30_MSG =
   "Please do the following steps to see an image.";
@@ -160,8 +257,8 @@ export const SITE_SELECTION_REGIONAL_INSTRUCTION = [
 ];
 
 /*
-  Map Box
-  Default coordinates needed, so I put our coordinates (UC Engineering Core Building)
+Map Box
+Default coordinates needed, so I put our coordinates (UC Engineering Core Building)
 */
 export const DEFAULT_MAPBOX_LAT = -43.521463221980085;
 export const DEFAULT_MAPBOX_LNG = 172.58361319646755;
@@ -177,8 +274,8 @@ export const RETURN_PERIOD = "Return Period";
 export const ANNUAL_PROBABILITY = "Annual Probability";
 
 /* 
-  Guide messages
-  Seismic Hazard - Hazard Viewer
+Guide messages
+Seismic Hazard - Hazard Viewer
 */
 export const HAZARD_CURVE_GUIDE_MSG =
   "Please do the following steps to see plots.";
@@ -214,8 +311,8 @@ export const PROJECT_UNIFORM_HAZARD_SPECTRUM_INSTRUCTION = [
 ];
 
 /* 
-  Guide messages
-  GMS
+Guide messages
+GMS
 */
 export const GMS_VIEWER_GUIDE_MSG =
   "Please do the following steps to see plots.";
@@ -235,8 +332,8 @@ export const PROJECT_GMS_VIEWER_GUIDE_INSTRUCTION = [
 ];
 
 /*
-  Guide messages
-  Scenarios
+Guide messages
+Scenarios
 */
 export const SCENARIO_VIEWER_GUIDE_MSG =
   "Please do the following steps to see plots.";

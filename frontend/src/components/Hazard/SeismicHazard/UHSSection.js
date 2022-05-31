@@ -96,7 +96,7 @@ const UHSSection = () => {
     <Fragment>
       <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
         <div className="form-group form-section-title">
-          Uniform Hazard Spectrum
+          {CONSTANTS.UNIFORM_HAZARD_SPECTRUM}
           <GuideTooltip
             explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_UHS"]}
           />
@@ -177,7 +177,9 @@ const UHSSection = () => {
           checked={showUHSNZS1170p5}
           onChange={() => setShowUHSNZS1170p5(!showUHSNZS1170p5)}
         />
-        <span className="show-nzs1170p5">&nbsp;Show NZS1170.5</span>
+        <span className="show-nzs1170p5">
+          &nbsp;Show ${CONSTANTS.NZS1170P5}
+        </span>
       </div>
     </Fragment>
   );

@@ -3,7 +3,7 @@ import React from "react";
 import Plot from "react-plotly.js";
 
 import { getPlotData } from "utils/Utils";
-import { PLOT_MARGIN, PLOT_CONFIG } from "constants/Constants";
+import * as CONSTANTS from "constants/Constants";
 import { ErrorMessage } from "components/common";
 
 import "assets/style/HazardPlots.css";
@@ -30,7 +30,7 @@ const HazardBranchPlot = ({
         type: "scatter",
         mode: "lines",
         line: { color: "gray", width: 0.5 },
-        name: "Branches",
+        name: `${CONSTANTS.BRANCHES}`,
         legendgroup: "branches",
         showlegend: dataCounter === 0 ? true : false,
         hoverinfo: "none",
@@ -51,10 +51,10 @@ const HazardBranchPlot = ({
       type: "scatter",
       mode: "lines",
       line: { color: "red" },
-      name: "Ensemble mean",
+      name: `${CONSTANTS.ENSEMBLE_MEAN}`,
       hoverinfo: "none",
       hovertemplate:
-        "<b>Ensemble mean</b><br><br>" +
+        `<b>${CONSTANTS.ENSEMBLE_MEAN}</b><br><br>` +
         "%{xaxis.title.text}: %{x}<br>" +
         "%{yaxis.title.text}: %{y}<extra></extra>",
     });
@@ -67,7 +67,7 @@ const HazardBranchPlot = ({
         y: nzs1170p5.index,
         type: "scatter",
         mode: "lines+markers",
-        name: "NZS1170.5",
+        name: `${CONSTANTS.NZS1170P5}`,
         marker: {
           symbol: "triangle-up",
           size: 8,
@@ -76,7 +76,7 @@ const HazardBranchPlot = ({
         visible: showNZCode,
         hoverinfo: "none",
         hovertemplate:
-          "<b>NZS1170.5</b><br><br>" +
+          `<b>${CONSTANTS.NZS1170P5}</b><br><br>` +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       });
@@ -92,7 +92,7 @@ const HazardBranchPlot = ({
           y: nzta.index,
           type: "scatter",
           mode: "lines+markers",
-          name: "NZTA",
+          name: `${CONSTANTS.NZTA}`,
           marker: {
             symbol: "square-open",
             size: 8,
@@ -101,7 +101,7 @@ const HazardBranchPlot = ({
           visible: showNZCode,
           hoverinfo: "none",
           hovertemplate:
-            "<b>NZTA</b><br><br>" +
+            `<b>${CONSTANTS.NZTA}</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
@@ -119,10 +119,10 @@ const HazardBranchPlot = ({
           type: "scatter",
           mode: "lines",
           line: { color: "red", dash: "dash" },
-          name: "16th Percentile",
+          name: `${CONSTANTS.LOWER_PERCENTILE}`,
           hoverinfo: "none",
           hovertemplate:
-            "<b>16<sup>th</sup> percentile</b><br><br>" +
+            `<b>${CONSTANTS.LOWER_PERCENTILE}</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         },
@@ -132,10 +132,10 @@ const HazardBranchPlot = ({
           type: "scatter",
           mode: "lines",
           line: { color: "red", dash: "dash" },
-          name: "84th Percentile",
+          name: `${CONSTANTS.UPPER_PERCENTILE}`,
           hoverinfo: "none",
           hovertemplate:
-            "<b>84<sup>th</sup> percentile</b><br><br>" +
+            `<b>${CONSTANTS.UPPER_PERCENTILE}</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         }
@@ -155,19 +155,19 @@ const HazardBranchPlot = ({
           },
           yaxis: {
             type: "log",
-            title: { text: "Annual rate of exceedance" },
+            title: { text: `${CONSTANTS.ANNUAL_RATE_OF_EXCEEDANCE}` },
             showexponent: "first",
             exponentformat: "power",
             range: [-5, 0],
           },
           autosize: true,
-          margin: PLOT_MARGIN,
+          margin: CONSTANTS.PLOT_MARGIN,
           hovermode: "closest",
           hoverlabel: { bgcolor: "#FFF" },
         }}
         useResizeHandler={true}
         config={{
-          ...PLOT_CONFIG,
+          ...CONSTANTS.PLOT_CONFIG,
           toImageButtonOptions: {
             filename:
               extra.from === "hazard"

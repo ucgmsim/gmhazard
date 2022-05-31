@@ -9,6 +9,7 @@ import React, {
 import Select from "react-select";
 
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 
 import { GuideTooltip } from "components/common";
 import { createSelectArray } from "utils/Utils";
@@ -17,7 +18,7 @@ const IMCustomSelect = ({
   title = null,
   setSelect,
   options,
-  placeholder = "Loading...",
+  placeholder = `${CONSTANTS.PLACEHOLDER_LOADING}`,
   guideMSG = null,
   selectedIM = null,
   resettable = true,
@@ -39,7 +40,7 @@ const IMCustomSelect = ({
         setSelect is from parents, hence no need to set again
         in parents component
       */
-      if (options.length === 1 && title === "Component") {
+      if (options.length === 1 && title === `${CONSTANTS.COMPONENT}`) {
         setSelect(tempOptions[0]);
         selectInputRef.current.select.setValue(tempOptions[0]);
       }
@@ -95,15 +96,15 @@ const IMCustomSelect = ({
         placeholder={
           localOptions.length === 0
             ? placeholder
-            : title === "Vibration Period (s)" &&
+            : title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` &&
               selectedIM["value"] === "pSA"
-            ? "Select period..."
-            : title === "Vibration Period (s)" &&
+            ? `${CONSTANTS.PLACEHOLDER_SELECT_PERIOD}`
+            : title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` &&
               selectedIM["value"] !== "pSA"
-            ? "N/A"
-            : title === "Component" && localOptions.length > 1
-            ? "Select component..."
-            : "Select..."
+            ? `${CONSTANTS.PLACEHOLDER_NOT_APPLICABLE}`
+            : title === `${CONSTANTS.COMPONENT}` && localOptions.length > 1
+            ? `${CONSTANTS.PLACEHOLDER_SELECT_COMPONENT}`
+            : `${CONSTANTS.PLACEHOLDER_SELECT_SIGN}`
         }
         onChange={(e) => setSelect(e)}
         options={localOptions}
@@ -111,9 +112,10 @@ const IMCustomSelect = ({
           localOptions.length === 0 ||
           (selectedIM !== null &&
             selectedIM["value"] !== "pSA" &&
-            title === "Vibration Period (s)") ||
+            title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}`) ||
           (selectedIM === null &&
-            (title === "Vibration Period (s)" || title === "Component"))
+            (title === `${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}` ||
+              title === `${CONSTANTS.COMPONENT}`))
         }
         menuPlacement="auto"
         menuPortalTarget={document.body}

@@ -3,8 +3,8 @@ import React, { useState, useEffect, useContext, Fragment } from "react";
 import { Tabs, Tab } from "react-bootstrap";
 
 import { GlobalContext } from "context";
-import { useAuth0 } from "components/common/ReactAuth0SPA";
 import * as CONSTANTS from "constants/Constants";
+import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
   LoadingSpinner,
@@ -230,7 +230,7 @@ const HazardViewerHazardCurve = () => {
   return (
     <div className="hazard-curve-viewer">
       <Tabs defaultActiveKey="ensemble" className="pivot-tabs">
-        <Tab eventKey="ensemble" title="Ensemble branches">
+        <Tab eventKey="ensemble" title={CONSTANTS.ENSEMBLE_BRANCHES}>
           {projectHazardCurveGetClick === null && (
             <GuideMessage
               header={CONSTANTS.HAZARD_CURVE}
@@ -266,7 +266,10 @@ const HazardViewerHazardCurve = () => {
             )}
         </Tab>
 
-        <Tab eventKey="fault" title="Fault/distributed seismicity contribution">
+        <Tab
+          eventKey="fault"
+          title={CONSTANTS.FAULT_DISTRIBUTED_SEISMICITY_CONTRIBUTION}
+        >
           {projectHazardCurveGetClick === null && (
             <GuideMessage
               header={CONSTANTS.HAZARD_CURVE}

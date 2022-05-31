@@ -411,7 +411,7 @@ const SiteSelectionForm = () => {
 			) : null}
 
 			<div className="form-group form-section-title">
-				Location
+				{CONSTANTS.LOCATION}
 				<GuideTooltip
 					explanation={CONSTANTS.TOOLTIP_MESSAGES["SITE_SELECTION_LOCATION"]}
 				/>
