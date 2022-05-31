@@ -4,7 +4,6 @@ import Plot from "react-plotly.js";
 
 import { ErrorMessage } from "components/common";
 import * as CONSTANTS from "constants/Constants";
-import { PLOT_MARGIN, PLOT_CONFIG } from "constants/Constants";
 
 import "assets/style/ScenarioPlot.css";
 
