@@ -11,7 +11,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
   if (scenarioData !== null && !scenarioData.hasOwnProperty("error")) {
     const percentileData16 =
       scenarioData["ensemble_scenario"]["percentiles"]["16th"];
-    const mu_data =
+    const muData =
       scenarioData["ensemble_scenario"]["mu_data"];
     const percentileData84 =
       scenarioData["ensemble_scenario"]["percentiles"]["84th"];
@@ -31,18 +31,18 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
     ];
 
     // Gets all the periods if PGA or pSA else adds IM's for the x values
-    const x_values = [];
+    const xValues = [];
     ims.forEach((IM) => {
-      if (IM === "PGA") x_values.push("0");
-      else if (IM.includes("pSA")) x_values.push(IM.split("_")[1]);
-      else x_values.push(IM);
+      if (IM === "PGA") xValues.push("0");
+      else if (IM.includes("pSA")) xValues.push(IM.split("_")[1]);
+      else xValues.push(IM);
     });
 
     let colourCounter = 0;
-    for (let [curRup, curData] of Object.entries(mu_data)) {
+    for (let [curRup, curData] of Object.entries(muData)) {
       if (scenarioSelectedRuptures.includes(curRup)) {
         scatterObjs.push({
-          x: x_values,
+          x: xValues,
           y: curData,
           type: "scatter",
           mode: "lines",
@@ -65,7 +65,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
     for (let [curRup, curData] of Object.entries(percentileData16)) {
       if (scenarioSelectedRuptures.includes(curRup)) {
         scatterObjs.push({
-          x: x_values,
+          x: xValues,
           y: curData,
           type: "scatter",
           mode: "lines",
@@ -86,7 +86,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
     for (let [curRup, curData] of Object.entries(percentileData84)) {
       if (scenarioSelectedRuptures.includes(curRup)) {
         scatterObjs.push({
-          x: x_values,
+          x: xValues,
           y: curData,
           type: "scatter",
           mode: "lines",
