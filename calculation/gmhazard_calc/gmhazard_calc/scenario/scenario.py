@@ -45,6 +45,7 @@ def run_ensemble_scenario(
     )
 
     # Calculate variance / sigma
+    # Based on the equation variance = sum(W_i*Sigma_i^2) + sum(W_i*(x - mu)^2)
     variance = 0
     for cur_scenario in scenario_branches:
         weighted_variance = cur_scenario.branch.weight * np.square(
