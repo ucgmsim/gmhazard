@@ -162,7 +162,7 @@ def create_project(
             return
 
         # Generate the PSHA project data and GMS
-        # psha.gen_psha_project_data(project_dir, n_procs=n_procs, use_mp=use_mp)
+        psha.gen_psha_project_data(project_dir, n_procs=n_procs, use_mp=use_mp)
         # pg.gen_gms_project_data(project_dir, n_procs=n_procs)
     except Exception as ex:
         print(f"Failed to create new project, due to an exception:\n{ex}")

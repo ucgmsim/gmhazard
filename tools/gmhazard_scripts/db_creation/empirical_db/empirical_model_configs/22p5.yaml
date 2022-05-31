@@ -104,9 +104,9 @@ SUBDUCTION_SLAB:
       - AG_20_NZ
       - K_20
       - K_20_NZ
-  CAV:
-    geom:
-      - CB_10 # These are only for shallow crustal in lieu of a more appropriate model
+#  CAV:
+#    geom:
+#      - CB_10 # These are only for shallow crustal in lieu of a more appropriate model
   AI:
     geom:
       - CB_12 # These are only for shallow crustal in lieu of a more appropriate model
