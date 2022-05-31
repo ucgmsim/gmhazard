@@ -68,7 +68,7 @@ def run_ensemble_scenario(
     percentiles = percentiles[ordered_columns]
 
     return EnsembleScenarioResult(
-        ensemble, scenario_branches, site_info, ims, mu, percentiles
+        ensemble, scenario_branches, site_info, ims, np.exp(mu), percentiles
     )
 
 
