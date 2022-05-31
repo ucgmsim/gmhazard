@@ -52,20 +52,18 @@ def run_ensemble_scenario(
         )
         weighted_variance.columns = mu.columns
         variance += weighted_variance
-        variance += np.square(cur_scenario.branch.weight) * np.square(
-            cur_scenario.mu_data - mu
-        )
+        variance += cur_scenario.branch.weight * np.square(cur_scenario.mu_data - mu)
     sigma = np.sqrt(variance)
 
     # Get above and below std
-    below_std = np.exp(-sigma) * mu
-    above_std = np.exp(sigma) * mu
-    below_std.columns = [f"{im}_16th" for im in ims]
-    above_std.columns = [f"{im}_84th" for im in ims]
+    im_below_std = np.exp(mu - sigma)
+    im_above_std = np.exp(mu + sigma)
+    im_below_std.columns = [f"{im}_16th" for im in ims]
+    im_above_std.columns = [f"{im}_84th" for im in ims]
 
-    percentiles = below_std.join(above_std)
+    percentiles = im_below_std.join(im_above_std)
     # Gets an interleaved order of columns between both below_std and above_std
-    ordered_columns = list(sum(zip(below_std.columns, above_std.columns), ()))
+    ordered_columns = list(sum(zip(im_below_std.columns, im_above_std.columns), ()))
     percentiles = percentiles[ordered_columns]
 
     return EnsembleScenarioResult(
@@ -132,7 +130,7 @@ def run_branch_scenario(
         branch, ensemble, site_info, constants.SourceType.fault
     )
 
-    mu_data = np.exp(im_data.loc[:, to_string_list(ims)])
+    mu_data = im_data.loc[:, to_string_list(ims)]
     sigma_data = im_data.loc[:, [str(im) + "_sigma" for im in ims]]
 
     return BranchScenarioResult(branch, site_info, ims, mu_data, sigma_data)

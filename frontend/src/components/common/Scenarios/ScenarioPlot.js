@@ -11,7 +11,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
   if (scenarioData !== null && !scenarioData.hasOwnProperty("error")) {
     const percentileData16 =
       scenarioData["ensemble_scenario"]["percentiles"]["16th"];
-    const percentileData50 = scenarioData["ensemble_scenario"]["mu_data"];
+    const mu_data = scenarioData["ensemble_scenario"]["mu_data"];
     const percentileData84 =
       scenarioData["ensemble_scenario"]["percentiles"]["84th"];
     const ims = scenarioData["ensemble_scenario"]["ims"];
@@ -38,7 +38,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
     });
 
     let colourCounter = 0;
-    for (let [curRup, curData] of Object.entries(percentileData50)) {
+    for (let [curRup, curData] of Object.entries(mu_data)) {
       if (scenarioSelectedRuptures.includes(curRup)) {
         scatterObjs.push({
           x: x_values,
@@ -46,12 +46,12 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
           type: "scatter",
           mode: "lines",
           line: { color: deafultColours[colourCounter % 10] },
-          name: `Scenario ${curRup} [mean and 16<sup>th</sup>, 84<sup>th</sup> percentile]`,
+          name: `${curRup} [mean and 16<sup>th</sup>, 84<sup>th</sup> percentile]`,
           legendgroup: `${curRup}`,
           showlegend: true,
           hoverinfo: "none",
           hovertemplate:
-            `<b>Site-specific [50th Pecentile Rupture ${curRup}]</b><br><br>` +
+            `<b>Site-specific [Mean Rupture ${curRup}]</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
