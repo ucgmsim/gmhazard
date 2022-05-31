@@ -36,7 +36,7 @@ const HazardCurveSection = () => {
           )
         );
       } else {
-        setPeriodOptions(["N/A"]);
+        setPeriodOptions([`${CONSTANTS.PLACEHOLDER_NOT_APPLICABLE}`]);
       }
       setComponentOptions(
         projectIMDict[localSelectedIM["value"]]["components"]
@@ -74,14 +74,14 @@ const HazardCurveSection = () => {
   return (
     <Fragment>
       <div className="form-group form-section-title">
-        Hazard Curve
+        {CONSTANTS.HAZARD_CURVE}
         <GuideTooltip
           explanation={CONSTANTS.TOOLTIP_MESSAGES["PROJECT_HAZARD"]}
         />
       </div>
       <div className="form-group">
         <IMCustomSelect
-          title="Intensity Measure"
+          title={CONSTANTS.INTENSITY_MEASURE}
           setSelect={setLocalSelectedIM}
           options={projectIMs}
         />
@@ -89,21 +89,21 @@ const HazardCurveSection = () => {
 
       <div className="form-group">
         <IMCustomSelect
-          title="Vibration Period (s)"
+          title={`${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}`}
           setSelect={setLocalSelectedIMPeriod}
           options={periodOptions}
           selectedIM={localSelectedIM}
-          placeholder={"Please select the Intensity Measure first."}
+          placeholder={CONSTANTS.PLACEHOLDER_SELECT_IM}
         />
       </div>
 
       <div className="form-group">
         <IMCustomSelect
-          title="Component"
+          title={CONSTANTS.COMPONENT}
           setSelect={setLocalSelectedIMComponent}
           selectedIM={localSelectedIM}
           options={componentOptions}
-          placeholder={"Please select the Intensity Measure first."}
+          placeholder={CONSTANTS.PLACEHOLDER_SELECT_IM}
         />
       </div>
 
@@ -115,7 +115,7 @@ const HazardCurveSection = () => {
           disabled={invalidGetBtn()}
           onClick={() => setProjectHazardCurveGetClick(uuidv4())}
         >
-          Get
+          {CONSTANTS.GET_BUTTON}
         </button>
       </div>
     </Fragment>

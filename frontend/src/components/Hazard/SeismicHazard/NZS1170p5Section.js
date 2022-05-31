@@ -294,7 +294,9 @@ const NZS1170p5Section = () => {
           distance: Number(nzs1170p5DefaultParams["distance"]),
           z_factor: selectedNZS1170p5ZFactor,
           im_component:
-            selectedIMComponent === null ? "RotD50" : selectedIMComponent,
+            selectedIMComponent === null
+              ? `${CONSTANTS.ROTD_FIFTY}`
+              : selectedIMComponent,
         }),
       {
         headers: {

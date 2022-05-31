@@ -3,8 +3,8 @@ import React, { Fragment, useContext, useEffect, useState } from "react";
 import { Tab, Nav } from "react-bootstrap";
 
 import { GlobalContext } from "context";
-import { useAuth0 } from "components/common/ReactAuth0SPA";
 import * as CONSTANTS from "constants/Constants";
+import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
   LoadingSpinner,
@@ -97,7 +97,7 @@ const SiteSelectionViewer = () => {
       <Tab.Container defaultActiveKey="regional">
         <Nav variant="tabs">
           <Nav.Item>
-            <Nav.Link eventKey="regional">Regional</Nav.Link>
+            <Nav.Link eventKey="regional">{CONSTANTS.REGIONAL}</Nav.Link>
           </Nav.Item>
           <Nav.Item>
             <Nav.Link eventKey="vs30">
@@ -129,11 +129,9 @@ const SiteSelectionViewer = () => {
               regionalMap !== null &&
               showErrorMessage.isError === false && (
                 <ImageMap
-                  header={
-                    "Source locations (Lichfield, 2014) and historical events (Geonet, 2003-present)"
-                  }
+                  header={CONSTANTS.REGIONAL_MAP_DESCRIPTION}
                   src={regionalMap}
-                  alt={"Regional Map"}
+                  alt={CONSTANTS.REGIONAL_MAP_IMG_ALT}
                 />
               )}
           </Tab.Pane>
@@ -160,11 +158,9 @@ const SiteSelectionViewer = () => {
               regionalMap !== null &&
               showErrorMessage.isError === false && (
                 <ImageMap
-                  header={
-                    "Regional Vs30 predictions in the vicinity of the site. (Foster et al. 2019)"
-                  }
+                  header={CONSTANTS.VS30_MAP_DESCRIPTION}
                   src={vs30Map}
-                  alt={"Vs30 Map"}
+                  alt={CONSTANTS.VS30_MAP_IMG_ALT}
                 />
               )}
           </Tab.Pane>

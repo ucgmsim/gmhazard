@@ -1,11 +1,11 @@
 import React, { Fragment, useState, useEffect, useContext } from "react";
 
-import { Tabs, Tab } from "react-bootstrap";
 import $ from "jquery";
+import { Tabs, Tab } from "react-bootstrap";
 
-import { useAuth0 } from "components/common/ReactAuth0SPA";
 import { GlobalContext } from "context";
 import * as CONSTANTS from "constants/Constants";
+import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
   LoadingSpinner,
@@ -53,7 +53,7 @@ const HazardViewerDisaggregation = () => {
   const [disaggMeanData, setDisaggMeanData] = useState(null);
   const [disaggContributionData, setDisaggContributionData] = useState(null);
   const [rowsToggled, setRowsToggled] = useState(true);
-  const [toggleText, setToggleText] = useState("Show More...");
+  const [toggleText, setToggleText] = useState(CONSTANTS.SHOW_MORE);
 
   // For download data button
   const [downloadToken, setDownloadToken] = useState("");
@@ -166,7 +166,7 @@ const HazardViewerDisaggregation = () => {
               const extraInfo = responseData["extra_info"];
               try {
                 extraInfo.rupture_name["distributed_seismicity"] =
-                  "Distributed Seismicity";
+                  CONSTANTS.DISTRIBUTED_SEISMICITY;
               } catch (err) {
                 console.log(err.message);
               }
@@ -230,13 +230,13 @@ const HazardViewerDisaggregation = () => {
       $("tr.contrib-ellipsis td.hidden").removeClass("hidden");
     }
 
-    setToggleText(rowsToggled ? "Show Less..." : "Show More...");
+    setToggleText(rowsToggled ? CONSTANTS.SHOW_LESS : CONSTANTS.SHOW_MORE);
   };
 
   return (
     <div className="disaggregation-viewer">
       <Tabs defaultActiveKey="epsilon" className="pivot-tabs">
-        <Tab eventKey="epsilon" title="Epsilon">
+        <Tab eventKey="epsilon" title={CONSTANTS.EPSILON}>
           {disaggComputeClick === null && (
             <GuideMessage
               header={CONSTANTS.DISAGGREGATION}
@@ -262,13 +262,13 @@ const HazardViewerDisaggregation = () => {
                 <img
                   className="img-fluid rounded mx-auto d-block"
                   src={`data:image/png;base64,${disaggPlotData.eps}`}
-                  alt="Epsilon disagg plot"
+                  alt={CONSTANTS.EPSILON_DISAGG_PLOT_ALT}
                 />
               </Fragment>
             )}
         </Tab>
 
-        <Tab eventKey="fault" title="Fault/distributed seismicity">
+        <Tab eventKey="fault" title={CONSTANTS.FAULT_DISTRIBUTED_SEISMICITY}>
           {disaggComputeClick === null && (
             <GuideMessage
               header={CONSTANTS.DISAGGREGATION}
@@ -294,13 +294,13 @@ const HazardViewerDisaggregation = () => {
                 <img
                   className="img-fluid rounded mx-auto d-block"
                   src={`data:image/png;base64,${disaggPlotData.src}`}
-                  alt="Source disagg plot"
+                  alt={CONSTANTS.SOURCE_DISAGG_PLOT_ALT}
                 />
               </Fragment>
             )}
         </Tab>
 
-        <Tab eventKey="contributions" title="Source contributions">
+        <Tab eventKey="contributions" title={CONSTANTS.SOURCE_CONTRIBUTIONS}>
           {disaggComputeClick === null && (
             <GuideMessage
               header={CONSTANTS.DISAGGREGATION}

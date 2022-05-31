@@ -371,7 +371,11 @@ const EditUserPermission = () => {
             value={selectedUser}
             options={userOption}
             isDisabled={userDataFetching === true}
-            placeholder={userDataFetching === true ? "Loading..." : "Select..."}
+            placeholder={
+              userDataFetching === true
+                ? `${CONSTANTS.PLACEHOLDER_LOADING}`
+                : `${CONSTANTS.PLACEHOLDER_SELECT_SIGN}`
+            }
             menuPlacement="auto"
             menuPortalTarget={document.body}
           />
@@ -396,7 +400,7 @@ const EditUserPermission = () => {
                 : selectedUser.length !== 0 &&
                   projectDataFetching === true &&
                   allocatedProjectOption.length === 0
-                ? "Loading..."
+                ? `${CONSTANTS.PLACEHOLDER_LOADING}`
                 : selectedUser.length !== 0 &&
                   projectDataFetching === false &&
                   allocatedProjectOption.length === 0
@@ -436,7 +440,7 @@ const EditUserPermission = () => {
                 : selectedUser.length !== 0 &&
                   projectDataFetching === true &&
                   addableProjectOption.length === 0
-                ? "Loading..."
+                ? `${CONSTANTS.PLACEHOLDER_LOADING}`
                 : selectedUser.length !== 0 &&
                   projectDataFetching === false &&
                   addableProjectOption.length === 0

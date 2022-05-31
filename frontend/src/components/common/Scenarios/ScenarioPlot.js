@@ -3,6 +3,7 @@ import React from "react";
 import Plot from "react-plotly.js";
 
 import { ErrorMessage } from "components/common";
+import * as CONSTANTS from "constants/Constants";
 import { PLOT_MARGIN, PLOT_CONFIG } from "constants/Constants";
 
 import "assets/style/ScenarioPlot.css";
@@ -11,7 +12,8 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
   if (scenarioData !== null && !scenarioData.hasOwnProperty("error")) {
     const percentileData16 =
       scenarioData["ensemble_scenario"]["percentiles"]["16th"];
-    const mu_data = scenarioData["ensemble_scenario"]["mu_data"];
+    const mu_data =
+      scenarioData["ensemble_scenario"]["mu_data"];
     const percentileData84 =
       scenarioData["ensemble_scenario"]["percentiles"]["84th"];
     const ims = scenarioData["ensemble_scenario"]["ims"];
@@ -51,7 +53,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
           showlegend: true,
           hoverinfo: "none",
           hovertemplate:
-            `<b>Site-specific [Mean Rupture ${curRup}]</b><br><br>` +
+            `<b>${CONSTANTS.SITE_SPECIFIC} [Mean Rupture ${curRup}]</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
@@ -74,7 +76,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
           showlegend: false,
           hoverinfo: "none",
           hovertemplate:
-            `<b>Site-specific [16th Pecentile Rupture ${curRup}]</b><br><br>` +
+            `<b>${CONSTANTS.SITE_SPECIFIC} [16th Pecentile Rupture ${curRup}]</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
@@ -95,7 +97,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
           showlegend: false,
           hoverinfo: "none",
           hovertemplate:
-            `<b>Site-specific [84th Pecentile Rupture ${curRup}]</b><br><br>` +
+            `<b>${CONSTANTS.SITE_SPECIFIC} [84th Pecentile Rupture ${curRup}]</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
@@ -114,16 +116,18 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
           },
           yaxis: {
             type: "log",
-            title: { text: "Spectral acceleration (g)" },
+            title: {
+              text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.G_FORCE}`,
+            },
           },
           autosize: true,
-          margin: PLOT_MARGIN,
+          margin: CONSTANTS.PLOT_MARGIN,
           hovermode: "closest",
           hoverlabel: { bgcolor: "#FFF" },
         }}
         useResizeHandler={true}
         config={{
-          ...PLOT_CONFIG,
+          ...CONSTANTS.PLOT_CONFIG,
           toImageButtonOptions: {
             filename:
               extra.from === "hazard"

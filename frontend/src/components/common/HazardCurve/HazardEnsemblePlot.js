@@ -3,8 +3,8 @@ import React from "react";
 import Plot from "react-plotly.js";
 
 import { getPlotData } from "utils/Utils";
-import { PLOT_MARGIN, PLOT_CONFIG } from "constants/Constants";
 import { ErrorMessage } from "components/common";
+import * as CONSTANTS from "constants/Constants";
 
 import "assets/style/HazardPlots.css";
 
@@ -31,11 +31,11 @@ const HazardEnsemblePlot = ({
         y: plotData["fault"].values,
         type: "scatter",
         mode: "lines",
-        name: "Fault",
+        name: `${CONSTANTS.FAULT}`,
         line: { color: "black" },
         hoverinfo: "none",
         hovertemplate:
-          "<b>Fault</b><br><br>" +
+          `<b>${CONSTANTS.FAULT}</b><br><br>` +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       },
@@ -45,11 +45,11 @@ const HazardEnsemblePlot = ({
         y: plotData["ds"].values,
         type: "scatter",
         mode: "lines",
-        name: "Distributed Seismicity",
+        name: CONSTANTS.DISTRIBUTED_SEISMICITY,
         line: { color: "green" },
         hoverinfo: "none",
         hovertemplate:
-          "<b>Distributed Seismicity</b><br><br>" +
+          `<b>${CONSTANTS.DISTRIBUTED_SEISMICITY}</b><br><br>` +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       },
@@ -59,11 +59,11 @@ const HazardEnsemblePlot = ({
         y: plotData["total"].values,
         type: "scatter",
         mode: "lines",
-        name: "Total",
+        name: `${CONSTANTS.TOTAL}`,
         line: { color: "red" },
         hoverinfo: "none",
         hovertemplate:
-          "<b>Total</b><br><br>" +
+          `<b>${CONSTANTS.TOTAL}</b><br><br>` +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       },
@@ -77,7 +77,7 @@ const HazardEnsemblePlot = ({
         y: nzs1170p5.index,
         type: "scatter",
         mode: "lines+markers",
-        name: "NZS1170.5",
+        name: `${CONSTANTS.NZS1170P5}`,
         marker: {
           symbol: "triangle-up",
           size: 8,
@@ -86,7 +86,7 @@ const HazardEnsemblePlot = ({
         visible: showNZCode,
         hoverinfo: "none",
         hovertemplate:
-          "<b>NZS1170.5</b><br><br>" +
+          `<b>${CONSTANTS.NZS1170P5}</b><br><br>` +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       });
@@ -102,7 +102,7 @@ const HazardEnsemblePlot = ({
           y: nzta.index,
           type: "scatter",
           mode: "lines+markers",
-          name: "NZTA",
+          name: `${CONSTANTS.NZTA}`,
           marker: {
             symbol: "square-open",
             size: 8,
@@ -111,7 +111,7 @@ const HazardEnsemblePlot = ({
           visible: showNZCode,
           hoverinfo: "none",
           hovertemplate:
-            "<b>NZTA</b><br><br>" +
+            `<b>${CONSTANTS.NZTA}</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
@@ -129,11 +129,11 @@ const HazardEnsemblePlot = ({
           y: percentile16.values,
           type: "scatter",
           mode: "lines",
-          name: "16th Percentile",
+          name: `${CONSTANTS.LOWER_PERCENTILE}`,
           line: { color: "red", dash: "dash" },
           hoverinfo: "none",
           hovertemplate:
-            "<b>16<sup>th</sup> percentiles</b><br><br>" +
+            `<b>${CONSTANTS.LOWER_PERCENTILE}</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         },
@@ -143,11 +143,11 @@ const HazardEnsemblePlot = ({
           y: percentile84.values,
           type: "scatter",
           mode: "lines",
-          name: "84th Percentile",
+          name: `${CONSTANTS.UPPER_PERCENTILE}`,
           line: { color: "red", dash: "dash" },
           hoverinfo: "none",
           hovertemplate:
-            "<b>84<sup>th</sup> percentiles</b><br><br>" +
+            `<b>${CONSTANTS.UPPER_PERCENTILE}</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         }
@@ -167,19 +167,19 @@ const HazardEnsemblePlot = ({
           },
           yaxis: {
             type: "log",
-            title: { text: "Annual rate of exceedance" },
+            title: { text: `${CONSTANTS.ANNUAL_RATE_OF_EXCEEDANCE}` },
             showexponent: "first",
             exponentformat: "power",
             range: [-5, 0],
           },
           autosize: true,
-          margin: PLOT_MARGIN,
+          margin: CONSTANTS.PLOT_MARGIN,
           hovermode: "closest",
           hoverlabel: { bgcolor: "#FFF" },
         }}
         useResizeHandler={true}
         config={{
-          ...PLOT_CONFIG,
+          ...CONSTANTS.PLOT_CONFIG,
           toImageButtonOptions: {
             filename:
               extra.from === "hazard"

@@ -1,15 +1,15 @@
 import React from "react";
 
-import { NZTA_SOIL_CLASS, NZS_SOIL_CLASS } from "constants/Constants";
+import * as CONSTANTS from "constants/Constants";
 
 const HazardCurveMetadata = ({ metadata }) => {
   const createMetadataText = () => {
     let metadataText = "";
     for (const [key, value] of Object.entries(metadata)) {
       if (key.includes("NZS1170.5 Soil")) {
-        metadataText += `${key}: ${NZS_SOIL_CLASS[value]}\n`;
+        metadataText += `${key}: ${CONSTANTS.NZS_SOIL_CLASS[value]}\n`;
       } else if (key.includes("NZTA Soil")) {
-        metadataText += `${key}: ${NZTA_SOIL_CLASS[value]}\n`;
+        metadataText += `${key}: ${CONSTANTS.NZTA_SOIL_CLASS[value]}\n`;
       } else {
         metadataText += `${key}: ${value}\n`;
       }
