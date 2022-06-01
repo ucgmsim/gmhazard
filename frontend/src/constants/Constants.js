@@ -283,7 +283,7 @@ export const METRE_PER_SECOND_UNIT = "(m/s)";
 export const YEARS_UNIT = "(years)";
 export const PERCENTAGE_UNIT = "(%)";
 export const GRAVITY_UNIT = "(g)";
-export const MAGNITUDE_SYMBOL = "(Mw)";
+export const MAGNITUDE_SYMBOL = "Mw";
 
 // Units in adornment - units in input field
 export const ADORNMENT_KILOMETRE_UNIT = "km";

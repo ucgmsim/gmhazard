@@ -782,7 +782,7 @@ const GMSForm = () => {
                     <tbody>
                       <tr>
                         <th scope="row">
-                          {CONSTANTS.MAGNITUDE} {CONSTANTS.MAGNITUDE_SYMBOL}
+                          {CONSTANTS.MAGNITUDE}, {CONSTANTS.MAGNITUDE_SYMBOL}
                         </th>
                         <td>
                           <input
