@@ -576,7 +576,7 @@ const GMSForm = () => {
 
         <div className="im-custom-form-group">
           <IMCustomSelect
-            title={`${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS}`}
+            title={`${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS_UNIT}`}
             setSelect={setSelectedIMPeriod}
             options={availablePeriods}
             selectedIM={selectedIMType}
@@ -591,7 +591,7 @@ const GMSForm = () => {
             htmlFor="im-level"
             className="control-label"
           >
-            IM / {CONSTANTS.EXCEEDANCE_RATE_LEVEL}
+            {CONSTANTS.IM_LEVEL} / {CONSTANTS.EXCEEDANCE_RATE}
           </label>
           <GuideTooltip
             explanation={
@@ -610,7 +610,7 @@ const GMSForm = () => {
                 onChange={(e) => setLocalImExdRateRadio(e.target.value)}
               />
               <label className="form-check-label" htmlFor="im-level">
-                IM
+                {CONSTANTS.IM_LEVEL}
               </label>
             </div>
             <div className="form-check form-check-inline">
@@ -624,7 +624,7 @@ const GMSForm = () => {
                 onChange={(e) => setLocalImExdRateRadio(e.target.value)}
               />
               <label className="form-check-label" htmlFor="exceedance-rate">
-                Exceedance Rate
+                {CONSTANTS.EXCEEDANCE_RATE}
               </label>
             </div>
           </div>
@@ -706,7 +706,7 @@ const GMSForm = () => {
 
         <div className="form-group">
           <label id="label-num-gms" htmlFor="num-gms" className="control-label">
-            Number of Ground Motions
+            {CONSTANTS.NUMBER_OF_GROUND_MOTIONS}
           </label>
           <GuideTooltip
             explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_GMS_NUM_GMS"]}
@@ -727,7 +727,7 @@ const GMSForm = () => {
             onClick={() => computeGMS()}
             disabled={invalidInputs()}
           >
-            Compute
+            {CONSTANTS.COMPUTE_BUTTON}
           </button>
         </div>
 
@@ -735,7 +735,7 @@ const GMSForm = () => {
           <Card>
             <Card.Header className="advanced-toggle-header">
               <span>
-                Advanced
+                {CONSTANTS.ADVANCED}
                 <GuideTooltip
                   explanation={
                     CONSTANTS.TOOLTIP_MESSAGES["HAZARD_GMS_ADVANCED"]
@@ -758,7 +758,7 @@ const GMSForm = () => {
                     htmlFor="causal-parameters"
                     className="control-label"
                   >
-                    Causal parameters bounds
+                    {CONSTANTS.CAUSAL_PARAMS_BOUNDS}
                   </label>
                   <GuideTooltip
                     explanation={
@@ -772,16 +772,18 @@ const GMSForm = () => {
                       <tr>
                         <th className="var-name" scope="col"></th>
                         <th className="min-value" scope="col">
-                          Min
+                          {CONSTANTS.MINIMUM}
                         </th>
                         <th className="min-value" scope="col">
-                          Max
+                          {CONSTANTS.MAXIMUM}
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <th scope="row">Mw</th>
+                        <th scope="row">
+                          {CONSTANTS.MAGNITUDE}, {CONSTANTS.MAGNITUDE_SYMBOL}
+                        </th>
                         <td>
                           <input
                             type="text"
@@ -800,7 +802,10 @@ const GMSForm = () => {
                         </td>
                       </tr>
                       <tr>
-                        <th scope="row">Rrup (km)</th>
+                        <th scope="row">
+                          {CONSTANTS.RUPTURE_DISTANCE}{" "}
+                          {CONSTANTS.KILOMETRE_UNIT}
+                        </th>
                         <td>
                           <input
                             type="text"
@@ -820,7 +825,7 @@ const GMSForm = () => {
                       </tr>
                       <tr>
                         <th scope="row">
-                          V<sub>S30</sub> (m/s)
+                          V<sub>S30</sub> {CONSTANTS.METRE_PER_SECOND_UNIT}
                         </th>
                         <td>
                           <input
@@ -840,7 +845,7 @@ const GMSForm = () => {
                         </td>
                       </tr>
                       <tr>
-                        <th scope="row">SF</th>
+                        <th scope="row">{CONSTANTS.SCALE_FACTOR}</th>
                         <td>
                           <input
                             type="text"
@@ -867,7 +872,7 @@ const GMSForm = () => {
                     htmlFor="weights"
                     className="control-label"
                   >
-                    Weights
+                    {CONSTANTS.WEIGHTS}
                   </label>
                   <GuideTooltip
                     explanation={
@@ -879,7 +884,7 @@ const GMSForm = () => {
                       <tr>
                         <th scope="col"></th>
                         <th className="text-center" scope="col">
-                          Weights
+                          {CONSTANTS.WEIGHTS}
                         </th>
                       </tr>
                     </thead>
@@ -894,7 +899,7 @@ const GMSForm = () => {
                     htmlFor="database"
                     className="control-label"
                   >
-                    Database
+                    {CONSTANTS.DATABASE}
                   </label>
                   <GuideTooltip
                     explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_GMS_DB"]}
@@ -915,7 +920,7 @@ const GMSForm = () => {
                     htmlFor="replicates"
                     className="control-label"
                   >
-                    Replicates
+                    {CONSTANTS.REPLICATES}
                   </label>
                   <GuideTooltip
                     explanation={

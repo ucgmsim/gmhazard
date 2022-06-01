@@ -3,8 +3,8 @@ import React, { useState, useEffect, useContext, Fragment } from "react";
 import { Tabs, Tab } from "react-bootstrap";
 
 import { GlobalContext } from "context";
-import { useAuth0 } from "components/common/ReactAuth0SPA";
 import * as CONSTANTS from "constants/Constants";
+import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
   LoadingSpinner,

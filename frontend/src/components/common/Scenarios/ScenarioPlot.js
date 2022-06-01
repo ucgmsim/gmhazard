@@ -11,8 +11,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
   if (scenarioData !== null && !scenarioData.hasOwnProperty("error")) {
     const percentileData16 =
       scenarioData["ensemble_scenario"]["percentiles"]["16th"];
-    const muData =
-      scenarioData["ensemble_scenario"]["mu_data"];
+    const muData = scenarioData["ensemble_scenario"]["mu_data"];
     const percentileData84 =
       scenarioData["ensemble_scenario"]["percentiles"]["84th"];
     const ims = scenarioData["ensemble_scenario"]["ims"];
@@ -116,7 +115,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
           yaxis: {
             type: "log",
             title: {
-              text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.G_FORCE}`,
+              text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.GRAVITY_UNIT}`,
             },
           },
           autosize: true,

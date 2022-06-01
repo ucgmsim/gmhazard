@@ -145,7 +145,7 @@ const UHSBranchPlot = ({
           yaxis: {
             type: "log",
             title: {
-              text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.G_FORCE}`,
+              text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.GRAVITY_UNIT}`,
             },
           },
           autosize: true,

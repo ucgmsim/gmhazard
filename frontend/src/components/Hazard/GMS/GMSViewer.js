@@ -247,7 +247,7 @@ const GMSViewer = () => {
       let tempmetadata = Object.getOwnPropertyNames(metadata)
         .map((metadata) => ({
           value: metadata,
-          label: `${CONSTANTS.GMS_LABELS[metadata]} distribution`,
+          label: `${CONSTANTS.GMS_LABELS[metadata]} ${CONSTANTS.DISTRIBUTION}`,
         }))
         .filter((metadata) =>
           Object.keys(CONSTANTS.GMS_LABELS).includes(metadata.value)
@@ -255,9 +255,7 @@ const GMSViewer = () => {
 
       tempmetadata.splice(0, 0, {
         value: "mwrrupplot",
-        label: `${CONSTANTS.MAGNITUDE} and ${
-          CONSTANTS.RUPTURE_DISTANCE
-        } (Mw-R${"rup".sub()}) distribution`,
+        label: `${CONSTANTS.MW_RRUP_PLOT_DROPDOWN_LABEL}`,
       });
       tempmetadata.splice(1, 0, {
         value: "availablegms",

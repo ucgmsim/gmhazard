@@ -9,9 +9,9 @@ import {
   DropdownItem,
 } from "reactstrap";
 
-import { useAuth0 } from "components/common/ReactAuth0SPA";
-import { ENV } from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
+import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 const LogoutButton = () => {
   const { user, logout } = useAuth0();
@@ -30,14 +30,16 @@ const LogoutButton = () => {
       </DropdownToggle>
       <DropdownMenu right>
         <DropdownItem header>{user.name}</DropdownItem>
-        <DropdownItem disabled>Version: {ENV}</DropdownItem>
+        <DropdownItem disabled>
+          {CONSTANTS.VERSION}: {CONSTANTS.ENV}
+        </DropdownItem>
         <DropdownItem
           tag={RouterNavLink}
           to="/profile"
           className="dropdown-profile"
           activeClassName="router-link-exact-active"
         >
-          <FontAwesomeIcon icon="user" className="mr-3" /> Profile
+          <FontAwesomeIcon icon="user" className="mr-3" /> {CONSTANTS.PROFILE}
         </DropdownItem>
 
         {hasPermission("create-project") ? (
@@ -47,7 +49,8 @@ const LogoutButton = () => {
             className="dropdown-profile"
             activeClassName="router-link-exact-active"
           >
-            <FontAwesomeIcon icon="folder-plus" className="mr-3" /> Create
+            <FontAwesomeIcon icon="folder-plus" className="mr-3" />{" "}
+            {CONSTANTS.CREATE}
             project
           </DropdownItem>
         ) : null}
@@ -59,7 +62,8 @@ const LogoutButton = () => {
             className="dropdown-profile"
             activeClassName="router-link-exact-active"
           >
-            <FontAwesomeIcon icon="tools" className="mr-3" /> Permission Config
+            <FontAwesomeIcon icon="tools" className="mr-3" />{" "}
+            {CONSTANTS.PERMISSION_CONFIG}
           </DropdownItem>
         ) : null}
 
@@ -71,7 +75,8 @@ const LogoutButton = () => {
             })
           }
         >
-          <FontAwesomeIcon icon="power-off" className="mr-3" /> Log out
+          <FontAwesomeIcon icon="power-off" className="mr-3" />{" "}
+          {CONSTANTS.LOGOUT}
         </DropdownItem>
       </DropdownMenu>
     </UncontrolledDropdown>

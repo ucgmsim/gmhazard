@@ -6,8 +6,8 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { GlobalContext } from "context";
-import { useAuth0 } from "components/common/ReactAuth0SPA";
 import * as CONSTANTS from "constants/Constants";
+import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
   APIQueryBuilder,
@@ -75,7 +75,9 @@ const SiteSelectionBasinDepth = () => {
               }
               InputProps={{
                 endAdornment: (
-                  <InputAdornment position="end">km</InputAdornment>
+                  <InputAdornment position="end">
+                    {CONSTANTS.ADORNMENT_KILOMETRE_UNIT}
+                  </InputAdornment>
                 ),
                 readOnly: locationSetClick === null || Z1p0 === "",
               }}
@@ -99,7 +101,7 @@ const SiteSelectionBasinDepth = () => {
           disabled={Z1p0 === defaultZ1p0}
           onClick={() => onClickDefaultZ1p0()}
         >
-          Use Default
+          {CONSTANTS.USE_DEFAULT}
         </button>
       </div>
 
@@ -119,7 +121,9 @@ const SiteSelectionBasinDepth = () => {
               }
               InputProps={{
                 endAdornment: (
-                  <InputAdornment position="end">km</InputAdornment>
+                  <InputAdornment position="end">
+                    {CONSTANTS.ADORNMENT_KILOMETRE_UNIT}
+                  </InputAdornment>
                 ),
                 readOnly: locationSetClick === null || Z2p5 === "",
               }}
@@ -143,7 +147,7 @@ const SiteSelectionBasinDepth = () => {
           disabled={Z2p5 === defaultZ2p5}
           onClick={() => onClickDefaultZ2p5()}
         >
-          Use Default
+          {CONSTANTS.USE_DEFAULT}
         </button>
       </div>
     </Fragment>

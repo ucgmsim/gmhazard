@@ -118,7 +118,9 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
       data={scattersArray}
       layout={{
         xaxis: {
-          title: { text: `${CONSTANTS.GMS_LABELS[metadata]} distribution` },
+          title: {
+            text: `${CONSTANTS.GMS_LABELS[metadata]} ${CONSTANTS.DISTRIBUTION}`,
+          },
           range: xAxisRange,
           autorange: false,
         },

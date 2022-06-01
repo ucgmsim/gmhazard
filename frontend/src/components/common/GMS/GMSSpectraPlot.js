@@ -25,7 +25,7 @@ const GMSSpectraPlot = ({ GMSSpectraData }) => {
         yaxis: {
           type: "log",
           title: {
-            text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.G_FORCE}`,
+            text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.GRAVITY_UNIT}`,
           },
           showexponent: "first",
           exponentformat: "power",

@@ -1,7 +1,7 @@
 import React, { Fragment, useState, useEffect, useContext } from "react";
 
-import * as CONSTANTS from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 
 import {
   HazardCurveSection,
@@ -45,7 +45,7 @@ const HazardForm = () => {
       <div className="hr"></div>
       <div className="form-group">
         <div className="form-group form-section-title">
-          NZ Code
+          {CONSTANTS.NZ_CODE}
           <GuideTooltip
             explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_NZ_CODE"]}
             hyperlink={CONSTANTS.TOOLTIP_URL["HAZARD_NZ_CODE"]}
@@ -63,7 +63,7 @@ const HazardForm = () => {
               onChange={(e) => setNZCodeRadio(e.target.value)}
             />
             <label className="form-check-label" htmlFor="nzs1170p5">
-              ${CONSTANTS.NZS1170P5}
+              {CONSTANTS.NZS1170P5}
               <GuideTooltip
                 explanation={
                   CONSTANTS.TOOLTIP_MESSAGES["HAZARD_NZS1170P5_CODE"]
@@ -83,7 +83,7 @@ const HazardForm = () => {
               onChange={(e) => setNZCodeRadio(e.target.value)}
             />
             <label className="form-check-label" htmlFor="nzta">
-            ${CONSTANTS.NZTA}
+              {CONSTANTS.NZTA}
               <GuideTooltip
                 explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_NZTA_CODE"]}
               />

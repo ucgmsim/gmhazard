@@ -1,5 +1,5 @@
-import * as CONSTANTS from "constants/Constants";
 import { sortIMs } from "utils/Utils";
+import * as CONSTANTS from "constants/Constants";
 
 export const calculateGMSSpectra = (gmsData, numGMs) => {
   const plotDataArr = [];
@@ -118,7 +118,7 @@ export const calculateGMSSpectra = (gmsData, numGMs) => {
         x: periodsArray,
         y: upperPercenValues,
         mode: "lines",
-        name: `GCIM - 84${"th".sup()} Percentile`,
+        name: `${CONSTANTS.GCIM} - ${CONSTANTS.UPPER_PERCENTILE}`,
         line: { dash: "dashdot", color: "red" },
         type: "scatter",
         hoverinfo: "none",
@@ -127,7 +127,7 @@ export const calculateGMSSpectra = (gmsData, numGMs) => {
         x: periodsArray,
         y: medianValues,
         mode: "lines",
-        name: "GCIM - Median",
+        name: `${CONSTANTS.GCIM} - ${CONSTANTS.MEDIAN}`,
         line: { color: "red" },
         type: "scatter",
         hoverinfo: "none",
@@ -136,7 +136,7 @@ export const calculateGMSSpectra = (gmsData, numGMs) => {
         x: periodsArray,
         y: lowerPercenValues,
         mode: "lines",
-        name: `GCIM - 16${"th".sup()} percentile`,
+        name: `${CONSTANTS.GCIM} - ${CONSTANTS.LOWER_PERCENTILE}`,
         line: { dash: "dashdot", color: "red" },
         type: "scatter",
         hoverinfo: "none",

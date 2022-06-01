@@ -6,8 +6,8 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { GlobalContext } from "context";
-import { useAuth0 } from "components/common/ReactAuth0SPA";
 import * as CONSTANTS from "constants/Constants";
+import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
   APIQueryBuilder,
@@ -145,7 +145,9 @@ const SiteConditions = () => {
               }
               InputProps={{
                 endAdornment: (
-                  <InputAdornment position="end">m/s</InputAdornment>
+                  <InputAdornment position="end">
+                    {CONSTANTS.ADORNMENT_METRE_PER_SECOND_UNIT}
+                  </InputAdornment>
                 ),
                 readOnly: locationSetClick === null || vs30 === "",
               }}
@@ -169,7 +171,7 @@ const SiteConditions = () => {
           disabled={vs30 === defaultVS30}
           onClick={() => onClickDefaultVS30()}
         >
-          Use Default
+          {CONSTANTS.USE_DEFAULT}
         </button>
       </div>
     </Fragment>

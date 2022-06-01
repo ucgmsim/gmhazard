@@ -71,9 +71,7 @@ const GMSAvailableGMPlot = ({ metadata, bounds, numGMs }) => {
         xaxis: {
           type: "log",
           title: {
-            text: `${CONSTANTS.RUPTURE_DISTANCE}, R${"rup".sub()} ${
-              CONSTANTS.KILOMETRE
-            }`,
+            text: `${CONSTANTS.GMS_PLOT_RRUP_AXIS_LABEL}`,
           },
           showexponent: "first",
           exponentformat: "power",
@@ -81,7 +79,7 @@ const GMSAvailableGMPlot = ({ metadata, bounds, numGMs }) => {
           autorange: false,
         },
         yaxis: {
-          title: { text: `${CONSTANTS.MAGNITUDE}, M${"W".sub()}` },
+          title: { text: `${CONSTANTS.GMS_PLOT_MAG_AXIS_LABEL}` },
           autorange: true,
         },
         legend: {

@@ -46,7 +46,7 @@ const DisaggregationSection = () => {
       </div>
       <div className="form-group">
         <CustomSelect
-          title={`${CONSTANTS.RETURN_PERIOD} ${CONSTANTS.YEARS}`}
+          title={`${CONSTANTS.RETURN_PERIOD} ${CONSTANTS.YEARS_UNIT}`}
           value={localSelectedRP}
           setSelect={setLocalSelectedRP}
           options={projectDisagRPs}
