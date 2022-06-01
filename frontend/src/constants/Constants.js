@@ -158,7 +158,7 @@ export const MINIMUM = "Min";
 export const MAXIMUM = "Max";
 export const DISTRIBUTION = "distribution";
 export const MORE_DETAIL = "More detail";
-export const MEDIAN = "Median"
+export const MEDIAN = "Median";
 
 // Navbar
 export const LOGIN = "Log in";
@@ -282,8 +282,8 @@ export const KILOMETRE_UNIT = "(km)";
 export const METRE_PER_SECOND_UNIT = "(m/s)";
 export const YEARS_UNIT = "(years)";
 export const PERCENTAGE_UNIT = "(%)";
-export const G_FORCE_UNIT = "(g)";
-export const MAGNITUDE_UNIT = "(Mw)";
+export const GRAVITY_UNIT = "(g)";
+export const MAGNITUDE_SYMBOL = "(Mw)";
 
 // Units in adornment - units in input field
 export const ADORNMENT_KILOMETRE_UNIT = "km";

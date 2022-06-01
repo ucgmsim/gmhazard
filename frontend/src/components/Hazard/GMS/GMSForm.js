@@ -782,7 +782,7 @@ const GMSForm = () => {
                     <tbody>
                       <tr>
                         <th scope="row">
-                          {CONSTANTS.MAGNITUDE} {CONSTANTS.MAGNITUDE_UNIT}
+                          {CONSTANTS.MAGNITUDE} {CONSTANTS.MAGNITUDE_SYMBOL}
                         </th>
                         <td>
                           <input
@@ -803,7 +803,8 @@ const GMSForm = () => {
                       </tr>
                       <tr>
                         <th scope="row">
-                          {CONSTANTS.RUPTURE_DISTANCE} {CONSTANTS.KILOMETRE_UNIT}
+                          {CONSTANTS.RUPTURE_DISTANCE}{" "}
+                          {CONSTANTS.KILOMETRE_UNIT}
                         </th>
                         <td>
                           <input
