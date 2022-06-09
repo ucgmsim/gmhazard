@@ -501,6 +501,68 @@ def plot_psa_mag(
     plt.close()
 
 
+def plot_psa_vs30(
+    vs30_values: List,
+    rrup_values: List,
+    mag_list: List,
+    result_dict: Dict,
+    plot_directory: pathlib.PosixPath,
+    period,
+    tect_type,
+):
+    """Plots for pSA versus Vs30
+    """
+    fig, ax = plt.subplots(
+        len(mag_list), len(rrup_values), figsize=(18, 12), dpi=300
+    )
+    x_position = 0
+    for mag in mag_list:
+        y_position = 0
+        for rrup in rrup_values:
+            psa_results = pd.DataFrame.from_dict(result_dict[mag][rrup])
+            for model, row in psa_results.iterrows():
+                ax[x_position, y_position].plot(
+                    vs30_values,
+                    row.values,
+                    label=model,
+                    color=const.DEFAULT_LABEL_COLOR[model],
+                    linestyle="dashed" if model.endswith("NZ") else "solid",
+                )
+
+            ax[x_position, y_position].set_title(
+                f"SA versus Vs30 - Rrup:{rrup}, Magnitude:{mag}"
+            )
+            ax[x_position, y_position].legend(psa_results.index.values)
+            ax[x_position, y_position].xaxis.set_label_text("Vs30")
+            ax[x_position, y_position].yaxis.set_label_text("SA [g]")
+            # ax[x_position, y_position].set_xscale("log")
+            ax[x_position, y_position].set_yscale("log")
+            ax[x_position, y_position].margins(x=0)
+            ax[x_position, y_position].set_ylim([0.0001, 10])
+            ax[x_position, y_position].xaxis.grid(
+                True, which="both", linestyle="dotted"
+            )
+            ax[x_position, y_position].yaxis.grid(
+                True, which="both", linestyle="dotted"
+            )
+            # If we want to save subplots individually
+            # plt.savefig(
+            #     f"{plot_directory}/{tect_type}_{str(mag).replace('.', 'p')}_{str(vs30).replace('.', 'p')}_pSA_versus_T.png"
+            # )
+            # plt.clf()
+            y_position += 1
+        x_position += 1
+
+    # Uncomment those if we want to move the legend outside of grid
+    # Subplot will no longer holds legend
+    # fig.legend()
+    fig.tight_layout()
+    # fig.subplots_adjust(right=0.75)
+    # plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", borderaxespad=0)
+    plt.savefig(f"{plot_directory}/{tect_type}_{period}.png")
+    plt.close()
+
+
 def psa_sigma_plot(
     mag_dict: Dict,
     vs30_values: List,
@@ -704,8 +766,81 @@ def psa_mag_plot(
                                 if isinstance(gmm_result, list)
                                 else gmm_result[0]
                             )
-        # breakpoint()
         plot_psa_mag(
+            vs30_values,
+            rrup_values,
+            mag_list,
+            results,
+            plot_directory,
+            period,
+            tect_type,
+        )
+
+
+def psa_vs30_plot(
+    mag_dict: Dict,
+    vs30_values: np.ndarray,
+    psa_periods: np.ndarray,
+    rrup_values: List[Union[float, int]],
+    save_path: pathlib.PosixPath = None,
+):
+    """Plot function for a pSA versus Magnitude
+
+    Parameters
+    ----------
+    mag_dict: Dict
+        Dictionary with a different Mw lists for a different tectonic type
+    psa_periods: np.ndarray
+        list of Periods
+    rrup_values: List[Union[float, int]]
+        Rupture distance in km
+    save_path: pathlib.PosixPath
+        Directory to save plots
+    """
+
+    root_path = (
+        pathlib.Path(__file__).resolve().parent.parent
+        if save_path is None
+        else save_path
+    )
+    plot_directory = root_path / "psa_vs30"
+    plot_directory.mkdir(exist_ok=True, parents=True)
+    for tect_type, mag_list in mag_dict.items():
+        for period in psa_periods:
+            results = {}
+            for mag in mag_list:
+                results[mag] = {}
+                for rrup in rrup_values:
+                    results[mag][rrup] = {}
+                    fault = Fault(
+                        Mw=mag,
+                        tect_type=TectType[tect_type],
+                        **const.CONST_FAULT_PARAMS[tect_type],
+                    )
+                    for vs30 in vs30_values:
+                        results[mag][rrup][vs30] = {}
+                        site = Site(
+                            rrup=rrup,
+                            rjb=rrup,
+                            rx=rrup,
+                            ry=rrup,
+                            vs30=vs30,
+                            **const.CONST_SITE_PARAMS,
+                        )
+                        for model in const.MODELS_DICT[tect_type][const.PSA_IM_NAME]:
+                            gmm_result = empirical_factory.compute_gmm(
+                                fault,
+                                site,
+                                empirical_factory.GMM[model],
+                                const.PSA_IM_NAME,
+                                [period],
+                            )
+                            results[mag][rrup][vs30][model] = (
+                                gmm_result[0][0]
+                                if isinstance(gmm_result, list)
+                                else gmm_result[0]
+                            )
+        plot_psa_vs30(
             vs30_values,
             rrup_values,
             mag_list,
@@ -743,5 +878,5 @@ if __name__ == "__main__":
     # psa_median_plot(mag_dict, vs30_list, period_list, rrup, save_path)
 
     # Special requests
-    psa_mag_plot(mag_dict, vs30_list, period_list, rrup, save_path)
-    # psa_rrup_plot(mag_dict, vs30_list, period_list, rrup, save_path)
+    # psa_mag_plot(mag_dict, vs30_list, period_list, rrup, save_path)
+    psa_vs30_plot(mag_dict, vs30_list, period_list, rrup, save_path)
