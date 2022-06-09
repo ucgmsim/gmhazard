@@ -19,8 +19,8 @@ const UHSBranchPlot = ({
   if (uhsData !== null && !uhsData.hasOwnProperty("error")) {
     const createLegendLabel = (isNZCode) => {
       return isNZCode === true
-        ? `${CONSTANTS.NZS1170P5} [RP = " + ${rp} + "]`
-        : `${CONSTANTS.SITE_SPECIFIC} [RP = " + ${rp} + "]`;
+        ? `${CONSTANTS.NZS1170P5} [RP = ${rp}]`
+        : `${CONSTANTS.SITE_SPECIFIC} [RP = ${rp}]`;
     };
 
     // Creating the scatter objects
