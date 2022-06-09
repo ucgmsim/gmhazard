@@ -1,11 +1,11 @@
 import React, { Fragment, useEffect, useState, useContext } from "react";
 
-import { Tabs, Tab } from "react-bootstrap";
 import Select from "react-select";
+import { Tabs, Tab } from "react-bootstrap";
 
-import { useAuth0 } from "components/common/ReactAuth0SPA";
-import * as CONSTANTS from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
+import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
   UHSPlot,
@@ -111,7 +111,9 @@ const HazardViewerUHS = () => {
             exceedances: `${getExceedances().join(",")}`,
             calc_percentiles: 1,
             im_component:
-              selectedIMComponent === null ? "RotD50" : selectedIMComponent,
+              selectedIMComponent === null
+                ? `${CONSTANTS.ROTD_FIFTY}`
+                : selectedIMComponent,
           });
           if (vs30 !== defaultVS30) {
             queryString += `&vs30=${vs30}`;
@@ -148,7 +150,7 @@ const HazardViewerUHS = () => {
                     z_factor: selectedNZS1170p5ZFactor,
                     im_component:
                       selectedIMComponent === null
-                        ? "RotD50"
+                        ? `${CONSTANTS.ROTD_FIFTY}`
                         : selectedIMComponent,
                   }),
                 {
@@ -220,7 +222,7 @@ const HazardViewerUHS = () => {
   return (
     <div className="uhs-viewer">
       <Tabs defaultActiveKey="allRP" className="pivot-tabs">
-        <Tab eventKey="allRP" title="Selected Return Periods">
+        <Tab eventKey="allRP" title={CONSTANTS.MEAN_HAZARDS}>
           <div className="tab-content">
             {uhsComputeClick === null && (
               <GuideMessage
@@ -255,7 +257,7 @@ const HazardViewerUHS = () => {
               )}
           </div>
         </Tab>
-        <Tab eventKey="specificRP" title="Return Period branches">
+        <Tab eventKey="specificRP" title={CONSTANTS.EPISTEMIC_UNCERTAINTY}>
           <div className="tab-content">
             {uhsComputeClick === null && (
               <GuideMessage

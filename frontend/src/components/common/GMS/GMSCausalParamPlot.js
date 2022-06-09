@@ -2,7 +2,7 @@ import React from "react";
 
 import Plot from "react-plotly.js";
 
-import { PLOT_MARGIN, PLOT_CONFIG, GMS_LABELS } from "constants/Constants";
+import * as CONSTANTS from "constants/Constants";
 import { range, sortDuplicateXRange, sortDuplicateYRange } from "utils/Utils";
 
 import "assets/style/GMSPlot.css";
@@ -33,9 +33,9 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
       y: newRangeY,
       mode: "lines+markers",
       name:
-        GMS_LABELS[metadata] === "Vs30"
-          ? "Selected GMs"
-          : `${GMS_LABELS[metadata]}`,
+        CONSTANTS.GMS_LABELS[metadata] === "Vs30"
+          ? `${CONSTANTS.SHORTEN_SELECTED_GM}`
+          : `${CONSTANTS.GMS_LABELS[metadata]}`,
       line: { shape: "hv", color: "black" },
       type: "scatter",
       showlegend: true,
@@ -55,9 +55,9 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
         ],
         y: boundsRangeY,
         legendgroup: metadata,
-        name: "Lower and upper bound limits",
+        name: `${CONSTANTS.LOWER_AND_UPPER_BOUND_LIMITS}`,
         mode: "lines",
-        line: { color: "red", dash: "dot" },
+        line: { color: "grey", dash: "dot" },
         type: "scatter",
       },
       {
@@ -67,9 +67,9 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
         ],
         y: boundsRangeY,
         legendgroup: metadata,
-        name: "Lower and upper bound limits",
+        name: `${CONSTANTS.LOWER_AND_UPPER_BOUND_LIMITS}`,
         mode: "lines",
-        line: { color: "red", dash: "dot" },
+        line: { color: "grey", dash: "dot" },
         type: "scatter",
         showlegend: false,
       }
@@ -84,7 +84,7 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
       ],
       y: boundsRangeY,
       legendgroup: metadata,
-      name: `Site-Specific V${"s30".sub()}`,
+      name: `${CONSTANTS.SITE_SPECIFIC} V${"s30".sub()}`,
       mode: "lines",
       line: { color: "red" },
       type: "scatter",
@@ -94,7 +94,7 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
     scattersArray.push({
       x: [1, 1],
       y: boundsRangeY,
-      name: "Reference Point",
+      name: `${CONSTANTS.REFERENCE_POINT}`,
       mode: "lines",
       line: { color: "red" },
       type: "scatter",
@@ -118,19 +118,21 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
       data={scattersArray}
       layout={{
         xaxis: {
-          title: { text: `${GMS_LABELS[metadata]} distribution` },
+          title: {
+            text: `${CONSTANTS.GMS_LABELS[metadata]} ${CONSTANTS.DISTRIBUTION}`,
+          },
           range: xAxisRange,
           autorange: false,
         },
         yaxis: {
-          title: { text: "Cumulative Probability, CDF" },
+          title: { text: `${CONSTANTS.CUMULATIVE_PROB_CDF}` },
           autorange: true,
         },
         autosize: true,
-        margin: PLOT_MARGIN,
+        margin: CONSTANTS.PLOT_MARGIN,
       }}
       useResizeHandler={true}
-      config={PLOT_CONFIG}
+      config={CONSTANTS.PLOT_CONFIG}
     />
   );
 };

@@ -39,14 +39,14 @@ const DisaggregationSection = () => {
   return (
     <Fragment>
       <div className="form-group form-section-title">
-        Disaggregation
+        {CONSTANTS.DISAGGREGATION}
         <GuideTooltip
           explanation={CONSTANTS.TOOLTIP_MESSAGES["PROJECT_DISAGG"]}
         />
       </div>
       <div className="form-group">
         <CustomSelect
-          title="Return Period"
+          title={`${CONSTANTS.RETURN_PERIOD} ${CONSTANTS.YEARS_UNIT}`}
           value={localSelectedRP}
           setSelect={setLocalSelectedRP}
           options={projectDisagRPs}
@@ -61,7 +61,7 @@ const DisaggregationSection = () => {
           disabled={invalidInputsWithNonpSA() || invalidInputWithpSA()}
           onClick={() => getDisagg()}
         >
-          Get
+          {CONSTANTS.GET_BUTTON}
         </button>
       </div>
     </Fragment>

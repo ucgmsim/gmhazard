@@ -2,7 +2,7 @@ import React from "react";
 
 import Plot from "react-plotly.js";
 
-import { PLOT_MARGIN, PLOT_CONFIG } from "constants/Constants";
+import * as CONSTANTS from "constants/Constants";
 
 import "assets/style/GMSPlot.css";
 
@@ -24,16 +24,18 @@ const GMSSpectraPlot = ({ GMSSpectraData }) => {
         },
         yaxis: {
           type: "log",
-          title: { text: "Spectral acceleration, SA (g)" },
+          title: {
+            text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.GRAVITY_UNIT}`,
+          },
           showexponent: "first",
           exponentformat: "power",
           autorange: true,
         },
         autosize: true,
-        margin: PLOT_MARGIN,
+        margin: CONSTANTS.PLOT_MARGIN,
       }}
       useResizeHandler={true}
-      config={PLOT_CONFIG}
+      config={CONSTANTS.PLOT_CONFIG}
     />
   );
 };

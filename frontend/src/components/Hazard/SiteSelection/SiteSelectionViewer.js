@@ -2,6 +2,8 @@ import React, { Fragment } from "react";
 
 import { Tab, Nav } from "react-bootstrap";
 
+import * as CONSTANTS from "constants/Constants";
+
 import {
   SiteSelectionMap,
   SiteSelectionVS30,
@@ -14,10 +16,10 @@ const SiteSelectionViewer = () => {
       <Tab.Container defaultActiveKey="map">
         <Nav variant="tabs">
           <Nav.Item>
-            <Nav.Link eventKey="map">Map</Nav.Link>
+            <Nav.Link eventKey="map">{CONSTANTS.MAP}</Nav.Link>
           </Nav.Item>
           <Nav.Item>
-            <Nav.Link eventKey="regional">Regional</Nav.Link>
+            <Nav.Link eventKey="regional">{CONSTANTS.REGIONAL}</Nav.Link>
           </Nav.Item>
           <Nav.Item>
             <Nav.Link eventKey="vs30">

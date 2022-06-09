@@ -1,11 +1,11 @@
 import React, { useState, useContext, useEffect, Fragment } from "react";
 
 import { v4 as uuidv4 } from "uuid";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import TextField from "@material-ui/core/TextField";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import * as CONSTANTS from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 import { GuideTooltip } from "components/common";
 
 import {
@@ -96,7 +96,7 @@ const UHSSection = () => {
     <Fragment>
       <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
         <div className="form-group form-section-title">
-          Uniform Hazard Spectrum
+          {CONSTANTS.UNIFORM_HAZARD_SPECTRUM}
           <GuideTooltip
             explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_UHS"]}
           />
@@ -107,7 +107,7 @@ const UHSSection = () => {
             htmlFor="uhs-annual-rate"
             className="control-label"
           >
-            Annual Exceedance Rate
+            {CONSTANTS.ANNUAL_EXCEEDANCE_RATE}
           </label>
           <TextField
             id="uhs-annual-rate"
@@ -125,7 +125,7 @@ const UHSSection = () => {
             helperText={
               (uhsAnnualProb > 0 && uhsAnnualProb < 1) || uhsAnnualProb === ""
                 ? " "
-                : "Annual Exceedance Rate must be between 0 and 1. (0 < X < 1)"
+                : `${CONSTANTS.ANNUAL_EXCEEDANCE_RATE_HELPER_TEXT}`
             }
             disabled={isPSANotInIMList(IMs)}
           />
@@ -137,21 +137,21 @@ const UHSSection = () => {
             onClick={() => onClickUHSTableAdd()}
             disabled={invalidExdRate()}
           >
-            Add
+            {CONSTANTS.ADD}
           </button>
         </div>
       </form>
 
-      <div className="form-group">Add one or more rates for calculation</div>
+      <div className="form-group">{CONSTANTS.UHS_TABLE_HELP_TEXT}</div>
 
       <div className="form-group">
         <table id="uhs-added">
           <thead>
             <tr>
-              <th>Rate</th>
-              <th>Return Period</th>
+              <th>{CONSTANTS.RATE}</th>
+              <th>{CONSTANTS.RETURN_PERIOD}</th>
               <th className="uhs-delete-row" title="Click to Delete the Row">
-                Delete
+                {CONSTANTS.DELETE}
               </th>
             </tr>
           </thead>
@@ -167,7 +167,7 @@ const UHSSection = () => {
           disabled={disableButtonUHSCompute || isPSANotInIMList(IMs)}
           onClick={() => setUHSComputeClick(uuidv4())}
         >
-          Compute
+          {CONSTANTS.COMPUTE_BUTTON}
         </button>
       </div>
 
@@ -177,7 +177,7 @@ const UHSSection = () => {
           checked={showUHSNZS1170p5}
           onChange={() => setShowUHSNZS1170p5(!showUHSNZS1170p5)}
         />
-        <span className="show-nzs1170p5">&nbsp;Show NZS1170.5</span>
+        <span className="show-nzs1170p5">&nbsp;{CONSTANTS.SHOW_NZS1170P5}</span>
       </div>
     </Fragment>
   );

@@ -2,7 +2,7 @@ import React from "react";
 
 import Plot from "react-plotly.js";
 
-import { PLOT_MARGIN, PLOT_CONFIG, GMS_LABELS } from "constants/Constants";
+import * as CONSTANTS from "constants/Constants";
 import { range, sortDuplicateXRange, sortDuplicateYRange } from "utils/Utils";
 
 import "assets/style/GMSPlot.css";
@@ -31,7 +31,7 @@ const GMSDisaggDistributionPlot = ({
       x: xRange,
       y: newRangeY,
       mode: "lines+markers",
-      name: `${GMS_LABELS[label]}`,
+      name: `${CONSTANTS.GMS_LABELS[label]}`,
       line: { shape: "hv", color: "black" },
       type: "scatter",
       showlegend: true,
@@ -42,8 +42,8 @@ const GMSDisaggDistributionPlot = ({
     x: distribution,
     y: contribution,
     mode: "lines",
-    name: "Disaggregation distribution",
-    line: { color: "red" },
+    name: `${CONSTANTS.DISAGGREGATION_DSITRIBUTION}`,
+    line: { color: "red", dash: "dot" },
     type: "scatter",
     showlegend: true,
   });
@@ -57,18 +57,18 @@ const GMSDisaggDistributionPlot = ({
       x: [bounds["min"], bounds["min"]],
       y: boundsRangeY,
       legendgroup: label,
-      name: "Lower and upper bound limits",
+      name: `${CONSTANTS.LOWER_AND_UPPER_BOUND_LIMITS}`,
       mode: "lines",
-      line: { color: "red", dash: "dot" },
+      line: { color: "grey", dash: "dot" },
       type: "scatter",
     },
     {
       x: [bounds["max"], bounds["max"]],
       y: boundsRangeY,
       legendgroup: label,
-      name: "Lower and upper bound limits",
+      name: `${CONSTANTS.LOWER_AND_UPPER_BOUND_LIMITS}`,
       mode: "lines",
-      line: { color: "red", dash: "dot" },
+      line: { color: "grey", dash: "dot" },
       type: "scatter",
       showlegend: false,
     }
@@ -89,21 +89,21 @@ const GMSDisaggDistributionPlot = ({
       layout={{
         xaxis: {
           type: "log",
-          title: { text: `${GMS_LABELS[label]}` },
+          title: { text: `${CONSTANTS.GMS_LABELS[label]}` },
           showexponent: "first",
           exponentformat: "power",
           range: [Math.log10(xAxisMin), Math.log10(xAxisMax)],
           autorange: false,
         },
         yaxis: {
-          title: { text: "Cumulative Probability, CDF" },
+          title: { text: `${CONSTANTS.CUMULATIVE_PROB_CDF}` },
           autorange: true,
         },
         autosize: true,
-        margin: PLOT_MARGIN,
+        margin: CONSTANTS.PLOT_MARGIN,
       }}
       useResizeHandler={true}
-      config={PLOT_CONFIG}
+      config={CONSTANTS.PLOT_CONFIG}
     />
   );
 };

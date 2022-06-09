@@ -2,8 +2,8 @@ import React, { useState, useEffect, useContext, Fragment } from "react";
 
 import { v4 as uuidv4 } from "uuid";
 
-import * as CONSTANTS from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 
 import { IMCustomSelect, GuideTooltip } from "components/common";
 
@@ -40,7 +40,7 @@ const HazardCurveSection = () => {
           IMDict[localSelectedIM["value"]]["periods"].sort((a, b) => a - b)
         );
       } else {
-        setPeriodOptions(["N/A"]);
+        setPeriodOptions([`${CONSTANTS.PLACEHOLDER_NOT_APPLICABLE}`]);
       }
       setComponentOptions(IMDict[localSelectedIM["value"]]["components"]);
     }
@@ -76,35 +76,35 @@ const HazardCurveSection = () => {
   return (
     <Fragment>
       <div className="form-group form-section-title">
-        Hazard Curve
+        {CONSTANTS.HAZARD_CURVE}
         <GuideTooltip
           explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_HAZARD"]}
         />
       </div>
       <div className="im-custom-form-group">
         <IMCustomSelect
-          title="Intensity Measure"
+          title={CONSTANTS.INTENSITY_MEASURE}
           setSelect={setLocalSelectedIM}
           options={IMs}
         />
       </div>
       <div className="im-custom-form-group">
         <IMCustomSelect
-          title="Vibration Period"
+          title={`${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS_UNIT}`}
           setSelect={setLocalSelectedIMPeriod}
           options={periodOptions}
           selectedIM={localSelectedIM}
-          placeholder={"Please select the Intensity Measure first."}
+          placeholder={CONSTANTS.PLACEHOLDER_SELECT_IM}
         />
       </div>
 
       <div className="form-group">
         <IMCustomSelect
-          title="Component"
+          title={CONSTANTS.COMPONENT}
           setSelect={setLocalSelectedIMComponent}
           selectedIM={localSelectedIM}
           options={componentOptions}
-          placeholder={"Please select the Intensity Measure first."}
+          placeholder={CONSTANTS.PLACEHOLDER_SELECT_IM}
         />
       </div>
 
@@ -116,7 +116,7 @@ const HazardCurveSection = () => {
           disabled={invalidInputs()}
           onClick={() => setHazardCurveComputeClick(uuidv4())}
         >
-          Compute
+          {CONSTANTS.COMPUTE_BUTTON}
         </button>
       </div>
       <div className="form-group">
@@ -125,7 +125,7 @@ const HazardCurveSection = () => {
           checked={showHazardNZCode}
           onChange={() => setShowHazardNZCode(!showHazardNZCode)}
         />
-        <span className="show-nzs1170p5">&nbsp;Show NZ Code</span>
+        <span className="show-nzs1170p5">&nbsp;{CONSTANTS.SHOW_NZ_CODE}</span>
       </div>
     </Fragment>
   );

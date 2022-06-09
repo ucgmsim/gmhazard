@@ -3,8 +3,8 @@ import React from "react";
 import Plot from "react-plotly.js";
 
 import { getPlotData } from "utils/Utils.js";
-import { PLOT_MARGIN, PLOT_CONFIG } from "constants/Constants";
 import { ErrorMessage } from "components/common";
+import * as CONSTANTS from "constants/Constants";
 
 import "assets/style/UHSPlot.css";
 
@@ -19,8 +19,8 @@ const UHSBranchPlot = ({
   if (uhsData !== null && !uhsData.hasOwnProperty("error")) {
     const createLegendLabel = (isNZCode) => {
       return isNZCode === true
-        ? "NZS1170.5 [RP = " + rp + "]"
-        : "Site-specific [RP = " + rp + "]";
+        ? `${CONSTANTS.NZS1170P5} [RP = " + ${rp} + "]`
+        : `${CONSTANTS.SITE_SPECIFIC} [RP = " + ${rp} + "]`;
     };
 
     // Creating the scatter objects
@@ -32,13 +32,14 @@ const UHSBranchPlot = ({
       for (let curData of Object.values(uhsBranchData)) {
         // Skip any plots if it contains nan
         if (!curData.sa_values.includes("nan")) {
+          // The first value is from PGA, hence do not inlcude
           scatterObjs.push({
-            x: curData.period_values,
-            y: curData.sa_values,
+            x: curData.period_values.slice(1),
+            y: curData.sa_values.slice(1),
             type: "scatter",
             mode: "lines",
             line: { color: "grey", width: 0.8 },
-            name: "Branches",
+            name: `${CONSTANTS.BRANCHES}`,
             legendgroup: "branches",
             showlegend: dataCounter === 0 ? true : false,
             hoverinfo: "none",
@@ -69,7 +70,7 @@ const UHSBranchPlot = ({
         showlegend: true,
         hoverinfo: "none",
         hovertemplate:
-          `<b>NZS1170.5 [RP ${rp}]</b><br><br>` +
+          `<b>${CONSTANTS.NZS1170P5} [RP ${rp}]</b><br><br>` +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       });
@@ -77,18 +78,19 @@ const UHSBranchPlot = ({
 
     // UHS scatter objs
     if (!uhsData.sa_values.includes("nan")) {
+      // The first value is from PGA, hence do not inlcude
       scatterObjs.push({
-        x: uhsData.period_values,
-        y: uhsData.sa_values,
+        x: uhsData.period_values.slice(1),
+        y: uhsData.sa_values.slice(1),
         type: "scatter",
         mode: "lines",
-        line: { color: "blue" },
+        line: { color: "red" },
         name: createLegendLabel(false),
         legendgroup: "site-specific",
         showlegend: true,
         hoverinfo: "none",
         hovertemplate:
-          `<b>Site-specific [RP ${rp}]</b><br><br>` +
+          `<b>${CONSTANTS.SITE_SPECIFIC} [RP ${rp}]</b><br><br>` +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       });
@@ -98,33 +100,33 @@ const UHSBranchPlot = ({
     if (uhsData.percentiles) {
       const percentile16 = getPlotData(uhsData.percentiles["16th"]);
       const percentile84 = getPlotData(uhsData.percentiles["84th"]);
-
+      // The first value is from PGA, hence do not inlcude
       if (!percentile16.values.includes("nan")) {
         scatterObjs.push({
-          x: percentile16.index,
-          y: percentile16.values,
+          x: percentile16.index.slice(1),
+          y: percentile16.values.slice(1),
           type: "scatter",
           mode: "lines",
-          line: { color: "black", dash: "dash" },
-          name: "16th Percentile",
+          line: { color: "red", dash: "dash" },
+          name: `${CONSTANTS.LOWER_PERCENTILE}`,
           hoverinfo: "none",
           hovertemplate:
-            "<b>16<sup>th</sup> percentile</b><br><br>" +
+            `<b>${CONSTANTS.LOWER_PERCENTILE}</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
       }
       if (!percentile84.values.includes("nan")) {
         scatterObjs.push({
-          x: percentile84.index,
-          y: percentile84.values,
+          x: percentile84.index.slice(1),
+          y: percentile84.values.slice(1),
           type: "scatter",
           mode: "lines",
-          line: { color: "black", dash: "dash" },
-          name: "84th Percentile",
+          line: { color: "red", dash: "dash" },
+          name: `${CONSTANTS.UPPER_PERCENTILE}`,
           hoverinfo: "none",
           hovertemplate:
-            "<b>84<sup>th</sup> percentile</b><br><br>" +
+            `<b>${CONSTANTS.UPPER_PERCENTILE}</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
@@ -137,13 +139,17 @@ const UHSBranchPlot = ({
         data={scatterObjs}
         layout={{
           xaxis: {
+            type: "log",
             title: { text: "Period (s)" },
           },
           yaxis: {
-            title: { text: "Spectral acceleration (g)" },
+            type: "log",
+            title: {
+              text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.GRAVITY_UNIT}`,
+            },
           },
           autosize: true,
-          margin: PLOT_MARGIN,
+          margin: CONSTANTS.PLOT_MARGIN,
           hovermode: "closest",
           hoverlabel: { bgcolor: "#FFF" },
           legend: {
@@ -154,7 +160,7 @@ const UHSBranchPlot = ({
         }}
         useResizeHandler={true}
         config={{
-          ...PLOT_CONFIG,
+          ...CONSTANTS.PLOT_CONFIG,
           toImageButtonOptions: {
             filename:
               extra.from === "hazard"

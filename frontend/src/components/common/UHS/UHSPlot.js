@@ -3,8 +3,8 @@ import React from "react";
 import Plot from "react-plotly.js";
 
 import { getPlotData } from "utils/Utils.js";
-import { PLOT_MARGIN, PLOT_CONFIG } from "constants/Constants";
 import { ErrorMessage } from "components/common";
+import * as CONSTANTS from "constants/Constants";
 
 import "assets/style/UHSPlot.css";
 
@@ -19,7 +19,9 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
         Depends on the isNZCode status, newLabel starts with NZ Code - or an empty string
       */
       let newLabel =
-        isNZCode === true ? "NZS1170.5 [RP = " : "Site-specific [RP = ";
+        isNZCode === true
+          ? `${CONSTANTS.NZS1170P5} [RP = `
+          : `${CONSTANTS.SITE_SPECIFIC} [RP = `;
 
       /*
         Only display to legend the RP that has values if its for Projects
@@ -69,7 +71,7 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
           showlegend: nzCodeDataCounter === 0 ? true : false,
           hoverinfo: "none",
           hovertemplate:
-            `<b>NZS1170.5 [RP ${displayRP}]</b><br><br>` +
+            `<b>${CONSTANTS.NZS1170P5} [RP ${displayRP}]</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
@@ -82,18 +84,19 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
     for (let [curExcd, curData] of Object.entries(uhsData)) {
       if (!curData.sa_values.includes("nan")) {
         let displayRP = (1 / Number(curExcd)).toString();
+        // The first value is from PGA, hence do not inlcude
         scatterObjs.push({
-          x: curData.period_values,
-          y: curData.sa_values,
+          x: curData.period_values.slice(1),
+          y: curData.sa_values.slice(1),
           type: "scatter",
           mode: "lines",
-          line: { color: "blue" },
+          line: { color: "red" },
           name: createLegendLabel(false),
           legendgroup: "site-specific",
           showlegend: dataCounter === 0 ? true : false,
           hoverinfo: "none",
           hovertemplate:
-            `<b>Site-specific [RP ${displayRP}]</b><br><br>` +
+            `<b>${CONSTANTS.SITE_SPECIFIC} [RP ${displayRP}]</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
@@ -107,13 +110,17 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
         data={scatterObjs}
         layout={{
           xaxis: {
+            type: "log",
             title: { text: "Period (s)" },
           },
           yaxis: {
-            title: { text: "Spectral acceleration (g)" },
+            type: "log",
+            title: {
+              text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.GRAVITY_UNIT}`,
+            },
           },
           autosize: true,
-          margin: PLOT_MARGIN,
+          margin: CONSTANTS.PLOT_MARGIN,
           hovermode: "closest",
           hoverlabel: { bgcolor: "#FFF" },
           legend: {
@@ -124,7 +131,7 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
         }}
         useResizeHandler={true}
         config={{
-          ...PLOT_CONFIG,
+          ...CONSTANTS.PLOT_CONFIG,
           toImageButtonOptions: {
             filename:
               extra.from === "hazard"

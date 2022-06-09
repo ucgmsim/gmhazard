@@ -1,12 +1,12 @@
 import React, { Fragment, useContext, useEffect, useState } from "react";
 
-import { Tabs, Tab } from "react-bootstrap";
 import Select from "react-select";
 import dompurify from "dompurify";
+import { Tabs, Tab } from "react-bootstrap";
 
 import { GlobalContext } from "context";
-import { useAuth0 } from "components/common/ReactAuth0SPA";
 import * as CONSTANTS from "constants/Constants";
+import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
   LoadingSpinner,
@@ -101,7 +101,7 @@ const GmsViewer = () => {
       // Insert spectra, disagg distribution plots before any IM
       localIMs.splice(0, 0, {
         value: "spectra",
-        label: "Pseudo acceleration response spectra",
+        label: `${CONSTANTS.PSEUDO_ACCELERATION_RESPONSE_SPECTRA}`,
       });
 
       setLocalIMVectors(localIMs);
@@ -117,12 +117,12 @@ const GmsViewer = () => {
       const metadata = ["mag", "rrup", "sf", "vs30"];
       let tempmetadata = metadata.map((metadata) => ({
         value: metadata,
-        label: `${CONSTANTS.GMS_LABELS[metadata]} distribution`,
+        label: `${CONSTANTS.GMS_LABELS[metadata]} ${CONSTANTS.DISTRIBUTION}`,
       }));
 
       tempmetadata.splice(0, 0, {
         value: "mwrrupplot",
-        label: `Magnitude and rupture distance (Mw-R${"rup".sub()}) distribution`,
+        label: `${CONSTANTS.MW_RRUP_PLOT_DROPDOWN_LABEL}`,
       });
       setLocalmetadata(tempmetadata);
 
@@ -251,10 +251,13 @@ const GmsViewer = () => {
   return (
     <div className="gms-viewer">
       <Tabs defaultActiveKey="GMSIMDistributionsPlot">
-        <Tab eventKey="GMSIMDistributionsPlot" title="IM Distributions">
+        <Tab
+          eventKey="GMSIMDistributionsPlot"
+          title={CONSTANTS.GMS_IM_DISTRIBUTIONS_PLOT}
+        >
           {projectGMSGetClick === null && (
             <GuideMessage
-              header={CONSTANTS.GMS}
+              header={CONSTANTS.GROUND_MOTION_SELECTION}
               body={CONSTANTS.GMS_VIEWER_GUIDE_MSG}
               instruction={CONSTANTS.PROJECT_GMS_VIEWER_GUIDE_INSTRUCTION}
             />
@@ -289,10 +292,10 @@ const GmsViewer = () => {
               </Fragment>
             )}
         </Tab>
-        <Tab eventKey="GMSCausalParamPlot" title="Causal Parameters">
+        <Tab eventKey="GMSCausalParamPlot" title={CONSTANTS.CAUSAL_PARAMETERS}>
           {projectGMSGetClick === null && (
             <GuideMessage
-              header={CONSTANTS.GMS}
+              header={CONSTANTS.GROUND_MOTION_SELECTION}
               body={CONSTANTS.GMS_VIEWER_GUIDE_MSG}
               instruction={CONSTANTS.PROJECT_GMS_VIEWER_GUIDE_INSTRUCTION}
             />

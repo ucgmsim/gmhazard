@@ -3,8 +3,9 @@ import React, { useContext } from "react";
 import { Navbar, Nav, NavLink } from "reactstrap";
 import { NavLink as RouterNavLink } from "react-router-dom";
 
-import { useAuth0 } from "components/common/ReactAuth0SPA";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
+import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import { LogoutButton, LoginButton } from "components/NavBar";
 
@@ -21,7 +22,7 @@ const MainNav = () => {
         exact
         activeClassName="router-link-exact-active"
       >
-        Home
+        {CONSTANTS.HOME}
       </NavLink>
       {hasPermission("hazard") ? (
         <NavLink
@@ -30,7 +31,7 @@ const MainNav = () => {
           exact
           activeClassName="router-link-exact-active"
         >
-          Hazard Analysis
+          {CONSTANTS.HAZARD_ANALYSIS}
         </NavLink>
       ) : null}
 
@@ -40,18 +41,19 @@ const MainNav = () => {
         exact
         activeClassName="router-link-exact-active"
       >
-        Projects
+        {CONSTANTS.PROJECTS}
       </NavLink>
 
-      {/* Disable for now as it's still in draft */}
-      {/* <NavLink
-        tag={RouterNavLink}
-        to="/framework-docs"
-        exact
-        activeClassName="router-link-exact-active"
-      >
-        Framework Documents
-      </NavLink> */}
+      {hasPermission("admin") ? (
+        <NavLink
+          tag={RouterNavLink}
+          to="/framework-docs"
+          exact
+          activeClassName="router-link-exact-active"
+        >
+          {CONSTANTS.FRAMEWORK_DOCUMENTS}
+        </NavLink>
+      ) : null}
     </Nav>
   );
 };
