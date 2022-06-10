@@ -37,6 +37,7 @@ CONST_FAULT_PARAMS = {
 
 # Just for psha_psa_plots.py
 PSA_IM_NAME = "pSA"
+PGA_IM_NAME = "PGA"
 
 # Based on db_creation/empirical_db/empirical_model_configs/21p10.yaml
 ss_spectral_models = [
