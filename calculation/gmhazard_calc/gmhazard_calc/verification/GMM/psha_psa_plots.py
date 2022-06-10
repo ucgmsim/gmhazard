@@ -122,7 +122,7 @@ def plot_psha_psa_sigma(
     mag_dict: Dict,
     period_values: np.ndarray,
     result_dict: Dict,
-    plot_directory: pathlib.PosixPath,
+    plot_directory: pathlib.Path,
 ):
     """Plots for pSA sigma versus T
 
@@ -136,7 +136,7 @@ def plot_psha_psa_sigma(
         list of Periods
     result_dict: Dict
         nested dictionary with a different Vs30 and Magnitude
-    plot_directory: pathlib.PosixPath
+    plot_directory: pathlib.Path
         absolute path for a directory to store plot image
     """
     for tect_type, im_models in const.MODELS_DICT.items():
@@ -185,7 +185,7 @@ def plot_psha_psa(
     mag_dict: Dict,
     period_values: np.ndarray,
     result_dict: Dict,
-    plot_directory: pathlib.PosixPath,
+    plot_directory: pathlib.Path,
 ):
     """Plots for pSA versus T
 
@@ -199,7 +199,7 @@ def plot_psha_psa(
         list of Periods
     result_dict: Dict
         nested dictionary with a different Vs30 and Magnitude
-    plot_directory: pathlib.PosixPath
+    plot_directory: pathlib.Path
         absolute path for a directory to store plot image
     """
     for tect_type, im_models in const.MODELS_DICT.items():
@@ -308,7 +308,7 @@ def plot_psha_median_psa(
     mag_dict: Dict,
     period_values: np.ndarray,
     result_dict: Dict,
-    plot_directory: pathlib.PosixPath,
+    plot_directory: pathlib.Path,
 ):
     """Plots for pSA versus T
 
@@ -322,7 +322,7 @@ def plot_psha_median_psa(
         list of Periods
     result_dict: Dict
         nested dictionary with a different Vs30 and Magnitude
-    plot_directory: pathlib.PosixPath
+    plot_directory: pathlib.Path
         absolute path for a directory to store plot image
     """
     for tect_type, im_models in const.MODELS_DICT.items():
@@ -397,10 +397,10 @@ def plot_psha_median_psa(
 
 def plot_psa_mag(
     vs30_values: np.ndarray,
-    rrup_values: np.ndarray,
+    rrup_values: List,
     mag_list: np.ndarray,
     result_dict: Dict,
-    plot_directory: pathlib.PosixPath,
+    plot_directory: pathlib.Path,
     period,
     tect_type,
 ):
@@ -449,10 +449,10 @@ def plot_psa_mag(
 
 def plot_psa_vs30(
     vs30_values: np.ndarray,
-    rrup_values: np.ndarray,
+    rrup_values: List,
     mag_list: np.ndarray,
     result_dict: Dict,
-    plot_directory: pathlib.PosixPath,
+    plot_directory: pathlib.Path,
     tect_type,
     period=None,
 ):
@@ -503,7 +503,7 @@ def psa_sigma_plot(
     vs30_values: np.ndarray,
     psa_periods: np.ndarray,
     rrup_values: List[Union[float, int]],
-    save_path: pathlib.PosixPath = None,
+    save_path: pathlib.Path = None,
 ):
     """Plot function for a pSA Sigma versus T
 
@@ -517,7 +517,7 @@ def psa_sigma_plot(
         list of Periods
     rrup_values: List[Union[float, int]]
         Rupture distance in km
-    save_path: pathlib.PosixPath
+    save_path: pathlib.Path
         Directory to save plots
     """
     faults = get_faults(vs30_values, mag_dict)
@@ -546,7 +546,7 @@ def psa_plot(
     vs30_values: np.ndarray,
     psa_periods: np.ndarray,
     rrup_values: List[Union[float, int]],
-    save_path: pathlib.PosixPath = None,
+    save_path: pathlib.Path = None,
 ):
     """Plot function for a pSA versus T
 
@@ -560,7 +560,7 @@ def psa_plot(
         list of Periods
     rrup_values: List[Union[float, int]]
         Rupture distance in km
-    save_path: pathlib.PosixPath
+    save_path: pathlib.Path
         Directory to save plots
     """
     faults = get_faults(vs30_values, mag_dict)
@@ -588,7 +588,7 @@ def psa_median_plot(
     vs30_values: np.ndarray,
     psa_periods: np.ndarray,
     rrup_value: List[Union[float, int]],
-    save_path: pathlib.PosixPath = None,
+    save_path: pathlib.Path = None,
 ):
     """Plot function for a pSA medians, std versus T
 
@@ -602,7 +602,7 @@ def psa_median_plot(
         list of Periods
     rrup_value: List[Union[float, int]]
         Rupture distance in km
-    save_path: pathlib.PosixPath
+    save_path: pathlib.Path
         Directory to save plots
     """
     faults = get_faults(vs30_values, mag_dict)
@@ -631,7 +631,7 @@ def psa_mag_plot(
     vs30_values: np.ndarray,
     psa_periods: np.ndarray,
     rrup_values: List[Union[float, int]],
-    save_path: pathlib.PosixPath = None,
+    save_path: pathlib.Path = None,
 ):
     """Plot function for a pSA versus Magnitude
 
@@ -645,7 +645,7 @@ def psa_mag_plot(
         list of Periods
     rrup_values: List[Union[float, int]]
         Rupture distance in km
-    save_path: pathlib.PosixPath
+    save_path: pathlib.Path
         Directory to save plots
     """
 
@@ -692,15 +692,15 @@ def psa_mag_plot(
                                 if isinstance(gmm_result, list)
                                 else gmm_result[0]
                             )
-        plot_psa_mag(
-            vs30_values,
-            rrup_values,
-            mag_list,
-            results,
-            plot_directory,
-            period,
-            tect_type,
-        )
+            plot_psa_mag(
+                vs30_values,
+                rrup_values,
+                mag_list,
+                results,
+                plot_directory,
+                period,
+                tect_type,
+            )
 
 
 def psa_vs30_plot(
@@ -708,7 +708,7 @@ def psa_vs30_plot(
     vs30_values: np.ndarray,
     psa_periods: np.ndarray,
     rrup_values: List[Union[float, int]],
-    save_path: pathlib.PosixPath = None,
+    save_path: pathlib.Path = None,
 ):
     """Plot function for a pSA versus Magnitude
 
@@ -720,7 +720,7 @@ def psa_vs30_plot(
         list of Periods
     rrup_values: List[Union[float, int]]
         Rupture distance in km
-    save_path: pathlib.PosixPath
+    save_path: pathlib.Path
         Directory to save plots
     """
 
@@ -766,22 +766,22 @@ def psa_vs30_plot(
                                 if isinstance(gmm_result, list)
                                 else gmm_result[0]
                             )
-        plot_psa_vs30(
-            vs30_values,
-            rrup_values,
-            mag_list,
-            results,
-            plot_directory,
-            tect_type,
-            period,
-        )
+            plot_psa_vs30(
+                vs30_values,
+                rrup_values,
+                mag_list,
+                results,
+                plot_directory,
+                tect_type,
+                period,
+            )
 
 
 def pga_vs30_plot(
     mag_dict: Dict,
     vs30_values: np.ndarray,
     rrup_values: List[Union[float, int]],
-    save_path: pathlib.PosixPath = None,
+    save_path: pathlib.Path = None,
 ):
     """Plot function for a pSA versus Magnitude
 
@@ -791,7 +791,7 @@ def pga_vs30_plot(
         Dictionary with a different Mw lists for a different tectonic type
     rrup_values: List[Union[float, int]]
         Rupture distance in km
-    save_path: pathlib.PosixPath
+    save_path: pathlib.Path
         Directory to save plots
     """
 
@@ -849,7 +849,7 @@ if __name__ == "__main__":
     }
     vs30_list = np.array([200, 300, 400, 760])
     period_list = np.array([0.01, 0.1, 1.0, 2.0, 3.0, 5.0])
-    rrup = np.array([75, 200])
+    rrup = [75, 200]
     # Update the path to the directory to save plots
     save_path = pathlib.Path(
         "/home/tom/Documents/QuakeCoRE/resource/verification_plots/special"
