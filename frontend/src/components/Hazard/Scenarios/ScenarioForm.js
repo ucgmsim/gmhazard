@@ -99,7 +99,7 @@ const ScenarioForm = () => {
           htmlFor="scenario-ruptures"
           className="control-label"
         >
-          {CONSTANTS.SCENARIOS}
+          {CONSTANTS.SCENARIO_RUPTURES}
         </label>
         <Select
           id="hazard-scenarios-select"

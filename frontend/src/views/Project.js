@@ -53,7 +53,7 @@ const Project = () => {
       <Tabs defaultActiveKey="siteselection" className="hazard-tabs">
         <Tab
           eventKey="siteselection"
-          title={CONSTANTS.SITE_SELECTION}
+          title={CONSTANTS.PROJECT_AND_SITE_SELECTION}
           tabClassName="tab-fonts"
         >
           <TwoColumnView

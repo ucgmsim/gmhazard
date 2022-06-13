@@ -115,9 +115,10 @@ export const INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT =
 // Labels
 // General usage
 export const SITE_SELECTION = "Site Selection";
+export const PROJECT_AND_SITE_SELECTION = "Project and Site Selection";
 export const SEISMIC_HAZARD = "Seismic Hazard";
 export const GROUND_MOTION_SELECTION = "Ground Motion Selection";
-export const SCENARIOS = "Scenarios";
+export const SCENARIOS = "Scenario Spectra";
 export const HAZARD_CURVE = "Hazard Curve";
 export const DISAGGREGATION = "Disaggregation";
 export const UNIFORM_HAZARD_SPECTRUM = "Uniform Hazard Spectrum";
@@ -142,6 +143,7 @@ export const MEAN_HAZARDS = "Mean Hazard";
 export const EPISTEMIC_UNCERTAINTY = "Epistemic Uncertainty";
 export const PROJECT_NAME = "Project Name";
 export const LOCATION = "Location";
+export const SITE_LOCATION = "Site Location";
 export const REGIONAL = "Regional";
 export const DISTRIBUTED_SEISMICITY = "Distributed Seismicity";
 export const COMPONENT = "Component";
@@ -159,6 +161,7 @@ export const MAXIMUM = "Max";
 export const DISTRIBUTION = "distribution";
 export const MORE_DETAIL = "More detail";
 export const MEDIAN = "Median";
+export const SCENARIO_RUPTURES = "Scenario Ruptures";
 
 // Navbar
 export const LOGIN = "Log in";
@@ -412,7 +415,7 @@ export const SCENARIO_VIEWER_GUIDE_MSG =
 export const SCENARIO_VIEWER_GUIDE_INSTRUCTION = [
   "Select an IM Component",
   "Click the Compute button",
-  "Select scenarios to plot when available",
+  "Select scenario ruptures to plot when available",
 ];
 
 // Project Tabs
@@ -446,7 +449,7 @@ export const PROJECT_DISAGG_INSTRUCTION_TABLE = [
 export const PROJECT_SCENARIO_VIEWER_GUIDE_INSTRUCTION = [
   "Select an IM Component",
   "Click the Get button",
-  "Select scenarios to plot when available",
+  "Select scenario ruptures to plot when available",
 ];
 
 // Error Messages
