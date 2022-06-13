@@ -177,7 +177,7 @@ export const REGIONAL_MAP_DESCRIPTION =
   "Source locations (Lichfield, 2014) and historical events (Geonet, 2003-present)";
 export const REGIONAL_MAP_IMG_ALT = "Regional Map";
 export const VS30_MAP_DESCRIPTION =
-  "Regional Vs30 predictions in the vicinity of the site. (Foster et al. 2019)";
+  "Regional Vs30 predictions in the vicinity of the site (Foster et al. 2019)";
 export const VS30_MAP_IMG_ALT = "Vs30 Map";
 export const EPSILON_DISAGG_PLOT_ALT = "Epsilon disagg plot";
 export const SOURCE_DISAGG_PLOT_ALT = "Source disagg plot";
@@ -259,7 +259,7 @@ export const MW_RRUP_PLOT_DISAGG_MEAN_VALUES_LABEL =
 export const MW_RRUP_PLOT_SELECTED_GMS_METADATA_LABEL =
   "Mean M<sub>w</sub>-R<sub>rup</sub> of selected GMs<br>16<sup>th</sup> to 84<sup>th</sup> percentile M<sub>w</sub>-R<sub>rup</sub> limits";
 export const MW_RRUP_PLOT_DROPDOWN_LABEL =
-  "Magnitude and Rupture distance (M<sub>w</sub>-R<sub>rup</sub>) distribution";
+  "Magnitude and rupture distance (M<sub>w</sub>-R<sub>rup</sub>) distribution";
 
 // Select's placeholders
 export const PLACEHOLDER_NOT_AVAILABLE = "Not available";
@@ -276,6 +276,7 @@ export const PLACEHOLDER_SELECT_PERIOD = "Select period...";
 export const PLACEHOLDER_NOT_APPLICABLE = "N/A";
 export const PLACEHOLDER_SELECT_COMPONENT = "Select component...";
 
+export const PERIOD = "Period";
 // Units in labels
 export const SECONDS_UNIT = "(s)";
 export const KILOMETRE_UNIT = "(km)";
@@ -283,7 +284,10 @@ export const METRE_PER_SECOND_UNIT = "(m/s)";
 export const YEARS_UNIT = "(years)";
 export const PERCENTAGE_UNIT = "(%)";
 export const GRAVITY_UNIT = "(g)";
+// Symbols in labels
 export const MAGNITUDE_SYMBOL = "Mw";
+export const SPECTRAL_ACCELERATION_SYMBOL = "SA";
+export const PERIOD_SYMBOL = "T";
 
 // Units in adornment - units in input field
 export const ADORNMENT_KILOMETRE_UNIT = "km";
@@ -606,10 +610,10 @@ export const TOOLTIP_URL = {
 
 // GMS Labels
 export const GMS_LABELS = {
-  mag: "Magnitude (Mw)",
-  rrup: "Rupture distance (R<sub>rup</sub>)",
-  sf: "Scale factor (SF)",
-  vs30: "30m-averaged shear-wave velocity (V<sub>s30</sub>)",
+  mag: "Magnitude, Mw",
+  rrup: "Rupture distance, R<sub>rup</sub>",
+  sf: "Scale factor, SF",
+  vs30: "30m-averaged shear-wave velocity, V<sub>s30</sub>",
 };
 
 // Projects' Metadata

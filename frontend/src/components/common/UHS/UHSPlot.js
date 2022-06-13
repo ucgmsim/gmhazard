@@ -2,9 +2,9 @@ import React from "react";
 
 import Plot from "react-plotly.js";
 
-import { getPlotData } from "utils/Utils.js";
 import { ErrorMessage } from "components/common";
 import * as CONSTANTS from "constants/Constants";
+import { getPlotData, createAxisLabel } from "utils/Utils.js";
 
 import "assets/style/UHSPlot.css";
 
@@ -111,12 +111,22 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
         layout={{
           xaxis: {
             type: "log",
-            title: { text: "Period (s)" },
+            title: {
+              text: createAxisLabel(
+                CONSTANTS.PERIOD,
+                CONSTANTS.PERIOD_SYMBOL,
+                CONSTANTS.SECONDS_UNIT
+              ),
+            },
           },
           yaxis: {
             type: "log",
             title: {
-              text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.GRAVITY_UNIT}`,
+              text: createAxisLabel(
+                CONSTANTS.SPECTRAL_ACCELERATION,
+                CONSTANTS.SPECTRAL_ACCELERATION_SYMBOL,
+                CONSTANTS.GRAVITY_UNIT
+              ),
             },
           },
           autosize: true,

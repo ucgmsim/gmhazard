@@ -2,6 +2,7 @@ import React from "react";
 
 import Plot from "react-plotly.js";
 
+import { createAxisLabel } from "utils/Utils.js";
 import { ErrorMessage } from "components/common";
 import * as CONSTANTS from "constants/Constants";
 
@@ -110,12 +111,22 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
         layout={{
           xaxis: {
             type: "log",
-            title: { text: "Period (s)" },
+            title: {
+              text: createAxisLabel(
+                CONSTANTS.PERIOD,
+                CONSTANTS.PERIOD_SYMBOL,
+                CONSTANTS.SECONDS_UNIT
+              ),
+            },
           },
           yaxis: {
             type: "log",
             title: {
-              text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.GRAVITY_UNIT}`,
+              text: createAxisLabel(
+                CONSTANTS.SPECTRAL_ACCELERATION,
+                CONSTANTS.SPECTRAL_ACCELERATION_SYMBOL,
+                CONSTANTS.GRAVITY_UNIT
+              ),
             },
           },
           autosize: true,
