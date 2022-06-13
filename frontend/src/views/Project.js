@@ -15,6 +15,8 @@ import { GMSForm, GMSViewer } from "components/Project/GMS";
 import { HazardForm, HazardViewer } from "components/Project/SeismicHazard";
 import { ScenarioForm, ScenarioViewer } from "components/Project/Scenarios";
 
+import "assets/style/NavBar.css";
+
 const Project = () => {
   const {
     projectId,
@@ -49,7 +51,11 @@ const Project = () => {
   return (
     <Fragment>
       <Tabs defaultActiveKey="siteselection" className="hazard-tabs">
-        <Tab eventKey="siteselection" title={CONSTANTS.SITE_SELECTION}>
+        <Tab
+          eventKey="siteselection"
+          title={CONSTANTS.SITE_SELECTION}
+          tabClassName="tab-fonts"
+        >
           <TwoColumnView
             cpanel={SiteSelectionForm}
             viewer={SiteSelectionViewer}
@@ -60,7 +66,7 @@ const Project = () => {
           eventKey="hazard"
           title={CONSTANTS.SEISMIC_HAZARD}
           disabled={invalidTab()}
-          tabClassName="seismic-hazard-tab"
+          tabClassName="seismic-hazard-tab tab-fonts"
         >
           <TwoColumnView cpanel={HazardForm} viewer={HazardViewer} />
         </Tab>
@@ -69,7 +75,7 @@ const Project = () => {
           eventKey="gms"
           title={CONSTANTS.GROUND_MOTION_SELECTION}
           disabled={invalidTab()}
-          tabClassName="gms-tab"
+          tabClassName="gms-tab tab-fonts"
         >
           <TwoColumnView cpanel={GMSForm} viewer={GMSViewer} />
         </Tab>
@@ -78,7 +84,7 @@ const Project = () => {
           eventKey="scenario"
           title={CONSTANTS.SCENARIOS}
           disabled={invalidTab()}
-          tabClassName="scenarios-tab"
+          tabClassName="scenarios-tab tab-fonts"
         >
           <TwoColumnView cpanel={ScenarioForm} viewer={ScenarioViewer} />
         </Tab>

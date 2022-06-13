@@ -5,3 +5,12 @@ img.nav-brand-logo {
 div.max-width {
   width: 85%;
 }
+
+.nav-bar-fonts {
+  font-size: 1.15rem;
+}
+
+/* Inner NavBar */
+.tab-fonts {
+  font-size: 1.1rem;
+}

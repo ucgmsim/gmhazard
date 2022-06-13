@@ -21,6 +21,7 @@ const MainNav = () => {
         to="/"
         exact
         activeClassName="router-link-exact-active"
+        className="nav-bar-fonts"
       >
         {CONSTANTS.HOME}
       </NavLink>
@@ -30,6 +31,7 @@ const MainNav = () => {
           to="/hazard"
           exact
           activeClassName="router-link-exact-active"
+          className="nav-bar-fonts"
         >
           {CONSTANTS.HAZARD_ANALYSIS}
         </NavLink>
@@ -40,6 +42,7 @@ const MainNav = () => {
         to="/project"
         exact
         activeClassName="router-link-exact-active"
+        className="nav-bar-fonts"
       >
         {CONSTANTS.PROJECTS}
       </NavLink>
@@ -50,6 +53,7 @@ const MainNav = () => {
           to="/framework-docs"
           exact
           activeClassName="router-link-exact-active"
+          className="nav-bar-fonts"
         >
           {CONSTANTS.FRAMEWORK_DOCUMENTS}
         </NavLink>
