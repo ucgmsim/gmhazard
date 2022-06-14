@@ -74,7 +74,7 @@ const HazardViewerUHS = () => {
         .sort((a, b) => a - b)
         .map((option) => ({
           value: 1 / Number(option),
-          label: option,
+          label: Number((1 / Number(option)).toFixed(4)),
         }));
 
       setLocalSelectedRP(sortedSelectedRP[0]);

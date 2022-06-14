@@ -19,8 +19,8 @@ const UHSBranchPlot = ({
   if (uhsData !== null && !uhsData.hasOwnProperty("error")) {
     const createLegendLabel = (isNZCode) => {
       return isNZCode === true
-        ? `${CONSTANTS.NZS1170P5} [RP = ${rp}]`
-        : `${CONSTANTS.SITE_SPECIFIC} [RP = ${rp}]`;
+        ? `${CONSTANTS.NZS1170P5} [Rate = ${rp}]`
+        : `${CONSTANTS.SITE_SPECIFIC} [Rate = ${rp}]`;
     };
 
     // Creating the scatter objects
@@ -53,29 +53,6 @@ const UHSBranchPlot = ({
       }
     }
 
-    // Create NZS1170p5 Code UHS scatter objs
-    // If object does not contain the value of NaN, we plot
-    if (!Object.values(nzs1170p5Data).includes("nan")) {
-      let nzs1170p5PlotData = getPlotData(nzs1170p5Data);
-      // Convert the Annual exdance reate to Return period in a string format
-      scatterObjs.push({
-        x: nzs1170p5PlotData.index,
-        y: nzs1170p5PlotData.values,
-        type: "scatter",
-        mode: "lines",
-        line: { color: "black" },
-        name: createLegendLabel(true),
-        visible: showNZS1170p5,
-        legendgroup: "NZS1170.5",
-        showlegend: true,
-        hoverinfo: "none",
-        hovertemplate:
-          `<b>${CONSTANTS.NZS1170P5} [RP ${rp}]</b><br><br>` +
-          "%{xaxis.title.text}: %{x}<br>" +
-          "%{yaxis.title.text}: %{y}<extra></extra>",
-      });
-    }
-
     // UHS scatter objs
     if (!uhsData.sa_values.includes("nan")) {
       // The first value is from PGA, hence do not inlcude
@@ -90,7 +67,7 @@ const UHSBranchPlot = ({
         showlegend: true,
         hoverinfo: "none",
         hovertemplate:
-          `<b>${CONSTANTS.SITE_SPECIFIC} [RP ${rp}]</b><br><br>` +
+          `<b>${CONSTANTS.SITE_SPECIFIC} [Rate = ${rp}]</b><br><br>` +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       });
@@ -131,6 +108,29 @@ const UHSBranchPlot = ({
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
       }
+    }
+
+    // Create NZS1170p5 Code UHS scatter objs
+    // If object does not contain the value of NaN, we plot
+    if (!Object.values(nzs1170p5Data).includes("nan")) {
+      let nzs1170p5PlotData = getPlotData(nzs1170p5Data);
+      // Convert the Annual exdance reate to Return period in a string format
+      scatterObjs.push({
+        x: nzs1170p5PlotData.index,
+        y: nzs1170p5PlotData.values,
+        type: "scatter",
+        mode: "lines",
+        line: { color: "black" },
+        name: createLegendLabel(true),
+        visible: showNZS1170p5,
+        legendgroup: "NZS1170.5",
+        showlegend: true,
+        hoverinfo: "none",
+        hovertemplate:
+          `<b>${CONSTANTS.NZS1170P5} [Rate = ${rp}]</b><br><br>` +
+          "%{xaxis.title.text}: %{x}<br>" +
+          "%{yaxis.title.text}: %{y}<extra></extra>",
+      });
     }
 
     return (
