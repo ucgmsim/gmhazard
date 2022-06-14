@@ -4,7 +4,7 @@ import Plot from "react-plotly.js";
 
 import { ErrorMessage } from "components/common";
 import * as CONSTANTS from "constants/Constants";
-import { getPlotData, createAxisLabel } from "utils/Utils";
+import { getPlotData, createAxisLabel, convertRPtoAER } from "utils/Utils";
 
 import "assets/style/UHSPlot.css";
 
@@ -20,8 +20,8 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
       */
       let newLabel =
         isNZCode === true
-          ? `${CONSTANTS.NZS1170P5} [RP = `
-          : `${CONSTANTS.SITE_SPECIFIC} [RP = `;
+          ? `${CONSTANTS.NZS1170P5} [Rate = `
+          : `${CONSTANTS.SITE_SPECIFIC} [Rate = `;
 
       /*
         Only display to legend the RP that has values if its for Projects
@@ -31,15 +31,15 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
         for (let i = 0; i < selectedRPs.length; i++) {
           if (
             !Object.values(
-              dataToCheck[`${1 / Number(selectedRPs[i]).toString()}`]
+              dataToCheck[`${1 / Number(selectedRPs[i])}`]
             ).includes("nan")
           ) {
-            newLabel += `${selectedRPs[i].toString()}, `;
+            newLabel += `${convertRPtoAER(selectedRPs[i])}, `;
           }
         }
       } else {
         for (let i = 0; i < selectedRPs.length; i++) {
-          newLabel += `${selectedRPs[i].toString()}, `;
+          newLabel += `${convertRPtoAER(selectedRPs[i])}, `;
         }
       }
 
@@ -49,10 +49,36 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
       return newLabel;
     };
 
-    // Create NZS1170p5 Code UHS scatter objs
+    // UHS scatter objs
     const scatterObjs = [];
-    let nzCodeDataCounter = 0;
+    let dataCounter = 0;
+    for (let [curExcd, curData] of Object.entries(uhsData)) {
+      if (!curData.sa_values.includes("nan")) {
+        let displayRP = (1 / Number(curExcd)).toString();
+        // The first value is from PGA, hence do not inlcude
+        scatterObjs.push({
+          x: curData.period_values.slice(1),
+          y: curData.sa_values.slice(1),
+          type: "scatter",
+          mode: "lines",
+          line: { color: "red" },
+          name: createLegendLabel(false),
+          legendgroup: "site-specific",
+          showlegend: dataCounter === 0 ? true : false,
+          hoverinfo: "none",
+          hovertemplate:
+            `<b>${CONSTANTS.SITE_SPECIFIC} [Rate = ${convertRPtoAER(
+              displayRP
+            )}]</b><br><br>` +
+            "%{xaxis.title.text}: %{x}<br>" +
+            "%{yaxis.title.text}: %{y}<extra></extra>",
+        });
+        dataCounter += 1;
+      }
+    }
 
+    // Create NZS1170p5 Code UHS scatter objs
+    let nzCodeDataCounter = 0;
     for (let [curExcd, curData] of Object.entries(nzs1170p5Data)) {
       // Plots only if it does not include nan
       if (!Object.values(curData).includes("nan")) {
@@ -71,36 +97,13 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
           showlegend: nzCodeDataCounter === 0 ? true : false,
           hoverinfo: "none",
           hovertemplate:
-            `<b>${CONSTANTS.NZS1170P5} [RP ${displayRP}]</b><br><br>` +
+            `<b>${CONSTANTS.NZS1170P5} [Rate = ${convertRPtoAER(
+              displayRP
+            )}]</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
         nzCodeDataCounter += 1;
-      }
-    }
-
-    // UHS scatter objs
-    let dataCounter = 0;
-    for (let [curExcd, curData] of Object.entries(uhsData)) {
-      if (!curData.sa_values.includes("nan")) {
-        let displayRP = (1 / Number(curExcd)).toString();
-        // The first value is from PGA, hence do not inlcude
-        scatterObjs.push({
-          x: curData.period_values.slice(1),
-          y: curData.sa_values.slice(1),
-          type: "scatter",
-          mode: "lines",
-          line: { color: "red" },
-          name: createLegendLabel(false),
-          legendgroup: "site-specific",
-          showlegend: dataCounter === 0 ? true : false,
-          hoverinfo: "none",
-          hovertemplate:
-            `<b>${CONSTANTS.SITE_SPECIFIC} [RP ${displayRP}]</b><br><br>` +
-            "%{xaxis.title.text}: %{x}<br>" +
-            "%{yaxis.title.text}: %{y}<extra></extra>",
-        });
-        dataCounter += 1;
       }
     }
 

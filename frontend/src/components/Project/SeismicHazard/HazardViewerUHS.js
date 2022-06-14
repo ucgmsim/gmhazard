@@ -146,9 +146,11 @@ const HazardViewerUHS = () => {
   };
 
   const updateUHSData = (uhsData) => {
-    setUHSData(filterUHSData(uhsData["uhs_results"], getSelectedRP()));
+    const selectedRPs = getSelectedRP();
+
+    setUHSData(filterUHSData(uhsData["uhs_results"], selectedRPs));
     setUHSNZS1170p5Data(
-      filterUHSData(uhsData["nzs1170p5_uhs_df"], getSelectedRP())
+      filterUHSData(uhsData["nzs1170p5_uhs_df"], selectedRPs)
     );
     setUHSBranchData(uhsData["branch_uhs_results"]);
     setDownloadToken(uhsData["download_token"]);
@@ -157,7 +159,7 @@ const HazardViewerUHS = () => {
       id: projectId,
       location: projectLocation,
       vs30: projectVS30,
-      selectedRPs: getSelectedRP(),
+      selectedRPs: selectedRPs,
     });
 
     setShowSpinnerUHS(false);

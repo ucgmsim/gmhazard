@@ -149,7 +149,7 @@ but sending RP to the backend
 export const createAnnualExceedanceArray = (options) => {
   return options.map((option) => ({
     value: option,
-    label: parseFloat((1 / option).toFixed(CONSTANTS.APP_UI_DECIFIGS)),
+    label: Number((1 / option).toFixed(CONSTANTS.APP_UI_DECIFIGS)),
   }));
 };
 
@@ -261,6 +261,12 @@ export const createBoundsCoords = (xMin, xMax, yMin, yMax) => {
     leftBoundY: [yMin, yMax],
   };
 };
+
+/*
+Convert the given return period into an annual exceedance rate
+in 4 decimal places
+*/
+export const convertRPtoAER = (RP) => Number((1 / Number(RP)).toFixed(4));
 
 /*
 JS version of qcore IM Sort
