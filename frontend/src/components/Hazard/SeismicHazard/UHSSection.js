@@ -69,7 +69,7 @@ const UHSSection = () => {
     return (
       <tr id={"uhs-row-" + idx} key={idx}>
         <td>
-          {renderSigfigs(rate, CONSTANTS.APP_UI_UHS_RATETABLE_RATE_SIGFIGS)}
+          {Number(renderSigfigs(rate, CONSTANTS.APP_UI_UHS_RATETABLE_RATE_SIGFIGS))}
         </td>
         <td>{returnPeriod}</td>
         <td>

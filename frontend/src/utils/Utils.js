@@ -84,7 +84,7 @@ export const getPlotData = (data) => {
 
 // Implement x sig figs for numeric float values
 export const renderSigfigs = (fullprecision, sigfigs) => {
-  return Number.parseFloat(fullprecision).toPrecision(sigfigs);
+  return parseFloat(fullprecision).toPrecision(sigfigs);
 };
 
 /* 

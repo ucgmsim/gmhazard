@@ -77,11 +77,11 @@ const HazardViewerUHS = () => {
     if (uhsData !== null) {
       const sortedSelectedRP = getExceedances()
         .sort((a, b) => {
-          return parseFloat(1 / Number(a)) - parseFloat(1 / Number(b));
+          return a - b;
         })
         .map((option) => ({
           value: option,
-          label: renderSigfigs(1 / Number(option), CONSTANTS.APP_UI_SIGFIGS),
+          label: renderSigfigs(option, CONSTANTS.APP_UI_SIGFIGS),
         }));
 
       setLocalSelectedRP(sortedSelectedRP[0]);
@@ -306,10 +306,7 @@ const HazardViewerUHS = () => {
                         : uhsBranchData[localSelectedRP["value"]]
                     }
                     nzs1170p5Data={uhsNZS1170p5Data[localSelectedRP["value"]]}
-                    rp={renderSigfigs(
-                      1 / Number(localSelectedRP["value"]),
-                      CONSTANTS.APP_UI_SIGFIGS
-                    )}
+                    rp={localSelectedRP["value"]}
                     extra={extraInfo}
                     showNZS1170p5={showUHSNZS1170p5}
                   />
