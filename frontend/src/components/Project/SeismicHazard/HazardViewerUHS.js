@@ -263,7 +263,7 @@ const HazardViewerUHS = () => {
                         : uhsBranchData[localSelectedRP["value"]]
                     }
                     nzs1170p5Data={uhsNZS1170p5Data[localSelectedRP["value"]]}
-                    rp={localSelectedRP["label"]}
+                    rate={localSelectedRP["label"]}
                     extra={extraInfo}
                   />
                 </Fragment>

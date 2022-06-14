@@ -12,15 +12,15 @@ const UHSBranchPlot = ({
   uhsData,
   uhsBranchData,
   nzs1170p5Data,
-  rp,
+  rate,
   extra,
   showNZS1170p5 = true,
 }) => {
   if (uhsData !== null && !uhsData.hasOwnProperty("error")) {
     const createLegendLabel = (isNZCode) => {
       return isNZCode === true
-        ? `${CONSTANTS.NZS1170P5} [Rate = ${rp}]`
-        : `${CONSTANTS.SITE_SPECIFIC} [Rate = ${rp}]`;
+        ? `${CONSTANTS.NZS1170P5} [Rate = ${rate}]`
+        : `${CONSTANTS.SITE_SPECIFIC} [Rate = ${rate}]`;
     };
 
     // Creating the scatter objects
@@ -67,7 +67,7 @@ const UHSBranchPlot = ({
         showlegend: true,
         hoverinfo: "none",
         hovertemplate:
-          `<b>${CONSTANTS.SITE_SPECIFIC} [Rate = ${rp}]</b><br><br>` +
+          `<b>${CONSTANTS.SITE_SPECIFIC} [Rate = ${rate}]</b><br><br>` +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       });
@@ -114,7 +114,6 @@ const UHSBranchPlot = ({
     // If object does not contain the value of NaN, we plot
     if (!Object.values(nzs1170p5Data).includes("nan")) {
       let nzs1170p5PlotData = getPlotData(nzs1170p5Data);
-      // Convert the Annual exdance reate to Return period in a string format
       scatterObjs.push({
         x: nzs1170p5PlotData.index,
         y: nzs1170p5PlotData.values,
@@ -127,7 +126,7 @@ const UHSBranchPlot = ({
         showlegend: true,
         hoverinfo: "none",
         hovertemplate:
-          `<b>${CONSTANTS.NZS1170P5} [Rate = ${rp}]</b><br><br>` +
+          `<b>${CONSTANTS.NZS1170P5} [Rate = ${rate}]</b><br><br>` +
           "%{xaxis.title.text}: %{x}<br>" +
           "%{yaxis.title.text}: %{y}<extra></extra>",
       });

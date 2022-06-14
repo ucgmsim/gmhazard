@@ -15,7 +15,7 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
 
       selectedRPs.sort((a, b) => a - b);
       /*
-        Based on a sorted array, add each RP
+        Based on a sorted array, add each Annual Exceedance Rate
         Depends on the isNZCode status, newLabel starts with NZ Code - or an empty string
       */
       let newLabel =
@@ -24,7 +24,8 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
           : `${CONSTANTS.SITE_SPECIFIC} [Rate = `;
 
       /*
-        Only display to legend the RP that has values if its for Projects
+        Only display to legend the Annual Exceedance Rate
+        that has values if it's for Projects
       */
       if (extra.from === "project") {
         const dataToCheck = isNZCode === true ? nzs1170p5Data : uhsData;
@@ -34,6 +35,10 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
               dataToCheck[`${1 / Number(selectedRPs[i])}`]
             ).includes("nan")
           ) {
+            /* 
+            With projects, UHS is based on RP, not Annual Exceedance Rate.
+            Hence, we convert the selected RPs to Annual Exceedance Rate
+            */
             newLabel += `${convertRPtoAER(selectedRPs[i])}, `;
           }
         }
@@ -54,7 +59,6 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
     let dataCounter = 0;
     for (let [curExcd, curData] of Object.entries(uhsData)) {
       if (!curData.sa_values.includes("nan")) {
-        let displayRP = (1 / Number(curExcd)).toString();
         // The first value is from PGA, hence do not inlcude
         scatterObjs.push({
           x: curData.period_values.slice(1),
@@ -67,8 +71,8 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
           showlegend: dataCounter === 0 ? true : false,
           hoverinfo: "none",
           hovertemplate:
-            `<b>${CONSTANTS.SITE_SPECIFIC} [Rate = ${convertRPtoAER(
-              displayRP
+            `<b>${CONSTANTS.SITE_SPECIFIC} [Rate = ${Number(
+              Number(curExcd).toFixed(4)
             )}]</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
@@ -83,8 +87,6 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
       // Plots only if it does not include nan
       if (!Object.values(curData).includes("nan")) {
         let curPlotData = getPlotData(curData);
-        // Convert the Annual exdance reate to Return period in a string format
-        let displayRP = (1 / Number(curExcd)).toString();
         scatterObjs.push({
           x: curPlotData.index,
           y: curPlotData.values,
@@ -97,8 +99,8 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
           showlegend: nzCodeDataCounter === 0 ? true : false,
           hoverinfo: "none",
           hovertemplate:
-            `<b>${CONSTANTS.NZS1170P5} [Rate = ${convertRPtoAER(
-              displayRP
+            `<b>${CONSTANTS.NZS1170P5} [Rate = ${Number(
+              Number(curExcd).toFixed(4)
             )}]</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
