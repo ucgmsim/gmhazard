@@ -9,7 +9,7 @@ import { getPlotData, createAxisLabel, convertRPtoAER } from "utils/Utils";
 import "assets/style/UHSPlot.css";
 
 const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
-  if (uhsData !== null && !uhsData.hasOwnProperty("error")) {
+  if (uhsData && !uhsData.hasOwnProperty("error")) {
     const createLegendLabel = (isNZCode) => {
       const selectedRPs = extra.selectedRPs;
 

@@ -16,7 +16,7 @@ const UHSBranchPlot = ({
   extra,
   showNZS1170p5 = true,
 }) => {
-  if (uhsData !== null && !uhsData.hasOwnProperty("error")) {
+  if (uhsData && !uhsData.hasOwnProperty("error")) {
     const createLegendLabel = (isNZCode) => {
       return isNZCode === true
         ? `${CONSTANTS.NZS1170P5} [Rate = ${rate}]`
