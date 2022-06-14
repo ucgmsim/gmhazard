@@ -4,7 +4,7 @@ import Plot from "react-plotly.js";
 
 import * as CONSTANTS from "constants/Constants";
 import { ErrorMessage } from "components/common";
-import { getPlotData, createAxisLabel } from "utils/Utils.js";
+import { getPlotData, createAxisLabel } from "utils/Utils";
 
 import "assets/style/UHSPlot.css";
 
