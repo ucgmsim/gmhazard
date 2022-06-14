@@ -301,6 +301,7 @@ export const APP_LOCATION_DEFAULT_ENSEMBLE = "v20p5emp";
 export const APP_UI_CONTRIB_TABLE_ROWS = 10;
 export const APP_UI_VS30_DP = 1;
 export const APP_UI_SIGFIGS = 4;
+export const APP_UI_DECIFIGS = 4;
 export const APP_UI_UHS_RATETABLE_RATE_SIGFIGS = 3;
 
 export const UHS_TABLE_MESSAGE = "No rates added";

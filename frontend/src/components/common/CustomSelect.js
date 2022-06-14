@@ -13,9 +13,10 @@ import * as CONSTANTS from "constants/Constants";
 
 import { GuideTooltip } from "components/common";
 import {
+  createZArray,
   createSelectArray,
   createProjectIDArray,
-  createZArray,
+  createAnnualExceedanceArray,
 } from "utils/Utils";
 
 const CustomSelect = ({
@@ -26,6 +27,7 @@ const CustomSelect = ({
   guideMSG = null,
   isProjectID = false,
   isZ = false,
+  isAnnualExceedance = false,
   resettable = true,
   resetOnChange = null,
 }) => {
@@ -41,6 +43,8 @@ const CustomSelect = ({
           ? createProjectIDArray(options)
           : isZ === true
           ? createZArray(options)
+          : isAnnualExceedance === true
+          ? createAnnualExceedanceArray(options)
           : createSelectArray(options);
 
       setLocalOptions(tempOptions);

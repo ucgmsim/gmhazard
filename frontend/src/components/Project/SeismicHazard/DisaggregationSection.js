@@ -52,6 +52,7 @@ const DisaggregationSection = () => {
           value={localSelectedRP}
           setSelect={setLocalSelectedRP}
           options={projectDisagRPs}
+          isAnnualExceedance={true}
         />
       </div>
 
