@@ -3,8 +3,8 @@ import $ from "jquery";
 import * as CONSTANTS from "constants/Constants";
 
 /* 
-disable mousewheel on number input fields when in focus
-(to prevent Cromium browsers change the value when scrolling)
+  disable mousewheel on number input fields when in focus
+  (to prevent Cromium browsers change the value when scrolling)
 */
 export const disableScrollOnNumInput = () => {
   $("form").on("focus", "input[type=number]", (e) => {
@@ -27,23 +27,23 @@ export const disableScrollOnNumInput = () => {
 };
 
 /*
-Handle the response
-response is an array of objects if Promise.all is used
-response is an object if fetch is used
+  Handle the response
+  response is an array of objects if Promise.all is used
+  response is an object if fetch is used
 */
 export const handleErrors = (response) => {
   /*
-  For Promise.all with an empty array - Promise.all([])
-  With Hazard Curve, if IM is not PGA nor pSA_XX, we cannot get NZS1170.5 and NZTA.
-  Hence the response length will be 0
+    For Promise.all with an empty array - Promise.all([])
+    With Hazard Curve, if IM is not PGA nor pSA_XX, we cannot get NZS1170.5 and NZTA.
+    Hence the response length will be 0
   */
   if (response.length === 0) {
     return response;
   }
   /*
-  For Promise.all which is sending multiple requests simultaneously (array format)
-  However, single request is an object, not an array.
-  Hence, cannot use isArray() method
+    For Promise.all which is sending multiple requests simultaneously (array format)
+    However, single request is an object, not an array.
+    Hence, cannot use isArray() method
   */
   if (response.length >= 1) {
     for (const eachResponse of response) {
@@ -55,9 +55,9 @@ export const handleErrors = (response) => {
   } else {
     if (response.status !== 200) {
       /* 
-      Debug purpose
-      This can be replaced if we implement front-end logging just like we did on Core API (Saving logs in a file somehow)
-      Until then, console.log to invest while developing
+        Debug purpose
+        This can be replaced if we implement front-end logging just like we did on Core API (Saving logs in a file somehow)
+        Until then, console.log to invest while developing
       */
       console.log(Error(response.statusText));
       throw response.status;
@@ -68,8 +68,8 @@ export const handleErrors = (response) => {
 };
 
 /*
-Converts the Series json (which is a dict with each index value as a key),
-to two arrays ready for plotting.
+  Converts the Series json (which is a dict with each index value as a key),
+  to two arrays ready for plotting.
 */
 export const getPlotData = (data) => {
   const index = [];
@@ -88,11 +88,11 @@ export const renderSigfigs = (fullprecision, sigfigs) => {
 };
 
 /* 
-Create an Array from start to stop by step
-For instance, range(0, 1, 0.04) =
-[0, 0.04, 0.08, 0.12....., 1]
-To make empirical CDFs valid from 0-1 not just 1/N to 1
-Reference: https://en.wikipedia.org/wiki/Empirical_distribution_function
+  Create an Array from start to stop by step
+  For instance, range(0, 1, 0.04) =
+  [0, 0.04, 0.08, 0.12....., 1]
+  To make empirical CDFs valid from 0-1 not just 1/N to 1
+  Reference: https://en.wikipedia.org/wiki/Empirical_distribution_function
 */
 export const range = (start, stop, step) => {
   let tempArr = [start];
@@ -106,8 +106,8 @@ export const range = (start, stop, step) => {
 };
 
 /*
-Sort and duplicate every element
-Special sort & duplicate function for GMS Plots for X range
+  Sort and duplicate every element
+  Special sort & duplicate function for GMS Plots for X range
 */
 export const sortDuplicateXRange = (givenArr) => {
   return givenArr
@@ -118,9 +118,9 @@ export const sortDuplicateXRange = (givenArr) => {
 };
 
 /*
-Similar to sortDuplicateXRange() except it only duplicates 
-every element but the first and the last element.
-Special sort & duplicate function for GMS Plots for X range
+  Similar to sortDuplicateXRange() except it only duplicates 
+  every element but the first and the last element.
+  Special sort & duplicate function for GMS Plots for X range
 */
 export const sortDuplicateYRange = (givenArr) => {
   return givenArr.flatMap((x, i) =>
@@ -129,11 +129,11 @@ export const sortDuplicateYRange = (givenArr) => {
 };
 
 /*
-react-select required a form in an array of objects
-[{
-  value: value,
-  label: readable value to display as options
-},...]
+  react-select required a form in an array of objects
+  [{
+    value: value,
+    label: readable value to display as options
+  },...]
 */
 export const createSelectArray = (options) => {
   return options.map((option) => ({
@@ -143,8 +143,8 @@ export const createSelectArray = (options) => {
 };
 
 /*
-Designed for Disaggregation and UHS to display annual exceedance rate
-but sending RP to the backend
+  Designed for Disaggregation and UHS to display annual exceedance rate
+  but sending RP to the backend
 */
 export const createAnnualExceedanceArray = (options) => {
   return options.map((option) => ({
@@ -154,8 +154,8 @@ export const createAnnualExceedanceArray = (options) => {
 };
 
 /* 
-For react-select but different to above
-Specially made for Project IDs - value and label are different
+  For react-select but different to above
+  Specially made for Project IDs - value and label are different
 */
 export const createProjectIDArray = (options) => {
   let selectOptions = [];
@@ -168,8 +168,8 @@ export const createProjectIDArray = (options) => {
 };
 
 /* 
-For react-select but different to above
-Specially made for Projects Vs30 - label to contain unit, m/s
+  For react-select but different to above
+  Specially made for Projects Vs30 - label to contain unit, m/s
 */
 export const createVs30Array = (options) => {
   return options.map((option) => ({
@@ -179,8 +179,8 @@ export const createVs30Array = (options) => {
 };
 
 /* 
-For react-select but different to above
-Specially made for Projects Z1.0/Z2.5 - label to contain both Z1.0 and Z2.5 seperated and values to be a dictionary
+  For react-select but different to above
+  Specially made for Projects Z1.0/Z2.5 - label to contain both Z1.0 and Z2.5 seperated and values to be a dictionary
 */
 export const createZArray = (options) => {
   let selectOptions = options.map((option) => ({
@@ -202,8 +202,8 @@ export const isEmptyObj = (obj) => {
 };
 
 /* 
-Disable the UHS input field.
-if pSA not in IM list
+  Disable the UHS input field.
+  if pSA not in IM list
 */
 export const isPSANotInIMList = (givenIMList) => {
   return !givenIMList.includes("pSA");
@@ -233,9 +233,9 @@ export const GMSIMLabelConverter = (givenIM) => {
 };
 
 /* 
-Query string builder for API
-Parameters:
-Key and Value pair in an Object
+  Query string builder for API
+  Parameters:
+  Key and Value pair in an Object
 */
 export const APIQueryBuilder = (params) => {
   let queryString = "?";
@@ -263,14 +263,14 @@ export const createBoundsCoords = (xMin, xMax, yMin, yMax) => {
 };
 
 /*
-Convert the given return period into an annual exceedance rate
-in 4 decimal places
+  Convert the given return period into an annual exceedance rate
+  in 4 decimal places
 */
 export const convertRPtoAER = (RP) => Number((1 / Number(RP)).toFixed(4));
 
 /*
-JS version of qcore IM Sort
-Sort the IM Select dropdowns by the provided order
+  JS version of qcore IM Sort
+  Sort the IM Select dropdowns by the provided order
 */
 const DEFAULT_PATTERN_ORDER = [
   "station",
@@ -322,8 +322,8 @@ export const sortIMs = (unsortedIMs) => {
 };
 
 /*
-Returned IM contains periods (For now, pSA)
-Split the IM and Periods
+  Returned IM contains periods (For now, pSA)
+  Split the IM and Periods
 */
 export const splitIMPeriods = (IMs) => {
   const filteredIMs = [];
@@ -346,12 +346,12 @@ export const splitIMPeriods = (IMs) => {
 };
 
 /*
-Return combined IM with period
-if IM === pSA
-else IM
-In the future, instead of using IM === pSA
-ust an array to check if its in the list
-in case there are more than 1 IM with periods
+  Return combined IM with period
+  if IM === pSA
+  else IM
+  In the future, instead of using IM === pSA
+  ust an array to check if its in the list
+  in case there are more than 1 IM with periods
 */
 export const combineIMwithPeriod = (givenIM, givenPeriod) => {
   let combinedIM = givenIM;
@@ -385,7 +385,7 @@ export const createStationID = (
 };
 
 /*
-Create an axis label with symbol and unit
+  Create an axis label with symbol and unit
 */
 export const createAxisLabel = (name, symbol = null, unit = null) => {
   let axisLabel = `${name}`;
