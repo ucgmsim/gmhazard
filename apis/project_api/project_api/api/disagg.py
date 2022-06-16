@@ -1,6 +1,7 @@
 import os
 import base64
 import tempfile
+import time
 
 import flask
 from flask_cors import cross_origin
@@ -37,14 +38,15 @@ def get_disagg_rps():
 @server.requires_auth
 @au.api.endpoint_exception_handling(server.app)
 def get_ensemble_disagg():
+    start = time.time()
     server.app.logger.info(f"Received request at {const.PROJECT_DISAGG_ENDPOINT}")
 
     _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
     server.app.logger.debug(f"API - version {version_str}")
 
-    (project_id, station_id, im, rp), optional_kwargs = au.api.get_check_keys(
+    (project_id, station_id, im), optional_kwargs = au.api.get_check_keys(
         flask.request.args,
-        ("project_id", "station_id", ("im", sc.im.IM.from_str), ("rp", int)),
+        ("project_id", "station_id", ("im", sc.im.IM.from_str)),
         (("im_component", str),),
     )
     im.component = (
@@ -53,6 +55,9 @@ def get_ensemble_disagg():
         else sc.im.IMComponent[optional_kwargs.get("im_component")]
     )
     server.app.logger.debug(f"Request parameters {project_id}, {station_id}, {im}")
+
+    # Get Disagg return periods
+    rps = utils.get_project(version_str, project_id).disagg_rps
 
     # Load the data
     ensemble_disagg, metadata_df, src_png_data, eps_png_data = utils.load_disagg_data(
@@ -63,22 +68,26 @@ def get_ensemble_disagg():
         / station_id
         / str(im.component),
         im,
-        rp,
+        rps,
     )
+    print(f"It took about {time.time() - start}")
+    # breakpoint()
 
     return flask.jsonify(
         au.api.get_ensemble_disagg(
             ensemble_disagg,
             metadata_df,
-            base64.b64encode(src_png_data).decode(),
-            base64.b64encode(eps_png_data).decode(),
+            src_png_data,
+            eps_png_data,
+            # base64.b64encode(src_png_data).decode(),
+            # base64.b64encode(eps_png_data).decode(),
+            rps,
             au.api.get_download_token(
                 {
                     "project_id": project_id,
                     "station_id": station_id,
                     "im": str(im),
                     "im_component": str(im.component),
-                    "rp": rp,
                 },
                 server.DOWNLOAD_URL_SECRET_KEY,
             ),

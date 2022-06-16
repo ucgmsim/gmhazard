@@ -1,4 +1,5 @@
 """Contains functions that are used by both the coreAPI and projectAPI for responses"""
+import base64
 from typing import Sequence
 
 import pandas as pd
@@ -25,22 +26,37 @@ def get_ensemble_hazard_response(
 
 
 def get_ensemble_disagg(
-    ensemble_disagg: sc.disagg.EnsembleDisaggResult,
-    metadata_df: pd.DataFrame,
-    src_png_data: str,
-    eps_png_data: str,
+    ensemble_disagg: Sequence[sc.disagg.EnsembleDisaggResult],
+    metadata_df: Sequence[pd.DataFrame],
+    src_png_data: Sequence[str],
+    eps_png_data: Sequence[str],
+    rps: Sequence[int],
     download_token: str,
 ):
     """Creates the response for both core and project API"""
     return {
-        "ensemble_id": ensemble_disagg.ensemble.name,
-        "station": ensemble_disagg.site_info.station_name,
-        "im": str(ensemble_disagg.im),
-        "im_component": str(ensemble_disagg.im.component),
-        "disagg_data": ensemble_disagg.to_dict(total_only=True),
-        "extra_info": metadata_df.to_dict(),
-        "gmt_plot_src": src_png_data,
-        "gmt_plot_eps": eps_png_data,
+        "ensemble_id": ensemble_disagg[0].ensemble.name,
+        "station": {
+            rps[idx]: ensemble.site_info.station_name
+            for idx, ensemble in enumerate(ensemble_disagg)
+        },
+        "im": str(ensemble_disagg[0].im),
+        "im_component": str(ensemble_disagg[0].im.component),
+        "disagg_data": {
+            rps[idx]: ensemble.to_dict(total_only=True)
+            for idx, ensemble in enumerate(ensemble_disagg)
+        },
+        "extra_info": {
+            rps[idx]: metadata.to_dict() for idx, metadata in enumerate(metadata_df)
+        },
+        "gmt_plot_src": {
+            rps[idx]: base64.b64encode(src_png).decode()
+            for idx, src_png in enumerate(src_png_data)
+        },
+        "gmt_plot_eps": {
+            rps[idx]: base64.b64encode(eps_png).decode()
+            for idx, eps_png in enumerate(eps_png_data)
+        },
         "download_token": download_token,
     }
 
