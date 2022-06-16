@@ -3,7 +3,7 @@ import React from "react";
 import Plot from "react-plotly.js";
 
 import * as CONSTANTS from "constants/Constants";
-import { createAxisLabel } from "utils/Utils.js";
+import { createAxisLabel } from "utils/Utils";
 
 import "assets/style/GMSPlot.css";
 
