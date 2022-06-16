@@ -25,7 +25,7 @@ const DisaggregationSection = () => {
   const [localSelectedRP, setLocalSelectedRP] = useState(null);
 
   const getDisagg = () => {
-    setProjectSelectedDisagRP(localSelectedRP["value"]);
+    setProjectSelectedDisagRP(localSelectedRP);
     setProjectDisaggGetClick(uuidv4());
   };
 
