@@ -1,6 +1,7 @@
 import React, { Fragment, useState, useEffect, useContext } from "react";
 
 import $ from "jquery";
+import Select from "react-select";
 import { Tabs, Tab } from "react-bootstrap";
 
 import { GlobalContext } from "context";
@@ -70,6 +71,10 @@ const HazardViewerDisaggregation = () => {
     eps: null,
     src: null,
   });
+
+  // For Select, dropdown
+  const [localSelectedRP, setLocalSelectedRP] = useState(null);
+  const [disaggRPOptions, setDisaggRPOptions] = useState([]);
 
   // Reset tabs if users click Get button from Site Selection
   useEffect(() => {
@@ -255,6 +260,14 @@ const HazardViewerDisaggregation = () => {
             showPlotDisaggEpsilon === true &&
             showErrorMessage.isError === false && (
               <Fragment>
+                <Select
+                    id={"project-rp"}
+                    value={localSelectedRP}
+                    onChange={(rpOption) => setLocalSelectedRP(rpOption)}
+                    options={disaggRPOptions}
+                    isDisabled={disaggRPOptions.length === 0}
+                    menuPlacement="auto"
+                  />
                 <img
                   className="img-fluid rounded mx-auto d-block"
                   src={`data:image/png;base64,${disaggPlotData.eps}`}
