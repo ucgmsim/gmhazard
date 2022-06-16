@@ -3,6 +3,7 @@ import React from "react";
 import Plot from "react-plotly.js";
 
 import * as CONSTANTS from "constants/Constants";
+import { createAxisLabel } from "utils/Utils.js";
 
 import "assets/style/GMSPlot.css";
 
@@ -17,7 +18,13 @@ const GMSSpectraPlot = ({ GMSSpectraData }) => {
       layout={{
         xaxis: {
           type: "log",
-          title: { text: "Period, T (s)" },
+          title: {
+            text: createAxisLabel(
+              CONSTANTS.PERIOD,
+              CONSTANTS.PERIOD_SYMBOL,
+              CONSTANTS.SECONDS_UNIT
+            ),
+          },
           showexponent: "first",
           exponentformat: "power",
           autorange: true,
@@ -25,7 +32,11 @@ const GMSSpectraPlot = ({ GMSSpectraData }) => {
         yaxis: {
           type: "log",
           title: {
-            text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.GRAVITY_UNIT}`,
+            text: createAxisLabel(
+              CONSTANTS.SPECTRAL_ACCELERATION,
+              CONSTANTS.SPECTRAL_ACCELERATION_SYMBOL,
+              CONSTANTS.GRAVITY_UNIT
+            ),
           },
           showexponent: "first",
           exponentformat: "power",

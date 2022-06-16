@@ -364,3 +364,19 @@ export const createStationID = (
     projectZ2p5 == null ? "" : "_" + projectZ2p5.toString().replace(".", "p")
   }`;
 };
+
+/*
+Create an axis label with symbol and unit
+*/
+export const createAxisLabel = (name, symbol = null, unit = null) => {
+  let axisLabel = `${name}`;
+
+  if (symbol) axisLabel += `, ${symbol}`;
+
+  if (unit) {
+    if (symbol) axisLabel += ` ${unit}`;
+    else axisLabel += `, ${unit}`;
+  }
+
+  return axisLabel;
+};
