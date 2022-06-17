@@ -219,9 +219,13 @@ const HazardViewerDisaggregation = () => {
       eps: epsDisaggPlot,
     });
 
-    const disaggTotalData = disaggData["disagg_data"];
-
-    const extraInfo = disaggData["extra_info"];
+    const disaggTotalData = filterDisaggData(disaggData["disagg_data"], selectedRPs);
+    
+    let filteredTotalContribution = {}
+    for (const item in disaggTotalData){
+      filteredTotalContribution[item] = disaggTotalData[item]["total_contribution"]
+    }
+    const extraInfo = filterDisaggData(disaggData["extra_info"], selectedRPs);
     // try {
     //   extraInfo.rupture_name["distributed_seismicity"] =
     //     CONSTANTS.DISTRIBUTED_SEISMICITY;
@@ -230,24 +234,26 @@ const HazardViewerDisaggregation = () => {
     // }
 
     // Polish total contribution data
-
-    // const data = Array.from(Object.keys(disaggTotalData), (key) => {
-    //   return [
-    //     key,
-    //     extraInfo.rupture_name[key],
-    //     disaggTotalData[key],
-    //     extraInfo.annual_rec_prob[key],
-    //     extraInfo.magnitude[key],
-    //     extraInfo.rrup[key],
-    //   ];
-    // });
+    let data = {}
+    for (const RP in filteredTotalContribution){
+      data[RP] = Array.from(Object.keys(filteredTotalContribution[RP]), (key) => {
+        return [
+          key,
+          extraInfo[RP].rupture_name[key],
+          filteredTotalContribution[RP][key],
+          extraInfo[RP].annual_rec_prob[key],
+          extraInfo[RP].magnitude[key],
+          extraInfo[RP].rrup[key],
+        ];
+      });
+    }
 
     // data.sort((entry1, entry2) => {
     //   return entry1[2] > entry2[2] ? -1 : 1;
     // });
 
-    setDisaggMeanData(disaggData["disagg_data"]);
-    // setDisaggContributionData(data);
+    setDisaggMeanData(disaggTotalData);
+    setDisaggContributionData(data);
 
     setShowSpinnerDisaggEpsilon(false);
     setShowSpinnerDisaggFault(false);
@@ -383,10 +389,17 @@ const HazardViewerDisaggregation = () => {
             showContribTable === true &&
             showErrorMessage.isError === false && (
               <Fragment>
-                {/* <ContributionTable
-                  meanData={disaggMeanData}
-                  contributionData={disaggContributionData}
-                /> */}
+                <Select
+                  value={localSelectedRP}
+                  onChange={(rpOption) => setLocalSelectedRP(rpOption)}
+                  options={disaggRPOptions}
+                  isDisabled={disaggRPOptions.length === 0}
+                  menuPlacement="auto"
+                />
+                <ContributionTable
+                  meanData={disaggMeanData[localSelectedRP["value"]]}
+                  contributionData={disaggContributionData[localSelectedRP["value"]]}
+                />
                 <button
                   className="btn btn-info hazard-disagg-contrib-button"
                   onClick={() => rowToggle()}
