@@ -2,11 +2,7 @@ import React from "react";
 
 import Plot from "react-plotly.js";
 
-import {
-  PLOT_MARGIN,
-  PLOT_CONFIG,
-  GMS_IM_DISTRIBUTIONS_LABEL,
-} from "constants/Constants";
+import * as CONSTANTS from "constants/Constants";
 import { range, sortDuplicateXRange, sortDuplicateYRange } from "utils/Utils";
 
 import "assets/style/GMSPlot.css";
@@ -43,9 +39,11 @@ const GMSIMDistributionsPlot = ({ gmsData, IM }) => {
     let label = "";
 
     if (IM.startsWith("pSA")) {
-      label += `Pseudo spectral acceleration, pSA(${IM.split("_")[1]}) (g)`;
+      label += `${CONSTANTS.PSEUDO_SPECTRAL_ACCELERATION}, pSA(${
+        IM.split("_")[1]
+      }) (g)`;
     } else {
-      label += GMS_IM_DISTRIBUTIONS_LABEL[IM];
+      label += CONSTANTS.GMS_IM_DISTRIBUTIONS_LABEL[IM];
     }
 
     return label;
@@ -59,7 +57,7 @@ const GMSIMDistributionsPlot = ({ gmsData, IM }) => {
           x: cdfX,
           y: cdfY,
           mode: "lines",
-          name: "GCIM",
+          name: `${CONSTANTS.GCIM}`,
           line: { shape: "hv", color: "red" },
           type: "scatter",
         },
@@ -67,7 +65,7 @@ const GMSIMDistributionsPlot = ({ gmsData, IM }) => {
           x: cdfX.slice(0, yLimitAtOneIndex),
           y: upperBounds.slice(0, yLimitAtOneIndex),
           mode: "lines",
-          name: `KS bounds, ${String.fromCharCode(945)} = 0.1`,
+          name: `${CONSTANTS.KS_BOUNDS}, ${String.fromCharCode(945)} = 0.1`,
           legendgroup: "KS bounds",
           line: { dash: "dashdot", shape: "hv", color: "red" },
           type: "scatter",
@@ -76,7 +74,7 @@ const GMSIMDistributionsPlot = ({ gmsData, IM }) => {
           x: cdfX.slice(yLimitAtZeroIndex),
           y: lowerBounds.slice(yLimitAtZeroIndex),
           mode: "lines",
-          name: "KS bounds",
+          name: `${CONSTANTS.KS_BOUNDS}`,
           legendgroup: "KS bounds",
           line: { dash: "dashdot", shape: "hv", color: "red" },
           type: "scatter",
@@ -86,7 +84,7 @@ const GMSIMDistributionsPlot = ({ gmsData, IM }) => {
           x: newRealisations,
           y: newRangeY,
           mode: "lines",
-          name: "Realisations",
+          name: `${CONSTANTS.REALISATIONS}`,
           line: { shape: "hv", color: "blue" },
           type: "scatter",
         },
@@ -94,7 +92,7 @@ const GMSIMDistributionsPlot = ({ gmsData, IM }) => {
           x: newSelectedGMs,
           y: newRangeY,
           mode: "lines",
-          name: "Selected Ground Motions",
+          name: `${CONSTANTS.SELECTED_GM}`,
           line: { shape: "hv", color: "black" },
           type: "scatter",
         },
@@ -105,14 +103,14 @@ const GMSIMDistributionsPlot = ({ gmsData, IM }) => {
           autorange: true,
         },
         yaxis: {
-          title: { text: "Cumulative Probability, CDF" },
+          title: { text: `${CONSTANTS.CUMULATIVE_PROB_CDF}` },
           range: [0, 1],
         },
         autosize: true,
-        margin: PLOT_MARGIN,
+        margin: CONSTANTS.PLOT_MARGIN,
       }}
       useResizeHandler={true}
-      config={PLOT_CONFIG}
+      config={CONSTANTS.PLOT_CONFIG}
     />
   );
 };

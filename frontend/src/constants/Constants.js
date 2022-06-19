@@ -41,8 +41,10 @@ export const CORE_API_SCENARIOS_ENDPOINT =
 export const CORE_API_SCENARIOS_DOWNLOAD_ENDPOINT =
   "/coreAPI/scenario/ensemble_scenario/download";
 
-// This endpoint will eventually replace when we implement DB properly
-// As this function reads from Available_Project table (A bridge table between User and Project)
+/* 
+This endpoint will eventually replace when we implement DB properly
+As this function reads from Available_Project table (A bridge table between User and Project)
+*/
 export const PROJECT_API_PROJECT_IDS_ENDPOINT = "/projectAPI/ids/get";
 export const PROJECT_API_SITES_ENDPOINT = "/projectAPI/sites/get";
 export const PROJECT_API_IMS_ENDPOINT = "/projectAPI/ims/get";
@@ -110,25 +112,196 @@ export const INTERMEDIATE_API_ALL_PRIVATE_PROJECTS_ENDPOINT =
 export const INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT =
   "/intermediateAPI/project/public/get/all";
 
-/* Labels */
-export const HAZARD_ANALYSIS = "Hazard Analysis";
+// Labels
+// General usage
 export const SITE_SELECTION = "Site Selection";
+export const PROJECT_AND_SITE_SELECTION = "Project and Site Selection";
 export const SEISMIC_HAZARD = "Seismic Hazard";
-export const GMS = "Ground Motion Selection";
-export const SCENARIOS = "Scenarios";
+export const GROUND_MOTION_SELECTION = "Ground Motion Selection";
+export const SCENARIOS = "Scenario Spectra";
 export const HAZARD_CURVE = "Hazard Curve";
 export const DISAGGREGATION = "Disaggregation";
 export const UNIFORM_HAZARD_SPECTRUM = "Uniform Hazard Spectrum";
-export const ENSEMBLE_BRANCHES = "Ensemble Branches";
+export const ENSEMBLE_BRANCHES = "Ensemble branches";
 export const FAULT_DISTRIBUTED_SEISMICITY_CONTRIBUTION =
   "Fault/distributed seismicity contribution";
 export const DOWNLOAD_DATA = "Download data";
+export const GET_BUTTON = "Get";
+export const COMPUTE_BUTTON = "Compute";
+export const GMS_IM_DISTRIBUTIONS_PLOT = "IM Distributions";
+export const GMS_CONDITIONING_IM_NAME = "Conditioning IM Name";
+export const VIBRATION_PERIOD = "Vibration Period";
+export const EXCEEDANCE_RATE = "Exceedance rate";
+export const IM_LEVEL = "IM level";
+export const IM_VECTOR = "IM Vector";
+export const CAUSAL_PARAMETERS = "Causal Parameters";
+export const INTENSITY_MEASURE = "Intensity Measure";
+export const EPSILON = "Epsilon";
+export const FAULT_DISTRIBUTED_SEISMICITY = "Fault/distributed seismicity";
+export const SOURCE_CONTRIBUTIONS = "Source contributions";
+export const MEAN_HAZARDS = "Mean Hazard";
+export const EPISTEMIC_UNCERTAINTY = "Epistemic Uncertainty";
+export const PROJECT_NAME = "Project Name";
+export const LOCATION = "Location";
+export const SITE_LOCATION = "Site Location";
+export const REGIONAL = "Regional";
+export const DISTRIBUTED_SEISMICITY = "Distributed Seismicity";
+export const COMPONENT = "Component";
+export const NZ_CODE = "NZ Code";
+export const SHOW_NZ_CODE = "Show NZ Code";
+export const SHOW_NZS1170P5 = "Show NZS1170.5";
+export const SOIL_CLASS = "Soil Class";
+export const SET_SOIL_CLASS = "Set Soil Class";
+export const ADD = "Add";
+export const RATE = "Rate";
+export const DELETE = "Delete";
+export const ADVANCED = "Advanced";
+export const MINIMUM = "Min";
+export const MAXIMUM = "Max";
+export const DISTRIBUTION = "distribution";
+export const MORE_DETAIL = "More detail";
+export const MEDIAN = "Median";
+export const SCENARIO_RUPTURES = "Scenario Ruptures";
+
+// Navbar
+export const LOGIN = "Log in";
+export const LOGOUT = "Log out";
+export const VERSION = "Version";
+export const PROFILE = "Profile";
+export const CREATE = "Create";
+export const PERMISSION_CONFIG = "Permission Config";
+export const HOME = "Home";
+export const HAZARD_ANALYSIS = "Hazard Analysis";
+export const PROJECTS = "Projects";
+export const FRAMEWORK_DOCUMENTS = "Framework Documents";
+
+// Images and plots labels
+export const REGIONAL_MAP_DESCRIPTION =
+  "Source locations (Lichfield, 2014) and historical events (Geonet, 2003-present)";
+export const REGIONAL_MAP_IMG_ALT = "Regional Map";
+export const VS30_MAP_DESCRIPTION =
+  "Regional Vs30 predictions in the vicinity of the site (Foster et al. 2019)";
+export const VS30_MAP_IMG_ALT = "Vs30 Map";
+export const EPSILON_DISAGG_PLOT_ALT = "Epsilon disagg plot";
+export const SOURCE_DISAGG_PLOT_ALT = "Source disagg plot";
+
+// Site Selection and project create
+export const USE_DEFAULT = "Use Default";
+export const MAP = "Map";
+export const LATITUDE = "Latitude";
+export const LONGITUDE = "Longitude";
+export const LATITUDE_HELPER_TEXT = "Latitude must be within the range of NZ.";
+export const LONGITUDE_HELPER_TEXT =
+  "Longitude must be within the range of NZ.";
+export const SITE_CONDITIONS = "Site Conditions";
+export const Z_FACTOR = "Z Factor";
+export const SET_Z_FACTOR = "Set Z-factor";
+
+// Hazard Curve labels
+export const FAULT = "Fault";
+export const BRANCHES = "Branches";
+export const ENSEMBLE_MEAN = "Ensemble mean";
+export const TOTAL = "Total";
+export const NZS1170P5 = "NZS1170.5";
+export const NZTA = "NZTA";
+export const ANNUAL_RATE_OF_EXCEEDANCE = "Annual rate of exceedance";
+export const LOWER_PERCENTILE = "16<sup>th</sup> percentile";
+export const UPPER_PERCENTILE = "84<sup>th</sup> percentile";
+export const ROTD_FIFTY = "RotD50";
+
+// Disaggregation labels
+export const MEAN_MAGNITUDE = "Mean Magnitude";
+export const MEAN_RRUP = "Mean Rrup";
+export const MEAN_EPSILON = "Mean Epsilon";
+export const NAME = "Name";
+export const CONTRIBUTION = "Contribution";
+export const ANNUAL_RECURRENCE_RATE = "Annual recurrence rate";
+export const MAGNITUDE = "Magnitude";
+export const RRUP = "Rrup";
+export const SHOW_MORE = "Show More...";
+export const SHOW_LESS = "Show Less...";
+export const ANNUAL_EXCEEDANCE_RATE = "Annual Exceedance Rate";
+export const ANNUAL_EXCEEDANCE_RATE_HELPER_TEXT =
+  "Annual Exceedance Rate must be between 0 and 1. (0 < X < 1)";
+
+// UHS labels
+export const UHS_TABLE_HELP_TEXT = "Add one or more rates for calculation";
+
+// GMS labels
+export const PSEUDO_ACCELERATION_RESPONSE_SPECTRA =
+  "Pseudo acceleration response spectra";
+export const LOWER_AND_UPPER_BOUND_LIMITS = "Lower and upper bound limits";
+export const REFERENCE_POINT = "Reference Point";
+export const CUMULATIVE_PROB_CDF = "Cumulative Probability, CDF";
+export const SHORTEN_SELECTED_GM = "Selected GMs";
+export const SELECTED_GM = "Selected Ground Motions";
+export const REALISATIONS = "Realisations";
+export const GCIM = "Target Distribution";
+export const KS_BOUNDS = "KS bounds";
+export const SPECTRAL_ACCELERATION = "Spectral acceleration";
+export const BOUNDS = "Bounds";
+export const RUPTURE_DISTANCE = "Rupture distance";
+export const AVAILABLE_GROUND_MOTIONS = "Available ground motions";
+export const DISAGGREGATION_DSITRIBUTION = "Disaggregation distribution";
+export const SITE_SPECIFIC = "Site-specific";
+export const GET_CAUSAL_PARAMS_BOUNDS = "Get causal parameters bounds";
+export const GET_IM_VECTOR_WEIGHTS = "Get IM vector weights";
+export const NUMBER_OF_GROUND_MOTIONS = "Number of Ground Motions";
+export const CAUSAL_PARAMS_BOUNDS = "Causal parameters bounds";
+export const SCALE_FACTOR = "Scale Factor";
+export const WEIGHTS = "Weights";
+export const DATABASE = "Database";
+export const REPLICATES = "Replicates";
+export const PSEUDO_SPECTRAL_ACCELERATION = "Pseudo spectral acceleration";
+export const GMS_PLOT_RRUP_AXIS_LABEL =
+  "Rupture distance, R<sub>rup</sub> (km)";
+export const GMS_PLOT_MAG_AXIS_LABEL = "Magnitude, M<sub>w</sub>";
+export const NUMBER_OF_GROUND_MOTIONS_SUBSCRIPT = "N<sub>gm</sub>";
+export const MW_RRUP_PLOT_DISAGG_MEAN_VALUES_LABEL =
+  "Mean M<sub>w</sub>-R<sub>rup</sub> of disaggregation distribution<br>16<sup>th</sup> to 84<sup>th</sup> percentile M<sub>w</sub>-R<sub>rup</sub> limits";
+export const MW_RRUP_PLOT_SELECTED_GMS_METADATA_LABEL =
+  "Mean M<sub>w</sub>-R<sub>rup</sub> of selected GMs<br>16<sup>th</sup> to 84<sup>th</sup> percentile M<sub>w</sub>-R<sub>rup</sub> limits";
+export const MW_RRUP_PLOT_DROPDOWN_LABEL =
+  "Magnitude and rupture distance (M<sub>w</sub>-R<sub>rup</sub>) distribution";
+
+// Select's placeholders
+export const PLACEHOLDER_NOT_AVAILABLE = "Not available";
+export const PLACEHOLDER_SELECT_SIGN = "Select...";
+export const PLACEHOLDER_LOADING = "Loading...";
+export const PLACESHOLDER_SELECT_PROJECT_ID =
+  "Please select the Project ID first...";
+export const PLACEHOLDER_SELECT_LOCATION =
+  "Please select the Location first...";
+export const PLACEHOLDER_SELECT_VS30 = "Please select the Vs30 first...";
+export const PLACEHOLDER_SELECT_IM =
+  "Please select the Intensity Measure first...";
+export const PLACEHOLDER_SELECT_PERIOD = "Select period...";
+export const PLACEHOLDER_NOT_APPLICABLE = "N/A";
+export const PLACEHOLDER_SELECT_COMPONENT = "Select component...";
+
+export const PERIOD = "Period";
+// Units in labels
+export const SECONDS_UNIT = "(s)";
+export const KILOMETRE_UNIT = "(km)";
+export const METRE_PER_SECOND_UNIT = "(m/s)";
+export const YEARS_UNIT = "(years)";
+export const PERCENTAGE_UNIT = "(%)";
+export const GRAVITY_UNIT = "(g)";
+// Symbols in labels
+export const MAGNITUDE_SYMBOL = "Mw";
+export const SPECTRAL_ACCELERATION_SYMBOL = "SA";
+export const PERIOD_SYMBOL = "T";
+
+// Units in adornment - units in input field
+export const ADORNMENT_KILOMETRE_UNIT = "km";
+export const ADORNMENT_METRE_PER_SECOND_UNIT = "m/s";
 
 export const APP_LOCATION_DEFAULT_ENSEMBLE = "v20p5emp";
 
 export const APP_UI_CONTRIB_TABLE_ROWS = 10;
 export const APP_UI_VS30_DP = 1;
 export const APP_UI_SIGFIGS = 4;
+export const APP_UI_DECIFIGS = 4;
 export const APP_UI_UHS_RATETABLE_RATE_SIGFIGS = 3;
 
 export const UHS_TABLE_MESSAGE = "No rates added";
@@ -141,8 +314,8 @@ export const ENV = process.env.REACT_APP_ENV;
 export const SITE_SELECTION_VS30_TITLE = "VS30";
 
 /* 
-  Guide Messages
-  Site Selection - Regional & Vs30
+Guide Messages
+Site Selection - Regional & Vs30
 */
 export const SITE_SELECTION_VS30_MSG =
   "Please do the following steps to see an image.";
@@ -160,8 +333,8 @@ export const SITE_SELECTION_REGIONAL_INSTRUCTION = [
 ];
 
 /*
-  Map Box
-  Default coordinates needed, so I put our coordinates (UC Engineering Core Building)
+Map Box
+Default coordinates needed, so I put our coordinates (UC Engineering Core Building)
 */
 export const DEFAULT_MAPBOX_LAT = -43.521463221980085;
 export const DEFAULT_MAPBOX_LNG = 172.58361319646755;
@@ -177,8 +350,8 @@ export const RETURN_PERIOD = "Return Period";
 export const ANNUAL_PROBABILITY = "Annual Probability";
 
 /* 
-  Guide messages
-  Seismic Hazard - Hazard Viewer
+Guide messages
+Seismic Hazard - Hazard Viewer
 */
 export const HAZARD_CURVE_GUIDE_MSG =
   "Please do the following steps to see plots.";
@@ -214,8 +387,8 @@ export const PROJECT_UNIFORM_HAZARD_SPECTRUM_INSTRUCTION = [
 ];
 
 /* 
-  Guide messages
-  GMS
+Guide messages
+GMS
 */
 export const GMS_VIEWER_GUIDE_MSG =
   "Please do the following steps to see plots.";
@@ -235,15 +408,15 @@ export const PROJECT_GMS_VIEWER_GUIDE_INSTRUCTION = [
 ];
 
 /*
-  Guide messages
-  Scenarios
+Guide messages
+Scenarios
 */
 export const SCENARIO_VIEWER_GUIDE_MSG =
   "Please do the following steps to see plots.";
 export const SCENARIO_VIEWER_GUIDE_INSTRUCTION = [
   "Select an IM Component",
   "Click the Compute button",
-  "Select scenarios to plot when available",
+  "Select scenario ruptures to plot when available",
 ];
 
 // Project Tabs
@@ -277,7 +450,7 @@ export const PROJECT_DISAGG_INSTRUCTION_TABLE = [
 export const PROJECT_SCENARIO_VIEWER_GUIDE_INSTRUCTION = [
   "Select an IM Component",
   "Click the Get button",
-  "Select scenarios to plot when available",
+  "Select scenario ruptures to plot when available",
 ];
 
 // Error Messages
@@ -441,10 +614,10 @@ export const TOOLTIP_URL = {
 
 // GMS Labels
 export const GMS_LABELS = {
-  mag: "Magnitude (Mw)",
-  rrup: `Rupture distance (R${"rup".sub()})`,
-  sf: "Scale factor (SF)",
-  vs30: `30m-averaged shear-wave velocity (V${"s30".sub()})`,
+  mag: "Magnitude, Mw",
+  rrup: "Rupture distance, R<sub>rup</sub>",
+  sf: "Scale factor, SF",
+  vs30: "30m-averaged shear-wave velocity, V<sub>s30</sub>",
 };
 
 // Projects' Metadata

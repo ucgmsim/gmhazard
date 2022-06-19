@@ -3,6 +3,7 @@ import React, { Fragment, useEffect, useState, useContext } from "react";
 import { Tabs, Tab } from "react-bootstrap";
 
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 
 import {
   HazardViewerHazardCurve,
@@ -47,15 +48,15 @@ const HazardViewer = () => {
         className="hazard-viewer-tabs"
         onSelect={(key) => setSelectedTab(key)}
       >
-        <Tab eventKey="hazardCurve" title="Hazard Curve">
+        <Tab eventKey="hazardCurve" title={CONSTANTS.HAZARD_CURVE}>
           <HazardViewerHazardCurve />
         </Tab>
 
-        <Tab eventKey="disagg" title="Disaggregation">
+        <Tab eventKey="disagg" title={CONSTANTS.DISAGGREGATION}>
           <HazardViewerDisaggregation />
         </Tab>
 
-        <Tab eventKey="uhs" title="Uniform Hazard Spectrum">
+        <Tab eventKey="uhs" title={CONSTANTS.UNIFORM_HAZARD_SPECTRUM}>
           <HazardViewerUHS />
         </Tab>
       </Tabs>

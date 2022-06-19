@@ -406,7 +406,7 @@ const ProjectCreate = () => {
                     htmlFor="create-lng"
                     className="control-label"
                   >
-                    Latitude
+                    {CONSTANTS.LATITUDE}
                   </label>
                   <TextField
                     id="create-lng"
@@ -423,7 +423,7 @@ const ProjectCreate = () => {
                     helperText={
                       (lat >= -47.4 && lat <= -34.3) || lat === ""
                         ? " "
-                        : "Latitude must be within the range of NZ."
+                        : `${CONSTANTS.LATITUDE_HELPER_TEXT}`
                     }
                     variant="outlined"
                     required
@@ -438,7 +438,7 @@ const ProjectCreate = () => {
                     htmlFor="create-lng"
                     className="control-label"
                   >
-                    Longitude
+                    {CONSTANTS.LONGITUDE}
                   </label>
                   <TextField
                     id="create-lng"
@@ -453,7 +453,7 @@ const ProjectCreate = () => {
                     helperText={
                       (lng >= 165 && lng <= 180) || lng === ""
                         ? " "
-                        : "Longitude must be within the range of NZ."
+                        : `${CONSTANTS.LONGITUDE_HELPER_TEXT}`
                     }
                     variant="outlined"
                     required
@@ -462,7 +462,9 @@ const ProjectCreate = () => {
                 </div>
               </div>
               <div className="card create-form-box">
-                <h3 className="card-header required">Site Conditions</h3>
+                <h3 className="card-header required">
+                  {CONSTANTS.SITE_CONDITIONS}
+                </h3>
                 <div className="card-body">
                   <div className="form-group required">
                     <div className="d-flex align-items-center">
@@ -538,8 +540,8 @@ const ProjectCreate = () => {
                   <thead>
                     <tr>
                       <th>Name</th>
-                      <th>Latitude</th>
-                      <th>Longitude</th>
+                      <th>{CONSTANTS.LATITUDE}</th>
+                      <th>{CONSTANTS.LONGITUDE}</th>
                       <th>
                         V<sub>S30</sub>
                       </th>

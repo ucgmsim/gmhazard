@@ -2,6 +2,7 @@ import React from "react";
 
 import { Button } from "react-bootstrap";
 
+import * as CONSTANTS from "constants/Constants";
 import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 const LoginButton = () => {
@@ -13,7 +14,7 @@ const LoginButton = () => {
       className="btn-margin"
       onClick={() => loginWithRedirect({})}
     >
-      Log in
+      {CONSTANTS.LOGIN}
     </Button>
   );
 };

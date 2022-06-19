@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import * as CONSTANTS from "constants/Constants";
+
 /* 
   disable mousewheel on number input fields when in focus
   (to prevent Cromium browsers change the value when scrolling)
@@ -82,7 +84,7 @@ export const getPlotData = (data) => {
 
 // Implement x sig figs for numeric float values
 export const renderSigfigs = (fullprecision, sigfigs) => {
-  return Number.parseFloat(fullprecision).toPrecision(sigfigs);
+  return parseFloat(fullprecision).toPrecision(sigfigs);
 };
 
 /* 
@@ -137,6 +139,17 @@ export const createSelectArray = (options) => {
   return options.map((option) => ({
     value: option,
     label: option,
+  }));
+};
+
+/*
+  Designed for Disaggregation and UHS to display annual exceedance rate
+  but sending RP to the backend
+*/
+export const createAnnualExceedanceArray = (options) => {
+  return options.map((option) => ({
+    value: option,
+    label: Number((1 / option).toFixed(CONSTANTS.APP_UI_DECIFIGS)),
   }));
 };
 
@@ -248,6 +261,12 @@ export const createBoundsCoords = (xMin, xMax, yMin, yMax) => {
     leftBoundY: [yMin, yMax],
   };
 };
+
+/*
+  Convert the given return period into an annual exceedance rate
+  in 4 decimal places
+*/
+export const convertRPtoAER = (RP) => Number((1 / Number(RP)).toFixed(4));
 
 /*
   JS version of qcore IM Sort
@@ -363,4 +382,20 @@ export const createStationID = (
   }${
     projectZ2p5 == null ? "" : "_" + projectZ2p5.toString().replace(".", "p")
   }`;
+};
+
+/*
+  Create an axis label with symbol and unit
+*/
+export const createAxisLabel = (name, symbol = null, unit = null) => {
+  let axisLabel = `${name}`;
+
+  if (symbol) axisLabel += `, ${symbol}`;
+
+  if (unit) {
+    if (symbol) axisLabel += ` ${unit}`;
+    else axisLabel += `, ${unit}`;
+  }
+
+  return axisLabel;
 };

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState, Fragment } from "react";
 
-import * as CONSTANTS from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
@@ -105,11 +105,9 @@ const SiteSelectionVS30 = () => {
         showSpinner === false &&
         showErrorMessage.isError === false && (
           <ImageMap
-            header={
-              "Looking at the Foster et al. model predictions in the vicinity of the site."
-            }
+            header={CONSTANTS.VS30_MAP_DESCRIPTION}
             src={vs30Map}
-            alt={"Vs30 Map"}
+            alt={CONSTANTS.VS30_MAP_IMG_ALT}
           />
         )}
     </Fragment>

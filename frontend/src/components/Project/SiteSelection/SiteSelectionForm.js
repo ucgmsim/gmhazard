@@ -3,8 +3,8 @@ import React, { Fragment, useContext, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { GlobalContext } from "context";
-import { useAuth0 } from "components/common/ReactAuth0SPA";
 import * as CONSTANTS from "constants/Constants";
+import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import { CustomSelect, GuideTooltip } from "components/common";
 import {
@@ -310,7 +310,7 @@ const SiteSelectionForm = () => {
   return (
     <Fragment>
       <div className="form-group form-section-title">
-        Project Name
+        {CONSTANTS.PROJECT_NAME}
         <GuideTooltip
           explanation={
             CONSTANTS.TOOLTIP_MESSAGES["PROJECT_SITE_SELECTION_PROJECT_NAME"]
@@ -327,7 +327,7 @@ const SiteSelectionForm = () => {
       </div>
 
       <div className="form-group form-section-title">
-        Location
+        {CONSTANTS.SITE_LOCATION}
         <GuideTooltip
           explanation={
             CONSTANTS.TOOLTIP_MESSAGES["PROJECT_SITE_SELECTION_LOCATION"]
@@ -340,8 +340,8 @@ const SiteSelectionForm = () => {
           options={locationOptions}
           placeholder={
             localProjectId === null
-              ? "Please select the Project ID first..."
-              : "Loading..."
+              ? `${CONSTANTS.PLACESHOLDER_SELECT_PROJECT_ID}`
+              : `${CONSTANTS.PLACEHOLDER_LOADING}`
           }
           resettable={false}
           resetOnChange={localProjectId}
@@ -350,7 +350,7 @@ const SiteSelectionForm = () => {
 
       <div className="form-group form-section-title">
         <span>
-          V<sub>S30</sub> (m/s)
+          V<sub>S30</sub> {CONSTANTS.METRE_PER_SECOND_UNIT}
         </span>
         <GuideTooltip
           explanation={
@@ -364,8 +364,8 @@ const SiteSelectionForm = () => {
           options={vs30Options}
           placeholder={
             localLocation === null
-              ? "Please select the Location first..."
-              : "Loading..."
+              ? `${CONSTANTS.PLACEHOLDER_SELECT_LOCATION}`
+              : `${CONSTANTS.PLACEHOLDER_LOADING}`
           }
           resettable={false}
           resetOnChange={localLocation}
@@ -374,7 +374,7 @@ const SiteSelectionForm = () => {
 
       <div className="form-group form-section-title">
         <span>
-          Z<sub>1.0</sub> | Z<sub>2.5</sub> (km)
+          Z<sub>1.0</sub> | Z<sub>2.5</sub> {CONSTANTS.KILOMETRE_UNIT}
         </span>
         <GuideTooltip
           explanation={
@@ -388,8 +388,8 @@ const SiteSelectionForm = () => {
           options={zOptions}
           placeholder={
             localVS30 === null
-              ? "Please select the Vs30 first..."
-              : "Loading..."
+              ? `${CONSTANTS.PLACEHOLDER_SELECT_VS30}`
+              : `${CONSTANTS.PLACEHOLDER_LOADING}`
           }
           isZ={true}
           resettable={false}
@@ -405,7 +405,7 @@ const SiteSelectionForm = () => {
           disabled={invalidInputs()}
           onClick={() => setGlobalVariables()}
         >
-          Get
+          {CONSTANTS.GET_BUTTON}
         </button>
       </div>
     </Fragment>

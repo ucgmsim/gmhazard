@@ -1,21 +1,21 @@
 import React, { useState, useContext, useEffect, Fragment } from "react";
 
 import Select from "react-select";
-import makeAnimated from "react-select/animated";
 import { v4 as uuidv4 } from "uuid";
+import makeAnimated from "react-select/animated";
 
-import * as CONSTANTS from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 
-import { createSelectArray, isPSANotInIMList } from "utils/Utils";
 import { GuideTooltip } from "components/common";
+import { createAnnualExceedanceArray, isPSANotInIMList } from "utils/Utils";
 
 const UHSSection = () => {
   const {
-    projectUHSRPs,
-    setProjectSelectedUHSRP,
-    setProjectUHSGetClick,
     projectIMs,
+    projectUHSRPs,
+    setProjectUHSGetClick,
+    setProjectSelectedUHSRP,
     projectSiteSelectionGetClick,
   } = useContext(GlobalContext);
 
@@ -28,7 +28,7 @@ const UHSSection = () => {
   useEffect(() => {
     setLocalRPs([]);
     if (projectUHSRPs.length !== 0) {
-      setRPOptions(createSelectArray(projectUHSRPs));
+      setRPOptions(createAnnualExceedanceArray(projectUHSRPs));
     } else {
       setRPOptions([]);
     }
@@ -43,7 +43,7 @@ const UHSSection = () => {
     <Fragment>
       <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
         <div className="form-group form-section-title">
-          Uniform Hazard Spectrum
+          {CONSTANTS.UNIFORM_HAZARD_SPECTRUM}
           <GuideTooltip
             explanation={CONSTANTS.TOOLTIP_MESSAGES["PROJECT_UHS"]}
           />
@@ -54,14 +54,18 @@ const UHSSection = () => {
             htmlFor="uhs-return-period"
             className="control-label"
           >
-            Return Period (years)
+            {CONSTANTS.ANNUAL_EXCEEDANCE_RATE} (years<sup>-1</sup>)
           </label>
           <Select
             id="uhs-return-period"
             closeMenuOnSelect={false}
             components={animatedComponents}
             isMulti
-            placeholder={rpOptions.length === 0 ? "Not available" : "Select..."}
+            placeholder={
+              rpOptions.length === 0
+                ? `${CONSTANTS.PLACEHOLDER_NOT_AVAILABLE}`
+                : `${CONSTANTS.PLACEHOLDER_SELECT_SIGN}`
+            }
             value={localRPs.length === 0 ? [] : localRPs}
             onChange={(value) => setLocalRPs(value || [])}
             options={rpOptions}
@@ -80,7 +84,7 @@ const UHSSection = () => {
           disabled={localRPs.length === 0 || isPSANotInIMList(projectIMs)}
           onClick={() => getUHS()}
         >
-          Get
+          {CONSTANTS.GET_BUTTON}
         </button>
       </div>
     </Fragment>

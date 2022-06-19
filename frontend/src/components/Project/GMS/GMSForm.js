@@ -47,7 +47,7 @@ const GMSForm = () => {
   return (
     <Fragment>
       <div className="form-group form-section-title">
-        Conditioning IM Name
+        {CONSTANTS.GMS_CONDITIONING_IM_NAME}
         <GuideTooltip
           explanation={
             CONSTANTS.TOOLTIP_MESSAGES["HAZARD_GMS_CONDITIONING_IM_NAME"]
@@ -61,7 +61,7 @@ const GMSForm = () => {
         />
       </div>
       <div className="form-group form-section-title">
-        Vibration Period (s)
+        {CONSTANTS.VIBRATION_PERIOD} {CONSTANTS.SECONDS_UNIT}
         <GuideTooltip
           explanation={CONSTANTS.TOOLTIP_MESSAGES["GMS_VIBRATION_PERIOD"]}
         />
@@ -75,7 +75,7 @@ const GMSForm = () => {
         />
       </div>
       <div className="form-group form-section-title">
-        Exceedance rate level (years<sup>-1</sup>)
+        {CONSTANTS.EXCEEDANCE_RATE} (years<sup>-1</sup>)
         <GuideTooltip
           explanation={
             CONSTANTS.TOOLTIP_MESSAGES["PROJECTS_GMS_EXCEEDANCE_RATE_LEVEL"]
@@ -89,7 +89,7 @@ const GMSForm = () => {
         />
       </div>
       <div className="form-group form-section-title">
-        IM Vector
+        {CONSTANTS.IM_VECTOR}
         <GuideTooltip
           explanation={CONSTANTS.TOOLTIP_MESSAGES["PROJECTS_GMS_IM_VECTOR"]}
         />
@@ -108,7 +108,7 @@ const GMSForm = () => {
           disabled={invalidInputs()}
           onClick={() => setGlobalVariables()}
         >
-          Get
+          {CONSTANTS.GET_BUTTON}
         </button>
       </div>
     </Fragment>

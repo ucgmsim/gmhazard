@@ -2,7 +2,7 @@ import React from "react";
 
 import Plot from "react-plotly.js";
 
-import { PLOT_MARGIN, PLOT_CONFIG } from "constants/Constants";
+import * as CONSTANTS from "constants/Constants";
 
 import "assets/style/GMSPlot.css";
 
@@ -26,8 +26,8 @@ const GMSMwRrupPlot = ({
       mode: "markers",
       name:
         numGMs !== null
-          ? `Selected GMs, N${"gm".sub()}=${numGMs}`
-          : `Selected GMs, N${"gm".sub()}=${metadata["mag"].length}`,
+          ? `${CONSTANTS.SHORTEN_SELECTED_GM}, ${CONSTANTS.NUMBER_OF_GROUND_MOTIONS_SUBSCRIPT}=${numGMs}`
+          : `${CONSTANTS.SHORTEN_SELECTED_GM}, ${CONSTANTS.NUMBER_OF_GROUND_MOTIONS_SUBSCRIPT}=${metadata["mag"].length}`,
       marker: { symbol: "square-open" },
       line: { color: "black" },
       type: "scatter",
@@ -38,7 +38,7 @@ const GMSMwRrupPlot = ({
       y: bounds.topBoundY,
       legendgroup: "Bounds",
       mode: "lines",
-      name: "Bounds",
+      name: `${CONSTANTS.BOUNDS}`,
       line: { color: "red", dash: "dot" },
       type: "scatter",
       showlegend: true,
@@ -48,7 +48,7 @@ const GMSMwRrupPlot = ({
       y: bounds.rightBoundY,
       legendgroup: "Bounds",
       mode: "lines",
-      name: "Bounds",
+      name: `${CONSTANTS.BOUNDS}`,
       line: { color: "red", dash: "dot" },
       type: "scatter",
       showlegend: false,
@@ -58,7 +58,7 @@ const GMSMwRrupPlot = ({
       y: bounds.bottomBoundY,
       legendgroup: "Bounds",
       mode: "lines",
-      name: "Bounds",
+      name: `${CONSTANTS.BOUNDS}`,
       line: { color: "red", dash: "dot" },
       type: "scatter",
       showlegend: false,
@@ -68,7 +68,7 @@ const GMSMwRrupPlot = ({
       y: bounds.leftBoundY,
       legendgroup: "Bounds",
       mode: "lines",
-      name: "Bounds",
+      name: `${CONSTANTS.BOUNDS}`,
       line: { color: "red", dash: "dot" },
       type: "scatter",
       showlegend: false,
@@ -82,9 +82,7 @@ const GMSMwRrupPlot = ({
       {
         x: [meanValues["rrup"]],
         y: [meanValues["magnitude"]],
-        name:
-          `Mean M${"w".sub()}-R${"rup".sub()} of disaggregation distribution<br>` +
-          `16${"th".sup()} to 84${"th".sup()} percentile M${"w".sub()}-R${"rup".sub()} limits`,
+        name: `${CONSTANTS.MW_RRUP_PLOT_DISAGG_MEAN_VALUES_LABEL}`,
         marker: { symbol: "105", size: 12 },
         line: { color: "red" },
         error_x: {
@@ -109,9 +107,7 @@ const GMSMwRrupPlot = ({
       {
         x: [selectedGMSAgg["rrup_mean"]],
         y: [selectedGMSAgg["mag_mean"]],
-        name:
-          `Mean M${"w".sub()}-R${"rup".sub()} of selected GMs<br>` +
-          `16${"th".sup()} to 84${"th".sup()} percentile M${"w".sub()}-R${"rup".sub()} limits`,
+        name: `${CONSTANTS.MW_RRUP_PLOT_SELECTED_GMS_METADATA_LABEL}`,
         marker: { symbol: "105", size: 12 },
         line: { color: "black" },
         error_x: {
@@ -152,21 +148,23 @@ const GMSMwRrupPlot = ({
       layout={{
         xaxis: {
           type: "log",
-          title: { text: `Rupture distance, R${"rup".sub()} (km)` },
+          title: {
+            text: `${CONSTANTS.GMS_PLOT_RRUP_AXIS_LABEL}`,
+          },
           showexponent: "first",
           exponentformat: "power",
           range: [Math.log10(rangeXMin), Math.log10(rangeXMax)],
           autorange: false,
         },
         yaxis: {
-          title: { text: `Magnitude, M${"W".sub()}` },
+          title: { text: `${CONSTANTS.GMS_PLOT_MAG_AXIS_LABEL}` },
           autorange: true,
         },
         autosize: true,
-        margin: PLOT_MARGIN,
+        margin: CONSTANTS.PLOT_MARGIN,
       }}
       useResizeHandler={true}
-      config={PLOT_CONFIG}
+      config={CONSTANTS.PLOT_CONFIG}
     />
   );
 };

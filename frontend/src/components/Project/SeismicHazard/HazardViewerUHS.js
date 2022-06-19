@@ -1,10 +1,10 @@
 import React, { Fragment, useEffect, useState, useContext } from "react";
 
-import { Tabs, Tab } from "react-bootstrap";
 import Select from "react-select";
+import { Tabs, Tab } from "react-bootstrap";
 
-import * as CONSTANTS from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
@@ -74,7 +74,7 @@ const HazardViewerUHS = () => {
         .sort((a, b) => a - b)
         .map((option) => ({
           value: 1 / Number(option),
-          label: option,
+          label: Number((1 / Number(option)).toFixed(4)),
         }));
 
       setLocalSelectedRP(sortedSelectedRP[0]);
@@ -104,7 +104,7 @@ const HazardViewerUHS = () => {
         rp: `${getSelectedRP().join(",")}`,
         im_component:
           projectSelectedIMComponent === null
-            ? "RotD50"
+            ? `${CONSTANTS.ROTD_FIFTY}`
             : projectSelectedIMComponent,
       });
 
@@ -146,9 +146,11 @@ const HazardViewerUHS = () => {
   };
 
   const updateUHSData = (uhsData) => {
-    setUHSData(filterUHSData(uhsData["uhs_results"], getSelectedRP()));
+    const selectedRPs = getSelectedRP();
+
+    setUHSData(filterUHSData(uhsData["uhs_results"], selectedRPs));
     setUHSNZS1170p5Data(
-      filterUHSData(uhsData["nzs1170p5_uhs_df"], getSelectedRP())
+      filterUHSData(uhsData["nzs1170p5_uhs_df"], selectedRPs)
     );
     setUHSBranchData(uhsData["branch_uhs_results"]);
     setDownloadToken(uhsData["download_token"]);
@@ -157,7 +159,7 @@ const HazardViewerUHS = () => {
       id: projectId,
       location: projectLocation,
       vs30: projectVS30,
-      selectedRPs: getSelectedRP(),
+      selectedRPs: selectedRPs,
     });
 
     setShowSpinnerUHS(false);
@@ -175,7 +177,7 @@ const HazardViewerUHS = () => {
   return (
     <div className="uhs-viewer">
       <Tabs defaultActiveKey="allRP" className="pivot-tabs">
-        <Tab eventKey="allRP" title="Mean Hazards">
+        <Tab eventKey="allRP" title={CONSTANTS.MEAN_HAZARDS}>
           <div className="tab-content">
             {projectUHSGetClick === null && (
               <GuideMessage
@@ -210,7 +212,7 @@ const HazardViewerUHS = () => {
               )}
           </div>
         </Tab>
-        <Tab eventKey="specificRP" title="Epistemic Uncertainty">
+        <Tab eventKey="specificRP" title={CONSTANTS.EPISTEMIC_UNCERTAINTY}>
           <div className="tab-content">
             {projectUHSGetClick === null && (
               <GuideMessage
@@ -261,7 +263,7 @@ const HazardViewerUHS = () => {
                         : uhsBranchData[localSelectedRP["value"]]
                     }
                     nzs1170p5Data={uhsNZS1170p5Data[localSelectedRP["value"]]}
-                    rp={localSelectedRP["label"]}
+                    rate={localSelectedRP["label"]}
                     extra={extraInfo}
                   />
                 </Fragment>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, Fragment } from "react";
 
-import TextField from "@material-ui/core/TextField";
 import Select from "react-select";
+import TextField from "@material-ui/core/TextField";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { GlobalContext } from "context";
@@ -48,7 +48,7 @@ const NZS1170p5Section = () => {
   } = useContext(GlobalContext);
 
   const [computeButton, setComputeButton] = useState({
-    text: "Compute",
+    text: `${CONSTANTS.COMPUTE_BUTTON}`,
     isFetching: false,
   });
 
@@ -185,14 +185,14 @@ const NZS1170p5Section = () => {
 
         setIsNZS1170p5Computed(true);
         setComputeButton({
-          text: "Compute",
+          text: `${CONSTANTS.COMPUTE_BUTTON}`,
           isFetching: false,
         });
       })
       .catch((error) => {
         if (error.name !== "AbortError") {
           setComputeButton({
-            text: "Compute",
+            text: `${CONSTANTS.COMPUTE_BUTTON}`,
             isFetching: false,
           });
         }
@@ -247,14 +247,14 @@ const NZS1170p5Section = () => {
 
         setIsNZS1170p5Computed(true);
         setComputeButton({
-          text: "Compute",
+          text: `${CONSTANTS.COMPUTE_BUTTON}`,
           isFetching: false,
         });
       })
       .catch((error) => {
         if (error.name !== "AbortError") {
           setComputeButton({
-            text: "Compute",
+            text: `${CONSTANTS.COMPUTE_BUTTON}`,
             isFetching: false,
           });
         }
@@ -294,7 +294,9 @@ const NZS1170p5Section = () => {
           distance: Number(nzs1170p5DefaultParams["distance"]),
           z_factor: selectedNZS1170p5ZFactor,
           im_component:
-            selectedIMComponent === null ? "RotD50" : selectedIMComponent,
+            selectedIMComponent === null
+              ? `${CONSTANTS.ROTD_FIFTY}`
+              : selectedIMComponent,
         }),
       {
         headers: {
@@ -312,14 +314,14 @@ const NZS1170p5Section = () => {
 
         setIsNZS1170p5Computed(true);
         setComputeButton({
-          text: "Compute",
+          text: `${CONSTANTS.COMPUTE_BUTTON}`,
           isFetching: false,
         });
       })
       .catch((error) => {
         if (error.name !== "AbortError") {
           setComputeButton({
-            text: "Compute",
+            text: `${CONSTANTS.COMPUTE_BUTTON}`,
             isFetching: false,
           });
         }
@@ -380,7 +382,7 @@ const NZS1170p5Section = () => {
               htmlFor="soil-class"
               className="control-label label-soil-class"
             >
-              Soil Class
+              {CONSTANTS.SOIL_CLASS}
             </label>
             <Select
               id="soil-class"
@@ -408,7 +410,7 @@ const NZS1170p5Section = () => {
               setSelectedNZS1170p5SoilClass(localSelectedSoilClass)
             }
           >
-            Set Soil Class
+            {CONSTANTS.SET_SOIL_CLASS}
           </button>
           <button
             id="soil-class-default-button"
@@ -420,7 +422,7 @@ const NZS1170p5Section = () => {
             }
             onClick={() => onClickDefaultSoilClass()}
           >
-            Use Default
+            {CONSTANTS.USE_DEFAULT}
           </button>
         </div>
 
@@ -431,7 +433,7 @@ const NZS1170p5Section = () => {
               htmlFor="z-factor"
               className="control-label"
             >
-              Z Factor
+              {CONSTANTS.Z_FACTOR}
             </label>
             <TextField
               id="z-factor"
@@ -453,7 +455,7 @@ const NZS1170p5Section = () => {
             }
             onClick={() => setSelectedNZS1170p5ZFactor(localZFactor)}
           >
-            Set Z-factor
+            {CONSTANTS.SET_Z_FACTOR}
           </button>
           <button
             id="vs30-use-default"
@@ -465,7 +467,7 @@ const NZS1170p5Section = () => {
             }
             onClick={() => onClickDefaultZFactor()}
           >
-            Use Default
+            {CONSTANTS.USE_DEFAULT}
           </button>
         </div>
 
