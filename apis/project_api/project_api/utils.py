@@ -148,7 +148,6 @@ def load_hazard_data(results_dir: Path, im: sc.im.IM):
 
 
 def load_disagg_data(station_data_dir: Path, im: sc.im.IM, rps: List[int]):
-    # breakpoint()
     ensemble_results = []
     metadata_results = []
     src_pngs = []
