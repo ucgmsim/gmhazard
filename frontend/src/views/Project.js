@@ -1,7 +1,9 @@
 import React, { Fragment, useContext, useEffect } from "react";
 
 import { Tabs, Tab } from "react-bootstrap";
+
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 
 import { TwoColumnView } from "components/common";
 
@@ -12,6 +14,8 @@ import {
 import { GMSForm, GMSViewer } from "components/Project/GMS";
 import { HazardForm, HazardViewer } from "components/Project/SeismicHazard";
 import { ScenarioForm, ScenarioViewer } from "components/Project/Scenarios";
+
+import "assets/style/NavBar.css";
 
 const Project = () => {
   const {
@@ -47,7 +51,11 @@ const Project = () => {
   return (
     <Fragment>
       <Tabs defaultActiveKey="siteselection" className="hazard-tabs">
-        <Tab eventKey="siteselection" title="Site Selection">
+        <Tab
+          eventKey="siteselection"
+          title={CONSTANTS.PROJECT_AND_SITE_SELECTION}
+          tabClassName="tab-fonts"
+        >
           <TwoColumnView
             cpanel={SiteSelectionForm}
             viewer={SiteSelectionViewer}
@@ -56,27 +64,27 @@ const Project = () => {
 
         <Tab
           eventKey="hazard"
-          title="Seismic Hazard"
+          title={CONSTANTS.SEISMIC_HAZARD}
           disabled={invalidTab()}
-          tabClassName="seismic-hazard-tab"
+          tabClassName="seismic-hazard-tab tab-fonts"
         >
           <TwoColumnView cpanel={HazardForm} viewer={HazardViewer} />
         </Tab>
 
         <Tab
           eventKey="gms"
-          title="Ground Motion Selection"
+          title={CONSTANTS.GROUND_MOTION_SELECTION}
           disabled={invalidTab()}
-          tabClassName="gms-tab"
+          tabClassName="gms-tab tab-fonts"
         >
           <TwoColumnView cpanel={GMSForm} viewer={GMSViewer} />
         </Tab>
 
         <Tab
           eventKey="scenario"
-          title="Scenarios"
+          title={CONSTANTS.SCENARIOS}
           disabled={invalidTab()}
-          tabClassName="scenarios-tab"
+          tabClassName="scenarios-tab tab-fonts"
         >
           <TwoColumnView cpanel={ScenarioForm} viewer={ScenarioViewer} />
         </Tab>

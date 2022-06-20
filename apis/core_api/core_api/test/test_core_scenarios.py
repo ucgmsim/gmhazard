@@ -21,7 +21,6 @@ def test_get_ensemble_scenario(config):
         (["ensemble_scenario", "mu_data"], dict),
         (["ensemble_scenario", "percentiles"], dict),
         (["ensemble_scenario", "percentiles", "16th"], dict),
-        (["ensemble_scenario", "percentiles", "50th"], dict),
         (["ensemble_scenario", "percentiles", "84th"], dict),
     ]
     tu.response_checks(

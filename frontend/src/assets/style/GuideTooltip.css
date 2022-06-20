@@ -1,5 +1,5 @@
 div.MuiTooltip-tooltip {
-  font-size: calc(6px + 0.5vw) !important;
+  font-size: 0.9rem !important;
 }
 
 a.tooltip-a-tag {

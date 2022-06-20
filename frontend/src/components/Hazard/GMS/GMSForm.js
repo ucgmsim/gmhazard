@@ -1,14 +1,14 @@
 import React, { Fragment, useState, useEffect, useContext } from "react";
 
 import $ from "jquery";
+import Select from "react-select";
 import { v4 as uuidv4 } from "uuid";
+import makeAnimated from "react-select/animated";
 import { Accordion, Card } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Select from "react-select";
-import makeAnimated from "react-select/animated";
 
-import * as CONSTANTS from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import { CustomSelect, IMCustomSelect, GuideTooltip } from "components/common";
@@ -100,14 +100,14 @@ const GMSForm = () => {
   // For Causal params bounds data fetcher
   const [getPreGMParamsClick, setGetPreGMParamsClick] = useState(null);
   const [getPreGMButton, setGetPreGMButton] = useState({
-    text: "Get causal parameters bounds",
+    text: `${CONSTANTS.GET_CAUSAL_PARAMS_BOUNDS}`,
     isFetching: false,
   });
 
   // For IM Vector weights data fetcher
   const [getIMWeightsClick, setGetIMWeightsClick] = useState(null);
   const [getIMWeightMButton, setGetIMWeightMButton] = useState({
-    text: "Get IM vector Weights",
+    text: `${CONSTANTS.GET_IM_VECTOR_WEIGHTS}`,
     isFetching: false,
   });
 
@@ -271,14 +271,14 @@ const GMSForm = () => {
               setLocalSFMax(responseData.sf_high);
 
               setGetPreGMButton({
-                text: "Get causal parameters bounds",
+                text: `${CONSTANTS.GET_CAUSAL_PARAMS_BOUNDS}`,
                 isFetching: false,
               });
             })
             .catch(function (error) {
               if (error.name !== "AbortError") {
                 setGetPreGMButton({
-                  text: "Get causal parameters bounds",
+                  text: `${CONSTANTS.GET_CAUSAL_PARAMS_BOUNDS}`,
                   isFetching: false,
                 });
               }
@@ -341,14 +341,14 @@ const GMSForm = () => {
               setLocalWeights(responseData);
 
               setGetIMWeightMButton({
-                text: "Get IM vector weights",
+                text: `${CONSTANTS.GET_IM_VECTOR_WEIGHTS}`,
                 isFetching: false,
               });
             })
             .catch(function (error) {
               if (error.name !== "AbortError") {
                 setGetIMWeightMButton({
-                  text: "Get IM vector weights",
+                  text: `${CONSTANTS.GET_IM_VECTOR_WEIGHTS}`,
                   isFetching: false,
                 });
               }
@@ -560,12 +560,12 @@ const GMSForm = () => {
     <Fragment>
       <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
         <div className="form-group form-section-title">
-          Ground Motion Selection
+          {CONSTANTS.GROUND_MOTION_SELECTION}
         </div>
 
         <div className="im-custom-form-group">
           <CustomSelect
-            title="Conditioning IM Name"
+            title={CONSTANTS.GMS_CONDITIONING_IM_NAME}
             setSelect={setSelectedIMType}
             options={availableIMs}
             guideMSG={
@@ -576,7 +576,7 @@ const GMSForm = () => {
 
         <div className="im-custom-form-group">
           <IMCustomSelect
-            title="Vibration Period"
+            title={`${CONSTANTS.VIBRATION_PERIOD} ${CONSTANTS.SECONDS_UNIT}`}
             setSelect={setSelectedIMPeriod}
             options={availablePeriods}
             selectedIM={selectedIMType}
@@ -591,7 +591,7 @@ const GMSForm = () => {
             htmlFor="im-level"
             className="control-label"
           >
-            IM / Exceedance rate level
+            {CONSTANTS.IM_LEVEL} / {CONSTANTS.EXCEEDANCE_RATE}
           </label>
           <GuideTooltip
             explanation={
@@ -610,7 +610,7 @@ const GMSForm = () => {
                 onChange={(e) => setLocalImExdRateRadio(e.target.value)}
               />
               <label className="form-check-label" htmlFor="im-level">
-                IM
+                {CONSTANTS.IM_LEVEL}
               </label>
             </div>
             <div className="form-check form-check-inline">
@@ -624,7 +624,7 @@ const GMSForm = () => {
                 onChange={(e) => setLocalImExdRateRadio(e.target.value)}
               />
               <label className="form-check-label" htmlFor="exceedance-rate">
-                Exceedance Rate
+                {CONSTANTS.EXCEEDANCE_RATE}
               </label>
             </div>
           </div>
@@ -672,7 +672,7 @@ const GMSForm = () => {
             htmlFor="im-vector"
             className="control-label"
           >
-            IM Vector
+            {CONSTANTS.IM_VECTOR}
           </label>
           <GuideTooltip
             explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_GMS_IM_VECTOR"]}
@@ -706,7 +706,7 @@ const GMSForm = () => {
 
         <div className="form-group">
           <label id="label-num-gms" htmlFor="num-gms" className="control-label">
-            Number of Ground Motions
+            {CONSTANTS.NUMBER_OF_GROUND_MOTIONS}
           </label>
           <GuideTooltip
             explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_GMS_NUM_GMS"]}
@@ -727,7 +727,7 @@ const GMSForm = () => {
             onClick={() => computeGMS()}
             disabled={invalidInputs()}
           >
-            Compute
+            {CONSTANTS.COMPUTE_BUTTON}
           </button>
         </div>
 
@@ -735,7 +735,7 @@ const GMSForm = () => {
           <Card>
             <Card.Header className="advanced-toggle-header">
               <span>
-                Advanced
+                {CONSTANTS.ADVANCED}
                 <GuideTooltip
                   explanation={
                     CONSTANTS.TOOLTIP_MESSAGES["HAZARD_GMS_ADVANCED"]
@@ -758,7 +758,7 @@ const GMSForm = () => {
                     htmlFor="causal-parameters"
                     className="control-label"
                   >
-                    Causal parameters bounds
+                    {CONSTANTS.CAUSAL_PARAMS_BOUNDS}
                   </label>
                   <GuideTooltip
                     explanation={
@@ -772,16 +772,18 @@ const GMSForm = () => {
                       <tr>
                         <th className="var-name" scope="col"></th>
                         <th className="min-value" scope="col">
-                          Min
+                          {CONSTANTS.MINIMUM}
                         </th>
                         <th className="min-value" scope="col">
-                          Max
+                          {CONSTANTS.MAXIMUM}
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <th scope="row">Mw</th>
+                        <th scope="row">
+                          {CONSTANTS.MAGNITUDE}, {CONSTANTS.MAGNITUDE_SYMBOL}
+                        </th>
                         <td>
                           <input
                             type="text"
@@ -800,7 +802,10 @@ const GMSForm = () => {
                         </td>
                       </tr>
                       <tr>
-                        <th scope="row">Rrup (km)</th>
+                        <th scope="row">
+                          {CONSTANTS.RUPTURE_DISTANCE}{" "}
+                          {CONSTANTS.KILOMETRE_UNIT}
+                        </th>
                         <td>
                           <input
                             type="text"
@@ -820,7 +825,7 @@ const GMSForm = () => {
                       </tr>
                       <tr>
                         <th scope="row">
-                          V<sub>S30</sub> (m/s)
+                          V<sub>S30</sub> {CONSTANTS.METRE_PER_SECOND_UNIT}
                         </th>
                         <td>
                           <input
@@ -840,7 +845,7 @@ const GMSForm = () => {
                         </td>
                       </tr>
                       <tr>
-                        <th scope="row">SF</th>
+                        <th scope="row">{CONSTANTS.SCALE_FACTOR}</th>
                         <td>
                           <input
                             type="text"
@@ -867,7 +872,7 @@ const GMSForm = () => {
                     htmlFor="weights"
                     className="control-label"
                   >
-                    Weights
+                    {CONSTANTS.WEIGHTS}
                   </label>
                   <GuideTooltip
                     explanation={
@@ -879,7 +884,7 @@ const GMSForm = () => {
                       <tr>
                         <th scope="col"></th>
                         <th className="text-center" scope="col">
-                          Weights
+                          {CONSTANTS.WEIGHTS}
                         </th>
                       </tr>
                     </thead>
@@ -894,7 +899,7 @@ const GMSForm = () => {
                     htmlFor="database"
                     className="control-label"
                   >
-                    Database
+                    {CONSTANTS.DATABASE}
                   </label>
                   <GuideTooltip
                     explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_GMS_DB"]}
@@ -915,7 +920,7 @@ const GMSForm = () => {
                     htmlFor="replicates"
                     className="control-label"
                   >
-                    Replicates
+                    {CONSTANTS.REPLICATES}
                   </label>
                   <GuideTooltip
                     explanation={

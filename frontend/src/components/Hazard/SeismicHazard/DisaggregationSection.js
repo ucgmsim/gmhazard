@@ -6,8 +6,8 @@ import TextField from "@material-ui/core/TextField";
 import { GlobalContext } from "context";
 import * as CONSTANTS from "constants/Constants";
 
-import { disableScrollOnNumInput } from "utils/Utils";
 import { GuideTooltip } from "components/common";
+import { disableScrollOnNumInput } from "utils/Utils";
 
 const DisaggregationSection = () => {
   disableScrollOnNumInput();
@@ -54,7 +54,7 @@ const DisaggregationSection = () => {
     <Fragment>
       <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
         <div className="form-group form-section-title">
-          Disaggregation
+        {CONSTANTS.DISAGGREGATION}
           <GuideTooltip
             explanation={CONSTANTS.TOOLTIP_MESSAGES["HAZARD_DISAGG"]}
           />
@@ -65,7 +65,7 @@ const DisaggregationSection = () => {
             htmlFor="disagg-annual-rate"
             className="control-label"
           >
-            Annual Exceedance Rate
+            {CONSTANTS.ANNUAL_EXCEEDANCE_RATE}
           </label>
           <TextField
             id="disagg-annual-rate"
@@ -88,7 +88,7 @@ const DisaggregationSection = () => {
               (localExceedance > 0 && localExceedance < 1) ||
               localExceedance === ""
                 ? " "
-                : "Annual Exceedance Rate must be between 0 and 1. (0 < X < 1)"
+                : `${CONSTANTS.ANNUAL_EXCEEDANCE_RATE_HELPER_TEXT}`
             }
           />
         </div>
@@ -104,7 +104,7 @@ const DisaggregationSection = () => {
               setDisaggComputeClick(uuidv4());
             }}
           >
-            Compute
+            {CONSTANTS.COMPUTE_BUTTON}
           </button>
         </div>
       </form>

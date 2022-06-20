@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState, Fragment } from "react";
 
-import * as CONSTANTS from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
@@ -105,11 +105,9 @@ const SiteSelectionRegional = () => {
         showSpinner === false &&
         showErrorMessage.isError === false && (
           <ImageMap
-            header={
-              "Looking at a map with the source locations and historical events from Geonet in the 2003-present period."
-            }
+            header={CONSTANTS.REGIONAL_MAP_DESCRIPTION}
             src={contextPlot}
-            alt={"Regional Map"}
+            alt={CONSTANTS.REGIONAL_MAP_IMG_ALT}
           />
         )}
     </Fragment>

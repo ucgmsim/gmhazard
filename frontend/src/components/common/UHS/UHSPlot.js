@@ -2,42 +2,49 @@ import React from "react";
 
 import Plot from "react-plotly.js";
 
-import { getPlotData } from "utils/Utils.js";
-import { PLOT_MARGIN, PLOT_CONFIG } from "constants/Constants";
 import { ErrorMessage } from "components/common";
+import * as CONSTANTS from "constants/Constants";
+import { getPlotData, createAxisLabel, convertRPtoAER } from "utils/Utils";
 
 import "assets/style/UHSPlot.css";
 
 const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
-  if (uhsData !== null && !uhsData.hasOwnProperty("error")) {
+  if (uhsData && !uhsData.hasOwnProperty("error")) {
     const createLegendLabel = (isNZCode) => {
       const selectedRPs = extra.selectedRPs;
 
       selectedRPs.sort((a, b) => a - b);
       /*
-        Based on a sorted array, add each RP
+        Based on a sorted array, add each Annual Exceedance Rate
         Depends on the isNZCode status, newLabel starts with NZ Code - or an empty string
       */
       let newLabel =
-        isNZCode === true ? "NZS1170.5 [RP = " : "Site-specific [RP = ";
+        isNZCode === true
+          ? `${CONSTANTS.NZS1170P5} [Rate = `
+          : `${CONSTANTS.SITE_SPECIFIC} [Rate = `;
 
       /*
-        Only display to legend the RP that has values if its for Projects
+        Only display to legend the Annual Exceedance Rate
+        that has values if it's for Projects
       */
       if (extra.from === "project") {
         const dataToCheck = isNZCode === true ? nzs1170p5Data : uhsData;
         for (let i = 0; i < selectedRPs.length; i++) {
           if (
             !Object.values(
-              dataToCheck[`${1 / Number(selectedRPs[i]).toString()}`]
+              dataToCheck[`${1 / Number(selectedRPs[i])}`]
             ).includes("nan")
           ) {
-            newLabel += `${selectedRPs[i].toString()}, `;
+            /* 
+            With projects, UHS is based on RP, not Annual Exceedance Rate.
+            Hence, we convert the selected RPs to Annual Exceedance Rate
+            */
+            newLabel += `${convertRPtoAER(selectedRPs[i])}, `;
           }
         }
       } else {
         for (let i = 0; i < selectedRPs.length; i++) {
-          newLabel += `${selectedRPs[i].toString()}, `;
+          newLabel += `${convertRPtoAER(selectedRPs[i])}, `;
         }
       }
 
@@ -47,16 +54,39 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
       return newLabel;
     };
 
-    // Create NZS1170p5 Code UHS scatter objs
+    // UHS scatter objs
     const scatterObjs = [];
-    let nzCodeDataCounter = 0;
+    let dataCounter = 0;
+    for (let [curExcd, curData] of Object.entries(uhsData)) {
+      if (!curData.sa_values.includes("nan")) {
+        // The first value is from PGA, hence do not inlcude
+        scatterObjs.push({
+          x: curData.period_values.slice(1),
+          y: curData.sa_values.slice(1),
+          type: "scatter",
+          mode: "lines",
+          line: { color: "red" },
+          name: createLegendLabel(false),
+          legendgroup: "site-specific",
+          showlegend: dataCounter === 0 ? true : false,
+          hoverinfo: "none",
+          hovertemplate:
+            `<b>${CONSTANTS.SITE_SPECIFIC} [Rate = ${Number(
+              Number(curExcd).toFixed(4)
+            )}]</b><br><br>` +
+            "%{xaxis.title.text}: %{x}<br>" +
+            "%{yaxis.title.text}: %{y}<extra></extra>",
+        });
+        dataCounter += 1;
+      }
+    }
 
+    // Create NZS1170p5 Code UHS scatter objs
+    let nzCodeDataCounter = 0;
     for (let [curExcd, curData] of Object.entries(nzs1170p5Data)) {
       // Plots only if it does not include nan
       if (!Object.values(curData).includes("nan")) {
         let curPlotData = getPlotData(curData);
-        // Convert the Annual exdance reate to Return period in a string format
-        let displayRP = (1 / Number(curExcd)).toString();
         scatterObjs.push({
           x: curPlotData.index,
           y: curPlotData.values,
@@ -69,35 +99,13 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
           showlegend: nzCodeDataCounter === 0 ? true : false,
           hoverinfo: "none",
           hovertemplate:
-            `<b>NZS1170.5 [RP ${displayRP}]</b><br><br>` +
+            `<b>${CONSTANTS.NZS1170P5} [Rate = ${Number(
+              Number(curExcd).toFixed(4)
+            )}]</b><br><br>` +
             "%{xaxis.title.text}: %{x}<br>" +
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
         nzCodeDataCounter += 1;
-      }
-    }
-
-    // UHS scatter objs
-    let dataCounter = 0;
-    for (let [curExcd, curData] of Object.entries(uhsData)) {
-      if (!curData.sa_values.includes("nan")) {
-        let displayRP = (1 / Number(curExcd)).toString();
-        scatterObjs.push({
-          x: curData.period_values,
-          y: curData.sa_values,
-          type: "scatter",
-          mode: "lines",
-          line: { color: "blue" },
-          name: createLegendLabel(false),
-          legendgroup: "site-specific",
-          showlegend: dataCounter === 0 ? true : false,
-          hoverinfo: "none",
-          hovertemplate:
-            `<b>Site-specific [RP ${displayRP}]</b><br><br>` +
-            "%{xaxis.title.text}: %{x}<br>" +
-            "%{yaxis.title.text}: %{y}<extra></extra>",
-        });
-        dataCounter += 1;
       }
     }
 
@@ -107,13 +115,27 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
         data={scatterObjs}
         layout={{
           xaxis: {
-            title: { text: "Period (s)" },
+            type: "log",
+            title: {
+              text: createAxisLabel(
+                CONSTANTS.PERIOD,
+                CONSTANTS.PERIOD_SYMBOL,
+                CONSTANTS.SECONDS_UNIT
+              ),
+            },
           },
           yaxis: {
-            title: { text: "Spectral acceleration (g)" },
+            type: "log",
+            title: {
+              text: createAxisLabel(
+                CONSTANTS.SPECTRAL_ACCELERATION,
+                CONSTANTS.SPECTRAL_ACCELERATION_SYMBOL,
+                CONSTANTS.GRAVITY_UNIT
+              ),
+            },
           },
           autosize: true,
-          margin: PLOT_MARGIN,
+          margin: CONSTANTS.PLOT_MARGIN,
           hovermode: "closest",
           hoverlabel: { bgcolor: "#FFF" },
           legend: {
@@ -124,7 +146,7 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
         }}
         useResizeHandler={true}
         config={{
-          ...PLOT_CONFIG,
+          ...CONSTANTS.PLOT_CONFIG,
           toImageButtonOptions: {
             filename:
               extra.from === "hazard"

@@ -1,4 +1,5 @@
 import { sortIMs } from "utils/Utils";
+import * as CONSTANTS from "constants/Constants";
 
 export const calculateGMSSpectra = (gmsData, numGMs) => {
   const plotDataArr = [];
@@ -117,7 +118,7 @@ export const calculateGMSSpectra = (gmsData, numGMs) => {
         x: periodsArray,
         y: upperPercenValues,
         mode: "lines",
-        name: `GCIM - 84${"th".sup()} Percentile`,
+        name: `${CONSTANTS.GCIM} - ${CONSTANTS.UPPER_PERCENTILE}`,
         line: { dash: "dashdot", color: "red" },
         type: "scatter",
         hoverinfo: "none",
@@ -126,7 +127,7 @@ export const calculateGMSSpectra = (gmsData, numGMs) => {
         x: periodsArray,
         y: medianValues,
         mode: "lines",
-        name: "GCIM - Median",
+        name: `${CONSTANTS.GCIM} - ${CONSTANTS.MEDIAN}`,
         line: { color: "red" },
         type: "scatter",
         hoverinfo: "none",
@@ -135,7 +136,7 @@ export const calculateGMSSpectra = (gmsData, numGMs) => {
         x: periodsArray,
         y: lowerPercenValues,
         mode: "lines",
-        name: `GCIM - 16${"th".sup()} percentile`,
+        name: `${CONSTANTS.GCIM} - ${CONSTANTS.LOWER_PERCENTILE}`,
         line: { dash: "dashdot", color: "red" },
         type: "scatter",
         hoverinfo: "none",
@@ -173,7 +174,7 @@ export const calculateGMSSpectra = (gmsData, numGMs) => {
         y: yCoords,
         legendgroup: "Realisations",
         mode: "lines",
-        name: "Realisations",
+        name: `${CONSTANTS.REALISATIONS}`,
         line: { color: "blue", width: 0.7 },
         type: "scatter",
         showlegend: i === 0 ? true : false,
@@ -197,7 +198,7 @@ export const calculateGMSSpectra = (gmsData, numGMs) => {
         y: yCoords,
         legendgroup: "Selected GMs",
         mode: "lines",
-        name: "Selected Ground Motions",
+        name: `${CONSTANTS.SELECTED_GM}`,
         line: { color: "black", width: 0.7 },
         type: "scatter",
         showlegend: i === 0 ? true : false,

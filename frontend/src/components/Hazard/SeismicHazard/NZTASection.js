@@ -39,7 +39,7 @@ const NZTASection = () => {
   } = useContext(GlobalContext);
 
   const [computeButton, setComputeButton] = useState({
-    text: "Compute",
+    text: `${CONSTANTS.COMPUTE_BUTTON}`,
     isFetching: false,
   });
 
@@ -129,14 +129,14 @@ const NZTASection = () => {
 
         setIsNZTAComputed(true);
         setComputeButton({
-          text: "Compute",
+          text: `${CONSTANTS.COMPUTE_BUTTON}`,
           isFetching: false,
         });
       })
       .catch((error) => {
         if (error.name !== "AbortError") {
           setComputeButton({
-            text: "Compute",
+            text: `${CONSTANTS.COMPUTE_BUTTON}`,
             isFetching: false,
           });
         }
@@ -164,7 +164,7 @@ const NZTASection = () => {
               htmlFor="soil-class"
               className="control-label label-soil-class"
             >
-              Soil Class
+              {CONSTANTS.SOIL_CLASS}
             </label>
             <Select
               id="soil-class"
@@ -187,7 +187,7 @@ const NZTASection = () => {
             }
             onClick={() => setSelectedNZTASoilClass(localSelectedSoilClass)}
           >
-            Set Soil Class
+            {CONSTANTS.SET_SOIL_CLASS}
           </button>
           <button
             id="soil-class-default-button"
@@ -198,7 +198,7 @@ const NZTASection = () => {
             }
             onClick={() => onClickDefaultSoilClass()}
           >
-            Use Default
+            {CONSTANTS.USE_DEFAULT}
           </button>
         </div>
 

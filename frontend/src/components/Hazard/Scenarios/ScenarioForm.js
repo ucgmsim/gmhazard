@@ -1,14 +1,14 @@
 import React, { Fragment, useState, useEffect, useContext } from "react";
 
-import { v4 as uuidv4 } from "uuid";
 import Select from "react-select";
+import { v4 as uuidv4 } from "uuid";
 import makeAnimated from "react-select/animated";
 
-import * as CONSTANTS from "constants/Constants";
 import { GlobalContext } from "context";
+import * as CONSTANTS from "constants/Constants";
 
-import { IMCustomSelect, GuideTooltip } from "components/common";
 import { createSelectArray } from "utils/Utils";
+import { IMCustomSelect, GuideTooltip } from "components/common";
 
 const ScenarioForm = () => {
   const animatedComponents = makeAnimated();
@@ -68,16 +68,16 @@ const ScenarioForm = () => {
   return (
     <Fragment>
       <div className="form-group form-section-title">
-        Scenarios
+        {CONSTANTS.SCENARIOS}
         <GuideTooltip explanation={CONSTANTS.TOOLTIP_MESSAGES["SCENARIOS"]} />
       </div>
       <div className="form-group">
         <IMCustomSelect
-          title="Component"
+          title={CONSTANTS.COMPONENT}
           setSelect={setLocalSelectedIMComponent}
           options={scenarioIMComponentOptions}
           selectedIM={"pSA"}
-          placeholder={"Loading..."}
+          placeholder={`${CONSTANTS.PLACEHOLDER_LOADING}`}
         />
       </div>
 
@@ -89,7 +89,7 @@ const ScenarioForm = () => {
           disabled={localSelectedIMComponent === null}
           onClick={() => setScenarioComputeClick(uuidv4())}
         >
-          Compute
+          {CONSTANTS.COMPUTE_BUTTON}
         </button>
       </div>
 
@@ -99,7 +99,7 @@ const ScenarioForm = () => {
           htmlFor="scenario-ruptures"
           className="control-label"
         >
-          Scenarios
+          {CONSTANTS.SCENARIO_RUPTURES}
         </label>
         <Select
           id="hazard-scenarios-select"
@@ -107,7 +107,9 @@ const ScenarioForm = () => {
           components={animatedComponents}
           isMulti
           placeholder={
-            localRuptureOptions.length === 0 ? "Not available" : "Select..."
+            localRuptureOptions.length === 0
+              ? `${CONSTANTS.PLACEHOLDER_NOT_AVAILABLE}`
+              : `${CONSTANTS.PLACEHOLDER_SELECT_SIGN}`
           }
           value={localRuptures.length === 0 ? [] : localRuptures}
           onChange={(value) => setLocalRuptures(value || [])}

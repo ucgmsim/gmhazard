@@ -1,8 +1,10 @@
 import React, { Fragment, useState } from "react";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Tooltip from "@material-ui/core/Tooltip";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
+
+import * as CONSTANTS from "constants/Constants";
 
 import "assets/style/GuideTooltip.css";
 
@@ -40,7 +42,7 @@ const GuideTooltip = ({ explanation, hyperlink = null }) => {
                     className="tooltip-a-tag"
                     key="2"
                   >
-                    More detail
+                    {CONSTANTS.MORE_DETAIL}
                   </a>,
                 ]
           }
