@@ -224,6 +224,9 @@ test:
     - CAV
     - PGA
     - PGV
+    - AI
+    - Ds575
+    - Ds595
     - pSA_0.3
     - pSA_3.0
   disagg_return_periods: [25, 100, 150, 250, 500, 1000, 2500, 5000, 10000]
