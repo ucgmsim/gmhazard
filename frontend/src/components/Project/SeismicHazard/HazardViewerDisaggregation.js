@@ -136,7 +136,6 @@ const HazardViewerDisaggregation = () => {
           projectZ2p5
         ),
         im: combineIMwithPeriod(projectSelectedIM, projectSelectedIMPeriod),
-        rp: projectSelectedDisagRP,
         im_component: projectSelectedIMComponent,
       });
 
@@ -276,11 +275,6 @@ const HazardViewerDisaggregation = () => {
       setShowErrorMessage({ isError: true, errorCode: error });
     }
     console.log(error);
-  };
-
-  const testBtn = () => {
-    console.log(disaggPlotData.eps[localSelectedRP]);
-    console.log(disaggPlotData.eps[localSelectedRP["value"]]);
   };
 
   return (

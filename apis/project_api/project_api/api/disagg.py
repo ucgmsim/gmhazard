@@ -1,7 +1,5 @@
 import os
-import base64
 import tempfile
-import time
 
 import flask
 from flask_cors import cross_origin
@@ -38,7 +36,6 @@ def get_disagg_rps():
 @server.requires_auth
 @au.api.endpoint_exception_handling(server.app)
 def get_ensemble_disagg():
-    start = time.time()
     server.app.logger.info(f"Received request at {const.PROJECT_DISAGG_ENDPOINT}")
 
     _, version_str = su.utils.get_package_version(const.PACKAGE_NAME)
@@ -70,8 +67,6 @@ def get_ensemble_disagg():
         im,
         rps,
     )
-    print(f"It took about {time.time() - start}")
-    # breakpoint()
 
     return flask.jsonify(
         au.api.get_ensemble_disagg(
@@ -79,8 +74,6 @@ def get_ensemble_disagg():
             metadata_df,
             src_png_data,
             eps_png_data,
-            # base64.b64encode(src_png_data).decode(),
-            # base64.b64encode(eps_png_data).decode(),
             rps,
             au.api.get_download_token(
                 {
