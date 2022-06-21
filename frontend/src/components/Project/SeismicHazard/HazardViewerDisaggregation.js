@@ -219,38 +219,40 @@ const HazardViewerDisaggregation = () => {
       eps: epsDisaggPlot,
     });
 
-    const disaggTotalData = filterDisaggData(disaggData["disagg_data"], selectedRPs);
-    
-    let filteredTotalContribution = {}
-    for (const item in disaggTotalData){
-      filteredTotalContribution[item] = disaggTotalData[item]["total_contribution"]
+    const disaggTotalData = filterDisaggData(
+      disaggData["disagg_data"],
+      selectedRPs
+    );
+
+    let filteredTotalContribution = {};
+    for (const item in disaggTotalData) {
+      filteredTotalContribution[item] =
+        disaggTotalData[item]["total_contribution"];
     }
     const extraInfo = filterDisaggData(disaggData["extra_info"], selectedRPs);
-    // try {
-    //   extraInfo.rupture_name["distributed_seismicity"] =
-    //     CONSTANTS.DISTRIBUTED_SEISMICITY;
-    // } catch (err) {
-    //   console.log(err.message);
-    // }
 
     // Polish total contribution data
-    let data = {}
-    for (const RP in filteredTotalContribution){
-      data[RP] = Array.from(Object.keys(filteredTotalContribution[RP]), (key) => {
-        return [
-          key,
-          extraInfo[RP].rupture_name[key],
-          filteredTotalContribution[RP][key],
-          extraInfo[RP].annual_rec_prob[key],
-          extraInfo[RP].magnitude[key],
-          extraInfo[RP].rrup[key],
-        ];
-      });
-    }
+    let data = {};
+    for (const RP in filteredTotalContribution) {
+      extraInfo[RP].rupture_name["distributed_seismicity"] =
+        CONSTANTS.DISTRIBUTED_SEISMICITY;
 
-    // data.sort((entry1, entry2) => {
-    //   return entry1[2] > entry2[2] ? -1 : 1;
-    // });
+      const unsortedData = Array.from(
+        Object.keys(filteredTotalContribution[RP]),
+        (key) => {
+          return [
+            key,
+            extraInfo[RP].rupture_name[key],
+            filteredTotalContribution[RP][key],
+            extraInfo[RP].annual_rec_prob[key],
+            extraInfo[RP].magnitude[key],
+            extraInfo[RP].rrup[key],
+          ];
+        }
+      );
+
+      data[RP] = unsortedData.sort((a, b) => b[2] - a[2]);
+    }
 
     setDisaggMeanData(disaggTotalData);
     setDisaggContributionData(data);
@@ -398,7 +400,9 @@ const HazardViewerDisaggregation = () => {
                 />
                 <ContributionTable
                   meanData={disaggMeanData[localSelectedRP["value"]]}
-                  contributionData={disaggContributionData[localSelectedRP["value"]]}
+                  contributionData={
+                    disaggContributionData[localSelectedRP["value"]]
+                  }
                 />
                 <button
                   className="btn btn-info hazard-disagg-contrib-button"
