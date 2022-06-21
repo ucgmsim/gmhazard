@@ -3,10 +3,12 @@ CAV:
         ACTIVE_SHALLOW:
                 CB_10: 1
 AI:
-        !!python/tuple [ACTIVE_SHALLOW, SUBDUCTION_INTERFACE, SUBDUCTION_SLAB, VOLCANIC]:
+#        !!python/tuple [ACTIVE_SHALLOW, SUBDUCTION_INTERFACE, SUBDUCTION_SLAB, VOLCANIC]:
+        ACTIVE_SHALLOW:
                 CB_12: 1
 !!python/tuple [Ds575, Ds595]:
-        !!python/tuple [ACTIVE_SHALLOW, SUBDUCTION_INTERFACE, SUBDUCTION_SLAB, VOLCANIC]:
+#        !!python/tuple [ACTIVE_SHALLOW, SUBDUCTION_INTERFACE, SUBDUCTION_SLAB, VOLCANIC]:
+        ACTIVE_SHALLOW:
                 AS_16: 1
 !!python/tuple [pSA, PGA]:
         ACTIVE_SHALLOW:
