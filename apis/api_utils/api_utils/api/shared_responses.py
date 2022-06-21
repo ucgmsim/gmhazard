@@ -26,8 +26,8 @@ def get_ensemble_hazard_response(
 
 
 def get_ensemble_disagg(
-    ensemble_disagg: Sequence[sc.disagg.EnsembleDisaggResult],
-    metadata_df: Sequence[pd.DataFrame],
+    ensemble_disagg_data: Sequence[sc.disagg.EnsembleDisaggResult],
+    metadata_df_data: Sequence[pd.DataFrame],
     src_png_data: Sequence[str],
     eps_png_data: Sequence[str],
     rps: Sequence[int],
@@ -35,19 +35,20 @@ def get_ensemble_disagg(
 ):
     """Creates the response for both core and project API"""
     return {
-        "ensemble_id": ensemble_disagg[0].ensemble.name,
+        "ensemble_id": ensemble_disagg_data[0].ensemble.name,
         "station": {
-            rps[idx]: ensemble.site_info.station_name
-            for idx, ensemble in enumerate(ensemble_disagg)
+            rps[idx]: ensemble_disagg.site_info.station_name
+            for idx, ensemble_disagg in enumerate(ensemble_disagg_data)
         },
-        "im": str(ensemble_disagg[0].im),
-        "im_component": str(ensemble_disagg[0].im.component),
+        "im": str(ensemble_disagg_data[0].im),
+        "im_component": str(ensemble_disagg_data[0].im.component),
         "disagg_data": {
-            rps[idx]: ensemble.to_dict(total_only=True)
-            for idx, ensemble in enumerate(ensemble_disagg)
+            rps[idx]: ensemble_disagg.to_dict(total_only=True)
+            for idx, ensemble_disagg in enumerate(ensemble_disagg_data)
         },
         "extra_info": {
-            rps[idx]: metadata.to_dict() for idx, metadata in enumerate(metadata_df)
+            rps[idx]: metadata_df.to_dict()
+            for idx, metadata_df in enumerate(metadata_df_data)
         },
         "gmt_plot_src": {
             rps[idx]: base64.b64encode(src_png).decode()

@@ -57,7 +57,12 @@ def get_ensemble_disagg():
     rps = utils.get_project(version_str, project_id).disagg_rps
 
     # Load the data
-    ensemble_disagg, metadata_df, src_png_data, eps_png_data = utils.load_disagg_data(
+    (
+        ensemble_disagg_data,
+        metadata_df_data,
+        src_png_data,
+        eps_png_data,
+    ) = utils.load_disagg_data(
         server.BASE_PROJECTS_DIR
         / version_str
         / project_id
@@ -70,8 +75,8 @@ def get_ensemble_disagg():
 
     return flask.jsonify(
         au.api.get_ensemble_disagg(
-            ensemble_disagg,
-            metadata_df,
+            ensemble_disagg_data,
+            metadata_df_data,
             src_png_data,
             eps_png_data,
             rps,
