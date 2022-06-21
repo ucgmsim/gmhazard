@@ -148,17 +148,18 @@ def load_hazard_data(results_dir: Path, im: sc.im.IM):
 
 
 def load_disagg_data(station_data_dir: Path, im: sc.im.IM, rps: List[int]):
-    ensemble_results = []
-    metadata_results = []
-    src_pngs = []
-    eps_pngs = []
+    ensemble_results, metadata_results = [], []
+    src_pngs, eps_pngs = [], []
+
     for rp in rps:
         data_dir = station_data_dir / f"disagg_{im.file_format()}_{rp}"
         ensemble_results.append(sc.disagg.EnsembleDisaggResult.load(data_dir))
 
-        metadata_results.append(pd.read_csv(
-            data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv", index_col=0,
-        ))
+        metadata_results.append(
+            pd.read_csv(
+                data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv", index_col=0,
+            )
+        )
 
         with open(data_dir / f"disagg_{im.file_format()}_{rp}_src.png", "rb") as f:
             src_png_data = f.read()
@@ -168,7 +169,6 @@ def load_disagg_data(station_data_dir: Path, im: sc.im.IM, rps: List[int]):
             eps_png_data = f.read()
             eps_pngs.append(eps_png_data)
 
-    # return ensemble_disagg, metadata_df, src_png_data, eps_png_data
     return ensemble_results, metadata_results, src_pngs, eps_pngs
 
 
