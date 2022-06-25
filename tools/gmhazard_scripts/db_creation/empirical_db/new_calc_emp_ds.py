@@ -138,7 +138,10 @@ def calculate_emp_ds(
                             )
                             gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
                                 GMM,
-                                classdef.TectType[tect_type],
+                                classdef.TectType["ACTIVE_SHALLOW"]
+                                if tect_type != "ACTIVE_SHALLOW"
+                                and GMM.name in ("CB_10", "CB_12", "AS_16",)
+                                else classdef.TectType[tect_type],
                                 rupture_context_df,
                                 str(im),
                                 psa_periods if im is gc.im.IMType.pSA else None,
