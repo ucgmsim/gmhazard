@@ -173,9 +173,6 @@ const HazardViewerDisaggregation = () => {
     setToggleText(rowsToggled ? CONSTANTS.SHOW_LESS : CONSTANTS.SHOW_MORE);
   };
 
-  // Create an array of selected RPs
-  const getSelectedRP = () => projectSelectedDisagRP.map((RP) => RP.value);
-
   /* 
     Filter the disaggData with selected RPs to display
     only the selected RPs in plots
@@ -192,7 +189,7 @@ const HazardViewerDisaggregation = () => {
   };
 
   const updateDisaggData = (disaggData) => {
-    const selectedRPs = getSelectedRP();
+    const selectedRPs = projectSelectedDisagRP.map((RP) => RP.value);
 
     const sortedSelectedRPs = selectedRPs
       .sort((a, b) => a - b)
@@ -414,7 +411,7 @@ const HazardViewerDisaggregation = () => {
         downloadToken={{
           disagg_token: downloadToken,
         }}
-        fileName={`Projects_Disaggregation_${filteredSelectedIM}_RP_${projectSelectedDisagRP}.zip`}
+        fileName={`Projects_Disaggregation_${filteredSelectedIM}.zip`}
       />
     </div>
   );
