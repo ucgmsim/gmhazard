@@ -31,7 +31,7 @@ MODEL_CONFIG_PATH = (
     / "db_creation"
     / "empirical_db"
     / "empirical_model_configs"
-    / "21p10.yaml"
+    / "22p5.yaml"
 )
 EMPIRICAL_WEIGHT_CONFIG_PATH = (
     SCRIPTS_DIR / "ensemble_creation" / "gmm_weights_21p10.yaml"
@@ -357,12 +357,44 @@ def generate_dbs(
         print("DS IMDB folder already exists, skipping")
     else:
         ds_db_dir.mkdir(exist_ok=True)
+
+        # Temporary case with AI
+        AI_to_gen = "AI" in im_types
+        if AI_to_gen:
+            ds_imdbs_cmd = [
+                "mpirun",
+                "-np",
+                str(n_procs),
+                "python",
+                str(empirical_db_scripts_dir / "calc_emp_ds.py"),
+                str(erf_dir / "NZBCK2015_Chch50yearsAftershock_OpenSHA_modType4.txt"),
+                str(ds_site_source_db_ffp),
+                str(vs30_ffp),
+                str(ds_db_dir),
+                "--model-dict",
+                str(model_config_ffp),
+                "--z-file",
+                str(z_ffp),
+                "--im",
+                "AI",
+            ]
+            ds_timeout = (n_stations * (60 * 60 * 5)) / (min(n_procs - 1, n_stations))
+            print(f"Using a timeout of {ds_timeout} seconds")
+            print(f"Running command for AI:\n\t{' '.join(ds_imdbs_cmd)}")
+            ds_imdbs_result = subprocess.run(
+                ds_imdbs_cmd, capture_output=True, timeout=ds_timeout
+            )
+            print("STDOUT:\n" + ds_imdbs_result.stdout.decode())
+            print("STDERR:\n" + ds_imdbs_result.stderr.decode())
+            assert (
+                    ds_imdbs_result.returncode == 0
+            ), "Distributed Seismicity IMDB generation failed"
+
+            im_types.remove("AI")
+
         ds_imdbs_cmd = [
-            "mpirun",
-            "-np",
-            str(n_procs),
             "python",
-            str(empirical_db_scripts_dir / "calc_emp_ds.py"),
+            str(empirical_db_scripts_dir / "new_calc_emp_ds.py"),
             str(erf_dir / "NZBCK2015_Chch50yearsAftershock_OpenSHA_modType4.txt"),
             str(ds_site_source_db_ffp),
             str(vs30_ffp),
