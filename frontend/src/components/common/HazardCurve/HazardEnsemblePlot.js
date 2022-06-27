@@ -165,7 +165,7 @@ const HazardEnsemblePlot = ({
             showexponent: "first",
             exponentformat: "power",
             showline: true,
-            linewidth: 3,
+            linewidth: CONSTANTS.PLOT_LINE_WIDTH,
             zeroline: false,
           },
           yaxis: {
@@ -175,7 +175,7 @@ const HazardEnsemblePlot = ({
             exponentformat: "power",
             range: [-5, 0],
             showline: true,
-            linewidth: 3,
+            linewidth: CONSTANTS.PLOT_LINE_WIDTH,
             zeroline: false,
           },
           autosize: true,

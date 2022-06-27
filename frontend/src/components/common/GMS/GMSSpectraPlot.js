@@ -29,7 +29,7 @@ const GMSSpectraPlot = ({ GMSSpectraData }) => {
           exponentformat: "power",
           autorange: true,
           showline: true,
-          linewidth: 3,
+          linewidth: CONSTANTS.PLOT_LINE_WIDTH,
           zeroline: false,
         },
         yaxis: {
@@ -45,7 +45,7 @@ const GMSSpectraPlot = ({ GMSSpectraData }) => {
           exponentformat: "power",
           autorange: true,
           showline: true,
-          linewidth: 3,
+          linewidth: CONSTANTS.PLOT_LINE_WIDTH,
           zeroline: false,
         },
         autosize: true,

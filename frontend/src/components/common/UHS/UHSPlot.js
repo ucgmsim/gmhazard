@@ -124,7 +124,7 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
               ),
             },
             showline: true,
-            linewidth: 3,
+            linewidth: CONSTANTS.PLOT_LINE_WIDTH,
             zeroline: false,
           },
           yaxis: {
@@ -137,7 +137,7 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
               ),
             },
             showline: true,
-            linewidth: 3,
+            linewidth: CONSTANTS.PLOT_LINE_WIDTH,
             zeroline: false,
           },
           autosize: true,

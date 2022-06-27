@@ -119,7 +119,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
               ),
             },
             showline: true,
-            linewidth: 3,
+            linewidth: CONSTANTS.PLOT_LINE_WIDTH,
             zeroline: false,
           },
           yaxis: {
@@ -132,7 +132,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
               ),
             },
             showline: true,
-            linewidth: 3,
+            linewidth: CONSTANTS.PLOT_LINE_WIDTH,
             zeroline: false,
           },
           autosize: true,

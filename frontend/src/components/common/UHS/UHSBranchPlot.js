@@ -147,7 +147,7 @@ const UHSBranchPlot = ({
               ),
             },
             showline: true,
-            linewidth: 3,
+            linewidth: CONSTANTS.PLOT_LINE_WIDTH,
             zeroline: false
           },
           yaxis: {
@@ -160,7 +160,7 @@ const UHSBranchPlot = ({
               ),
             },
             showline: true,
-            linewidth: 3,
+            linewidth: CONSTANTS.PLOT_LINE_WIDTH,
             zeroline: false
           },
           autosize: true,

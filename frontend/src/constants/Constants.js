@@ -541,6 +541,8 @@ export const PLOT_CONFIG = {
   doubleClick: "autosize",
 };
 
+export const PLOT_LINE_WIDTH = 2;
+
 // Constant Tooltips Message
 export const TOOLTIP_MESSAGES = {
   SITE_SELECTION_LOCATION:
