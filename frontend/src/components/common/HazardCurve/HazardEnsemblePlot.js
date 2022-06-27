@@ -69,6 +69,42 @@ const HazardEnsemblePlot = ({
       },
     ];
 
+    // Percentiles
+    if (percentileData) {
+      const percentile16 = getPlotData(percentileData["16th"]);
+      const percentile84 = getPlotData(percentileData["84th"]);
+      // Percentile 16
+      scatterArr.push(
+        {
+          x: percentile16.index,
+          y: percentile16.values,
+          type: "scatter",
+          mode: "lines",
+          name: `${CONSTANTS.LOWER_PERCENTILE}`,
+          line: { color: "red", dash: "dash" },
+          hoverinfo: "none",
+          hovertemplate:
+            `<b>${CONSTANTS.LOWER_PERCENTILE}</b><br><br>` +
+            "%{xaxis.title.text}: %{x}<br>" +
+            "%{yaxis.title.text}: %{y}<extra></extra>",
+        },
+        // Percentile 84
+        {
+          x: percentile84.index,
+          y: percentile84.values,
+          type: "scatter",
+          mode: "lines",
+          name: `${CONSTANTS.UPPER_PERCENTILE}`,
+          line: { color: "red", dash: "dash" },
+          hoverinfo: "none",
+          hovertemplate:
+            `<b>${CONSTANTS.UPPER_PERCENTILE}</b><br><br>` +
+            "%{xaxis.title.text}: %{x}<br>" +
+            "%{yaxis.title.text}: %{y}<extra></extra>",
+        }
+      );
+    }
+
     // NZS1170P5 code
     if (nzs1170p5Data) {
       const nzs1170p5 = getPlotData(nzs1170p5Data);
@@ -116,42 +152,6 @@ const HazardEnsemblePlot = ({
             "%{yaxis.title.text}: %{y}<extra></extra>",
         });
       }
-    }
-
-    // Percentiles
-    if (percentileData) {
-      const percentile16 = getPlotData(percentileData["16th"]);
-      const percentile84 = getPlotData(percentileData["84th"]);
-      // Percentile 16
-      scatterArr.push(
-        {
-          x: percentile16.index,
-          y: percentile16.values,
-          type: "scatter",
-          mode: "lines",
-          name: `${CONSTANTS.LOWER_PERCENTILE}`,
-          line: { color: "red", dash: "dash" },
-          hoverinfo: "none",
-          hovertemplate:
-            `<b>${CONSTANTS.LOWER_PERCENTILE}</b><br><br>` +
-            "%{xaxis.title.text}: %{x}<br>" +
-            "%{yaxis.title.text}: %{y}<extra></extra>",
-        },
-        // Percentile 84
-        {
-          x: percentile84.index,
-          y: percentile84.values,
-          type: "scatter",
-          mode: "lines",
-          name: `${CONSTANTS.UPPER_PERCENTILE}`,
-          line: { color: "red", dash: "dash" },
-          hoverinfo: "none",
-          hovertemplate:
-            `<b>${CONSTANTS.UPPER_PERCENTILE}</b><br><br>` +
-            "%{xaxis.title.text}: %{x}<br>" +
-            "%{yaxis.title.text}: %{y}<extra></extra>",
-        }
-      );
     }
 
     return (
