@@ -33,7 +33,6 @@ const GMSAvailableGMPlot = ({ metadata, bounds, numGMs }) => {
           mode: "lines",
           name: `${CONSTANTS.BOUNDS}`,
           line: { color: "red", dash: "dot" },
-          type: "scatter",
           showlegend: false,
         },
         {
@@ -43,7 +42,6 @@ const GMSAvailableGMPlot = ({ metadata, bounds, numGMs }) => {
           mode: "lines",
           name: `${CONSTANTS.BOUNDS}`,
           line: { color: "red", dash: "dot" },
-          type: "scatter",
           showlegend: false,
         },
         {
@@ -53,7 +51,6 @@ const GMSAvailableGMPlot = ({ metadata, bounds, numGMs }) => {
           mode: "lines",
           name: `${CONSTANTS.BOUNDS}`,
           line: { color: "red", dash: "dot" },
-          type: "scatter",
           showlegend: false,
         },
         {
@@ -63,7 +60,6 @@ const GMSAvailableGMPlot = ({ metadata, bounds, numGMs }) => {
           mode: "lines",
           name: `${CONSTANTS.BOUNDS}`,
           line: { color: "red", dash: "dot" },
-          type: "scatter",
           showlegend: false,
         },
       ]}

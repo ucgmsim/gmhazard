@@ -30,10 +30,9 @@ const GMSDisaggDistributionPlot = ({
     {
       x: xRange,
       y: newRangeY,
-      mode: "lines+markers",
+      mode: "lines",
       name: `${CONSTANTS.GMS_LABELS[label]}`,
       line: { shape: "hv", color: "black" },
-      type: "scatter",
       showlegend: true,
     },
   ];
@@ -44,7 +43,6 @@ const GMSDisaggDistributionPlot = ({
     mode: "lines",
     name: `${CONSTANTS.DISAGGREGATION_DSITRIBUTION}`,
     line: { color: "red", dash: "dot" },
-    type: "scatter",
     showlegend: true,
   });
 
@@ -60,7 +58,6 @@ const GMSDisaggDistributionPlot = ({
       name: `${CONSTANTS.LOWER_AND_UPPER_BOUND_LIMITS}`,
       mode: "lines",
       line: { color: "grey", dash: "dot" },
-      type: "scatter",
     },
     {
       x: [bounds["max"], bounds["max"]],
@@ -69,7 +66,6 @@ const GMSDisaggDistributionPlot = ({
       name: `${CONSTANTS.LOWER_AND_UPPER_BOUND_LIMITS}`,
       mode: "lines",
       line: { color: "grey", dash: "dot" },
-      type: "scatter",
       showlegend: false,
     }
   );

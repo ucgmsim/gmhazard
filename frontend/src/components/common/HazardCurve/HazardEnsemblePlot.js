@@ -29,7 +29,6 @@ const HazardEnsemblePlot = ({
       {
         x: plotData["fault"].index,
         y: plotData["fault"].values,
-        type: "scatter",
         mode: "lines",
         name: `${CONSTANTS.FAULT}`,
         line: { color: "black" },
@@ -43,7 +42,6 @@ const HazardEnsemblePlot = ({
       {
         x: plotData["ds"].index,
         y: plotData["ds"].values,
-        type: "scatter",
         mode: "lines",
         name: CONSTANTS.DISTRIBUTED_SEISMICITY,
         line: { color: "green" },
@@ -57,7 +55,6 @@ const HazardEnsemblePlot = ({
       {
         x: plotData["total"].index,
         y: plotData["total"].values,
-        type: "scatter",
         mode: "lines",
         name: `${CONSTANTS.TOTAL}`,
         line: { color: "red" },
@@ -78,7 +75,6 @@ const HazardEnsemblePlot = ({
         {
           x: percentile16.index,
           y: percentile16.values,
-          type: "scatter",
           mode: "lines",
           name: `${CONSTANTS.LOWER_PERCENTILE}`,
           line: { color: "red", dash: "dash" },
@@ -92,7 +88,6 @@ const HazardEnsemblePlot = ({
         {
           x: percentile84.index,
           y: percentile84.values,
-          type: "scatter",
           mode: "lines",
           name: `${CONSTANTS.UPPER_PERCENTILE}`,
           line: { color: "red", dash: "dash" },
@@ -111,7 +106,6 @@ const HazardEnsemblePlot = ({
       scatterArr.push({
         x: nzs1170p5.values,
         y: nzs1170p5.index,
-        type: "scatter",
         mode: "lines+markers",
         name: `${CONSTANTS.NZS1170P5}`,
         marker: {
@@ -136,7 +130,6 @@ const HazardEnsemblePlot = ({
         scatterArr.push({
           x: nzta.values,
           y: nzta.index,
-          type: "scatter",
           mode: "lines+markers",
           name: `${CONSTANTS.NZTA}`,
           marker: {

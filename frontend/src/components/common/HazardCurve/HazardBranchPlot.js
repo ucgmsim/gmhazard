@@ -27,7 +27,6 @@ const HazardBranchPlot = ({
       scatterArr.push({
         x: curPlotData.index,
         y: curPlotData.values,
-        type: "scatter",
         mode: "lines",
         line: { color: "gray", width: 0.5 },
         name: `${CONSTANTS.BRANCHES}`,
@@ -48,7 +47,6 @@ const HazardBranchPlot = ({
     scatterArr.push({
       x: ensTotalData.index,
       y: ensTotalData.values,
-      type: "scatter",
       mode: "lines",
       line: { color: "red" },
       name: `${CONSTANTS.ENSEMBLE_MEAN}`,
@@ -67,7 +65,6 @@ const HazardBranchPlot = ({
         {
           x: percentile16.index,
           y: percentile16.values,
-          type: "scatter",
           mode: "lines",
           line: { color: "red", dash: "dash" },
           name: `${CONSTANTS.LOWER_PERCENTILE}`,
@@ -80,7 +77,6 @@ const HazardBranchPlot = ({
         {
           x: percentile84.index,
           y: percentile84.values,
-          type: "scatter",
           mode: "lines",
           line: { color: "red", dash: "dash" },
           name: `${CONSTANTS.UPPER_PERCENTILE}`,
@@ -99,7 +95,6 @@ const HazardBranchPlot = ({
       scatterArr.push({
         x: nzs1170p5.values,
         y: nzs1170p5.index,
-        type: "scatter",
         mode: "lines+markers",
         name: `${CONSTANTS.NZS1170P5}`,
         marker: {
@@ -124,7 +119,6 @@ const HazardBranchPlot = ({
         scatterArr.push({
           x: nzta.values,
           y: nzta.index,
-          type: "scatter",
           mode: "lines+markers",
           name: `${CONSTANTS.NZTA}`,
           marker: {

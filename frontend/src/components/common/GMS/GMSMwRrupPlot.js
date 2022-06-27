@@ -30,7 +30,6 @@ const GMSMwRrupPlot = ({
           : `${CONSTANTS.SHORTEN_SELECTED_GM}, ${CONSTANTS.NUMBER_OF_GROUND_MOTIONS_SUBSCRIPT}=${metadata["mag"].length}`,
       marker: { symbol: "square-open" },
       line: { color: "black" },
-      type: "scatter",
       showlegend: true,
     },
     {
@@ -40,7 +39,6 @@ const GMSMwRrupPlot = ({
       mode: "lines",
       name: `${CONSTANTS.BOUNDS}`,
       line: { color: "red", dash: "dot" },
-      type: "scatter",
       showlegend: true,
     },
     {
@@ -50,7 +48,6 @@ const GMSMwRrupPlot = ({
       mode: "lines",
       name: `${CONSTANTS.BOUNDS}`,
       line: { color: "red", dash: "dot" },
-      type: "scatter",
       showlegend: false,
     },
     {
@@ -60,7 +57,6 @@ const GMSMwRrupPlot = ({
       mode: "lines",
       name: `${CONSTANTS.BOUNDS}`,
       line: { color: "red", dash: "dot" },
-      type: "scatter",
       showlegend: false,
     },
     {
@@ -70,7 +66,6 @@ const GMSMwRrupPlot = ({
       mode: "lines",
       name: `${CONSTANTS.BOUNDS}`,
       line: { color: "red", dash: "dot" },
-      type: "scatter",
       showlegend: false,
     },
   ];
@@ -101,7 +96,6 @@ const GMSMwRrupPlot = ({
           visible: true,
           color: "rgba(255, 0, 0, 0.4)",
         },
-        type: "scatter",
       },
       // Mean & 16/84th percentiles with selected_gms_metadata data
       {
@@ -136,7 +130,6 @@ const GMSMwRrupPlot = ({
           visible: true,
           color: "rgba(0, 0, 0, 0.4)",
         },
-        type: "scatter",
       }
     );
   }

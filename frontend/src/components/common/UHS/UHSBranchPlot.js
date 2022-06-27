@@ -36,7 +36,6 @@ const UHSBranchPlot = ({
           scatterObjs.push({
             x: curData.period_values.slice(1),
             y: curData.sa_values.slice(1),
-            type: "scatter",
             mode: "lines",
             line: { color: "grey", width: 0.8 },
             name: `${CONSTANTS.BRANCHES}`,
@@ -59,7 +58,6 @@ const UHSBranchPlot = ({
       scatterObjs.push({
         x: uhsData.period_values.slice(1),
         y: uhsData.sa_values.slice(1),
-        type: "scatter",
         mode: "lines",
         line: { color: "red" },
         name: createLegendLabel(false),
@@ -82,7 +80,6 @@ const UHSBranchPlot = ({
         scatterObjs.push({
           x: percentile16.index.slice(1),
           y: percentile16.values.slice(1),
-          type: "scatter",
           mode: "lines",
           line: { color: "red", dash: "dash" },
           name: `${CONSTANTS.LOWER_PERCENTILE}`,
@@ -97,7 +94,6 @@ const UHSBranchPlot = ({
         scatterObjs.push({
           x: percentile84.index.slice(1),
           y: percentile84.values.slice(1),
-          type: "scatter",
           mode: "lines",
           line: { color: "red", dash: "dash" },
           name: `${CONSTANTS.UPPER_PERCENTILE}`,
@@ -117,7 +113,6 @@ const UHSBranchPlot = ({
       scatterObjs.push({
         x: nzs1170p5PlotData.index,
         y: nzs1170p5PlotData.values,
-        type: "scatter",
         mode: "lines",
         line: { color: "black" },
         name: createLegendLabel(true),
@@ -149,7 +144,7 @@ const UHSBranchPlot = ({
             exponentformat: "power",
             showline: true,
             linewidth: CONSTANTS.PLOT_LINE_WIDTH,
-            zeroline: false
+            zeroline: false,
           },
           yaxis: {
             type: "log",
@@ -163,7 +158,7 @@ const UHSBranchPlot = ({
             exponentformat: "power",
             showline: true,
             linewidth: CONSTANTS.PLOT_LINE_WIDTH,
-            zeroline: false
+            zeroline: false,
           },
           autosize: true,
           margin: CONSTANTS.PLOT_MARGIN,

@@ -31,13 +31,12 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
     {
       x: xRange,
       y: newRangeY,
-      mode: "lines+markers",
+      mode: "lines",
       name:
         CONSTANTS.GMS_LABELS[metadata] === "Vs30"
           ? `${CONSTANTS.SHORTEN_SELECTED_GM}`
           : `${CONSTANTS.GMS_LABELS[metadata]}`,
       line: { shape: "hv", color: "black" },
-      type: "scatter",
       showlegend: true,
     },
   ];
@@ -58,7 +57,6 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
         name: `${CONSTANTS.LOWER_AND_UPPER_BOUND_LIMITS}`,
         mode: "lines",
         line: { color: "grey", dash: "dot" },
-        type: "scatter",
       },
       {
         x: [
@@ -70,7 +68,6 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
         name: `${CONSTANTS.LOWER_AND_UPPER_BOUND_LIMITS}`,
         mode: "lines",
         line: { color: "grey", dash: "dot" },
-        type: "scatter",
         showlegend: false,
       }
     );
@@ -87,7 +84,6 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
       name: `${CONSTANTS.SITE_SPECIFIC} V${"s30".sub()}`,
       mode: "lines",
       line: { color: "red" },
-      type: "scatter",
     });
   } else if (metadata === "sf") {
     // Add a solid red line at x=1 as a reference point
@@ -97,7 +93,6 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
       name: `${CONSTANTS.REFERENCE_POINT}`,
       mode: "lines",
       line: { color: "red" },
-      type: "scatter",
     });
   }
 

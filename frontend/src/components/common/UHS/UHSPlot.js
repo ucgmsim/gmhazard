@@ -63,7 +63,6 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
         scatterObjs.push({
           x: curData.period_values.slice(1),
           y: curData.sa_values.slice(1),
-          type: "scatter",
           mode: "lines",
           line: { color: "red" },
           name: createLegendLabel(false),
@@ -90,7 +89,6 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
         scatterObjs.push({
           x: curPlotData.index,
           y: curPlotData.values,
-          type: "scatter",
           mode: "lines",
           line: { color: "black" },
           name: createLegendLabel(true),
