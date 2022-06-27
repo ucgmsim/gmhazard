@@ -106,16 +106,18 @@ def download_project_disagg():
     (token), _ = au.api.get_check_keys(flask.request.args, ("disagg_token",))
 
     payload = au.api.get_token_payload(token[0], server.DOWNLOAD_URL_SECRET_KEY)
-    project_id, station_id, im, im_component, rp = (
+    project_id, station_id, im, im_component = (
         payload["project_id"],
         payload["station_id"],
         sc.im.IM.from_str(payload["im"]),
         payload["im_component"],
-        int(payload["rp"]),
     )
     server.app.logger.debug(
-        f"Token parameters {project_id}, {station_id}, {im}, {im_component}, {rp}"
+        f"Token parameters {project_id}, {station_id}, {im}, {im_component}"
     )
+
+    # Get Disagg return periods
+    rps = utils.get_project(version_str, project_id).disagg_rps
 
     # Load the data
     ensemble_disagg, metadata_df, src_png_data, eps_png_data = utils.load_disagg_data(
@@ -126,7 +128,7 @@ def download_project_disagg():
         / station_id
         / im_component,
         im,
-        rp,
+        rps,
     )
 
     with tempfile.TemporaryDirectory() as tmp_dir:
