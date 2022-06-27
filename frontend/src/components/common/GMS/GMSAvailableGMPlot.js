@@ -79,12 +79,14 @@ const GMSAvailableGMPlot = ({ metadata, bounds, numGMs }) => {
           autorange: false,
           showline: true,
           linewidth: 3,
+          zeroline: false,
         },
         yaxis: {
           title: { text: `${CONSTANTS.GMS_PLOT_MAG_AXIS_LABEL}` },
           autorange: true,
           showline: true,
           linewidth: 3,
+          zeroline: false,
         },
         legend: {
           x: 0,

@@ -120,6 +120,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
             },
             showline: true,
             linewidth: 3,
+            zeroline: false,
           },
           yaxis: {
             type: "log",
@@ -132,6 +133,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
             },
             showline: true,
             linewidth: 3,
+            zeroline: false,
           },
           autosize: true,
           margin: CONSTANTS.PLOT_MARGIN,

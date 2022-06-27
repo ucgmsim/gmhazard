@@ -148,6 +148,7 @@ const UHSBranchPlot = ({
             },
             showline: true,
             linewidth: 3,
+            zeroline: false
           },
           yaxis: {
             type: "log",
@@ -160,6 +161,7 @@ const UHSBranchPlot = ({
             },
             showline: true,
             linewidth: 3,
+            zeroline: false
           },
           autosize: true,
           margin: CONSTANTS.PLOT_MARGIN,
