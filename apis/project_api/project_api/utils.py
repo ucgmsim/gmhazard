@@ -147,21 +147,29 @@ def load_hazard_data(results_dir: Path, im: sc.im.IM):
     return ensemble_hazard, nzs1170p5_hazard, nzta_hazard
 
 
-def load_disagg_data(station_data_dir: Path, im: sc.im.IM, rp: int):
-    data_dir = station_data_dir / f"disagg_{im.file_format()}_{rp}"
-    ensemble_disagg = sc.disagg.EnsembleDisaggResult.load(data_dir)
+def load_disagg_data(station_data_dir: Path, im: sc.im.IM, rps: List[int]):
+    ensemble_results, metadata_results = [], []
+    src_pngs, eps_pngs = [], []
 
-    metadata_df = pd.read_csv(
-        data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv", index_col=0,
-    )
+    for rp in rps:
+        data_dir = station_data_dir / f"disagg_{im.file_format()}_{rp}"
+        ensemble_results.append(sc.disagg.EnsembleDisaggResult.load(data_dir))
 
-    with open(data_dir / f"disagg_{im.file_format()}_{rp}_src.png", "rb") as f:
-        src_png_data = f.read()
+        metadata_results.append(
+            pd.read_csv(
+                data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv", index_col=0,
+            )
+        )
 
-    with open(data_dir / f"disagg_{im.file_format()}_{rp}_eps.png", "rb") as f:
-        eps_png_data = f.read()
+        with open(data_dir / f"disagg_{im.file_format()}_{rp}_src.png", "rb") as f:
+            src_png_data = f.read()
+            src_pngs.append(src_png_data)
 
-    return ensemble_disagg, metadata_df, src_png_data, eps_png_data
+        with open(data_dir / f"disagg_{im.file_format()}_{rp}_eps.png", "rb") as f:
+            eps_png_data = f.read()
+            eps_pngs.append(eps_png_data)
+
+    return ensemble_results, metadata_results, src_pngs, eps_pngs
 
 
 def load_uhs_data(results_dir: Path, rps: List[int]):
