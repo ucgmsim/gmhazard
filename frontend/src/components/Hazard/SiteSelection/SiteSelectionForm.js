@@ -10,11 +10,12 @@ import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import { GuideTooltip } from "components/common";
 import {
-  APIQueryBuilder,
-  disableScrollOnNumInput,
-  handleErrors,
   sortIMs,
   isEmptyObj,
+  handleErrors,
+  APIQueryBuilder,
+  sortIMComponents,
+  disableScrollOnNumInput,
 } from "utils/Utils";
 import {
   EnsembleSelect,
@@ -292,7 +293,9 @@ const SiteSelectionForm = () => {
 
               setIMs(sortIMs(Object.keys(IMData.ims)));
               setIMDict(IMData.ims);
-              setScenarioIMComponentOptions(IMData.ims["pSA"]["components"]);
+              setScenarioIMComponentOptions(
+                sortIMComponents(IMData.ims["pSA"]["components"])
+              );
               setNZS1170p5SoilClass(
                 setSoilClassOptions(nzs1170p5SoilClass["soil_class"])
               );

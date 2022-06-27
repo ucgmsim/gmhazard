@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { GlobalContext } from "context";
 import * as CONSTANTS from "constants/Constants";
 
+import { sortIMComponents } from "utils/Utils";
 import { IMCustomSelect, GuideTooltip } from "components/common";
 
 const HazardCurveSection = () => {
@@ -39,7 +40,7 @@ const HazardCurveSection = () => {
         setPeriodOptions([`${CONSTANTS.PLACEHOLDER_NOT_APPLICABLE}`]);
       }
       setComponentOptions(
-        projectIMDict[localSelectedIM["value"]]["components"]
+        sortIMComponents(projectIMDict[localSelectedIM["value"]]["components"])
       );
     }
   }, [localSelectedIM]);
