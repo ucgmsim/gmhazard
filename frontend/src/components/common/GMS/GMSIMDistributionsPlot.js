@@ -101,10 +101,14 @@ const GMSIMDistributionsPlot = ({ gmsData, IM }) => {
         xaxis: {
           title: { text: labelMaker(IM) },
           autorange: true,
+          showline: true,
+          linewidth: 3,
         },
         yaxis: {
           title: { text: `${CONSTANTS.CUMULATIVE_PROB_CDF}` },
           range: [0, 1],
+          showline: true,
+          linewidth: 3,
         },
         autosize: true,
         margin: CONSTANTS.PLOT_MARGIN,

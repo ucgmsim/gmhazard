@@ -28,6 +28,8 @@ const GMSSpectraPlot = ({ GMSSpectraData }) => {
           showexponent: "first",
           exponentformat: "power",
           autorange: true,
+          showline: true,
+          linewidth: 3,
         },
         yaxis: {
           type: "log",
@@ -41,6 +43,8 @@ const GMSSpectraPlot = ({ GMSSpectraData }) => {
           showexponent: "first",
           exponentformat: "power",
           autorange: true,
+          showline: true,
+          linewidth: 3,
         },
         autosize: true,
         margin: CONSTANTS.PLOT_MARGIN,

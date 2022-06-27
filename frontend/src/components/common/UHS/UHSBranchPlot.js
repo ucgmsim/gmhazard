@@ -146,6 +146,8 @@ const UHSBranchPlot = ({
                 CONSTANTS.SECONDS_UNIT
               ),
             },
+            showline: true,
+            linewidth: 3,
           },
           yaxis: {
             type: "log",
@@ -156,6 +158,8 @@ const UHSBranchPlot = ({
                 CONSTANTS.GRAVITY_UNIT
               ),
             },
+            showline: true,
+            linewidth: 3,
           },
           autosize: true,
           margin: CONSTANTS.PLOT_MARGIN,

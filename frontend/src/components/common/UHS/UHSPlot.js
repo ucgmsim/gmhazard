@@ -123,6 +123,8 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
                 CONSTANTS.SECONDS_UNIT
               ),
             },
+            showline: true,
+            linewidth: 3,
           },
           yaxis: {
             type: "log",
@@ -133,6 +135,8 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
                 CONSTANTS.GRAVITY_UNIT
               ),
             },
+            showline: true,
+            linewidth: 3,
           },
           autosize: true,
           margin: CONSTANTS.PLOT_MARGIN,

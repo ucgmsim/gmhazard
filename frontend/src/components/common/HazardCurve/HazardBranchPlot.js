@@ -152,6 +152,8 @@ const HazardBranchPlot = ({
             title: { text: hazardData["im"] },
             showexponent: "first",
             exponentformat: "power",
+            showline: true,
+            linewidth: 3,
           },
           yaxis: {
             type: "log",
@@ -159,6 +161,8 @@ const HazardBranchPlot = ({
             showexponent: "first",
             exponentformat: "power",
             range: [-5, 0],
+            showline: true,
+            linewidth: 3,
           },
           autosize: true,
           margin: CONSTANTS.PLOT_MARGIN,

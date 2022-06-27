@@ -118,6 +118,8 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
                 CONSTANTS.SECONDS_UNIT
               ),
             },
+            showline: true,
+            linewidth: 3,
           },
           yaxis: {
             type: "log",
@@ -128,6 +130,8 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
                 CONSTANTS.GRAVITY_UNIT
               ),
             },
+            showline: true,
+            linewidth: 3,
           },
           autosize: true,
           margin: CONSTANTS.PLOT_MARGIN,
