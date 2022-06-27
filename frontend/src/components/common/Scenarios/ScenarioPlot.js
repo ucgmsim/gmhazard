@@ -118,6 +118,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
                 CONSTANTS.SECONDS_UNIT
               ),
             },
+            exponentformat: "power",
             showline: true,
             linewidth: CONSTANTS.PLOT_LINE_WIDTH,
             zeroline: false,
@@ -131,6 +132,7 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
                 CONSTANTS.GRAVITY_UNIT
               ),
             },
+            exponentformat: "power",
             showline: true,
             linewidth: CONSTANTS.PLOT_LINE_WIDTH,
             zeroline: false,

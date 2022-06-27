@@ -123,6 +123,7 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
                 CONSTANTS.SECONDS_UNIT
               ),
             },
+            exponentformat: "power",
             showline: true,
             linewidth: CONSTANTS.PLOT_LINE_WIDTH,
             zeroline: false,
@@ -136,6 +137,7 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
                 CONSTANTS.GRAVITY_UNIT
               ),
             },
+            exponentformat: "power",
             showline: true,
             linewidth: CONSTANTS.PLOT_LINE_WIDTH,
             zeroline: false,

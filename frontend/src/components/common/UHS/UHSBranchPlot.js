@@ -146,6 +146,7 @@ const UHSBranchPlot = ({
                 CONSTANTS.SECONDS_UNIT
               ),
             },
+            exponentformat: "power",
             showline: true,
             linewidth: CONSTANTS.PLOT_LINE_WIDTH,
             zeroline: false
@@ -159,6 +160,7 @@ const UHSBranchPlot = ({
                 CONSTANTS.GRAVITY_UNIT
               ),
             },
+            exponentformat: "power",
             showline: true,
             linewidth: CONSTANTS.PLOT_LINE_WIDTH,
             zeroline: false
