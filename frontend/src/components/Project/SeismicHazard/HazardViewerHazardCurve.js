@@ -7,20 +7,20 @@ import * as CONSTANTS from "constants/Constants";
 import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
-  LoadingSpinner,
-  DownloadButton,
+  MetadataBox,
   GuideMessage,
   ErrorMessage,
+  LoadingSpinner,
+  DownloadButton,
   HazardEnsemblePlot,
   HazardBranchPlot,
-  HazardCurveMetadata,
 } from "components/common";
 import { getProjectHazardCurve } from "apis/ProjectAPI";
 import {
   handleErrors,
   APIQueryBuilder,
-  combineIMwithPeriod,
   createStationID,
+  combineIMwithPeriod,
 } from "utils/Utils";
 
 const HazardViewerHazardCurve = () => {
@@ -261,7 +261,7 @@ const HazardViewerHazardCurve = () => {
                   percentileData={percentileData}
                   extra={extraInfo}
                 />
-                <HazardCurveMetadata metadata={metadataParam} />
+                <MetadataBox metadata={metadataParam} />
               </Fragment>
             )}
         </Tab>
@@ -300,7 +300,7 @@ const HazardViewerHazardCurve = () => {
                   percentileData={percentileData}
                   extra={extraInfo}
                 />
-                <HazardCurveMetadata metadata={metadataParam} />
+                <MetadataBox metadata={metadataParam} />
               </Fragment>
             )}
         </Tab>

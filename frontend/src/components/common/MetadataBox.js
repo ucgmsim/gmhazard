@@ -2,7 +2,7 @@ import React from "react";
 
 import * as CONSTANTS from "constants/Constants";
 
-const HazardCurveMetadata = ({ metadata }) => {
+const MetadataBox = ({ metadata }) => {
   const createMetadataText = () => {
     let metadataText = "";
     for (const [key, value] of Object.entries(metadata)) {
@@ -30,4 +30,4 @@ const HazardCurveMetadata = ({ metadata }) => {
   );
 };
 
-export default HazardCurveMetadata;
+export default MetadataBox;

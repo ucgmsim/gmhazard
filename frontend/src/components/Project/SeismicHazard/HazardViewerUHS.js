@@ -9,11 +9,12 @@ import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
   UHSPlot,
+  MetadataBox,
+  ErrorMessage,
+  GuideMessage,
   UHSBranchPlot,
   LoadingSpinner,
   DownloadButton,
-  GuideMessage,
-  ErrorMessage,
 } from "components/common";
 import { getProjectUHS } from "apis/ProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
@@ -27,6 +28,8 @@ const HazardViewerUHS = () => {
     projectVS30,
     projectZ1p0,
     projectZ2p5,
+    projectLat,
+    projectLng,
     projectLocationCode,
     projectSelectedUHSRP,
     setProjectSelectedUHSRP,
@@ -49,6 +52,9 @@ const HazardViewerUHS = () => {
   const [uhsBranchData, setUHSBranchData] = useState(null);
   const [uhsNZS1170p5Data, setUHSNZS1170p5Data] = useState(null);
   const [extraInfo, setExtraInfo] = useState({});
+
+  // For Metadata
+  const [metadataParam, setMetadataParam] = useState({});
 
   // For Download Data button
   const [downloadToken, setDownloadToken] = useState("");
@@ -154,6 +160,14 @@ const HazardViewerUHS = () => {
     );
     setUHSBranchData(uhsData["branch_uhs_results"]);
     setDownloadToken(uhsData["download_token"]);
+    setMetadataParam({
+      "Project Name": projectId["label"],
+      "Project ID": projectId["value"],
+      Location: projectLocation,
+      Latitude: projectLat,
+      Longitude: projectLng,
+      Vs30: `${projectVS30} m/s`,
+    });
     setExtraInfo({
       from: "project",
       id: projectId,
@@ -208,6 +222,7 @@ const HazardViewerUHS = () => {
                     nzs1170p5Data={uhsNZS1170p5Data}
                     extra={extraInfo}
                   />
+                  <MetadataBox metadata={metadataParam} />
                 </Fragment>
               )}
           </div>
@@ -266,6 +281,7 @@ const HazardViewerUHS = () => {
                     rate={localSelectedRP["label"]}
                     extra={extraInfo}
                   />
+                  <MetadataBox metadata={metadataParam} />
                 </Fragment>
               )}
           </div>
