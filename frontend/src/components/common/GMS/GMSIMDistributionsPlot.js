@@ -59,7 +59,6 @@ const GMSIMDistributionsPlot = ({ gmsData, IM }) => {
           mode: "lines",
           name: `${CONSTANTS.GCIM}`,
           line: { shape: "hv", color: "red" },
-          type: "scatter",
         },
         {
           x: cdfX.slice(0, yLimitAtOneIndex),
@@ -68,7 +67,6 @@ const GMSIMDistributionsPlot = ({ gmsData, IM }) => {
           name: `${CONSTANTS.KS_BOUNDS}, ${String.fromCharCode(945)} = 0.1`,
           legendgroup: "KS bounds",
           line: { dash: "dashdot", shape: "hv", color: "red" },
-          type: "scatter",
         },
         {
           x: cdfX.slice(yLimitAtZeroIndex),
@@ -77,7 +75,6 @@ const GMSIMDistributionsPlot = ({ gmsData, IM }) => {
           name: `${CONSTANTS.KS_BOUNDS}`,
           legendgroup: "KS bounds",
           line: { dash: "dashdot", shape: "hv", color: "red" },
-          type: "scatter",
           showlegend: false,
         },
         {
@@ -86,7 +83,6 @@ const GMSIMDistributionsPlot = ({ gmsData, IM }) => {
           mode: "lines",
           name: `${CONSTANTS.REALISATIONS}`,
           line: { shape: "hv", color: "blue" },
-          type: "scatter",
         },
         {
           x: newSelectedGMs,
@@ -94,17 +90,22 @@ const GMSIMDistributionsPlot = ({ gmsData, IM }) => {
           mode: "lines",
           name: `${CONSTANTS.SELECTED_GM}`,
           line: { shape: "hv", color: "black" },
-          type: "scatter",
         },
       ]}
       layout={{
         xaxis: {
           title: { text: labelMaker(IM) },
           autorange: true,
+          showline: true,
+          linewidth: CONSTANTS.PLOT_LINE_WIDTH,
+          zeroline: false,
         },
         yaxis: {
           title: { text: `${CONSTANTS.CUMULATIVE_PROB_CDF}` },
           range: [0, 1],
+          showline: true,
+          linewidth: CONSTANTS.PLOT_LINE_WIDTH,
+          zeroline: false,
         },
         autosize: true,
         margin: CONSTANTS.PLOT_MARGIN,

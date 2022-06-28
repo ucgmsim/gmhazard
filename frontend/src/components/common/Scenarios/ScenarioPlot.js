@@ -44,7 +44,6 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
         scatterObjs.push({
           x: xValues,
           y: curData,
-          type: "scatter",
           mode: "lines",
           line: { color: deafultColours[colourCounter % 10] },
           name: `${curRup} [mean and 16<sup>th</sup>, 84<sup>th</sup> percentile]`,
@@ -67,7 +66,6 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
         scatterObjs.push({
           x: xValues,
           y: curData,
-          type: "scatter",
           mode: "lines",
           line: { color: deafultColours[colourCounter % 10], dash: "dash" },
           name: "Rupture 16th Percentile",
@@ -88,7 +86,6 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
         scatterObjs.push({
           x: xValues,
           y: curData,
-          type: "scatter",
           mode: "lines",
           line: { color: deafultColours[colourCounter % 10], dash: "dash" },
           name: "Rupture 84th Percentile",
@@ -118,6 +115,10 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
                 CONSTANTS.SECONDS_UNIT
               ),
             },
+            exponentformat: "power",
+            showline: true,
+            linewidth: CONSTANTS.PLOT_LINE_WIDTH,
+            zeroline: false,
           },
           yaxis: {
             type: "log",
@@ -128,6 +129,10 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
                 CONSTANTS.GRAVITY_UNIT
               ),
             },
+            exponentformat: "power",
+            showline: true,
+            linewidth: CONSTANTS.PLOT_LINE_WIDTH,
+            zeroline: false,
           },
           autosize: true,
           margin: CONSTANTS.PLOT_MARGIN,

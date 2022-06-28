@@ -322,6 +322,18 @@ export const sortIMs = (unsortedIMs) => {
 };
 
 /*
+Sort IM Components to keep the consistency
+across the IM Components dropdown.
+*/
+const IM_COMPONENT_ORDER = ["RotD50", "RotD100", "Larger"];
+
+export const sortIMComponents = (unsortedIMComponents) => {
+  return IM_COMPONENT_ORDER.map((im_component) => {
+    if (unsortedIMComponents.includes(im_component)) return im_component;
+  }).filter((im_component) => im_component !== undefined);
+};
+
+/*
   Returned IM contains periods (For now, pSA)
   Split the IM and Periods
 */

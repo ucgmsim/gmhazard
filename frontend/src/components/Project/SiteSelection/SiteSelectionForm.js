@@ -13,11 +13,12 @@ import {
   getProjectGMSID,
 } from "apis/ProjectAPI";
 import {
-  handleErrors,
   sortIMs,
+  handleErrors,
   renderSigfigs,
   APIQueryBuilder,
   splitIMPeriods,
+  sortIMComponents,
 } from "utils/Utils";
 
 import "assets/style/HazardForms.css";
@@ -276,7 +277,9 @@ const SiteSelectionForm = () => {
     // Setting IMs
     setProjectIMs(sortIMs(Object.keys(imData["ims"])));
     setProjectIMDict(imData["ims"]);
-    setProjectScenarioIMComponentOptions(imData["ims"]["pSA"]["components"]);
+    setProjectScenarioIMComponentOptions(
+      sortIMComponents(imData["ims"]["pSA"]["components"])
+    );
 
     // Setting RPs
     setProjectDisagRPs(disaggRPData["rps"]);

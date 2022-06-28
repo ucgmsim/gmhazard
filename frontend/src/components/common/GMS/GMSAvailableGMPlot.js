@@ -33,7 +33,6 @@ const GMSAvailableGMPlot = ({ metadata, bounds, numGMs }) => {
           mode: "lines",
           name: `${CONSTANTS.BOUNDS}`,
           line: { color: "red", dash: "dot" },
-          type: "scatter",
           showlegend: false,
         },
         {
@@ -43,7 +42,6 @@ const GMSAvailableGMPlot = ({ metadata, bounds, numGMs }) => {
           mode: "lines",
           name: `${CONSTANTS.BOUNDS}`,
           line: { color: "red", dash: "dot" },
-          type: "scatter",
           showlegend: false,
         },
         {
@@ -53,7 +51,6 @@ const GMSAvailableGMPlot = ({ metadata, bounds, numGMs }) => {
           mode: "lines",
           name: `${CONSTANTS.BOUNDS}`,
           line: { color: "red", dash: "dot" },
-          type: "scatter",
           showlegend: false,
         },
         {
@@ -63,7 +60,6 @@ const GMSAvailableGMPlot = ({ metadata, bounds, numGMs }) => {
           mode: "lines",
           name: `${CONSTANTS.BOUNDS}`,
           line: { color: "red", dash: "dot" },
-          type: "scatter",
           showlegend: false,
         },
       ]}
@@ -77,10 +73,16 @@ const GMSAvailableGMPlot = ({ metadata, bounds, numGMs }) => {
           exponentformat: "power",
           range: [Math.log10(rangeXMin), Math.log10(rangeXMax)],
           autorange: false,
+          showline: true,
+          linewidth: CONSTANTS.PLOT_LINE_WIDTH,
+          zeroline: false,
         },
         yaxis: {
           title: { text: `${CONSTANTS.GMS_PLOT_MAG_AXIS_LABEL}` },
           autorange: true,
+          showline: true,
+          linewidth: CONSTANTS.PLOT_LINE_WIDTH,
+          zeroline: false,
         },
         legend: {
           x: 0,
