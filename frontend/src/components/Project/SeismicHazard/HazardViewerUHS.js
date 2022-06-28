@@ -167,6 +167,8 @@ const HazardViewerUHS = () => {
       Latitude: projectLat,
       Longitude: projectLng,
       Vs30: `${projectVS30} m/s`,
+      z1p0: `${projectZ1p0} km`,
+      z2p5: `${projectZ2p5} km`,
     });
     setExtraInfo({
       from: "project",

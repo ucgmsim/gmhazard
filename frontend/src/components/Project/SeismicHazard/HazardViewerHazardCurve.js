@@ -157,6 +157,8 @@ const HazardViewerHazardCurve = () => {
       Latitude: projectLat,
       Longitude: projectLng,
       Vs30: `${projectVS30} m/s`,
+      z1p0: `${projectZ1p0} km`,
+      z2p5: `${projectZ2p5} km`,
       "Intensity Measure": hazardData["im"],
     });
     setExtraInfo({
@@ -178,8 +180,8 @@ const HazardViewerHazardCurve = () => {
         setHazardNZTAData(hazardData["nzta_hazard"]["pga_values"]);
         setMetadataParam((prevState) => ({
           ...prevState,
-          "NZS1170.5 Z Factor": hazardData["nzs1170p5_hazard"]["Z"],
-          "NZS1170.5 Soil Class": hazardData["nzs1170p5_hazard"]["soil_class"],
+          "NZS 1170.5 Z Factor": hazardData["nzs1170p5_hazard"]["Z"],
+          "NZS 1170.5 Soil Class": hazardData["nzs1170p5_hazard"]["soil_class"],
           "NZTA Soil Class": hazardData["nzta_hazard"]["soil_class"],
         }));
       } else {
@@ -190,8 +192,8 @@ const HazardViewerHazardCurve = () => {
         setHazardNZTAData(null);
         setMetadataParam((prevState) => ({
           ...prevState,
-          "NZS1170.5 Z Factor": hazardData["nzs1170p5_hazard"]["Z"],
-          "NZS1170.5 Soil Class": hazardData["nzs1170p5_hazard"]["soil_class"],
+          "NZS 1170.5 Z Factor": hazardData["nzs1170p5_hazard"]["Z"],
+          "NZS 1170.5 Soil Class": hazardData["nzs1170p5_hazard"]["soil_class"],
         }));
       }
     } else if (projectSelectedIM === "pSA") {
@@ -202,8 +204,8 @@ const HazardViewerHazardCurve = () => {
       setHazardNZTAData(null);
       setMetadataParam((prevState) => ({
         ...prevState,
-        "NZS1170.5 Z Factor": hazardData["nzs1170p5_hazard"]["Z"],
-        "NZS1170.5 Soil Class": hazardData["nzs1170p5_hazard"]["soil_class"],
+        "NZS 1170.5 Z Factor": hazardData["nzs1170p5_hazard"]["Z"],
+        "NZS 1170.5 Soil Class": hazardData["nzs1170p5_hazard"]["soil_class"],
       }));
       if (projectSelectedIMComponent !== "Larger") {
         setMetadataParam((prevState) => ({
