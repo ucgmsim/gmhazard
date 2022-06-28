@@ -44,7 +44,6 @@
     "reactstrap": "^8.5.1",
     "uuid": "^8.3.0"
   },
-  "devDependencies": {},
   "eslintConfig": {
     "extends": "react-app"
   },
