@@ -49,8 +49,9 @@ def process_station_gms_config_comb(
         )
     except gc.exceptions.ExceedanceOutOfRangeError as ex:
         print(
-            f"\tFailed to compute disagg for IM {ex.im} and exceedance {ex.exceedance} as the"
-            f"exceedance is outside of the computed hazard range for this site, skipping!"
+            f"\tFailed to compute disagg for gms id {gms_id}, site {site_info.station_name}, IM {ex.im} "
+            f"and exceedance {ex.exceedance} as the exceedance is outside of the computed "
+            f"hazard range for this site, skipping!"
         )
         return
 
@@ -94,8 +95,9 @@ def process_station_gms_config_comb(
     # whereas GMS uses branch hazard.
     except gc.exceptions.ExceedanceOutOfRangeError as ex:
         print(
-            f"\tFailed to compute GMS for IM {ex.im} and exceedance {ex.exceedance} as the"
-            f"exceedance is outside of the computed hazard range for this site, skipping!"
+            f"\tFailed to compute GMS for gms id {gms_id}, site {site_info.station_name}, IM {ex.im} and "
+            f"exceedance {ex.exceedance} as the exceedance is outside of the computed hazard \
+            range for this site, skipping!"
         )
         return
 
