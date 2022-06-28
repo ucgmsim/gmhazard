@@ -12,8 +12,8 @@ import {
   ErrorMessage,
   LoadingSpinner,
   DownloadButton,
-  HazardEnsemblePlot,
   HazardBranchPlot,
+  HazardEnsemblePlot,
 } from "components/common";
 import { getProjectHazardCurve } from "apis/ProjectAPI";
 import {
