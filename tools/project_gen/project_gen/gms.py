@@ -123,8 +123,8 @@ def _get_gms_ims(IMj: str, im_strings: List[str], ensemble: gc.gm_data.Ensemble)
                     gc.im.IM(gc.im.IMType.pSA, period=cur_im.period)
                     for cur_im in ensemble.ims
                     if cur_im.period != IMj.period
-                       and cur_im.is_pSA()
-                       and cur_im.component is gc.im.IMComponent.RotD50
+                    and cur_im.is_pSA()
+                    and cur_im.component is gc.im.IMComponent.RotD50
                 ]
             )
         else:
