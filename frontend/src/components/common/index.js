@@ -45,7 +45,6 @@ export {
   ContributionTable,
   HazardBranchPlot,
   HazardEnsemblePlot,
-
   UHSPlot,
   UHSBranchPlot,
   ScenarioPlot,
