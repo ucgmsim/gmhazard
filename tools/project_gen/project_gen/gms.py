@@ -6,15 +6,15 @@ from typing import List
 import yaml
 import numpy as np
 
-import gmhazard_calc as sc
+import gmhazard_calc as gc
 from . import utils
 
 
 def process_station_gms_config_comb(
-    ensemble: sc.gm_data.Ensemble,
+    ensemble: gc.gm_data.Ensemble,
     station_name: str,
     gms_id: str,
-    IMj: sc.im.IM,
+    IMj: gc.im.IM,
     IMs: np.ndarray,
     n_gms: int,
     output_dir: Path,
@@ -24,27 +24,35 @@ def process_station_gms_config_comb(
 ):
     """Processes to a single station and GMS-config"""
     # Get the site
-    if (output_dir / sc.gms.GMSResult.get_save_dir(gms_id)).exists():
+    if (output_dir / gc.gms.GMSResult.get_save_dir(gms_id)).exists():
         print(
             f"Skipping GMS computation for station {station_name} and "
             f"id {gms_id} as it already exists"
         )
         return
+
     print(f"Computing GMS for station {station_name} and id {gms_id}")
 
     # Get site and create the current output directory (if required)
-    site_info = sc.site.get_site_from_name(ensemble, station_name)
+    site_info = gc.site.get_site_from_name(ensemble, station_name)
     output_dir.mkdir(exist_ok=True, parents=False)
 
     # Calculates Disagg
-    disagg_data = sc.disagg.run_ensemble_disagg(
-        ensemble,
-        site_info,
-        IMj,
-        exceedance=exceedance,
-        im_value=im_j,
-        calc_mean_values=True,
-    )
+    try:
+        disagg_data = gc.disagg.run_ensemble_disagg(
+            ensemble,
+            site_info,
+            IMj,
+            exceedance=exceedance,
+            im_value=im_j,
+            calc_mean_values=True,
+        )
+    except gc.exceptions.ExceedanceOutOfRangeError as ex:
+        print(
+            f"\tFailed to compute disagg for IM {ex.im} and exceedance {ex.exceedance} as the"
+            f"exceedance is outside of the computed hazard range for this site, skipping!"
+        )
+        return
 
     # Save the Disagg Data
     disagg_output_dir = output_dir / f"gms_{gms_id}" / "disagg_data"
@@ -52,31 +60,47 @@ def process_station_gms_config_comb(
     disagg_data.save(disagg_output_dir)
 
     # Retrieve the default causal filter parameters
-    cs_param_bounds = sc.gms.default_causal_params(
-        ensemble, site_info, IMj, exceedance=exceedance, im_value=im_j, disagg_data=disagg_data
+    cs_param_bounds = gc.gms.default_causal_params(
+        ensemble,
+        site_info,
+        IMj,
+        exceedance=exceedance,
+        im_value=im_j,
+        disagg_data=disagg_data,
     )
 
     # Get the GM dataset
-    gm_dataset = sc.gms.GMDataset.get_GMDataset(gm_dataset_id)
+    gm_dataset = gc.gms.GMDataset.get_GMDataset(gm_dataset_id)
 
     # Can only use IMs that are supported by the GM dataset
     IMs = IMs[np.isin(IMs, gm_dataset.ims)]
 
     # Run the GM selection
-    sc.gms.run_ensemble_gms(
-        ensemble,
-        site_info,
-        n_gms,
-        IMj,
-        gm_dataset,
-        IMs,
-        cs_param_bounds=cs_param_bounds,
-        im_j=im_j,
-        exceedance=exceedance,
-    ).save(output_dir, gms_id)
+    try:
+        gc.gms.run_ensemble_gms(
+            ensemble,
+            site_info,
+            n_gms,
+            IMj,
+            gm_dataset,
+            IMs,
+            cs_param_bounds=cs_param_bounds,
+            im_j=im_j,
+            exceedance=exceedance,
+        ).save(output_dir, gms_id)
+    # Require additional exceedance error handling here, as it is possible to run
+    # fine for disagg, but get an exceedance error here.
+    # This is due to the fact that disagg uses mean hazard,
+    # whereas GMS uses branch hazard.
+    except gc.exceptions.ExceedanceOutOfRangeError as ex:
+        print(
+            f"\tFailed to compute GMS for IM {ex.im} and exceedance {ex.exceedance} as the"
+            f"exceedance is outside of the computed hazard range for this site, skipping!"
+        )
+        return
 
 
-def _get_gms_ims(IMj: str, im_strings: List[str], ensemble: sc.gm_data.Ensemble):
+def _get_gms_ims(IMj: str, im_strings: List[str], ensemble: gc.gm_data.Ensemble):
     """
     Generates a list of IMs that does not contain IMj.
     Allows for a shortcut "pSA" to be set to generate all pSA IM's that are available for the given Ensemble.
@@ -90,21 +114,21 @@ def _get_gms_ims(IMj: str, im_strings: List[str], ensemble: sc.gm_data.Ensemble)
     ensemble: Ensemble
         The ensemble to grab pSA periods from if "pSA" is specified in the config
     """
-    IMj = sc.im.IM.from_str(IMj)
+    IMj = gc.im.IM.from_str(IMj)
     ims = []
     for im_string in im_strings:
         if im_string == "pSA":
             ims.extend(
                 [
-                    sc.im.IM(sc.im.IMType.pSA, period=cur_im.period)
+                    gc.im.IM(gc.im.IMType.pSA, period=cur_im.period)
                     for cur_im in ensemble.ims
                     if cur_im.period != IMj.period
-                    and cur_im.is_pSA()
-                    and cur_im.component is sc.im.IMComponent.RotD50
+                       and cur_im.is_pSA()
+                       and cur_im.component is gc.im.IMComponent.RotD50
                 ]
             )
         else:
-            im = sc.im.IM.from_str(im_string)
+            im = gc.im.IM.from_str(im_string)
             if im != IMj:
                 ims.append(im)
     return np.asarray(ims)
@@ -130,7 +154,7 @@ def gen_gms_project_data(project_dir: Path, n_procs: int = 1):
 
     # Load the ensemble
     ensemble_ffp = project_dict["ensemble_ffp"]
-    ensemble = sc.gm_data.Ensemble(
+    ensemble = gc.gm_data.Ensemble(
         project_name, config_ffp=ensemble_ffp, use_im_data_cache=True
     )
 
@@ -150,7 +174,7 @@ def gen_gms_project_data(project_dir: Path, n_procs: int = 1):
                     ensemble,
                     cur_station,
                     cur_id,
-                    sc.im.IM.from_str(gms_params[cur_id]["IMj"]),
+                    gc.im.IM.from_str(gms_params[cur_id]["IMj"]),
                     _get_gms_ims(
                         gms_params[cur_id]["IMj"], gms_params[cur_id]["IMs"], ensemble
                     ),
