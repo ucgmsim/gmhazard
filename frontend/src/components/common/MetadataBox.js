@@ -9,13 +9,17 @@ const MetadataBox = ({ metadata }) => {
     let metadataText = [];
 
     for (const [key, value] of Object.entries(metadata)) {
-      if (key.includes("NZS1170.5 Soil")) {
+      if (
+        key.includes("NZS") &&
+        key.includes("1170.5") &&
+        key.includes("Soil")
+      ) {
         metadataText.push(
           <p key={key}>
             {key}: {CONSTANTS.NZS_SOIL_CLASS[value]}
           </p>
         );
-      } else if (key.includes("NZTA Soil")) {
+      } else if (key.includes("NZTA") && key.includes("Soil")) {
         metadataText.push(
           <p key={key}>
             {key}: {CONSTANTS.NZTA_SOIL_CLASS[value]}
