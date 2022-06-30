@@ -18,6 +18,7 @@ import HazardEnsemblePlot from "./HazardCurve/HazardEnsemblePlot";
 
 import UHSPlot from "./UHS/UHSPlot";
 import UHSBranchPlot from "./UHS/UHSBranchPlot";
+import MetadataTable from "./Scenarios/MetadataTable";
 import ScenarioPlot from "./Scenarios/ScenarioPlot";
 import GMSAvailableGMPlot from "./GMS/GMSAvailableGMPlot";
 import GMSCausalParamPlot from "./GMS/GMSCausalParamPlot";
@@ -47,6 +48,7 @@ export {
   HazardEnsemblePlot,
   UHSPlot,
   UHSBranchPlot,
+  MetadataTable,
   ScenarioPlot,
   GMSAvailableGMPlot,
   GMSCausalParamPlot,

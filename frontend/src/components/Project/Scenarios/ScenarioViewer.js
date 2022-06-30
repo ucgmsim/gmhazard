@@ -1,5 +1,9 @@
 import React, { Fragment, useContext, useState, useEffect } from "react";
 
+import $ from "jquery";
+import Select from "react-select";
+import { Tabs, Tab } from "react-bootstrap";
+
 import { GlobalContext } from "context";
 import * as CONSTANTS from "constants/Constants";
 import { useAuth0 } from "components/common/ReactAuth0SPA";
@@ -10,9 +14,15 @@ import {
   GuideMessage,
   ErrorMessage,
   ScenarioPlot,
+  MetadataTable,
 } from "components/common";
 import { getProjectScenario } from "apis/ProjectAPI";
-import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
+import {
+  handleErrors,
+  APIQueryBuilder,
+  createStationID,
+  createSelectArray,
+} from "utils/Utils";
 
 import "assets/style/ScenarioViewer.css";
 
@@ -47,6 +57,10 @@ const ScenarioViewer = () => {
 
   // For Download data button
   const [downloadToken, setDownloadToken] = useState("");
+
+  // For Select, dropdown
+  const [localSelectedRP, setLocalSelectedRP] = useState(null);
+  const [disaggRPOptions, setDisaggRPOptions] = useState([]);
 
   // Reset tabs if users click Get button from Site Selection
   useEffect(() => {
@@ -103,6 +117,10 @@ const ScenarioViewer = () => {
     setProjectScenarioData(data);
     setDownloadToken(data["download_token"]);
 
+    const medataDataOptions = createSelectArray(Object.keys(data["metadata"]));
+    setDisaggRPOptions(medataDataOptions);
+    setLocalSelectedRP(medataDataOptions[0]);
+
     setExtraInfo({
       from: "project",
       id: projectId["value"],
@@ -123,37 +141,85 @@ const ScenarioViewer = () => {
 
   return (
     <div className="scenario-viewer">
-      {projectScenarioGetClick === null && (
-        <GuideMessage
-          header={CONSTANTS.SCENARIOS}
-          body={CONSTANTS.SCENARIO_VIEWER_GUIDE_MSG}
-          instruction={CONSTANTS.PROJECT_SCENARIO_VIEWER_GUIDE_INSTRUCTION}
-        />
-      )}
-      {projectScenarioGetClick !== null &&
-        isLoading === true &&
-        showErrorMessage.isError === false && <LoadingSpinner />}
-      {isLoading === false && showErrorMessage.isError === true && (
-        <ErrorMessage errorCode={showErrorMessage.errorCode} />
-      )}
-      {isLoading === false &&
-        projectScenarioData !== null &&
-        showErrorMessage.isError === false && (
-          <Fragment>
-            <ScenarioPlot
-              scenarioData={projectScenarioData}
-              scenarioSelectedRuptures={projectScenarioSelectedRuptures}
-              extra={extraInfo}
+      <Tabs defaultActiveKey="plot" className="pivot-tabs">
+        <Tab eventKey="plot" title="Plot">
+          {projectScenarioGetClick === null && (
+            <GuideMessage
+              header={CONSTANTS.SCENARIOS}
+              body={CONSTANTS.SCENARIO_VIEWER_GUIDE_MSG}
+              instruction={CONSTANTS.PROJECT_SCENARIO_VIEWER_GUIDE_INSTRUCTION}
             />
-            <DownloadButton
-              downloadURL={CONSTANTS.PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT}
-              downloadToken={{
-                scenario_token: downloadToken,
-              }}
-              fileName="Scenarios.zip"
+          )}
+          {projectScenarioGetClick !== null &&
+            isLoading === true &&
+            showErrorMessage.isError === false && <LoadingSpinner />}
+          {isLoading === false && showErrorMessage.isError === true && (
+            <ErrorMessage errorCode={showErrorMessage.errorCode} />
+          )}
+          {isLoading === false &&
+            projectScenarioData !== null &&
+            showErrorMessage.isError === false && (
+              <Fragment>
+                <ScenarioPlot
+                  scenarioData={projectScenarioData}
+                  scenarioSelectedRuptures={projectScenarioSelectedRuptures}
+                  extra={extraInfo}
+                />
+                <DownloadButton
+                  downloadURL={
+                    CONSTANTS.PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT
+                  }
+                  downloadToken={{
+                    scenario_token: downloadToken,
+                  }}
+                  fileName="Scenarios.zip"
+                />
+              </Fragment>
+            )}
+        </Tab>
+        <Tab eventKey="table" title="Contribution Table">
+          {projectScenarioGetClick === null && (
+            <GuideMessage
+              header={CONSTANTS.SCENARIOS}
+              body={CONSTANTS.SCENARIO_VIEWER_GUIDE_MSG}
+              instruction={CONSTANTS.PROJECT_SCENARIO_VIEWER_GUIDE_INSTRUCTION}
             />
-          </Fragment>
-        )}
+          )}
+          {projectScenarioGetClick !== null &&
+            isLoading === true &&
+            showErrorMessage.isError === false && <LoadingSpinner />}
+          {isLoading === false && showErrorMessage.isError === true && (
+            <ErrorMessage errorCode={showErrorMessage.errorCode} />
+          )}
+          {isLoading === false &&
+            projectScenarioData !== null &&
+            showErrorMessage.isError === false && (
+              <Fragment>
+                <Select
+                  value={localSelectedRP}
+                  onChange={(rpOption) => setLocalSelectedRP(rpOption)}
+                  options={disaggRPOptions}
+                  isDisabled={disaggRPOptions.length === 0}
+                  menuPlacement="auto"
+                />
+                <MetadataTable
+                  metadata={
+                    projectScenarioData["metadata"][localSelectedRP["value"]]
+                  }
+                  scenarioRuptures={Object.keys(
+                    projectScenarioData["ensemble_scenario"]["mu_data"]
+                  )}
+                />
+                {/* <button
+                  className="btn btn-info hazard-disagg-contrib-button"
+                  onClick={() => rowToggle()}
+                >
+                  {toggleText}
+                </button> */}
+              </Fragment>
+            )}
+        </Tab>
+      </Tabs>
     </div>
   );
 };
