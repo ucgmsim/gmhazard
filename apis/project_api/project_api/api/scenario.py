@@ -54,7 +54,15 @@ def get_ensemble_scenario():
                 ),
             ),
             "metadata": utils.load_scenario_metadata(
-                project_dir, project_id, station_id, im_component
+                project_dir,
+                project_id,
+                station_id,
+                im_component,
+                list(
+                    sc.scenario.filter_ruptures(ensemble_scenario)
+                    .to_dict()["mu_data"]
+                    .keys()
+                ),
             ),
         }
     )
@@ -97,9 +105,7 @@ def download_ens_scenario():
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_ffp = au.api.create_scenario_download_zip(
-            ensemble_scenario,
-            tmp_dir,
-            prefix=f"{project_id}",
+            ensemble_scenario, tmp_dir, prefix=f"{project_id}",
         )
 
         return flask.send_file(
