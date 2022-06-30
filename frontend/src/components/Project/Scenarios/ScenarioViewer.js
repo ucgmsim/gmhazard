@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 
 import { Tabs, Tab } from "react-bootstrap";
 
@@ -168,12 +168,7 @@ const ScenarioViewer = () => {
           {isLoading === false &&
             projectScenarioData !== null &&
             showErrorMessage.isError === false && (
-              <MetadataTable
-                metadata={projectScenarioData["metadata"]}
-                scenarioRuptures={Object.keys(
-                  projectScenarioData["ensemble_scenario"]["mu_data"]
-                )}
-              />
+              <MetadataTable metadata={projectScenarioData["metadata"]} />
             )}
         </Tab>
       </Tabs>

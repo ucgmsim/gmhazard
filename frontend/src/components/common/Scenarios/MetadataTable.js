@@ -5,32 +5,20 @@ import * as CONSTANTS from "constants/Constants";
 import { renderSigfigs } from "utils/Utils";
 import { ErrorMessage } from "components/common";
 
-const MetadataTable = ({ metadata, scenarioRuptures }) => {
-  if (
-    metadata !== null &&
-    !metadata.hasOwnProperty("error") &&
-    scenarioRuptures !== null &&
-    !scenarioRuptures.hasOwnProperty("error")
-  ) {
+const MetadataTable = ({ metadata }) => {
+  if (metadata !== null && !metadata.hasOwnProperty("error")) {
     const contributionTableRows = [];
 
-    scenarioRuptures.forEach((rupture, rowIdx) => {
-      const ruptureName = Object.keys(metadata["rupture_name"]).find(
-        (ruptureName) => metadata["rupture_name"][ruptureName] === rupture
-      );
-
+    Object.keys(metadata["rupture_name"]).forEach((rupture, rowIdx) => {
       contributionTableRows.push(
         <tr key={rowIdx}>
-          <td>{metadata["rupture_name"][ruptureName]}</td>
+          <td>{metadata["rupture_name"][rupture]}</td>
           <td>
-            {Number(metadata["annual_rec_prob"][ruptureName]).toExponential(4)}
+            {Number(metadata["annual_rec_prob"][rupture]).toExponential(3)}
           </td>
-          <td>{metadata["magnitude"][ruptureName]}</td>
+          <td>{metadata["magnitude"][rupture]}</td>
           <td>
-            {renderSigfigs(
-              metadata["rrup"][ruptureName],
-              CONSTANTS.APP_UI_SIGFIGS
-            )}
+            {renderSigfigs(metadata["rrup"][rupture], CONSTANTS.APP_UI_SIGFIGS)}
           </td>
         </tr>
       );
@@ -43,9 +31,6 @@ const MetadataTable = ({ metadata, scenarioRuptures }) => {
           <thead>
             <tr>
               <th scope="col">{CONSTANTS.NAME}</th>
-              {/* <th scope="col">
-                {CONSTANTS.CONTRIBUTION} {CONSTANTS.PERCENTAGE_UNIT}
-              </th> */}
               <th scope="col">{CONSTANTS.ANNUAL_RECURRENCE_RATE}</th>
               <th scope="col">{CONSTANTS.MAGNITUDE}</th>
               <th scope="col">
