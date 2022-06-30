@@ -189,7 +189,9 @@ def load_scenario_metadata(
 
     station_data_dir = project_dir / "results" / station_id / str(im_component)
 
-    data_dir = list(station_data_dir.glob(f"disagg_{ims[1].file_format()}*"))[0]
+    # Annual recurrence rate, Magnitude, and Rrup are specified values for each
+    # rupture, nothing to do with IM. Hence, choose any directory
+    data_dir = list(station_data_dir.glob(f"disagg_{ims[0].file_format()}*"))[0]
     metadata_df = pd.read_csv(list(data_dir.glob("*_metadata.csv"))[0], index_col=0)
 
     # Filters the metadata by the given ruptures which are the top 20
