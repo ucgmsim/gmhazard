@@ -144,22 +144,11 @@ const ScenarioViewer = () => {
           {isLoading === false &&
             projectScenarioData !== null &&
             showErrorMessage.isError === false && (
-              <Fragment>
-                <ScenarioPlot
-                  scenarioData={projectScenarioData}
-                  scenarioSelectedRuptures={projectScenarioSelectedRuptures}
-                  extra={extraInfo}
-                />
-                <DownloadButton
-                  downloadURL={
-                    CONSTANTS.PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT
-                  }
-                  downloadToken={{
-                    scenario_token: downloadToken,
-                  }}
-                  fileName="Scenarios.zip"
-                />
-              </Fragment>
+              <ScenarioPlot
+                scenarioData={projectScenarioData}
+                scenarioSelectedRuptures={projectScenarioSelectedRuptures}
+                extra={extraInfo}
+              />
             )}
         </Tab>
         <Tab eventKey="table" title={CONSTANTS.SOURCE_CONTRIBUTIONS}>
@@ -188,6 +177,14 @@ const ScenarioViewer = () => {
             )}
         </Tab>
       </Tabs>
+      <DownloadButton
+        disabled={isLoading || projectScenarioData === null}
+        downloadURL={CONSTANTS.PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT}
+        downloadToken={{
+          scenario_token: downloadToken,
+        }}
+        fileName="Scenarios.zip"
+      />
     </div>
   );
 };
