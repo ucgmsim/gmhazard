@@ -189,15 +189,12 @@ def load_scenario_metadata(
 
     station_data_dir = project_dir / "results" / station_id / str(im_component)
 
-    metadata = {}
-    for im in ims[1:]:
-        data_dir = list(station_data_dir.glob(f"disagg_{im.file_format()}*"))[0]
-        metadata[str(im)] = pd.read_csv(
-            list(data_dir.glob("*_metadata.csv"))[0],
-            index_col=0,
-        ).to_dict()
+    data_dir = list(station_data_dir.glob(f"disagg_{ims[1].file_format()}*"))[0]
 
-    return metadata
+    return pd.read_csv(
+        list(data_dir.glob("*_metadata.csv"))[0],
+        index_col=0,
+    ).to_dict()
 
 
 def load_uhs_data(results_dir: Path, rps: List[int]):

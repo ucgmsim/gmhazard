@@ -1,7 +1,5 @@
 import React, { Fragment, useContext, useState, useEffect } from "react";
 
-import $ from "jquery";
-import Select from "react-select";
 import { Tabs, Tab } from "react-bootstrap";
 
 import { GlobalContext } from "context";
@@ -17,12 +15,7 @@ import {
   MetadataTable,
 } from "components/common";
 import { getProjectScenario } from "apis/ProjectAPI";
-import {
-  handleErrors,
-  APIQueryBuilder,
-  createStationID,
-  createSelectArray,
-} from "utils/Utils";
+import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
 
 import "assets/style/ScenarioViewer.css";
 
@@ -57,10 +50,6 @@ const ScenarioViewer = () => {
 
   // For Download data button
   const [downloadToken, setDownloadToken] = useState("");
-
-  // For Select, dropdown
-  const [localSelectedRP, setLocalSelectedRP] = useState(null);
-  const [disaggRPOptions, setDisaggRPOptions] = useState([]);
 
   // Reset tabs if users click Get button from Site Selection
   useEffect(() => {
@@ -117,10 +106,6 @@ const ScenarioViewer = () => {
     setProjectScenarioData(data);
     setDownloadToken(data["download_token"]);
 
-    const medataDataOptions = createSelectArray(Object.keys(data["metadata"]));
-    setDisaggRPOptions(medataDataOptions);
-    setLocalSelectedRP(medataDataOptions[0]);
-
     setExtraInfo({
       from: "project",
       id: projectId["value"],
@@ -142,7 +127,7 @@ const ScenarioViewer = () => {
   return (
     <div className="scenario-viewer">
       <Tabs defaultActiveKey="plot" className="pivot-tabs">
-        <Tab eventKey="plot" title="Plot">
+        <Tab eventKey="plot" title={CONSTANTS.SCENARIOS}>
           {projectScenarioGetClick === null && (
             <GuideMessage
               header={CONSTANTS.SCENARIOS}
@@ -177,7 +162,7 @@ const ScenarioViewer = () => {
               </Fragment>
             )}
         </Tab>
-        <Tab eventKey="table" title="Contribution Table">
+        <Tab eventKey="table" title={CONSTANTS.SOURCE_CONTRIBUTIONS}>
           {projectScenarioGetClick === null && (
             <GuideMessage
               header={CONSTANTS.SCENARIOS}
@@ -194,29 +179,12 @@ const ScenarioViewer = () => {
           {isLoading === false &&
             projectScenarioData !== null &&
             showErrorMessage.isError === false && (
-              <Fragment>
-                <Select
-                  value={localSelectedRP}
-                  onChange={(rpOption) => setLocalSelectedRP(rpOption)}
-                  options={disaggRPOptions}
-                  isDisabled={disaggRPOptions.length === 0}
-                  menuPlacement="auto"
-                />
-                <MetadataTable
-                  metadata={
-                    projectScenarioData["metadata"][localSelectedRP["value"]]
-                  }
-                  scenarioRuptures={Object.keys(
-                    projectScenarioData["ensemble_scenario"]["mu_data"]
-                  )}
-                />
-                {/* <button
-                  className="btn btn-info hazard-disagg-contrib-button"
-                  onClick={() => rowToggle()}
-                >
-                  {toggleText}
-                </button> */}
-              </Fragment>
+              <MetadataTable
+                metadata={projectScenarioData["metadata"]}
+                scenarioRuptures={Object.keys(
+                  projectScenarioData["ensemble_scenario"]["mu_data"]
+                )}
+              />
             )}
         </Tab>
       </Tabs>
