@@ -43,7 +43,10 @@ class Project:
             # Vs30 and Z1.0, Z2.5 values for correct mapping
             assert len(z1p0) == len(cur_data["vs30"]) and len(z1p0) == len(z2p5)
             self.locations[cur_loc_id] = Location(
-                cur_data["name"], cur_data["vs30"], z1p0, z2p5,
+                cur_data["name"],
+                cur_data["vs30"],
+                z1p0,
+                z2p5,
             )
         self.station_ids = [
             pg.utils.create_station_id(cur_loc, cur_vs30, z1p0=cur_z1p0, z2p5=cur_z2p5)
@@ -157,7 +160,8 @@ def load_disagg_data(station_data_dir: Path, im: sc.im.IM, rps: List[int]):
 
         metadata_results.append(
             pd.read_csv(
-                data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv", index_col=0,
+                data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv",
+                index_col=0,
             )
         )
 
@@ -170,6 +174,29 @@ def load_disagg_data(station_data_dir: Path, im: sc.im.IM, rps: List[int]):
             eps_pngs.append(eps_png_data)
 
     return ensemble_results, metadata_results, src_pngs, eps_pngs
+
+
+def load_scenario_metadata(
+    project_dir: Path, project_id: str, station_id: str, im_component: sc.im.IMComponent
+):
+    with open(project_dir / f"{project_id}.yaml", "r") as f:
+        project_dict = yaml.safe_load(f)
+
+    project_params = project_dict["project_parameters"]
+    ims = sc.im.to_im_list(project_params["ims"])
+    ims = sc.shared.get_SA_ims(ims, component=im_component)
+
+    station_data_dir = project_dir / "results" / station_id / str(im_component)
+
+    metadata = {}
+    for im in ims[1:]:
+        data_dir = list(station_data_dir.glob(f"disagg_{im.file_format()}*"))[0]
+        metadata[str(im)] = pd.read_csv(
+            list(data_dir.glob("*_metadata.csv"))[0],
+            index_col=0,
+        ).to_dict()
+
+    return metadata
 
 
 def load_uhs_data(results_dir: Path, rps: List[int]):
