@@ -8,10 +8,16 @@ import { ErrorMessage } from "components/common";
 const MetadataTable = ({ metadata }) => {
   if (metadata !== null && !metadata.hasOwnProperty("error")) {
     const contributionTableRows = [];
+    let contribRowClassname = "";
 
     Object.keys(metadata["rupture_name"]).forEach((rupture, rowIdx) => {
+      if (rowIdx === CONSTANTS.APP_UI_CONTRIB_TABLE_ROWS - 1) {
+        contribRowClassname =
+          "scenario-contrib-toggle-row scenario-contrib-row-hidden";
+      }
+
       contributionTableRows.push(
-        <tr key={rowIdx}>
+        <tr key={rowIdx} className={contribRowClassname}>
           <td>{metadata["rupture_name"][rupture]}</td>
           <td>
             {Number(metadata["annual_rec_prob"][rupture]).toExponential(3)}

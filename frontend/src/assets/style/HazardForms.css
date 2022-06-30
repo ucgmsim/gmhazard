@@ -183,14 +183,6 @@ tr.contrib-row-hidden {
   display: none;
 }
 
-tr.contrib-ellipsis {
-  background-color: white !important;
-}
-
-tr.contrib-ellipsis td.hidden {
-  display: none;
-}
-
 button.default-button {
   margin-left: 1.2em;
 }

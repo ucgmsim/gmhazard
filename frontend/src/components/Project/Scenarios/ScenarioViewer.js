@@ -1,5 +1,6 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { Fragment, useContext, useState, useEffect } from "react";
 
+import $ from "jquery";
 import { Tabs, Tab } from "react-bootstrap";
 
 import { GlobalContext } from "context";
@@ -47,6 +48,10 @@ const ScenarioViewer = () => {
 
   // For Scenario Plots
   const [extraInfo, setExtraInfo] = useState({});
+
+  // For Source contributions table
+  const [rowsToggled, setRowsToggled] = useState(true);
+  const [toggleText, setToggleText] = useState(CONSTANTS.SHOW_MORE);
 
   // For Download data button
   const [downloadToken, setDownloadToken] = useState("");
@@ -124,6 +129,22 @@ const ScenarioViewer = () => {
     console.log(error);
   };
 
+  const rowToggle = () => {
+    setRowsToggled(!rowsToggled);
+
+    if (rowsToggled) {
+      $(
+        "tr.scenario-contrib-toggle-row.scenario-contrib-row-hidden"
+      ).removeClass("scenario-contrib-row-hidden");
+    } else {
+      $("tr.scenario-contrib-toggle-row").addClass(
+        "scenario-contrib-row-hidden"
+      );
+    }
+
+    setToggleText(rowsToggled ? CONSTANTS.SHOW_LESS : CONSTANTS.SHOW_MORE);
+  };
+
   return (
     <div className="scenario-viewer">
       <Tabs defaultActiveKey="plot" className="pivot-tabs">
@@ -168,7 +189,15 @@ const ScenarioViewer = () => {
           {isLoading === false &&
             projectScenarioData !== null &&
             showErrorMessage.isError === false && (
-              <MetadataTable metadata={projectScenarioData["metadata"]} />
+              <Fragment>
+                <MetadataTable metadata={projectScenarioData["metadata"]} />
+                <button
+                  className="btn btn-info hazard-disagg-contrib-button"
+                  onClick={() => rowToggle()}
+                >
+                  {toggleText}
+                </button>
+              </Fragment>
             )}
         </Tab>
       </Tabs>

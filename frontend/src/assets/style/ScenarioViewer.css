@@ -1,4 +1,7 @@
 div.scenario-viewer {
   position: relative;
 }
-  
+
+tr.scenario-contrib-row-hidden {
+  display: none;
+}
