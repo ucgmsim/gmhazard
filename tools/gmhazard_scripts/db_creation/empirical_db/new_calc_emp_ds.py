@@ -95,8 +95,8 @@ def calculate_emp_ds(
         # Filter the site/station that the distance_store actually has
         sites = site_df.index[np.isin(site_df.index, distance_store.stored_stations())]
 
-        tect_types = nhm_data["tect_type"].unique()
-
+        # tect_types = nhm_data["tect_type"].unique()
+        tect_types = list(model_dict.keys())
         for im_idx, im in enumerate(ims):
             print(f"Processing IM: {im}, {im_idx + 1} / {len(ims)}")
             for tect_idx, tect_type in enumerate(tect_types):
@@ -121,6 +121,8 @@ def calculate_emp_ds(
                         writeable=True,
                         source_type=gc.constants.SourceType.distributed,
                     )
+                    if tect_type in ("SUBDUCTION_INTERFACE", "VOLCANIC"):
+                        continue
                     print(
                         f"Processing Model: {GMM.name} for {tect_type}, {GMM_idx + 1} / {len(GMMs)}"
                     )
