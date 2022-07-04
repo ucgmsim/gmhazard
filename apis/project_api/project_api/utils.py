@@ -172,7 +172,7 @@ def load_disagg_data(station_data_dir: Path, im: gc.im.IM, rps: List[int]):
     return ensemble_results, metadata_results, src_pngs, eps_pngs
 
 
-def load_scenario_metadata(
+def load_scenario_source_contribution(
     project_dir: Path,
     project_id: str,
     station_id: str,

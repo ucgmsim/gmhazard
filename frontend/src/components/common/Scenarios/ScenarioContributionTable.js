@@ -5,12 +5,12 @@ import * as CONSTANTS from "constants/Constants";
 import { renderSigfigs } from "utils/Utils";
 import { ErrorMessage } from "components/common";
 
-const MetadataTable = ({ metadata }) => {
-  if (metadata !== null && !metadata.hasOwnProperty("error")) {
+const ScenarioContributionTable = ({ contribution }) => {
+  if (contribution !== null && !contribution.hasOwnProperty("error")) {
     const contributionTableRows = [];
     let contribRowClassname = "";
 
-    Object.keys(metadata["rupture_name"]).forEach((rupture, rowIdx) => {
+    Object.keys(contribution["rupture_name"]).forEach((rupture, rowIdx) => {
       if (rowIdx === CONSTANTS.APP_UI_CONTRIB_TABLE_ROWS - 1) {
         contribRowClassname =
           "scenario-contrib-toggle-row scenario-contrib-row-hidden";
@@ -18,13 +18,16 @@ const MetadataTable = ({ metadata }) => {
 
       contributionTableRows.push(
         <tr key={rowIdx} className={contribRowClassname}>
-          <td>{metadata["rupture_name"][rupture]}</td>
+          <td>{contribution["rupture_name"][rupture]}</td>
           <td>
-            {Number(metadata["annual_rec_prob"][rupture]).toExponential(3)}
+            {Number(contribution["annual_rec_prob"][rupture]).toExponential(3)}
           </td>
-          <td>{metadata["magnitude"][rupture]}</td>
+          <td>{contribution["magnitude"][rupture]}</td>
           <td>
-            {renderSigfigs(metadata["rrup"][rupture], CONSTANTS.APP_UI_SIGFIGS)}
+            {renderSigfigs(
+              contribution["rrup"][rupture],
+              CONSTANTS.APP_UI_SIGFIGS
+            )}
           </td>
         </tr>
       );
@@ -52,4 +55,4 @@ const MetadataTable = ({ metadata }) => {
   return <ErrorMessage />;
 };
 
-export default MetadataTable;
+export default ScenarioContributionTable;

@@ -3,7 +3,7 @@ import logging
 import zipfile
 import os
 from pathlib import Path
-from typing import Sequence
+from typing import Sequence, Dict
 
 import yaml
 import numpy as np
@@ -580,6 +580,7 @@ def create_gms_download_zip(
 
 def write_scenario_download_data(
     ensemble_scenario: sc.scenario.EnsembleScenarioResult,
+    source_contribution: Dict,
     out_dir: str,
     prefix: str = None,
 ):
@@ -726,11 +727,12 @@ def write_scenario_download_data(
 
 def create_scenario_download_zip(
     ensemble_scenario: sc.scenario.EnsembleScenarioResult,
+    metadata: Dict,
     tmp_dir: str,
     prefix: str = None,
 ):
     ffps = write_scenario_download_data(
-        ensemble_scenario, out_dir=tmp_dir, prefix=prefix,
+        ensemble_scenario, metadata, out_dir=tmp_dir, prefix=prefix,
     )
 
     # Create zip file

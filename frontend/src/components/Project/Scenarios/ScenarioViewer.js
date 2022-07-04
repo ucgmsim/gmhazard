@@ -13,7 +13,7 @@ import {
   GuideMessage,
   ErrorMessage,
   ScenarioPlot,
-  MetadataTable,
+  ScenarioContributionTable,
 } from "components/common";
 import { getProjectScenario } from "apis/ProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
@@ -190,7 +190,9 @@ const ScenarioViewer = () => {
             projectScenarioData !== null &&
             showErrorMessage.isError === false && (
               <Fragment>
-                <MetadataTable metadata={projectScenarioData["metadata"]} />
+                <ScenarioContributionTable
+                  contribution={projectScenarioData["source_contribution"]}
+                />
                 <button
                   className="btn btn-info hazard-disagg-contrib-button"
                   onClick={() => rowToggle()}
