@@ -1,5 +1,8 @@
 import React, { Fragment, useContext, useState, useEffect } from "react";
 
+import $ from "jquery";
+import { Tabs, Tab } from "react-bootstrap";
+
 import { GlobalContext } from "context";
 import * as CONSTANTS from "constants/Constants";
 import { useAuth0 } from "components/common/ReactAuth0SPA";
@@ -10,6 +13,7 @@ import {
   GuideMessage,
   ErrorMessage,
   ScenarioPlot,
+  MetadataTable,
 } from "components/common";
 import { getProjectScenario } from "apis/ProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
@@ -44,6 +48,10 @@ const ScenarioViewer = () => {
 
   // For Scenario Plots
   const [extraInfo, setExtraInfo] = useState({});
+
+  // For Source contributions table
+  const [rowsToggled, setRowsToggled] = useState(true);
+  const [toggleText, setToggleText] = useState(CONSTANTS.SHOW_MORE);
 
   // For Download data button
   const [downloadToken, setDownloadToken] = useState("");
@@ -121,39 +129,86 @@ const ScenarioViewer = () => {
     console.log(error);
   };
 
+  const rowToggle = () => {
+    setRowsToggled(!rowsToggled);
+
+    if (rowsToggled) {
+      $(
+        "tr.scenario-contrib-toggle-row.scenario-contrib-row-hidden"
+      ).removeClass("scenario-contrib-row-hidden");
+    } else {
+      $("tr.scenario-contrib-toggle-row").addClass(
+        "scenario-contrib-row-hidden"
+      );
+    }
+
+    setToggleText(rowsToggled ? CONSTANTS.SHOW_LESS : CONSTANTS.SHOW_MORE);
+  };
+
   return (
     <div className="scenario-viewer">
-      {projectScenarioGetClick === null && (
-        <GuideMessage
-          header={CONSTANTS.SCENARIOS}
-          body={CONSTANTS.SCENARIO_VIEWER_GUIDE_MSG}
-          instruction={CONSTANTS.PROJECT_SCENARIO_VIEWER_GUIDE_INSTRUCTION}
-        />
-      )}
-      {projectScenarioGetClick !== null &&
-        isLoading === true &&
-        showErrorMessage.isError === false && <LoadingSpinner />}
-      {isLoading === false && showErrorMessage.isError === true && (
-        <ErrorMessage errorCode={showErrorMessage.errorCode} />
-      )}
-      {isLoading === false &&
-        projectScenarioData !== null &&
-        showErrorMessage.isError === false && (
-          <Fragment>
-            <ScenarioPlot
-              scenarioData={projectScenarioData}
-              scenarioSelectedRuptures={projectScenarioSelectedRuptures}
-              extra={extraInfo}
+      <Tabs defaultActiveKey="plot" className="pivot-tabs">
+        <Tab eventKey="plot" title={CONSTANTS.SCENARIOS}>
+          {projectScenarioGetClick === null && (
+            <GuideMessage
+              header={CONSTANTS.SCENARIOS}
+              body={CONSTANTS.SCENARIO_VIEWER_GUIDE_MSG}
+              instruction={CONSTANTS.PROJECT_SCENARIO_VIEWER_GUIDE_INSTRUCTION}
             />
-            <DownloadButton
-              downloadURL={CONSTANTS.PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT}
-              downloadToken={{
-                scenario_token: downloadToken,
-              }}
-              fileName="Scenarios.zip"
+          )}
+          {projectScenarioGetClick !== null &&
+            isLoading === true &&
+            showErrorMessage.isError === false && <LoadingSpinner />}
+          {isLoading === false && showErrorMessage.isError === true && (
+            <ErrorMessage errorCode={showErrorMessage.errorCode} />
+          )}
+          {isLoading === false &&
+            projectScenarioData !== null &&
+            showErrorMessage.isError === false && (
+              <ScenarioPlot
+                scenarioData={projectScenarioData}
+                scenarioSelectedRuptures={projectScenarioSelectedRuptures}
+                extra={extraInfo}
+              />
+            )}
+        </Tab>
+        <Tab eventKey="table" title={CONSTANTS.SOURCE_CONTRIBUTIONS}>
+          {projectScenarioGetClick === null && (
+            <GuideMessage
+              header={CONSTANTS.SCENARIOS}
+              body={CONSTANTS.SCENARIO_VIEWER_GUIDE_MSG}
+              instruction={CONSTANTS.PROJECT_SCENARIO_VIEWER_GUIDE_INSTRUCTION}
             />
-          </Fragment>
-        )}
+          )}
+          {projectScenarioGetClick !== null &&
+            isLoading === true &&
+            showErrorMessage.isError === false && <LoadingSpinner />}
+          {isLoading === false && showErrorMessage.isError === true && (
+            <ErrorMessage errorCode={showErrorMessage.errorCode} />
+          )}
+          {isLoading === false &&
+            projectScenarioData !== null &&
+            showErrorMessage.isError === false && (
+              <Fragment>
+                <MetadataTable metadata={projectScenarioData["metadata"]} />
+                <button
+                  className="btn btn-info hazard-disagg-contrib-button"
+                  onClick={() => rowToggle()}
+                >
+                  {toggleText}
+                </button>
+              </Fragment>
+            )}
+        </Tab>
+      </Tabs>
+      <DownloadButton
+        disabled={isLoading || projectScenarioData === null}
+        downloadURL={CONSTANTS.PROJECT_API_SCENARIOS_DOWNLOAD_ENDPOINT}
+        downloadToken={{
+          scenario_token: downloadToken,
+        }}
+        fileName="Scenarios.zip"
+      />
     </div>
   );
 };

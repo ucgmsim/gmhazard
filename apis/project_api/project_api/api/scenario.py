@@ -8,6 +8,7 @@ import gmhazard_utils as su
 import gmhazard_calc as sc
 from project_api import constants as const
 from project_api import server
+from project_api import utils
 
 
 @server.app.route(const.PROJECT_SCENARIO_ENDPOINT, methods=["GET"])
@@ -31,31 +32,39 @@ def get_ensemble_scenario():
     )
 
     # Load the data
+    project_dir = server.BASE_PROJECTS_DIR / version_str / project_id
     ensemble_scenario = sc.scenario.EnsembleScenarioResult.load(
-        server.BASE_PROJECTS_DIR
-        / version_str
-        / project_id
-        / "results"
-        / station_id
-        / str(im_component)
-        / "scenario",
+        project_dir / "results" / station_id / str(im_component) / "scenario",
     )
 
     return flask.jsonify(
-        au.api.get_ensemble_scenario_response(
-            # Filters the ruptures to the top 20 based on geometric mean
-            sc.scenario.filter_ruptures(ensemble_scenario),
-            au.api.get_download_token(
-                {
-                    "type": "ensemble_scenario",
-                    "project_id": project_id,
-                    "station": ensemble_scenario.site_info.station_name,
-                    "user_vs30": ensemble_scenario.site_info.user_vs30,
-                    "im_component": str(im_component),
-                },
-                server.DOWNLOAD_URL_SECRET_KEY,
+        {
+            **au.api.get_ensemble_scenario_response(
+                # Filters the ruptures to the top 20 based on geometric mean
+                sc.scenario.filter_ruptures(ensemble_scenario),
+                au.api.get_download_token(
+                    {
+                        "type": "ensemble_scenario",
+                        "project_id": project_id,
+                        "station": ensemble_scenario.site_info.station_name,
+                        "user_vs30": ensemble_scenario.site_info.user_vs30,
+                        "im_component": str(im_component),
+                    },
+                    server.DOWNLOAD_URL_SECRET_KEY,
+                ),
             ),
-        )
+            "metadata": utils.load_scenario_metadata(
+                project_dir,
+                project_id,
+                station_id,
+                im_component,
+                list(
+                    sc.scenario.filter_ruptures(ensemble_scenario)
+                    .to_dict()["mu_data"]
+                    .keys()
+                ),
+            ),
+        }
     )
 
 
