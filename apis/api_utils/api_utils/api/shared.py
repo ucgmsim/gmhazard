@@ -722,17 +722,26 @@ def write_scenario_download_data(
 
     ffps.append(meta_data_ffp)
 
+    # Source Contribution
+    source_contribution_ffp = (
+        Path(out_dir) / f"{prefix}scenario_source_contribution.csv"
+    )
+    df = pd.DataFrame.from_dict(source_contribution)
+    df.to_csv(source_contribution_ffp)
+
+    ffps.append(source_contribution_ffp)
+
     return ffps
 
 
 def create_scenario_download_zip(
     ensemble_scenario: sc.scenario.EnsembleScenarioResult,
-    metadata: Dict,
+    source_contribution: Dict,
     tmp_dir: str,
     prefix: str = None,
 ):
     ffps = write_scenario_download_data(
-        ensemble_scenario, metadata, out_dir=tmp_dir, prefix=prefix,
+        ensemble_scenario, source_contribution, out_dir=tmp_dir, prefix=prefix,
     )
 
     # Create zip file

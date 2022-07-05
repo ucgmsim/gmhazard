@@ -97,7 +97,7 @@ def download_ens_scenario():
     ensemble_scenario = sc.scenario.EnsembleScenarioResult.load(
         project_dir / "results" / station / im_component / "scenario",
     )
-    # Load metadata (Source contribution)
+    # Load Source contribution
     source_contribution = utils.load_scenario_source_contribution(
         project_dir,
         project_id,
@@ -107,7 +107,7 @@ def download_ens_scenario():
             sc.scenario.filter_ruptures(ensemble_scenario).to_dict()["mu_data"].keys()
         ),
     )
-    breakpoint()
+
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_ffp = au.api.create_scenario_download_zip(
             ensemble_scenario, source_contribution, tmp_dir, prefix=f"{project_id}",
