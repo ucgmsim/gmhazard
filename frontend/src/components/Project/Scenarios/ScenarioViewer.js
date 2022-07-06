@@ -13,7 +13,7 @@ import {
   GuideMessage,
   ErrorMessage,
   ScenarioPlot,
-  ScenarioContributionTable,
+  ScenarioRuptureMetaTable,
 } from "components/common";
 import { getProjectScenario } from "apis/ProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
@@ -172,7 +172,7 @@ const ScenarioViewer = () => {
               />
             )}
         </Tab>
-        <Tab eventKey="table" title={CONSTANTS.SOURCE_CONTRIBUTIONS}>
+        <Tab eventKey="table" title={CONSTANTS.SCENARIO_RUPTURE_METADATA}>
           {projectScenarioGetClick === null && (
             <GuideMessage
               header={CONSTANTS.SCENARIOS}
@@ -190,8 +190,8 @@ const ScenarioViewer = () => {
             projectScenarioData !== null &&
             showErrorMessage.isError === false && (
               <Fragment>
-                <ScenarioContributionTable
-                  contribution={projectScenarioData["source_contribution"]}
+                <ScenarioRuptureMetaTable
+                  metadata={projectScenarioData["rupture_metadata"]}
                 />
                 <button
                   className="btn btn-info hazard-disagg-contrib-button"

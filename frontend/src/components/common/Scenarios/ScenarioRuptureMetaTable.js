@@ -5,29 +5,26 @@ import * as CONSTANTS from "constants/Constants";
 import { renderSigfigs } from "utils/Utils";
 import { ErrorMessage } from "components/common";
 
-const ScenarioContributionTable = ({ contribution }) => {
-  if (contribution !== null && !contribution.hasOwnProperty("error")) {
-    const contributionTableRows = [];
+const ScenarioRuptureMetaTable = ({ metadata }) => {
+  if (metadata !== null && !metadata.hasOwnProperty("error")) {
+    const metadataTableRows = [];
     let contribRowClassname = "";
 
-    Object.keys(contribution["rupture_name"]).forEach((rupture, rowIdx) => {
+    Object.keys(metadata["rupture_name"]).forEach((rupture, rowIdx) => {
       if (rowIdx === CONSTANTS.APP_UI_CONTRIB_TABLE_ROWS - 1) {
         contribRowClassname =
           "scenario-contrib-toggle-row scenario-contrib-row-hidden";
       }
 
-      contributionTableRows.push(
+      metadataTableRows.push(
         <tr key={rowIdx} className={contribRowClassname}>
-          <td>{contribution["rupture_name"][rupture]}</td>
+          <td>{metadata["rupture_name"][rupture]}</td>
           <td>
-            {Number(contribution["annual_rec_prob"][rupture]).toExponential(3)}
+            {Number(metadata["annual_rec_prob"][rupture]).toExponential(3)}
           </td>
-          <td>{contribution["magnitude"][rupture]}</td>
+          <td>{metadata["magnitude"][rupture]}</td>
           <td>
-            {renderSigfigs(
-              contribution["rrup"][rupture],
-              CONSTANTS.APP_UI_SIGFIGS
-            )}
+            {renderSigfigs(metadata["rrup"][rupture], CONSTANTS.APP_UI_SIGFIGS)}
           </td>
         </tr>
       );
@@ -35,7 +32,7 @@ const ScenarioContributionTable = ({ contribution }) => {
 
     return (
       <div className="d-flex flex-column align-items-md-center">
-        {/* Contribution table */}
+        {/* metadata table */}
         <table className="table thead-dark table-striped table-bordered mt-2 w-auto">
           <thead>
             <tr>
@@ -47,7 +44,7 @@ const ScenarioContributionTable = ({ contribution }) => {
               </th>
             </tr>
           </thead>
-          <tbody>{contributionTableRows}</tbody>
+          <tbody>{metadataTableRows}</tbody>
         </table>
       </div>
     );
@@ -55,4 +52,4 @@ const ScenarioContributionTable = ({ contribution }) => {
   return <ErrorMessage />;
 };
 
-export default ScenarioContributionTable;
+export default ScenarioRuptureMetaTable;

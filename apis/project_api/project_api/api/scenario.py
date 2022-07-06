@@ -53,7 +53,7 @@ def get_ensemble_scenario():
                     server.DOWNLOAD_URL_SECRET_KEY,
                 ),
             ),
-            "source_contribution": utils.load_scenario_source_contribution(
+            "rupture_metadata": utils.load_scenario_rupture_metadata(
                 project_dir,
                 project_id,
                 station_id,
@@ -97,8 +97,8 @@ def download_ens_scenario():
     ensemble_scenario = sc.scenario.EnsembleScenarioResult.load(
         project_dir / "results" / station / im_component / "scenario",
     )
-    # Load Source contribution
-    source_contribution = utils.load_scenario_source_contribution(
+    # Load rupture metadata
+    rupture_metadata = utils.load_scenario_rupture_metadata(
         project_dir,
         project_id,
         station,
@@ -110,7 +110,7 @@ def download_ens_scenario():
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_ffp = au.api.create_scenario_download_zip(
-            ensemble_scenario, source_contribution, tmp_dir, prefix=f"{project_id}",
+            ensemble_scenario, rupture_metadata, tmp_dir, prefix=f"{project_id}",
         )
 
         return flask.send_file(
