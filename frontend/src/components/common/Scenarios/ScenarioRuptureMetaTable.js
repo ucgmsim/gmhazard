@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import * as CONSTANTS from "constants/Constants";
 
@@ -52,4 +52,4 @@ const ScenarioRuptureMetaTable = ({ metadata }) => {
   return <ErrorMessage />;
 };
 
-export default ScenarioRuptureMetaTable;
+export default memo(ScenarioRuptureMetaTable);
