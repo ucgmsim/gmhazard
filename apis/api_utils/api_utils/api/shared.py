@@ -3,7 +3,7 @@ import logging
 import zipfile
 import os
 from pathlib import Path
-from typing import Sequence, Dict
+from typing import Sequence
 
 import yaml
 import numpy as np
