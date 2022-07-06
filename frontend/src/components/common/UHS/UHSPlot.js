@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import Plot from "react-plotly.js";
 
@@ -170,4 +170,4 @@ const UHSPlot = ({ uhsData, nzs1170p5Data, extra, showNZS1170p5 = true }) => {
   return <ErrorMessage />;
 };
 
-export default UHSPlot;
+export default memo(UHSPlot);

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import * as CONSTANTS from "constants/Constants";
 
@@ -52,4 +52,4 @@ const MetadataTable = ({ metadata }) => {
   return <ErrorMessage />;
 };
 
-export default MetadataTable;
+export default memo(MetadataTable);

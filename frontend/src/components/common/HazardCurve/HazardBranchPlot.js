@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import Plot from "react-plotly.js";
 
@@ -185,4 +185,4 @@ const HazardBranchPlot = ({
   return <ErrorMessage />;
 };
 
-export default HazardBranchPlot;
+export default memo(HazardBranchPlot);

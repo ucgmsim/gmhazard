@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { Fragment, memo } from "react";
 
 import * as CONSTANTS from "constants/Constants";
 
@@ -119,4 +119,4 @@ const ContributionTable = ({ meanData, contributionData }) => {
   return <ErrorMessage />;
 };
 
-export default ContributionTable;
+export default memo(ContributionTable);
