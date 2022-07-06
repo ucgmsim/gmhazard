@@ -110,7 +110,7 @@ def download_ens_scenario():
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_ffp = au.api.create_scenario_download_zip(
-            ensemble_scenario, rupture_metadata, tmp_dir, prefix=f"{project_id}",
+            ensemble_scenario, rupture_metadata, tmp_dir
         )
 
         return flask.send_file(

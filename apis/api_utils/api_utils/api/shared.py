@@ -99,7 +99,11 @@ def write_hazard_download_data(
             nzta_ffp, index_label="exceedance", header=True, mode="a", index=True
         )
 
-        nzta_metadata = {"NZTA_metadata": {"soil_class": nzta_hazard.soil_class.value,}}
+        nzta_metadata = {
+            "NZTA_metadata": {
+                "soil_class": nzta_hazard.soil_class.value,
+            }
+        }
 
     # Metadata
     metadata = {
@@ -261,7 +265,14 @@ def write_disagg_download_data(
                 / f"{prefix}{disagg.im.file_format()}_{int(1 / disagg.exceedance)}_disagg_aggregated.csv"
             )
             disagg_agg_df.loc[
-                :, ["contribution", "epsilon", "annual_rec_prob", "magnitude", "rrup",]
+                :,
+                [
+                    "contribution",
+                    "epsilon",
+                    "annual_rec_prob",
+                    "magnitude",
+                    "rrup",
+                ],
             ].to_csv(
                 disagg_agg_data_ffp, index=True, mode="a", index_label="rupture_name"
             )
@@ -491,7 +502,8 @@ def write_gms_download_data(
 
         # Pseudo acceleration response spectra plot
         sc.plots.plt_gms_spectra(
-            gms_result, save_file=Path(out_dir) / f"{prefix}gms_spectra_plot.png",
+            gms_result,
+            save_file=Path(out_dir) / f"{prefix}gms_spectra_plot.png",
         )
 
         # IM distribution plots
@@ -573,14 +585,15 @@ def create_gms_download_zip(
         for cur_file in ffps:
             if cur_file != os.path.basename(zip_ffp):
                 cur_zip.write(
-                    os.path.join(tmp_dir, cur_file), arcname=os.path.basename(cur_file),
+                    os.path.join(tmp_dir, cur_file),
+                    arcname=os.path.basename(cur_file),
                 )
     return zip_ffp, missing_waveforms
 
 
 def write_scenario_download_data(
     ensemble_scenario: sc.scenario.EnsembleScenarioResult,
-    source_contribution: Dict,
+    rupture_metadata: Dict,
     out_dir: str,
     prefix: str = None,
 ):
@@ -595,6 +608,8 @@ def write_scenario_download_data(
     ----------
     ensemble_scenario: EnsembleScenarioResult
         ensemble scenario to grab results from
+    rupture_metadata: Dict
+        Rupture's metadata
     out_dir: str
         The output directory to write the 6 files to
     prefix: str
@@ -723,10 +738,8 @@ def write_scenario_download_data(
     ffps.append(meta_data_ffp)
 
     # Source Contribution
-    source_contribution_ffp = (
-        Path(out_dir) / f"{prefix}scenario_source_contribution.csv"
-    )
-    df = pd.DataFrame.from_dict(source_contribution)
+    source_contribution_ffp = Path(out_dir) / f"{prefix}scenario_rupture_metadata.csv"
+    df = pd.DataFrame.from_dict(rupture_metadata)
     df.to_csv(source_contribution_ffp)
 
     ffps.append(source_contribution_ffp)
@@ -736,12 +749,15 @@ def write_scenario_download_data(
 
 def create_scenario_download_zip(
     ensemble_scenario: sc.scenario.EnsembleScenarioResult,
-    source_contribution: Dict,
+    rupture_metadata: Dict,
     tmp_dir: str,
     prefix: str = None,
 ):
     ffps = write_scenario_download_data(
-        ensemble_scenario, source_contribution, out_dir=tmp_dir, prefix=prefix,
+        ensemble_scenario,
+        rupture_metadata,
+        out_dir=tmp_dir,
+        prefix=prefix,
     )
 
     # Create zip file
