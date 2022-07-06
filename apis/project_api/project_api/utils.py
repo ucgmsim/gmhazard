@@ -43,10 +43,7 @@ class Project:
             # Vs30 and Z1.0, Z2.5 values for correct mapping
             assert len(z1p0) == len(cur_data["vs30"]) and len(z1p0) == len(z2p5)
             self.locations[cur_loc_id] = Location(
-                cur_data["name"],
-                cur_data["vs30"],
-                z1p0,
-                z2p5,
+                cur_data["name"], cur_data["vs30"], z1p0, z2p5,
             )
         self.station_ids = [
             pg.utils.create_station_id(cur_loc, cur_vs30, z1p0=cur_z1p0, z2p5=cur_z2p5)
@@ -160,8 +157,7 @@ def load_disagg_data(station_data_dir: Path, im: gc.im.IM, rps: List[int]):
 
         metadata_results.append(
             pd.read_csv(
-                data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv",
-                index_col=0,
+                data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv", index_col=0,
             )
         )
 
@@ -205,10 +201,13 @@ def load_scenario_rupture_metadata(
     # Drop unnecessary columns and rows
     merged_metadata_df.drop(labels=["contribution", "epsilon"], axis=1, inplace=True)
     merged_metadata_df.drop(labels=["distributed_seismicity"], axis=0, inplace=True)
+
+    # Swap columns
+    new_order = ["rupture_name", "annual_rec_prob", "magnitude", "rrup"]
+    merged_metadata_df = merged_metadata_df.reindex(columns=new_order)
     # Filters the metadata by the given ruptures which are the top 20
     # based on geometric mean
-    breakpoint()
-    return metadata_df.loc[metadata_df["rupture_name"].isin(ruptures)].to_dict()
+    return merged_metadata_df.loc[merged_metadata_df["rupture_name"].isin(ruptures)]
 
 
 def load_uhs_data(results_dir: Path, rps: List[int]):

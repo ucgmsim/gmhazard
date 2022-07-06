@@ -63,7 +63,7 @@ def get_ensemble_scenario():
                     .to_dict()["mu_data"]
                     .keys()
                 ),
-            ),
+            ).to_dict(),
         }
     )
 
@@ -107,7 +107,7 @@ def download_ens_scenario():
             sc.scenario.filter_ruptures(ensemble_scenario).to_dict()["mu_data"].keys()
         ),
     )
-
+    # breakpoint()
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_ffp = au.api.create_scenario_download_zip(
             ensemble_scenario, rupture_metadata, tmp_dir
