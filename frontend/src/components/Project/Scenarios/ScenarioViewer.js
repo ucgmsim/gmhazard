@@ -61,6 +61,8 @@ const ScenarioViewer = () => {
     if (projectSiteSelectionGetClick !== null) {
       setProjectScenarioGetClick(null);
       setShowErrorMessage({ isError: false, errorCode: null });
+      setRowsToggled(true);
+      setToggleText(CONSTANTS.SHOW_MORE);
     }
   }, [projectSiteSelectionGetClick]);
 
@@ -76,6 +78,8 @@ const ScenarioViewer = () => {
       setIsLoading(true);
       setProjectScenarioData(null);
       setShowErrorMessage({ isError: false, errorCode: null });
+      setRowsToggled(true);
+      setToggleText(CONSTANTS.SHOW_MORE);
 
       let token = null;
       const queryString = APIQueryBuilder({
