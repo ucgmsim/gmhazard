@@ -52,6 +52,10 @@ const MetadataBox = ({ metadata }) => {
             </p>
           );
           break;
+        case "Disclaimer":
+          metadataText.push(
+            <span key={key} onClick={() => console.log("TEXT CLICKED")}>{key}: {value}</span>
+          )
       }
     }
 

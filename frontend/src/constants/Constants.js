@@ -208,6 +208,8 @@ export const ANNUAL_RATE_OF_EXCEEDANCE = "Annual rate of exceedance";
 export const LOWER_PERCENTILE = "16<sup>th</sup> percentile";
 export const UPPER_PERCENTILE = "84<sup>th</sup> percentile";
 export const ROTD_FIFTY = "RotD50";
+export const NZ_CODE_DISCLAIMER =
+  "NZS 1170.5 IM values have been converted from Larger to RotD50";
 
 // Disaggregation labels
 export const MEAN_MAGNITUDE = "Mean Magnitude";

@@ -210,8 +210,7 @@ const HazardViewerHazardCurve = () => {
       if (projectSelectedIMComponent !== "Larger") {
         setMetadataParam((prevState) => ({
           ...prevState,
-          Disclaimer:
-            "NZ Code values have been converted from original Larger IM Component",
+          Disclaimer: CONSTANTS.NZ_CODE_DISCLAIMER,
         }));
       }
     }
