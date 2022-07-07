@@ -15,6 +15,7 @@ import PermissionDashboard from "./PermissionConfig/PermissionDashboard";
 import ContributionTable from "./Disaggregation/ContributionTable";
 import HazardBranchPlot from "./HazardCurve/HazardBranchPlot";
 import HazardEnsemblePlot from "./HazardCurve/HazardEnsemblePlot";
+import NZTADisclaimerModal from "./HazardCurve/NZTADisclaimerModal";
 
 import UHSPlot from "./UHS/UHSPlot";
 import UHSBranchPlot from "./UHS/UHSBranchPlot";
@@ -46,6 +47,7 @@ export {
   ContributionTable,
   HazardBranchPlot,
   HazardEnsemblePlot,
+  NZTADisclaimerModal,
   UHSPlot,
   UHSBranchPlot,
   MetadataTable,

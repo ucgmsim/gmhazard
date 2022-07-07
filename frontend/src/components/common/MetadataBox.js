@@ -1,10 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
+
+import { NZTADisclaimerModal } from "components/common";
 
 import * as CONSTANTS from "constants/Constants";
 
 import "assets/style/MetadataBox.css";
 
 const MetadataBox = ({ metadata }) => {
+  const [open, setOpen] = useState(false);
+
   const createMetadataText = () => {
     let metadataText = [];
 
@@ -54,7 +58,11 @@ const MetadataBox = ({ metadata }) => {
           break;
         case CONSTANTS.DISCLAIMER:
           metadataText.push(
-            <span key={key} onClick={() => console.log("TEXT CLICKED")}>
+            <span
+              className="metabox-disclaimer"
+              key={key}
+              onClick={() => setOpen(true)}
+            >
               {key}: {value}
             </span>
           );
@@ -63,7 +71,12 @@ const MetadataBox = ({ metadata }) => {
 
     return metadataText;
   };
-  return <div className="custom-metadata-box">{createMetadataText()}</div>;
+  return (
+    <div className="custom-metadata-box">
+      {createMetadataText()}
+      <NZTADisclaimerModal status={open} setStatus={setOpen} />
+    </div>
+  );
 };
 
 export default MetadataBox;
