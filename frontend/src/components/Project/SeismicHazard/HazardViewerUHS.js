@@ -161,14 +161,14 @@ const HazardViewerUHS = () => {
     setUHSBranchData(uhsData["branch_uhs_results"]);
     setDownloadToken(uhsData["download_token"]);
     setMetadataParam({
-      "Project Name": projectId["label"],
-      "Project ID": projectId["value"],
-      Location: projectLocation,
-      Latitude: projectLat,
-      Longitude: projectLng,
-      Vs30: `${projectVS30} m/s`,
-      z1p0: `${projectZ1p0} km`,
-      z2p5: `${projectZ2p5} km`,
+      [CONSTANTS.PROJECT_NAME]: projectId["label"],
+      [CONSTANTS.PROJECT_ID]: projectId["value"],
+      [CONSTANTS.LOCATION]: projectLocation,
+      [CONSTANTS.LATITUDE]: projectLat,
+      [CONSTANTS.LONGITUDE]: projectLng,
+      [CONSTANTS.SITE_SELECTION_VS30_TITLE]: `${projectVS30} m/s`,
+      [CONSTANTS.METADATA_Z1P0_LABEL]: `${projectZ1p0} km`,
+      [CONSTANTS.METADATA_Z2P5_LABEL]: `${projectZ2p5} km`,
     });
     setExtraInfo({
       from: "project",

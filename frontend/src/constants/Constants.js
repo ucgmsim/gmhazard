@@ -142,6 +142,7 @@ export const SOURCE_CONTRIBUTIONS = "Source contributions";
 export const MEAN_HAZARDS = "Mean Hazard";
 export const EPISTEMIC_UNCERTAINTY = "Epistemic Uncertainty";
 export const PROJECT_NAME = "Project Name";
+export const PROJECT_ID = "Project ID";
 export const LOCATION = "Location";
 export const SITE_LOCATION = "Site Location";
 export const REGIONAL = "Regional";
@@ -162,6 +163,7 @@ export const DISTRIBUTION = "distribution";
 export const MORE_DETAIL = "More detail";
 export const MEDIAN = "Median";
 export const SCENARIO_RUPTURES = "Scenario Ruptures";
+export const DISCLAIMER = "Disclaimer";
 
 // Navbar
 export const LOGIN = "Log in";
@@ -210,6 +212,11 @@ export const UPPER_PERCENTILE = "84<sup>th</sup> percentile";
 export const ROTD_FIFTY = "RotD50";
 export const NZ_CODE_DISCLAIMER =
   "NZS 1170.5 IM values have been converted from Larger to RotD50";
+export const METADATA_Z1P0_LABEL = "Z1p0";
+export const METADATA_Z2P5_LABEL = "Z2p5";
+export const NZS_1170P5_Z_FACTOR = "NZS 1170.5 Z Factor";
+export const NZS_1170P5_SOIL_CLASS = "NZS 1170.5 Soil Class";
+export const NZTA_SOIL_CLASS = "NZTA Soil Class";
 
 // Disaggregation labels
 export const MEAN_MAGNITUDE = "Mean Magnitude";
@@ -625,11 +632,11 @@ export const GMS_LABELS = {
 };
 
 // Projects' Metadata
-export const NZTA_SOIL_CLASS = {
+export const NZTA_SOIL_CLASS_OBJ = {
   A: "A - rock",
   D: "D - soft or deep soil",
 };
-export const NZS_SOIL_CLASS = {
+export const NZS_SOIL_CLASS_OBJ = {
   A: "A - rock",
   B: "B - weak rock",
   C: "C - intermediate soil",

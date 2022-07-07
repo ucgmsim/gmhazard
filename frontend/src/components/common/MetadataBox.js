@@ -17,45 +17,47 @@ const MetadataBox = ({ metadata }) => {
             </p>
           );
           break;
-        case "NZS 1170.5 Soil Class":
+        case CONSTANTS.NZS_1170P5_SOIL_CLASS:
           metadataText.push(
             <p key={key}>
-              {key}: {CONSTANTS.NZS_SOIL_CLASS[value]}
+              {key}: {CONSTANTS.NZS_SOIL_CLASS_OBJ[value]}
             </p>
           );
           break;
-        case "NZTA Soil Class":
+        case CONSTANTS.NZTA_SOIL_CLASS:
           metadataText.push(
             <p key={key}>
-              {key}: {CONSTANTS.NZTA_SOIL_CLASS[value]}
+              {key}: {CONSTANTS.NZTA_SOIL_CLASS_OBJ[value]}
             </p>
           );
           break;
-        case "Vs30":
+        case CONSTANTS.SITE_SELECTION_VS30_TITLE:
           metadataText.push(
             <p key={key}>
               V<sub>s30</sub>: {value}
             </p>
           );
           break;
-        case "z1p0":
+        case CONSTANTS.METADATA_Z1P0_LABEL:
           metadataText.push(
             <p key={key}>
               Z<sub>1.0</sub>: {value}
             </p>
           );
           break;
-        case "z2p5":
+        case CONSTANTS.METADATA_Z2P5_LABEL:
           metadataText.push(
             <p key={key}>
               Z<sub>2.5</sub>: {value}
             </p>
           );
           break;
-        case "Disclaimer":
+        case CONSTANTS.DISCLAIMER:
           metadataText.push(
-            <span key={key} onClick={() => console.log("TEXT CLICKED")}>{key}: {value}</span>
-          )
+            <span key={key} onClick={() => console.log("TEXT CLICKED")}>
+              {key}: {value}
+            </span>
+          );
       }
     }
 
