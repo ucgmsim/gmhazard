@@ -199,12 +199,14 @@ def load_scenario_rupture_metadata(
         metadata_df, how="left", left_index=True, right_index=True
     )
     # Drop unnecessary columns and rows
-    merged_metadata_df.drop(labels=["contribution", "epsilon"], axis=1, inplace=True)
-    merged_metadata_df.drop(labels=["distributed_seismicity"], axis=0, inplace=True)
+    merged_metadata_df = merged_metadata_df.drop(
+        labels=["contribution", "epsilon"], axis=1
+    ).drop(labels=["distributed_seismicity"], axis=0)
 
     # Swap columns
-    new_order = ["rupture_name", "annual_rec_prob", "magnitude", "rrup"]
-    merged_metadata_df = merged_metadata_df.reindex(columns=new_order)
+    merged_metadata_df = merged_metadata_df.reindex(
+        columns=["rupture_name", "annual_rec_prob", "magnitude", "rrup"]
+    )
     # Filters the metadata by the given ruptures which are the top 20
     # based on geometric mean
     return merged_metadata_df.loc[merged_metadata_df["rupture_name"].isin(ruptures)]
