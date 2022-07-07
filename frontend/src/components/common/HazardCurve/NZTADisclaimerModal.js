@@ -30,7 +30,7 @@ const NZTADisclaimerModal = ({ status, setStatus }) => {
             Reference
           </Typography>
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            Conversion from Larger to RotD 50 are done based on Boore et al.
+            Conversion from Larger to RotD50 are done based on Boore et al.
             (2017), Some Horizontal-Component Ground-Motion Intensity Measures
             Used in Practice
           </Typography>
