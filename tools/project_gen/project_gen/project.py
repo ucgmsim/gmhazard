@@ -162,8 +162,8 @@ def create_project(
             return
 
         # Generate the PSHA project data and GMS
-        psha.gen_psha_project_data(project_dir, n_procs=n_procs, use_mp=use_mp)
-        pg.gen_gms_project_data(project_dir, n_procs=n_procs)
+        # psha.gen_psha_project_data(project_dir, n_procs=n_procs, use_mp=use_mp)
+        # pg.gen_gms_project_data(project_dir, n_procs=n_procs)
     except Exception as ex:
         print(f"Failed to create new project, due to an exception:\n{ex}")
         print(f"Traceback:\n{traceback.format_exc()}")
@@ -394,7 +394,8 @@ def generate_dbs(
 
         ds_imdbs_cmd = [
             "python",
-            str(empirical_db_scripts_dir / "new_calc_emp_ds.py"),
+            # str(empirical_db_scripts_dir / "new_calc_emp_ds.py"),
+            str(empirical_db_scripts_dir / "calc_emp_ds_meta.py"),
             str(erf_dir / "NZBCK2015_Chch50yearsAftershock_OpenSHA_modType4.txt"),
             str(ds_site_source_db_ffp),
             str(vs30_ffp),
@@ -406,7 +407,7 @@ def generate_dbs(
             "--im",
             *im_types,
         ]
-        ds_timeout = (n_stations * (60 * 60 * 5)) / (min(n_procs - 1, n_stations))
+        ds_timeout = (n_stations * (60 * 60 * 10)) / (min(n_procs - 1, n_stations))
         print(f"Using a timeout of {ds_timeout} seconds")
         print(f"Running command:\n\t{' '.join(ds_imdbs_cmd)}")
         ds_imdbs_result = subprocess.run(
