@@ -197,7 +197,7 @@ def calculate_emp_ds(
                                     need_to_rename_this,
                                     [
                                         (
-                                            meta_GMMs.keys(),
+                                            list(meta_GMMs.keys()),
                                             site,
                                             im,
                                             tect_type,
