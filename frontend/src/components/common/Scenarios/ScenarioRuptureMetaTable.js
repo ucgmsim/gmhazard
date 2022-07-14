@@ -1,13 +1,13 @@
-import React from "react";
+import React, { memo } from "react";
 
 import * as CONSTANTS from "constants/Constants";
 
 import { renderSigfigs } from "utils/Utils";
 import { ErrorMessage } from "components/common";
 
-const MetadataTable = ({ metadata }) => {
+const ScenarioRuptureMetaTable = ({ metadata }) => {
   if (metadata !== null && !metadata.hasOwnProperty("error")) {
-    const contributionTableRows = [];
+    const metadataTableRows = [];
     let contribRowClassname = "";
 
     Object.keys(metadata["rupture_name"]).forEach((rupture, rowIdx) => {
@@ -16,7 +16,7 @@ const MetadataTable = ({ metadata }) => {
           "scenario-contrib-toggle-row scenario-contrib-row-hidden";
       }
 
-      contributionTableRows.push(
+      metadataTableRows.push(
         <tr key={rowIdx} className={contribRowClassname}>
           <td>{metadata["rupture_name"][rupture]}</td>
           <td>
@@ -32,7 +32,7 @@ const MetadataTable = ({ metadata }) => {
 
     return (
       <div className="d-flex flex-column align-items-md-center">
-        {/* Contribution table */}
+        {/* metadata table */}
         <table className="table thead-dark table-striped table-bordered mt-2 w-auto">
           <thead>
             <tr>
@@ -44,7 +44,7 @@ const MetadataTable = ({ metadata }) => {
               </th>
             </tr>
           </thead>
-          <tbody>{contributionTableRows}</tbody>
+          <tbody>{metadataTableRows}</tbody>
         </table>
       </div>
     );
@@ -52,4 +52,4 @@ const MetadataTable = ({ metadata }) => {
   return <ErrorMessage />;
 };
 
-export default MetadataTable;
+export default memo(ScenarioRuptureMetaTable);
