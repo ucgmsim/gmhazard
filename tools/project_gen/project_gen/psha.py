@@ -268,8 +268,6 @@ def process_station_im(
     for the specified station it is skipped (i.e. no results
     are generated and saved)
     """
-    if not str(im).startswith(("PGA", "pSA")):
-        return
     output_dir = Path(output_dir)
     print(f"\t{os.getpid()} - Processing station {station_name} and IM {im}")
 

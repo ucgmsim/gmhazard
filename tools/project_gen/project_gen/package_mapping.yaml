@@ -82,7 +82,6 @@ pga_psa_gms:
     - pSA_10.0
   disagg_return_periods: [25, 100, 150, 250, 500, 1000, 2500, 5000, 10000]
   uhs_return_periods: [25, 100, 150, 250, 500, 1000, 2500, 5000, 10000]
-  im_components: ["RotD50", "Larger"]
   gms:
     pSA_0p3_0p01_PGA_pSA:
       IMj: pSA_0.3
