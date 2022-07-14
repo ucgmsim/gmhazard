@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import "assets/style/ImageMap.css";
 
@@ -15,4 +15,4 @@ const ImageMap = ({ header, src, alt }) => {
   );
 };
 
-export default ImageMap;
+export default memo(ImageMap);

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import Plot from "react-plotly.js";
 
@@ -57,4 +57,4 @@ const GMSSpectraPlot = ({ GMSSpectraData }) => {
   );
 };
 
-export default GMSSpectraPlot;
+export default memo(GMSSpectraPlot);

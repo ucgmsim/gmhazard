@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import Plot from "react-plotly.js";
 
@@ -110,4 +110,4 @@ const GMSDisaggDistributionPlot = ({
   );
 };
 
-export default GMSDisaggDistributionPlot;
+export default memo(GMSDisaggDistributionPlot);
