@@ -3,6 +3,7 @@ import traceback
 import os
 from typing import Dict, List, Union, Sequence
 from pathlib import Path
+import time
 
 import git
 import pandas as pd
@@ -287,7 +288,7 @@ def write_station_details(locations: Dict, dbs_dir: Path, project_id: str):
                     loc_data["lon"],
                     np.nan if z1p0 is None else z1p0,
                     np.nan if z2p5 is None else z2p5,
-                    0, # default sigma value - project gen doesn't use it
+                    0,  # default sigma value - project gen doesn't use it
                 )
             )
 
@@ -352,6 +353,7 @@ def generate_dbs(
         ), "Distributed Seismicity site-source DB generation failed"
 
     print("Generating DS IMDBs")
+    ds_start = time.time()
     ds_db_dir = dbs_dir / "ds"
     if ds_db_dir.exists():
         print("DS IMDB folder already exists, skipping")
@@ -387,7 +389,7 @@ def generate_dbs(
             print("STDOUT:\n" + ds_imdbs_result.stdout.decode())
             print("STDERR:\n" + ds_imdbs_result.stderr.decode())
             assert (
-                    ds_imdbs_result.returncode == 0
+                ds_imdbs_result.returncode == 0
             ), "Distributed Seismicity IMDB generation failed"
 
             im_types.remove("AI")
@@ -420,6 +422,7 @@ def generate_dbs(
         ), "Distributed Seismicity IMDB generation failed"
 
     flt_erf_base_fn = FLT_ERF_MAPPING[flt_erf_version]
+    ds_stop = time.time()
 
     print("Generating fault distance db")
     flt_site_source_db_ffp = dbs_dir / FLT_SITE_SOURCE_DB_FILENAME
@@ -484,6 +487,8 @@ def generate_dbs(
             print("STDOUT:\n" + flt_imdbs_result.stdout.decode())
             print("STDERR:\n" + flt_imdbs_result.stderr.decode())
             assert flt_imdbs_result.returncode == 0, "Fault IMDB generation failed"
+
+    print(f"DS gen took about {(ds_stop - ds_start):.2f}")
 
 
 def create_ensemble_config(
