@@ -164,6 +164,7 @@ export const MORE_DETAIL = "More detail";
 export const MEDIAN = "Median";
 export const SCENARIO_RUPTURES = "Scenario Ruptures";
 export const DISCLAIMER = "Disclaimer";
+export const SCENARIO_RUPTURE_METADATA = "Rupture metadata";
 
 // Navbar
 export const LOGIN = "Log in";
