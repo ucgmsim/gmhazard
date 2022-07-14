@@ -347,10 +347,12 @@ def calculate_emp_ds(
                                 # Dot products
                                 meta_df = gmm_calculated_df.copy()
                                 for column in gmm_calculated_df.columns:
-                                    col_df = pd.DataFrame([
-                                        result[column].values for result in results
-                                    ]).T
-                                    meta_df[column] = col_df.dot(pd.Series(meta_GMMs.values())).values
+                                    col_df = pd.DataFrame(
+                                        [result[column].values for result in results]
+                                    ).T
+                                    meta_df[column] = col_df.dot(
+                                        pd.Series(meta_GMMs.values())
+                                    ).values
 
                                 # Write an im_df to the given station/site
                                 imdb.add_im_data(
@@ -481,4 +483,4 @@ if __name__ == "__main__":
         model_weights_ffp=args.model_weights,
         suffix=args.suffix,
     )
-    print(f"Finished in {(time.time() - start) / 60:.2f} minutes")
+    print(f"Finished in {((time.time() - start) / 60):.2f} minutes")
