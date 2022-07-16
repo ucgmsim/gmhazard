@@ -91,6 +91,9 @@ const HazardViewerDisaggregation = () => {
       setProjectDisaggGetClick(null);
 
       setProjectSelectedDisagRP(null);
+
+      setRowsToggled(true);
+      setToggleText(CONSTANTS.SHOW_MORE);
     }
   }, [projectSiteSelectionGetClick]);
 
@@ -125,6 +128,9 @@ const HazardViewerDisaggregation = () => {
 
       setShowContribTable(false);
       setShowSpinnerContribTable(true);
+
+      setRowsToggled(true);
+      setToggleText(CONSTANTS.SHOW_MORE);
 
       let token = null;
       const queryString = APIQueryBuilder({
@@ -164,10 +170,8 @@ const HazardViewerDisaggregation = () => {
       $("tr.contrib-toggle-row.contrib-row-hidden").removeClass(
         "contrib-row-hidden"
       );
-      $("tr.contrib-ellipsis td").addClass("hidden");
     } else {
       $("tr.contrib-toggle-row").addClass("contrib-row-hidden");
-      $("tr.contrib-ellipsis td.hidden").removeClass("hidden");
     }
 
     setToggleText(rowsToggled ? CONSTANTS.SHOW_LESS : CONSTANTS.SHOW_MORE);

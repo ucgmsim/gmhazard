@@ -261,7 +261,7 @@ def write_disagg_download_data(
                 / f"{prefix}{disagg.im.file_format()}_{int(1 / disagg.exceedance)}_disagg_aggregated.csv"
             )
             disagg_agg_df.loc[
-                :, ["contribution", "epsilon", "annual_rec_prob", "magnitude", "rrup",]
+                :, ["contribution", "epsilon", "annual_rec_prob", "magnitude", "rrup",],
             ].to_csv(
                 disagg_agg_data_ffp, index=True, mode="a", index_label="rupture_name"
             )
@@ -580,6 +580,7 @@ def create_gms_download_zip(
 
 def write_scenario_download_data(
     ensemble_scenario: sc.scenario.EnsembleScenarioResult,
+    rupture_metadata: pd.DataFrame,
     out_dir: str,
     prefix: str = None,
 ):
@@ -594,6 +595,8 @@ def write_scenario_download_data(
     ----------
     ensemble_scenario: EnsembleScenarioResult
         ensemble scenario to grab results from
+    rupture_metadata: pd.DataFrame
+        Rupture's metadata
     out_dir: str
         The output directory to write the 6 files to
     prefix: str
@@ -721,16 +724,23 @@ def write_scenario_download_data(
 
     ffps.append(meta_data_ffp)
 
+    # Rupture Metadata
+    rupture_metadata_ffp = Path(out_dir) / f"{prefix}scenario_rupture_metadata.csv"
+    rupture_metadata.to_csv(rupture_metadata_ffp)
+
+    ffps.append(rupture_metadata_ffp)
+
     return ffps
 
 
 def create_scenario_download_zip(
     ensemble_scenario: sc.scenario.EnsembleScenarioResult,
+    rupture_metadata: pd.DataFrame,
     tmp_dir: str,
     prefix: str = None,
 ):
     ffps = write_scenario_download_data(
-        ensemble_scenario, out_dir=tmp_dir, prefix=prefix,
+        ensemble_scenario, rupture_metadata, out_dir=tmp_dir, prefix=prefix,
     )
 
     # Create zip file

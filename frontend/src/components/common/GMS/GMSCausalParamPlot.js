@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import Plot from "react-plotly.js";
 
@@ -138,4 +138,4 @@ const GMSCausalParamPlot = ({ gmsData, metadata, causalParamBounds }) => {
   );
 };
 
-export default GMSCausalParamPlot;
+export default memo(GMSCausalParamPlot);

@@ -8,6 +8,7 @@ import gmhazard_utils as su
 import gmhazard_calc as sc
 from project_api import constants as const
 from project_api import server
+from project_api import utils
 
 
 @server.app.route(const.PROJECT_SCENARIO_ENDPOINT, methods=["GET"])
@@ -31,31 +32,39 @@ def get_ensemble_scenario():
     )
 
     # Load the data
+    project_dir = server.BASE_PROJECTS_DIR / version_str / project_id
     ensemble_scenario = sc.scenario.EnsembleScenarioResult.load(
-        server.BASE_PROJECTS_DIR
-        / version_str
-        / project_id
-        / "results"
-        / station_id
-        / str(im_component)
-        / "scenario",
+        project_dir / "results" / station_id / str(im_component) / "scenario",
     )
 
     return flask.jsonify(
-        au.api.get_ensemble_scenario_response(
-            # Filters the ruptures to the top 20 based on geometric mean
-            sc.scenario.filter_ruptures(ensemble_scenario),
-            au.api.get_download_token(
-                {
-                    "type": "ensemble_scenario",
-                    "project_id": project_id,
-                    "station": ensemble_scenario.site_info.station_name,
-                    "user_vs30": ensemble_scenario.site_info.user_vs30,
-                    "im_component": str(im_component),
-                },
-                server.DOWNLOAD_URL_SECRET_KEY,
+        {
+            **au.api.get_ensemble_scenario_response(
+                # Filters the ruptures to the top 20 based on geometric mean
+                sc.scenario.filter_ruptures(ensemble_scenario),
+                au.api.get_download_token(
+                    {
+                        "type": "ensemble_scenario",
+                        "project_id": project_id,
+                        "station": ensemble_scenario.site_info.station_name,
+                        "user_vs30": ensemble_scenario.site_info.user_vs30,
+                        "im_component": str(im_component),
+                    },
+                    server.DOWNLOAD_URL_SECRET_KEY,
+                ),
             ),
-        )
+            "rupture_metadata": utils.load_scenario_rupture_metadata(
+                project_dir,
+                project_id,
+                station_id,
+                im_component,
+                list(
+                    sc.scenario.filter_ruptures(ensemble_scenario)
+                    .to_dict()["mu_data"]
+                    .keys()
+                ),
+            ).to_dict(),
+        }
     )
 
 
@@ -83,20 +92,25 @@ def download_ens_scenario():
 
     server.app.logger.debug(f"Token parameters {project_id}, {station}, {im_component}")
 
+    project_dir = server.BASE_PROJECTS_DIR / version_str / project_id
     # Load the data
     ensemble_scenario = sc.scenario.EnsembleScenarioResult.load(
-        server.BASE_PROJECTS_DIR
-        / version_str
-        / project_id
-        / "results"
-        / station
-        / im_component
-        / "scenario",
+        project_dir / "results" / station / im_component / "scenario",
+    )
+    # Load rupture metadata
+    rupture_metadata = utils.load_scenario_rupture_metadata(
+        project_dir,
+        project_id,
+        station,
+        sc.im.IMComponent[im_component],
+        list(
+            sc.scenario.filter_ruptures(ensemble_scenario).to_dict()["mu_data"].keys()
+        ),
     )
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_ffp = au.api.create_scenario_download_zip(
-            ensemble_scenario, tmp_dir, prefix=f"{project_id}",
+            ensemble_scenario, rupture_metadata, tmp_dir
         )
 
         return flask.send_file(

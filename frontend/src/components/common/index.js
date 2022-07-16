@@ -15,9 +15,11 @@ import PermissionDashboard from "./PermissionConfig/PermissionDashboard";
 import ContributionTable from "./Disaggregation/ContributionTable";
 import HazardBranchPlot from "./HazardCurve/HazardBranchPlot";
 import HazardEnsemblePlot from "./HazardCurve/HazardEnsemblePlot";
+import NZTADisclaimerModal from "./HazardCurve/NZTADisclaimerModal";
 
 import UHSPlot from "./UHS/UHSPlot";
 import UHSBranchPlot from "./UHS/UHSBranchPlot";
+import ScenarioRuptureMetaTable from "./Scenarios/ScenarioRuptureMetaTable";
 import ScenarioPlot from "./Scenarios/ScenarioPlot";
 import GMSAvailableGMPlot from "./GMS/GMSAvailableGMPlot";
 import GMSCausalParamPlot from "./GMS/GMSCausalParamPlot";
@@ -45,8 +47,10 @@ export {
   ContributionTable,
   HazardBranchPlot,
   HazardEnsemblePlot,
+  NZTADisclaimerModal,
   UHSPlot,
   UHSBranchPlot,
+  ScenarioRuptureMetaTable,
   ScenarioPlot,
   GMSAvailableGMPlot,
   GMSCausalParamPlot,

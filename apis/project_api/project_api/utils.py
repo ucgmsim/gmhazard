@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-import gmhazard_calc as sc
+import gmhazard_calc as gc
 import api_utils as au
 import project_gen as pg
 
@@ -53,14 +53,14 @@ class Project:
             )
         ]
 
-        self.ims = sc.im.to_im_list(project_params["ims"])
+        self.ims = gc.im.to_im_list(project_params["ims"])
         self.components = (
             [
-                sc.im.IMComponent[component]
+                gc.im.IMComponent[component]
                 for component in project_params["im_components"]
             ]
             if "im_components" in project_params
-            else [sc.im.IMComponent.RotD50]
+            else [gc.im.IMComponent.RotD50]
         )
         self.disagg_rps = project_params["disagg_return_periods"]
         self.uhs_return_periods = project_params["uhs_return_periods"]
@@ -81,7 +81,7 @@ class Project:
 @dataclass
 class GMSParams:
     id: str
-    IM_j: sc.im.IM
+    IM_j: gc.im.IM
     dataset_id: str
     im_j: float = None
     exceedance: float = None
@@ -126,34 +126,34 @@ def get_project(version_str: str, project_id: str) -> Project:
     return Project.load(project_dir / f"{project_id}.yaml")
 
 
-def load_hazard_data(results_dir: Path, im: sc.im.IM):
-    ensemble_hazard = sc.hazard.EnsembleHazardResult.load(
+def load_hazard_data(results_dir: Path, im: gc.im.IM):
+    ensemble_hazard = gc.hazard.EnsembleHazardResult.load(
         results_dir / f"hazard_{im.file_format()}"
     )
     nzs1170p5_hazard = (
-        sc.nz_code.nzs1170p5.NZS1170p5Result.load(
+        gc.nz_code.nzs1170p5.NZS1170p5Result.load(
             results_dir / f"hazard_nzs1170p5_{im.file_format()}"
         )
-        if im.im_type == sc.im.IMType.pSA or im.im_type == sc.im.IMType.PGA
+        if im.im_type == gc.im.IMType.pSA or im.im_type == gc.im.IMType.PGA
         else None
     )
 
     nzta_hazard = (
-        sc.nz_code.nzta_2018.NZTAResult.load(results_dir / "hazard_nzta")
-        if im.im_type == sc.im.IMType.pSA or im.im_type == sc.im.IMType.PGA
+        gc.nz_code.nzta_2018.NZTAResult.load(results_dir / "hazard_nzta")
+        if im.im_type == gc.im.IMType.pSA or im.im_type == gc.im.IMType.PGA
         else None
     )
 
     return ensemble_hazard, nzs1170p5_hazard, nzta_hazard
 
 
-def load_disagg_data(station_data_dir: Path, im: sc.im.IM, rps: List[int]):
+def load_disagg_data(station_data_dir: Path, im: gc.im.IM, rps: List[int]):
     ensemble_results, metadata_results = [], []
     src_pngs, eps_pngs = [], []
 
     for rp in rps:
         data_dir = station_data_dir / f"disagg_{im.file_format()}_{rp}"
-        ensemble_results.append(sc.disagg.EnsembleDisaggResult.load(data_dir))
+        ensemble_results.append(gc.disagg.EnsembleDisaggResult.load(data_dir))
 
         metadata_results.append(
             pd.read_csv(
@@ -172,16 +172,56 @@ def load_disagg_data(station_data_dir: Path, im: sc.im.IM, rps: List[int]):
     return ensemble_results, metadata_results, src_pngs, eps_pngs
 
 
+def load_scenario_rupture_metadata(
+    project_dir: Path,
+    project_id: str,
+    station_id: str,
+    im_component: gc.im.IMComponent,
+    ruptures: List[str],
+):
+    with open(project_dir / f"{project_id}.yaml", "r") as f:
+        project_dict = yaml.safe_load(f)
+
+    project_params = project_dict["project_parameters"]
+    ims = gc.shared.get_SA_ims(
+        gc.im.to_im_list(project_params["ims"]), component=im_component
+    )
+
+    station_data_dir = project_dir / "results" / station_id / str(im_component)
+
+    # Annual recurrence rate, Magnitude, and Rrup are specified values for each
+    # rupture, nothing to do with IM. Hence, choose any directory
+    data_dir = list(station_data_dir.glob(f"disagg_{ims[0].file_format()}*"))[0]
+    metadata_df = pd.read_csv(list(data_dir.glob("*_metadata.csv"))[0], index_col=0)
+
+    ensemble_disagg_result = gc.disagg.EnsembleDisaggResult.load(data_dir)
+    merged_metadata_df = ensemble_disagg_result.total_contributions_df.merge(
+        metadata_df, how="left", left_index=True, right_index=True
+    )
+    # Drop unnecessary columns and rows
+    merged_metadata_df = merged_metadata_df.drop(
+        labels=["contribution", "epsilon"], axis=1
+    ).drop(labels=["distributed_seismicity"], axis=0)
+
+    # Swap columns
+    merged_metadata_df = merged_metadata_df.reindex(
+        columns=["rupture_name", "annual_rec_prob", "magnitude", "rrup"]
+    )
+    # Filters the metadata by the given ruptures which are the top 20
+    # based on geometric mean
+    return merged_metadata_df.loc[merged_metadata_df["rupture_name"].isin(ruptures)]
+
+
 def load_uhs_data(results_dir: Path, rps: List[int]):
-    ensemble = sc.uhs.EnsembleUHSResult.load(results_dir / f"uhs_{rps[0]}").ensemble
+    ensemble = gc.uhs.EnsembleUHSResult.load(results_dir / f"uhs_{rps[0]}").ensemble
 
     uhs_results = [
-        sc.uhs.EnsembleUHSResult.load(results_dir / f"uhs_{rp}", ensemble=ensemble)
+        gc.uhs.EnsembleUHSResult.load(results_dir / f"uhs_{rp}", ensemble=ensemble)
         for rp in rps
     ]
 
     nzs1170p5_results = [
-        sc.nz_code.nzs1170p5.NZS1170p5Result.load(cur_dir, ensemble=ensemble)
+        gc.nz_code.nzs1170p5.NZS1170p5Result.load(cur_dir, ensemble=ensemble)
         for cur_dir in (results_dir / "uhs_nzs1170p5").glob("uhs_*")
     ]
 
@@ -191,9 +231,9 @@ def load_uhs_data(results_dir: Path, rps: List[int]):
 def load_gms_data(station_data_dir: Path, gms_id: str):
     data_dir = station_data_dir / f"gms_{gms_id}"
 
-    gms_result = sc.gms.GMSResult.load(data_dir)
-    cs_param_bounds = sc.gms.CausalParamBounds.load(data_dir / "causal_param_bounds")
-    disagg_data = sc.disagg.EnsembleDisaggResult.load(
+    gms_result = gc.gms.GMSResult.load(data_dir)
+    cs_param_bounds = gc.gms.CausalParamBounds.load(data_dir / "causal_param_bounds")
+    disagg_data = gc.disagg.EnsembleDisaggResult.load(
         data_dir
         / "disagg_data"
         / f"disagg_{str(gms_result.cs_param_bounds.IM_j).replace('.', 'p')}"

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import Plot from "react-plotly.js";
 
@@ -159,4 +159,4 @@ const ScenarioPlot = ({ scenarioData, scenarioSelectedRuptures, extra }) => {
   return <ErrorMessage />;
 };
 
-export default ScenarioPlot;
+export default memo(ScenarioPlot);
