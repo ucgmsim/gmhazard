@@ -80,41 +80,33 @@ def gen_psha_project_data(project_dir: Path, n_procs: int = 1, use_mp: bool = Tr
     ]
 
     # Run the hazard and disagg calculation
-    for cur_station, cur_im in station_im_comb:
-        process_station_im(
-            ensemble,
-            cur_station,
-            cur_im,
-            disagg_exceedances,
-            str(results_dir / cur_station / str(cur_im.component))
+    if use_mp:
+        with mp.Pool(processes=n_procs) as p:
+            p.starmap(
+                process_station_im,
+                [
+                    (
+                        ensemble,
+                        cur_station,
+                        cur_im,
+                        disagg_exceedances,
+                        str(results_dir / cur_station / str(cur_im.component)),
+                    )
+                    for cur_station, cur_im in station_im_comb
+                ],
+            )
+    else:
+        celery.group(
+            tasks.process_station_im_task.s(
+                project_id,
+                ensemble_ffp,
+                cur_station,
+                cur_im,
+                disagg_exceedances,
+                str(results_dir / cur_station / str(cur_im.component)),
+            )
+            for cur_station, cur_im in station_im_comb
         )
-    # if use_mp:
-    #     with mp.Pool(processes=n_procs) as p:
-    #         p.starmap(
-    #             process_station_im,
-    #             [
-    #                 (
-    #                     ensemble,
-    #                     cur_station,
-    #                     cur_im,
-    #                     disagg_exceedances,
-    #                     str(results_dir / cur_station / str(cur_im.component)),
-    #                 )
-    #                 for cur_station, cur_im in station_im_comb
-    #             ],
-    #         )
-    # else:
-    #     celery.group(
-    #         tasks.process_station_im_task.s(
-    #             project_id,
-    #             ensemble_ffp,
-    #             cur_station,
-    #             cur_im,
-    #             disagg_exceedances,
-    #             str(results_dir / cur_station / str(cur_im.component)),
-    #         )
-    #         for cur_station, cur_im in station_im_comb
-    #     )
 
     if len(uhs_exceedances) > 0:
         for cur_station in station_ids:
