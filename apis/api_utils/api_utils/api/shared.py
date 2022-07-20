@@ -495,7 +495,7 @@ def write_gms_download_data(
         )
 
         # IM distribution plots
-        sc.plots.plt_gms_im_distribution(gms_result, save_file=Path(out_dir))
+        sc.plots.plt_gms_im_distribution(gms_result, save_dir=Path(out_dir))
 
         # Disagg Distribution plots (Mw Distribution or Rrup distribution)
         contribution_df_data = sr.get_default_causal_params(cs_param_bounds)[

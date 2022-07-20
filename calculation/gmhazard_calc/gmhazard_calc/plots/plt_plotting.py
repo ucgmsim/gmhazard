@@ -622,7 +622,7 @@ def plot_uhs_branches(
 
 def plot_gms_im_distribution(
     gms_result: gms.GMSResult,
-    save_file: Path = None,
+    save_dir: Path = None,
 ):
     """Plots the CDF of the GCIM and selected GMs
     for each specified IM
@@ -632,7 +632,7 @@ def plot_gms_im_distribution(
     Parameters
     ----------
     gms_result: gms.GMSResult,
-    save_file: Path, optional
+    save_dir: Path, optional
     """
     ks_bounds = gms_result.metadata_dict["ks_bounds"]
 
@@ -708,9 +708,9 @@ def plot_gms_im_distribution(
         plt.title(f"{IMi}")
         plt.legend()
 
-        if save_file is not None:
+        if save_dir is not None:
             plt.savefig(
-                save_file / f"gms_im_distribution_{str(IMi).replace('.', 'p')}_plot.png"
+                save_dir / f"gms_im_distribution_{str(IMi).replace('.', 'p')}_plot.png"
             )
             plt.clf()
         else:
