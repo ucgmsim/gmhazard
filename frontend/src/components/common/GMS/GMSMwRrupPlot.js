@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import Plot from "react-plotly.js";
 
@@ -168,4 +168,4 @@ const GMSMwRrupPlot = ({
   );
 };
 
-export default GMSMwRrupPlot;
+export default memo(GMSMwRrupPlot);

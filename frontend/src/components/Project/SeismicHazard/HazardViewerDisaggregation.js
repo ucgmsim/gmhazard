@@ -91,6 +91,9 @@ const HazardViewerDisaggregation = () => {
       setProjectDisaggGetClick(null);
 
       setProjectSelectedDisagRP(null);
+
+      setRowsToggled(true);
+      setToggleText(CONSTANTS.SHOW_MORE);
     }
   }, [projectSiteSelectionGetClick]);
 
@@ -125,6 +128,9 @@ const HazardViewerDisaggregation = () => {
 
       setShowContribTable(false);
       setShowSpinnerContribTable(true);
+
+      setRowsToggled(true);
+      setToggleText(CONSTANTS.SHOW_MORE);
 
       let token = null;
       const queryString = APIQueryBuilder({
