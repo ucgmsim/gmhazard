@@ -1,3 +1,4 @@
+import multiprocessing as mp
 import argparse
 import time
 from typing import List, Optional
@@ -12,6 +13,7 @@ import gmhazard_calc as gc
 from empirical.util import classdef
 from empirical.util import empirical_factory
 from empirical.util import openquake_wrapper_vectorized
+from empirical.GMM_models import meta_model
 
 MAG = [
     5.25,
@@ -65,6 +67,51 @@ def create_rupture_context_df(
     return rupture_df.loc[rupture_df["tect_type"] == tect_type.name]
 
 
+def compute_meta_model(
+    model, tect_type, rupture_context_df, im, psa_periods, rupture_df
+):
+    # results = []
+    GMM = classdef.GMM[model]
+    gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
+        GMM,
+        classdef.TectType["ACTIVE_SHALLOW"]
+        if tect_type != "ACTIVE_SHALLOW"
+        and GMM.name
+        in (
+            "CB_10",
+            "CB_12",
+            "AS_16",
+        )
+        else classdef.TectType[tect_type],
+        rupture_context_df,
+        str(im),
+        psa_periods if im is gc.im.IMType.pSA else None,
+    )
+    # Matching the index with rupture_df
+    # to have a right rupture label
+    gmm_calculated_df.set_index(
+        rupture_df[
+            rupture_df["rupture_name"].isin(rupture_context_df["rupture_name"])
+        ].index,
+        inplace=True,
+    )
+
+    # Relabel the columns
+    # PGA_mean -> PGA
+    gmm_calculated_df.columns = np.char.rstrip(
+        gmm_calculated_df.columns.values.astype(str),
+        "_mean",
+    )
+    # PGA_std_Total -> PGA_sigma
+    gmm_calculated_df.columns = np.char.replace(
+        gmm_calculated_df.columns.values.astype(str),
+        "_std_Total",
+        "_sigma",
+    )
+    # results.append(gmm_calculated_df)
+    return gmm_calculated_df
+
+
 def calculate_emp_ds(
     background_sources_ffp: str,
     site_source_db_ffp: str,
@@ -74,6 +121,7 @@ def calculate_emp_ds(
     ims: Optional[List[gc.im.IMType]],
     psa_periods: Optional[List[float]],
     model_dict_ffp: Optional[str],
+    model_weights_ffp: Optional[str],
     suffix: Optional[str] = None,
 ):
     nhm_data = gc.utils.ds_nhm_to_rup_df(background_sources_ffp)
@@ -127,59 +175,121 @@ def calculate_emp_ds(
                         f"Processing Model: {GMM.name} for {tect_type}, {GMM_idx + 1} / {len(GMMs)}"
                     )
                     with imdb as imdb:
-                        for site in sites:
-                            rupture_context_df = create_rupture_context_df(
-                                fault_df.merge(
-                                    distance_store.station_data(site),
-                                    left_on="fault_name",
-                                    right_index=True,
-                                ),
-                                site_df.loc[site],
-                                nhm_data,
+                        if model_weights_ffp:
+                            meta_GMMs = meta_model.load_weights(
+                                model_weights_ffp,
+                                str(im),
                                 classdef.TectType[tect_type],
                             )
-                            gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
-                                GMM,
-                                classdef.TectType["ACTIVE_SHALLOW"]
-                                if tect_type != "ACTIVE_SHALLOW"
-                                and GMM.name in ("CB_10", "CB_12", "AS_16",)
-                                else classdef.TectType[tect_type],
-                                rupture_context_df,
-                                str(im),
-                                psa_periods if im is gc.im.IMType.pSA else None,
-                            )
-                            # Matching the index with rupture_df
-                            # to have a right rupture label
-                            gmm_calculated_df.set_index(
-                                rupture_df[
-                                    rupture_df["rupture_name"].isin(
-                                        rupture_context_df["rupture_name"]
+                            for site in sites:
+                                rupture_context_df = create_rupture_context_df(
+                                    fault_df.merge(
+                                        distance_store.station_data(site),
+                                        left_on="fault_name",
+                                        right_index=True,
+                                    ),
+                                    site_df.loc[site],
+                                    nhm_data,
+                                    classdef.TectType[tect_type],
+                                )
+
+                                with mp.Pool(processes=2) as p:
+                                    results = p.starmap(
+                                        compute_meta_model,
+                                        [
+                                            (
+                                                model,
+                                                tect_type,
+                                                rupture_context_df,
+                                                im,
+                                                psa_periods
+                                                if im is gc.im.IMType.pSA
+                                                else None,
+                                                rupture_df,
+                                            )
+                                            for model in meta_GMMs.keys()
+                                        ],
                                     )
-                                ].index,
-                                inplace=True,
-                            )
 
-                            # Relabel the columns
-                            # PGA_mean -> PGA
-                            gmm_calculated_df.columns = np.char.rstrip(
-                                gmm_calculated_df.columns.values.astype(str), "_mean"
-                            )
-                            # PGA_std_Total -> PGA_sigma
-                            gmm_calculated_df.columns = np.char.replace(
-                                gmm_calculated_df.columns.values.astype(str),
-                                "_std_Total",
-                                "_sigma",
-                            )
+                                # Dot products
+                                meta_df = results[0].copy()
+                                for column in meta_df.columns:
+                                    col_df = pd.DataFrame(
+                                        [result[column].values for result in results]
+                                    ).T
+                                    meta_df[column] = col_df.dot(
+                                        pd.Series(meta_GMMs.values())
+                                    ).values
 
-                            # Write an im_df to the given station/site
-                            imdb.add_im_data(
-                                site,
-                                gmm_calculated_df.loc[
-                                    :,
-                                    # Only mean and sigma(std_Total) are needed
-                                    ~gmm_calculated_df.columns.str.contains("_std"),
-                                ],
-                            )
+                                # Write an im_df to the given station/site
+                                imdb.add_im_data(
+                                    site,
+                                    meta_df.loc[
+                                        :,
+                                        # Only mean and sigma(std_Total) are needed
+                                        ~meta_df.columns.str.contains("_std"),
+                                    ],
+                                )
+                        else:
+                            for site in sites:
+                                rupture_context_df = create_rupture_context_df(
+                                    fault_df.merge(
+                                        distance_store.station_data(site),
+                                        left_on="fault_name",
+                                        right_index=True,
+                                    ),
+                                    site_df.loc[site],
+                                    nhm_data,
+                                    classdef.TectType[tect_type],
+                                )
+                                gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
+                                    GMM,
+                                    classdef.TectType["ACTIVE_SHALLOW"]
+                                    if tect_type != "ACTIVE_SHALLOW"
+                                    and GMM.name
+                                    in (
+                                        "CB_10",
+                                        "CB_12",
+                                        "AS_16",
+                                    )
+                                    else classdef.TectType[tect_type],
+                                    rupture_context_df,
+                                    str(im),
+                                    psa_periods if im is gc.im.IMType.pSA else None,
+                                )
+                                # Matching the index with rupture_df
+                                # to have a right rupture label
+                                gmm_calculated_df.set_index(
+                                    rupture_df[
+                                        rupture_df["rupture_name"].isin(
+                                            rupture_context_df["rupture_name"]
+                                        )
+                                    ].index,
+                                    inplace=True,
+                                )
+
+                                # Relabel the columns
+                                # PGA_mean -> PGA
+                                gmm_calculated_df.columns = np.char.rstrip(
+                                    gmm_calculated_df.columns.values.astype(str),
+                                    "_mean",
+                                )
+                                # PGA_std_Total -> PGA_sigma
+                                gmm_calculated_df.columns = np.char.replace(
+                                    gmm_calculated_df.columns.values.astype(str),
+                                    "_std_Total",
+                                    "_sigma",
+                                )
+
+                                # Write an im_df to the given station/site
+                                imdb.add_im_data(
+                                    site,
+                                    gmm_calculated_df.loc[
+                                        :,
+                                        # Only mean and sigma(std_Total) are needed
+                                        ~gmm_calculated_df.columns.str.contains("_std"),
+                                    ],
+                                )
 
                     print(f"Writing metadata for Model: {GMM.name}")
                     common.write_metadata(
@@ -200,7 +310,8 @@ def parse_args():
     parser.add_argument("vs30_file")
     parser.add_argument("output_dir")
     parser.add_argument(
-        "--z-file", help="File name of the Z data",
+        "--z-file",
+        help="File name of the Z data",
     )
     parser.add_argument(
         "--periods",
@@ -220,7 +331,14 @@ def parse_args():
         help="model dictionary to specify which model to use for each tect-type",
     )
     parser.add_argument(
-        "--suffix", "-s", help="suffix for the end of the imdb files", default=None,
+        "--model-weights",
+        help="model weights dictionary to specify which model to use for each tect-type",
+    )
+    parser.add_argument(
+        "--suffix",
+        "-s",
+        help="suffix for the end of the imdb files",
+        default=None,
     )
 
     return parser.parse_args()
@@ -238,6 +356,7 @@ if __name__ == "__main__":
         ims=args.im,
         psa_periods=args.periods,
         model_dict_ffp=args.model_dict,
+        model_weights_ffp=args.model_weights,
         suffix=args.suffix,
     )
     print(f"Finished in {(time.time() - start) / 60:.2f} minutes")
