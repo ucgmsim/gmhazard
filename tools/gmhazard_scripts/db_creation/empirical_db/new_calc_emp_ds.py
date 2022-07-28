@@ -172,6 +172,12 @@ def calculate_emp_ds(
                                 str(im),
                                 classdef.TectType[tect_type],
                             )
+                            # Transform the key, model from string into classdef.GMM enum
+                            meta_GMMs = {
+                                classdef.GMM[model]: weight
+                                for model, weight in meta_GMMs.items()
+                            }
+                            # breakpoint()
                             for site in sites:
                                 rupture_context_df = create_rupture_context_df(
                                     fault_df.merge(
@@ -184,23 +190,35 @@ def calculate_emp_ds(
                                     classdef.TectType[tect_type],
                                 )
 
-                                with mp.Pool(processes=2) as p:
-                                    results = p.starmap(
-                                        compute_meta_model,
-                                        [
-                                            (
-                                                model,
-                                                tect_type,
-                                                rupture_context_df,
-                                                im,
-                                                psa_periods
-                                                if im is gc.im.IMType.pSA
-                                                else None,
-                                                rupture_df,
-                                            )
-                                            for model in meta_GMMs.keys()
-                                        ],
-                                    )
+                                # with mp.Pool(processes=2) as p:
+                                #     results = p.starmap(
+                                #         compute_meta_model,
+                                #         [
+                                #             (
+                                #                 model,
+                                #                 tect_type,
+                                #                 rupture_context_df,
+                                #                 im,
+                                #                 psa_periods
+                                #                 if im is gc.im.IMType.pSA
+                                #                 else None,
+                                #                 rupture_df,
+                                #             )
+                                #             for model in meta_GMMs.keys()
+                                #         ],
+                                #     )
+
+                                gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
+                                    GMM,
+                                    classdef.TectType["ACTIVE_SHALLOW"]
+                                    if tect_type != "ACTIVE_SHALLOW"
+                                    and GMM.name in ("CB_10", "CB_12", "AS_16",)
+                                    else classdef.TectType[tect_type],
+                                    rupture_context_df,
+                                    str(im),
+                                    psa_periods if im is gc.im.IMType.pSA else None,
+                                    meta_config=meta_GMMs,
+                                )
 
                                 # Dot products
                                 meta_df = results[0].copy()
@@ -213,14 +231,14 @@ def calculate_emp_ds(
                                     ).values
 
                                 # Write an im_df to the given station/site
-                                imdb.add_im_data(
-                                    site,
-                                    meta_df.loc[
-                                        :,
-                                        # Only mean and sigma(std_Total) are needed
-                                        ~meta_df.columns.str.contains("_std"),
-                                    ],
-                                )
+                                # imdb.add_im_data(
+                                #     site,
+                                #     meta_df.loc[
+                                #         :,
+                                #         # Only mean and sigma(std_Total) are needed
+                                #         ~meta_df.columns.str.contains("_std"),
+                                #     ],
+                                # )
                         else:
                             for site in sites:
                                 rupture_context_df = create_rupture_context_df(
