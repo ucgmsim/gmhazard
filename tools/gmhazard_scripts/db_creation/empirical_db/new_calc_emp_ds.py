@@ -190,24 +190,6 @@ def calculate_emp_ds(
                                     classdef.TectType[tect_type],
                                 )
 
-                                # with mp.Pool(processes=2) as p:
-                                #     results = p.starmap(
-                                #         compute_meta_model,
-                                #         [
-                                #             (
-                                #                 model,
-                                #                 tect_type,
-                                #                 rupture_context_df,
-                                #                 im,
-                                #                 psa_periods
-                                #                 if im is gc.im.IMType.pSA
-                                #                 else None,
-                                #                 rupture_df,
-                                #             )
-                                #             for model in meta_GMMs.keys()
-                                #         ],
-                                #     )
-
                                 gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
                                     GMM,
                                     classdef.TectType["ACTIVE_SHALLOW"]
@@ -220,25 +202,28 @@ def calculate_emp_ds(
                                     meta_config=meta_GMMs,
                                 )
 
-                                # Dot products
-                                meta_df = results[0].copy()
-                                for column in meta_df.columns:
-                                    col_df = pd.DataFrame(
-                                        [result[column].values for result in results]
-                                    ).T
-                                    meta_df[column] = col_df.dot(
-                                        pd.Series(meta_GMMs.values())
-                                    ).values
-
+                                # Relabel the columns
+                                # PGA_mean -> PGA
+                                gmm_calculated_df.columns = np.char.rstrip(
+                                    gmm_calculated_df.columns.values.astype(str),
+                                    "_mean",
+                                )
+                                # PGA_std_Total -> PGA_sigma
+                                gmm_calculated_df.columns = np.char.replace(
+                                    gmm_calculated_df.columns.values.astype(str),
+                                    "_std_Total",
+                                    "_sigma",
+                                )
+                                # breakpoint()
                                 # Write an im_df to the given station/site
-                                # imdb.add_im_data(
-                                #     site,
-                                #     meta_df.loc[
-                                #         :,
-                                #         # Only mean and sigma(std_Total) are needed
-                                #         ~meta_df.columns.str.contains("_std"),
-                                #     ],
-                                # )
+                                imdb.add_im_data(
+                                    site,
+                                    gmm_calculated_df.loc[
+                                        :,
+                                        # Only mean and sigma(std_Total) are needed
+                                        ~gmm_calculated_df.columns.str.contains("_std"),
+                                    ],
+                                )
                         else:
                             for site in sites:
                                 rupture_context_df = create_rupture_context_df(
