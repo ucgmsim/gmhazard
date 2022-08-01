@@ -165,120 +165,72 @@ def calculate_emp_ds(
                     print(
                         f"Processing Model: {GMM.name} for {tect_type}, {GMM_idx + 1} / {len(GMMs)}"
                     )
+
+                    meta_GMMs = None
+                    if model_weights_ffp:
+                        meta_GMMs = meta_model.load_weights(
+                            model_weights_ffp, str(im), classdef.TectType[tect_type],
+                        )
+                        # Transform the key, model from string into classdef.GMM enum
+                        meta_GMMs = {
+                            classdef.GMM[model]: weight
+                            for model, weight in meta_GMMs.items()
+                        }
                     with imdb as imdb:
-                        if model_weights_ffp:
-                            meta_GMMs = meta_model.load_weights(
-                                model_weights_ffp,
-                                str(im),
+                        for site in sites:
+                            rupture_context_df = create_rupture_context_df(
+                                fault_df.merge(
+                                    distance_store.station_data(site),
+                                    left_on="fault_name",
+                                    right_index=True,
+                                ),
+                                site_df.loc[site],
+                                nhm_data,
                                 classdef.TectType[tect_type],
                             )
-                            # Transform the key, model from string into classdef.GMM enum
-                            meta_GMMs = {
-                                classdef.GMM[model]: weight
-                                for model, weight in meta_GMMs.items()
-                            }
-                            # breakpoint()
-                            for site in sites:
-                                rupture_context_df = create_rupture_context_df(
-                                    fault_df.merge(
-                                        distance_store.station_data(site),
-                                        left_on="fault_name",
-                                        right_index=True,
-                                    ),
-                                    site_df.loc[site],
-                                    nhm_data,
-                                    classdef.TectType[tect_type],
-                                )
 
-                                gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
-                                    GMM,
-                                    classdef.TectType["ACTIVE_SHALLOW"]
-                                    if tect_type != "ACTIVE_SHALLOW"
-                                    and GMM.name in ("CB_10", "CB_12", "AS_16",)
-                                    else classdef.TectType[tect_type],
-                                    rupture_context_df,
-                                    str(im),
-                                    psa_periods if im is gc.im.IMType.pSA else None,
-                                    meta_config=meta_GMMs,
-                                )
+                            gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
+                                GMM,
+                                classdef.TectType["ACTIVE_SHALLOW"]
+                                if tect_type != "ACTIVE_SHALLOW"
+                                and GMM.name in ("CB_10", "CB_12", "AS_16",)
+                                else classdef.TectType[tect_type],
+                                rupture_context_df,
+                                str(im),
+                                psa_periods if im is gc.im.IMType.pSA else None,
+                                meta_config=meta_GMMs,
+                            )
+                            # Matching the index with rupture_df
+                            # to have a right rupture label
+                            gmm_calculated_df.set_index(
+                                rupture_df[
+                                    rupture_df["rupture_name"].isin(
+                                        rupture_context_df["rupture_name"]
+                                    )
+                                ].index,
+                                inplace=True,
+                            )
 
-                                # Relabel the columns
-                                # PGA_mean -> PGA
-                                gmm_calculated_df.columns = np.char.rstrip(
-                                    gmm_calculated_df.columns.values.astype(str),
-                                    "_mean",
-                                )
-                                # PGA_std_Total -> PGA_sigma
-                                gmm_calculated_df.columns = np.char.replace(
-                                    gmm_calculated_df.columns.values.astype(str),
-                                    "_std_Total",
-                                    "_sigma",
-                                )
-                                # breakpoint()
-                                # Write an im_df to the given station/site
-                                imdb.add_im_data(
-                                    site,
-                                    gmm_calculated_df.loc[
-                                        :,
-                                        # Only mean and sigma(std_Total) are needed
-                                        ~gmm_calculated_df.columns.str.contains("_std"),
-                                    ],
-                                )
-                        else:
-                            for site in sites:
-                                rupture_context_df = create_rupture_context_df(
-                                    fault_df.merge(
-                                        distance_store.station_data(site),
-                                        left_on="fault_name",
-                                        right_index=True,
-                                    ),
-                                    site_df.loc[site],
-                                    nhm_data,
-                                    classdef.TectType[tect_type],
-                                )
-                                gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
-                                    GMM,
-                                    classdef.TectType["ACTIVE_SHALLOW"]
-                                    if tect_type != "ACTIVE_SHALLOW"
-                                    and GMM.name in ("CB_10", "CB_12", "AS_16",)
-                                    else classdef.TectType[tect_type],
-                                    rupture_context_df,
-                                    str(im),
-                                    psa_periods if im is gc.im.IMType.pSA else None,
-                                )
-                                # Matching the index with rupture_df
-                                # to have a right rupture label
-                                gmm_calculated_df.set_index(
-                                    rupture_df[
-                                        rupture_df["rupture_name"].isin(
-                                            rupture_context_df["rupture_name"]
-                                        )
-                                    ].index,
-                                    inplace=True,
-                                )
-
-                                # Relabel the columns
-                                # PGA_mean -> PGA
-                                gmm_calculated_df.columns = np.char.rstrip(
-                                    gmm_calculated_df.columns.values.astype(str),
-                                    "_mean",
-                                )
-                                # PGA_std_Total -> PGA_sigma
-                                gmm_calculated_df.columns = np.char.replace(
-                                    gmm_calculated_df.columns.values.astype(str),
-                                    "_std_Total",
-                                    "_sigma",
-                                )
-
-                                # Write an im_df to the given station/site
-                                imdb.add_im_data(
-                                    site,
-                                    gmm_calculated_df.loc[
-                                        :,
-                                        # Only mean and sigma(std_Total) are needed
-                                        ~gmm_calculated_df.columns.str.contains("_std"),
-                                    ],
-                                )
+                            # Relabel the columns
+                            # PGA_mean -> PGA
+                            gmm_calculated_df.columns = np.char.rstrip(
+                                gmm_calculated_df.columns.values.astype(str), "_mean",
+                            )
+                            # PGA_std_Total -> PGA_sigma
+                            gmm_calculated_df.columns = np.char.replace(
+                                gmm_calculated_df.columns.values.astype(str),
+                                "_std_Total",
+                                "_sigma",
+                            )
+                            # Write an im_df to the given station/site
+                            imdb.add_im_data(
+                                site,
+                                gmm_calculated_df.loc[
+                                    :,
+                                    # Only mean and sigma(std_Total) are needed
+                                    ~gmm_calculated_df.columns.str.contains("_std"),
+                                ],
+                            )
 
                     print(f"Writing metadata for Model: {GMM.name}")
                     common.write_metadata(
