@@ -102,8 +102,8 @@ def process_station_gms_config_comb(
         return
     except AssertionError as ex:
         print(
-            f"\tFailed to compute GMS for gms id {gms_id}, site {site_info.station_name}, IM {ex.im} and "
-            f"exceedance {ex.exceedance} due an assert error:\n{ex}")
+            f"\tFailed to compute GMS for gms id {gms_id}, site {site_info.station_name}, IM {IMs} and "
+            f"exceedance {exceedance} due an assert error:\n{ex}")
         return
 
 
