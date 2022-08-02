@@ -9,11 +9,12 @@ import { useAuth0 } from "components/common/ReactAuth0SPA";
 
 import {
   UHSPlot,
+  MetadataBox,
+  ErrorMessage,
+  GuideMessage,
   UHSBranchPlot,
   LoadingSpinner,
   DownloadButton,
-  GuideMessage,
-  ErrorMessage,
 } from "components/common";
 import { getProjectUHS } from "apis/ProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
@@ -27,6 +28,8 @@ const HazardViewerUHS = () => {
     projectVS30,
     projectZ1p0,
     projectZ2p5,
+    projectLat,
+    projectLng,
     projectLocationCode,
     projectSelectedUHSRP,
     setProjectSelectedUHSRP,
@@ -49,6 +52,9 @@ const HazardViewerUHS = () => {
   const [uhsBranchData, setUHSBranchData] = useState(null);
   const [uhsNZS1170p5Data, setUHSNZS1170p5Data] = useState(null);
   const [extraInfo, setExtraInfo] = useState({});
+
+  // For Metadata
+  const [metadataParam, setMetadataParam] = useState({});
 
   // For Download Data button
   const [downloadToken, setDownloadToken] = useState("");
@@ -74,7 +80,7 @@ const HazardViewerUHS = () => {
         .sort((a, b) => a - b)
         .map((option) => ({
           value: 1 / Number(option),
-          label: option,
+          label: Number((1 / Number(option)).toFixed(4)),
         }));
 
       setLocalSelectedRP(sortedSelectedRP[0]);
@@ -146,18 +152,30 @@ const HazardViewerUHS = () => {
   };
 
   const updateUHSData = (uhsData) => {
-    setUHSData(filterUHSData(uhsData["uhs_results"], getSelectedRP()));
+    const selectedRPs = getSelectedRP();
+
+    setUHSData(filterUHSData(uhsData["uhs_results"], selectedRPs));
     setUHSNZS1170p5Data(
-      filterUHSData(uhsData["nzs1170p5_uhs_df"], getSelectedRP())
+      filterUHSData(uhsData["nzs1170p5_uhs_df"], selectedRPs)
     );
     setUHSBranchData(uhsData["branch_uhs_results"]);
     setDownloadToken(uhsData["download_token"]);
+    setMetadataParam({
+      [CONSTANTS.PROJECT_NAME]: projectId["label"],
+      [CONSTANTS.PROJECT_ID]: projectId["value"],
+      [CONSTANTS.LOCATION]: projectLocation,
+      [CONSTANTS.LATITUDE]: projectLat,
+      [CONSTANTS.LONGITUDE]: projectLng,
+      [CONSTANTS.SITE_SELECTION_VS30_TITLE]: `${projectVS30} m/s`,
+      [CONSTANTS.METADATA_Z1P0_LABEL]: `${projectZ1p0} km`,
+      [CONSTANTS.METADATA_Z2P5_LABEL]: `${projectZ2p5} km`,
+    });
     setExtraInfo({
       from: "project",
       id: projectId,
       location: projectLocation,
       vs30: projectVS30,
-      selectedRPs: getSelectedRP(),
+      selectedRPs: selectedRPs,
     });
 
     setShowSpinnerUHS(false);
@@ -206,6 +224,7 @@ const HazardViewerUHS = () => {
                     nzs1170p5Data={uhsNZS1170p5Data}
                     extra={extraInfo}
                   />
+                  <MetadataBox metadata={metadataParam} />
                 </Fragment>
               )}
           </div>
@@ -261,9 +280,10 @@ const HazardViewerUHS = () => {
                         : uhsBranchData[localSelectedRP["value"]]
                     }
                     nzs1170p5Data={uhsNZS1170p5Data[localSelectedRP["value"]]}
-                    rp={localSelectedRP["label"]}
+                    rate={localSelectedRP["label"]}
                     extra={extraInfo}
                   />
+                  <MetadataBox metadata={metadataParam} />
                 </Fragment>
               )}
           </div>

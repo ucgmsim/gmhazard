@@ -35,7 +35,7 @@ div.form-group-inline {
 }
 
 div.form-section-title {
-  font-size: calc(12px + 0.4vw);
+  font-size: 1.1rem;
   margin-top: 10px;
   font-weight: 700;
   margin-top: 10px;
@@ -99,7 +99,6 @@ label#label-create-lng,
 label#label-create-vs30,
 label#label-create-name {
   width: 7em;
-  font-size: calc(12px + 0.27vw);
   margin-bottom: 1rem;
 }
 
@@ -111,12 +110,7 @@ label#label-vs30,
 label#label-z-1p0,
 label#label-z-2p5 {
   width: 7em;
-  font-size: calc(12px + 0.27vw);
   margin-bottom: 0;
-}
-
-label.control-label {
-  font-size: calc(12px + 0.27vw);
 }
 
 button#vs30-use-default {
@@ -186,14 +180,6 @@ span.show-nzta {
 }
 
 tr.contrib-row-hidden {
-  display: none;
-}
-
-tr.contrib-ellipsis {
-  background-color: white !important;
-}
-
-tr.contrib-ellipsis td.hidden {
   display: none;
 }
 

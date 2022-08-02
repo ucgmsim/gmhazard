@@ -1,6 +1,5 @@
 label#label-z-factor,
 label.label-soil-class {
   width: 7em;
-  font-size: calc(12px + 0.27vw);
   margin-bottom: 0;
 }

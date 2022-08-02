@@ -43,7 +43,9 @@ def has_project_permission(f):
             return f(*args, **kwargs, is_authorized=is_authorized)
         else:
             public_projects = utils.run_project_crosscheck(
-                {}, db.get_projects("public"), _get_available_projects()["ids"],
+                {},
+                db.get_projects("public"),
+                _get_available_projects()["ids"],
             )
             if project_id in public_projects:
                 is_authorized = True
@@ -55,7 +57,11 @@ def has_project_permission(f):
 # Site Selection
 def _get_available_projects():
     return utils.proxy_to_api(
-        request, const.PROJECT_IDS_ENDPOINT, "GET", PROJECT_API_BASE, PROJECT_API_TOKEN,
+        request,
+        const.PROJECT_IDS_ENDPOINT,
+        "GET",
+        PROJECT_API_BASE,
+        PROJECT_API_TOKEN,
     ).get_json()
 
 
@@ -72,7 +78,9 @@ def get_available_project_ids(is_authenticated):
         )
     else:
         return utils.run_project_crosscheck(
-            {}, db.get_projects("public"), _get_available_projects()["ids"],
+            {},
+            db.get_projects("public"),
+            _get_available_projects()["ids"],
         )
 
 
@@ -375,12 +383,13 @@ def project_api_download_uhs(is_authenticated):
     )
 
 
-@app.route(f"{const.PROJECT_API_GMS_DOWNLOAD_ENDPOINT}/<token>", methods=["GET"])
+@app.route(const.PROJECT_API_GMS_DOWNLOAD_ENDPOINT, methods=["GET"])
 @decorators.get_authentication
-def project_api_download_gms(is_authenticated, token):
+def project_api_download_gms(is_authenticated):
     return utils.proxy_to_api(
         request,
-        const.PROJECT_GMS_DOWNLOAD_ENDPOINT + "/" + token,
+        const.PROJECT_GMS_DOWNLOAD_ENDPOINT,
+        "GET",
         PROJECT_API_BASE,
         PROJECT_API_TOKEN,
         user_id=auth0.get_user_id() if is_authenticated else None,

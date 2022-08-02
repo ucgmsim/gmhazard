@@ -204,117 +204,128 @@ def write_disagg_download_data(
     prefix: str = None,
 ):
     prefix = "" if prefix is None else f"{prefix}_"
-    ensemble = disagg_data.ensemble
+    ensemble = disagg_data[0].ensemble
 
-    # Save total contributions + extra data
-    disagg_data_ffp = (
-        Path(out_dir)
-        / f"{prefix}{disagg_data.im.file_format()}_{int(1 / disagg_data.exceedance)}_disagg.csv"
-    )
-    disagg_df = disagg_data.total_contributions_df.merge(
-        metadata_df, how="left", left_index=True, right_index=True
-    )
-    disagg_df.loc["distributed_seismicity", "rupture_name"] = "distributed_seismicity"
-    disagg_df.loc[
-        :,
-        [
-            "rupture_name",
-            "contribution",
-            "epsilon",
-            "annual_rec_prob",
-            "magnitude",
-            "rrup",
-        ],
-    ].to_csv(disagg_data_ffp, index=True, mode="a", index_label="rupture_id")
-
-    # Save an aggregated version in the case of ERF perturbation
-    disagg_agg_data_ffp = None
-    if np.unique(disagg_df.rupture_name.values).size < disagg_df.shape[0]:
-        agg_dict = {}
-        for cur_rupture_name, cur_rupture_df in disagg_df.groupby("rupture_name"):
-            # Contribution is summed across realisations,
-            # everything else is aggregated via weighted average
-            # with the normalised realisation contributions as weights
-            cur_contribution = cur_rupture_df.contribution.sum()
-            cur_agg_dict = {
-                cur_col: np.average(
-                    cur_rupture_df[cur_col].values,
-                    weights=cur_rupture_df.contribution.values / cur_contribution,
-                )
-                for cur_col in ["epsilon", "annual_rec_prob", "magnitude", "rrup"]
-            }
-            cur_agg_dict["contribution"] = cur_contribution
-            agg_dict[cur_rupture_name] = cur_agg_dict
-
-        disagg_agg_df = pd.DataFrame(agg_dict).T.sort_values(
-            "contribution", ascending=False
-        )
-
-        disagg_agg_data_ffp = (
+    # Save total contributions + extra data - Each RP
+    disagg_data_ffps, disagg_agg_data_ffps = [], []
+    meta_data_ffps, mean_values_ffps = [], []
+    src_plot_ffps, eps_plot_ffps = [], []
+    for (idx, disagg) in enumerate(disagg_data):
+        disagg_data_ffp = (
             Path(out_dir)
-            / f"{prefix}{disagg_data.im.file_format()}_{int(1 / disagg_data.exceedance)}_disagg_aggregated.csv"
+            / f"{prefix}{disagg.im.file_format()}_{int(1 / disagg.exceedance)}_disagg.csv"
         )
-        disagg_agg_df.loc[
-            :, ["contribution", "epsilon", "annual_rec_prob", "magnitude", "rrup",]
-        ].to_csv(disagg_agg_data_ffp, index=True, mode="a", index_label="rupture_name")
-
-    # Create metadata file
-    meta_data_ffp = (
-        Path(out_dir)
-        / f"{prefix}{disagg_data.im.file_format()}_{int(1 / disagg_data.exceedance)}_metadata.yaml"
-    )
-    with meta_data_ffp.open(mode="w") as f:
-        yaml.safe_dump(
-            {
-                "ensemble_id": ensemble.name,
-                "station": disagg_data.site_info.station_name,
-                "lon": float(disagg_data.site_info.lon),
-                "lat": float(disagg_data.site_info.lat),
-                "vs30": float(disagg_data.site_info.vs30),
-                "user_vs30": float(disagg_data.site_info.user_vs30)
-                if disagg_data.site_info.user_vs30 is not None
-                else None,
-                "im": str(disagg_data.im),
-                "exceedance": disagg_data.exceedance,
-                "im_value": float(disagg_data.im_value),
-                "git_version_hash": utils.get_repo_version(),
-            },
-            f,
+        disagg_df = disagg.total_contributions_df.merge(
+            metadata_df[idx], how="left", left_index=True, right_index=True
         )
+        disagg_df.loc[
+            "distributed_seismicity", "rupture_name"
+        ] = "distributed_seismicity"
+        disagg_df.loc[
+            :,
+            [
+                "rupture_name",
+                "contribution",
+                "epsilon",
+                "annual_rec_prob",
+                "magnitude",
+                "rrup",
+            ],
+        ].to_csv(disagg_data_ffp, index=True, mode="a", index_label="rupture_id")
+        disagg_data_ffps.append(disagg_data_ffp)
 
-    mean_values_ffp = None
-    if disagg_data.mean_values is not None:
-        mean_values_ffp = (
+        # Save an aggregated version in the case of ERF perturbation
+        if np.unique(disagg_df.rupture_name.values).size < disagg_df.shape[0]:
+            agg_dict = {}
+            for cur_rupture_name, cur_rupture_df in disagg_df.groupby("rupture_name"):
+                # Contribution is summed across realisations,
+                # everything else is aggregated via weighted average
+                # with the normalised realisation contributions as weights
+                cur_contribution = cur_rupture_df.contribution.sum()
+                cur_agg_dict = {
+                    cur_col: np.average(
+                        cur_rupture_df[cur_col].values,
+                        weights=cur_rupture_df.contribution.values / cur_contribution,
+                    )
+                    for cur_col in ["epsilon", "annual_rec_prob", "magnitude", "rrup"]
+                }
+                cur_agg_dict["contribution"] = cur_contribution
+                agg_dict[cur_rupture_name] = cur_agg_dict
+
+            disagg_agg_df = pd.DataFrame(agg_dict).T.sort_values(
+                "contribution", ascending=False
+            )
+
+            disagg_agg_data_ffp = (
+                Path(out_dir)
+                / f"{prefix}{disagg.im.file_format()}_{int(1 / disagg.exceedance)}_disagg_aggregated.csv"
+            )
+            disagg_agg_df.loc[
+                :, ["contribution", "epsilon", "annual_rec_prob", "magnitude", "rrup",],
+            ].to_csv(
+                disagg_agg_data_ffp, index=True, mode="a", index_label="rupture_name"
+            )
+            disagg_agg_data_ffps.append(disagg_agg_data_ffp)
+
+        # Create metadata file
+        meta_data_ffp = (
             Path(out_dir)
-            / f"{prefix}{disagg_data.im.file_format()}_{int(1 / disagg_data.exceedance)}_mean_values.csv"
+            / f"{prefix}{disagg.im.file_format()}_{int(1 / disagg.exceedance)}_metadata.yaml"
         )
-        disagg_data.mean_values.to_frame().T.to_csv(mean_values_ffp, index=False)
+        with meta_data_ffp.open(mode="w") as f:
+            yaml.safe_dump(
+                {
+                    "ensemble_id": ensemble.name,
+                    "station": disagg.site_info.station_name,
+                    "lon": float(disagg.site_info.lon),
+                    "lat": float(disagg.site_info.lat),
+                    "vs30": float(disagg.site_info.vs30),
+                    "user_vs30": float(disagg.site_info.user_vs30)
+                    if disagg.site_info.user_vs30 is not None
+                    else None,
+                    "im": str(disagg.im),
+                    "exceedance": disagg.exceedance,
+                    "im_value": float(disagg.im_value),
+                    "git_version_hash": utils.get_repo_version(),
+                },
+                f,
+            )
+        meta_data_ffps.append(meta_data_ffp)
 
-    # Write & add plots
-    src_plot_ffp, eps_plot_ffp = None, None
-    if src_plot_data is not None:
-        src_plot_ffp = (
-            Path(out_dir)
-            / f"{prefix}{disagg_data.im.file_format()}_{int(1 / disagg_data.exceedance)}_disagg_src_plot.png"
-        )
-        with src_plot_ffp.open(mode="wb") as f:
-            f.write(src_plot_data)
+        if disagg.mean_values is not None:
+            mean_values_ffp = (
+                Path(out_dir)
+                / f"{prefix}{disagg.im.file_format()}_{int(1 / disagg.exceedance)}_mean_values.csv"
+            )
+            disagg.mean_values.to_frame().T.to_csv(mean_values_ffp, index=False)
+            mean_values_ffps.append(mean_values_ffp)
 
-    if eps_plot_data is not None:
-        eps_plot_ffp = (
-            Path(out_dir)
-            / f"{prefix}{disagg_data.im.file_format()}_{int(1 / disagg_data.exceedance)}_disagg_eps_plot.png"
-        )
-        with eps_plot_ffp.open(mode="wb") as f:
-            f.write(eps_plot_data)
+        # Write & add plots
+        if src_plot_data[idx] is not None:
+            src_plot_ffp = (
+                Path(out_dir)
+                / f"{prefix}{disagg.im.file_format()}_{int(1 / disagg.exceedance)}_disagg_src_plot.png"
+            )
+            with src_plot_ffp.open(mode="wb") as f:
+                f.write(src_plot_data[idx])
+            src_plot_ffps.append(src_plot_ffp)
+
+        if eps_plot_data[idx] is not None:
+            eps_plot_ffp = (
+                Path(out_dir)
+                / f"{prefix}{disagg.im.file_format()}_{int(1 / disagg.exceedance)}_disagg_eps_plot.png"
+            )
+            with eps_plot_ffp.open(mode="wb") as f:
+                f.write(eps_plot_data[idx])
+            eps_plot_ffps.append(eps_plot_ffp)
 
     return (
-        disagg_data_ffp,
-        meta_data_ffp,
-        mean_values_ffp,
-        src_plot_ffp,
-        eps_plot_ffp,
-        disagg_agg_data_ffp,
+        *disagg_data_ffps,
+        *meta_data_ffps,
+        *mean_values_ffps,
+        *src_plot_ffps,
+        *eps_plot_ffps,
+        *disagg_agg_data_ffps,
     )
 
 
@@ -337,14 +348,10 @@ def create_disagg_download_zip(
     )
 
     # Create zip file
-    zip_ffp = (
-        Path(data_dir)
-        / f"{prefix}{ensemble_disagg.im.file_format()}_{int(1 / ensemble_disagg.exceedance)}_disagg.zip"
-    )
+    zip_ffp = Path(data_dir) / f"{prefix}disagg.zip"
     with zipfile.ZipFile(str(zip_ffp), mode="w") as cur_zip:
         for cur_ffp in ffps:
-            if cur_ffp is not None:
-                cur_zip.write(cur_ffp, Path(cur_ffp).name)
+            cur_zip.write(cur_ffp, Path(cur_ffp).name)
 
     return zip_ffp
 
@@ -488,7 +495,7 @@ def write_gms_download_data(
         )
 
         # IM distribution plots
-        sc.plots.plt_gms_im_distribution(gms_result, save_file=Path(out_dir))
+        sc.plots.plt_gms_im_distribution(gms_result, save_dir=Path(out_dir))
 
         # Disagg Distribution plots (Mw Distribution or Rrup distribution)
         contribution_df_data = sr.get_default_causal_params(cs_param_bounds)[
@@ -573,6 +580,7 @@ def create_gms_download_zip(
 
 def write_scenario_download_data(
     ensemble_scenario: sc.scenario.EnsembleScenarioResult,
+    rupture_metadata: pd.DataFrame,
     out_dir: str,
     prefix: str = None,
 ):
@@ -587,6 +595,8 @@ def write_scenario_download_data(
     ----------
     ensemble_scenario: EnsembleScenarioResult
         ensemble scenario to grab results from
+    rupture_metadata: pd.DataFrame
+        Rupture's metadata
     out_dir: str
         The output directory to write the 6 files to
     prefix: str
@@ -714,16 +724,23 @@ def write_scenario_download_data(
 
     ffps.append(meta_data_ffp)
 
+    # Rupture Metadata
+    rupture_metadata_ffp = Path(out_dir) / f"{prefix}scenario_rupture_metadata.csv"
+    rupture_metadata.to_csv(rupture_metadata_ffp)
+
+    ffps.append(rupture_metadata_ffp)
+
     return ffps
 
 
 def create_scenario_download_zip(
     ensemble_scenario: sc.scenario.EnsembleScenarioResult,
+    rupture_metadata: pd.DataFrame,
     tmp_dir: str,
     prefix: str = None,
 ):
     ffps = write_scenario_download_data(
-        ensemble_scenario, out_dir=tmp_dir, prefix=prefix,
+        ensemble_scenario, rupture_metadata, out_dir=tmp_dir, prefix=prefix,
     )
 
     # Create zip file

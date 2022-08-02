@@ -1,6 +1,7 @@
 import React, { Fragment, useState, useEffect, useContext } from "react";
 
 import $ from "jquery";
+import Select from "react-select";
 import { Tabs, Tab } from "react-bootstrap";
 
 import { GlobalContext } from "context";
@@ -71,6 +72,10 @@ const HazardViewerDisaggregation = () => {
     src: null,
   });
 
+  // For Select, dropdown
+  const [localSelectedRP, setLocalSelectedRP] = useState(null);
+  const [disaggRPOptions, setDisaggRPOptions] = useState([]);
+
   // Reset tabs if users click Get button from Site Selection
   useEffect(() => {
     if (projectSiteSelectionGetClick !== null) {
@@ -86,6 +91,9 @@ const HazardViewerDisaggregation = () => {
       setProjectDisaggGetClick(null);
 
       setProjectSelectedDisagRP(null);
+
+      setRowsToggled(true);
+      setToggleText(CONSTANTS.SHOW_MORE);
     }
   }, [projectSiteSelectionGetClick]);
 
@@ -121,6 +129,9 @@ const HazardViewerDisaggregation = () => {
       setShowContribTable(false);
       setShowSpinnerContribTable(true);
 
+      setRowsToggled(true);
+      setToggleText(CONSTANTS.SHOW_MORE);
+
       let token = null;
       const queryString = APIQueryBuilder({
         project_id: projectId["value"],
@@ -131,7 +142,6 @@ const HazardViewerDisaggregation = () => {
           projectZ2p5
         ),
         im: combineIMwithPeriod(projectSelectedIM, projectSelectedIMPeriod),
-        rp: projectSelectedDisagRP,
         im_component: projectSelectedIMComponent,
       });
 
@@ -160,25 +170,92 @@ const HazardViewerDisaggregation = () => {
       $("tr.contrib-toggle-row.contrib-row-hidden").removeClass(
         "contrib-row-hidden"
       );
-      $("tr.contrib-ellipsis td").addClass("hidden");
     } else {
       $("tr.contrib-toggle-row").addClass("contrib-row-hidden");
-      $("tr.contrib-ellipsis td.hidden").removeClass("hidden");
     }
 
     setToggleText(rowsToggled ? CONSTANTS.SHOW_LESS : CONSTANTS.SHOW_MORE);
   };
 
+  /* 
+    Filter the disaggData with selected RPs to display
+    only the selected RPs in plots
+  */
+  const filterDisaggData = (disaggData, selectedRP) => {
+    const filtered = Object.keys(disaggData)
+      .filter((key) => selectedRP.includes(Number(key)))
+      .reduce((obj, key) => {
+        obj[key] = disaggData[key];
+        return obj;
+      }, {});
+
+    return filtered;
+  };
+
   const updateDisaggData = (disaggData) => {
+    const selectedRPs = projectSelectedDisagRP.map((RP) => RP.value);
+
+    const sortedSelectedRPs = selectedRPs
+      .sort((a, b) => a - b)
+      .map((rp) => ({
+        value: rp,
+        label: Number((1 / Number(rp)).toFixed(4)),
+      }));
+    setDisaggRPOptions(sortedSelectedRPs);
+    setLocalSelectedRP(sortedSelectedRPs[0]);
     setDownloadToken(disaggData["download_token"]);
 
-    const srcDisaggPlot = disaggData["gmt_plot_src"];
-    const epsDisaggPlot = disaggData["gmt_plot_eps"];
+    const srcDisaggPlot = filterDisaggData(
+      disaggData["gmt_plot_src"],
+      selectedRPs
+    );
+    const epsDisaggPlot = filterDisaggData(
+      disaggData["gmt_plot_eps"],
+      selectedRPs
+    );
 
     setDisaggPlotData({
       src: srcDisaggPlot,
       eps: epsDisaggPlot,
     });
+
+    const disaggTotalData = filterDisaggData(
+      disaggData["disagg_data"],
+      selectedRPs
+    );
+
+    let filteredTotalContribution = {};
+    for (const item in disaggTotalData) {
+      filteredTotalContribution[item] =
+        disaggTotalData[item]["total_contribution"];
+    }
+    const extraInfo = filterDisaggData(disaggData["extra_info"], selectedRPs);
+
+    // Polish total contribution data
+    let data = {};
+    for (const RP in filteredTotalContribution) {
+      extraInfo[RP].rupture_name["distributed_seismicity"] =
+        CONSTANTS.DISTRIBUTED_SEISMICITY;
+
+      const unsortedData = Array.from(
+        Object.keys(filteredTotalContribution[RP]),
+        (key) => {
+          return [
+            key,
+            extraInfo[RP].rupture_name[key],
+            filteredTotalContribution[RP][key],
+            extraInfo[RP].annual_rec_prob[key],
+            extraInfo[RP].magnitude[key],
+            extraInfo[RP].rrup[key],
+          ];
+        }
+      );
+
+      data[RP] = unsortedData.sort((a, b) => b[2] - a[2]);
+    }
+
+    setDisaggMeanData(disaggTotalData);
+    setDisaggContributionData(data);
 
     setShowSpinnerDisaggEpsilon(false);
     setShowSpinnerDisaggFault(false);
@@ -188,34 +265,6 @@ const HazardViewerDisaggregation = () => {
     setShowPlotDisaggFault(true);
 
     setShowContribTable(true);
-
-    const disaggTotalData = disaggData["disagg_data"]["total_contribution"];
-
-    const extraInfo = disaggData["extra_info"];
-    try {
-      extraInfo.rupture_name["distributed_seismicity"] =
-        CONSTANTS.DISTRIBUTED_SEISMICITY;
-    } catch (err) {
-      console.log(err.message);
-    }
-
-    const data = Array.from(Object.keys(disaggTotalData), (key) => {
-      return [
-        key,
-        extraInfo.rupture_name[key],
-        disaggTotalData[key],
-        extraInfo.annual_rec_prob[key],
-        extraInfo.magnitude[key],
-        extraInfo.rrup[key],
-      ];
-    });
-
-    data.sort((entry1, entry2) => {
-      return entry1[2] > entry2[2] ? -1 : 1;
-    });
-
-    setDisaggMeanData(disaggData["disagg_data"]);
-    setDisaggContributionData(data);
   };
 
   const catchError = (error) => {
@@ -255,9 +304,18 @@ const HazardViewerDisaggregation = () => {
             showPlotDisaggEpsilon === true &&
             showErrorMessage.isError === false && (
               <Fragment>
+                <Select
+                  value={localSelectedRP}
+                  onChange={(rpOption) => setLocalSelectedRP(rpOption)}
+                  options={disaggRPOptions}
+                  isDisabled={disaggRPOptions.length === 0}
+                  menuPlacement="auto"
+                />
                 <img
                   className="img-fluid rounded mx-auto d-block"
-                  src={`data:image/png;base64,${disaggPlotData.eps}`}
+                  src={`data:image/png;base64,${
+                    disaggPlotData.eps[localSelectedRP["value"]]
+                  }`}
                   alt={CONSTANTS.EPSILON_DISAGG_PLOT_ALT}
                 />
               </Fragment>
@@ -287,9 +345,18 @@ const HazardViewerDisaggregation = () => {
             showPlotDisaggFault === true &&
             showErrorMessage.isError === false && (
               <Fragment>
+                <Select
+                  value={localSelectedRP}
+                  onChange={(rpOption) => setLocalSelectedRP(rpOption)}
+                  options={disaggRPOptions}
+                  isDisabled={disaggRPOptions.length === 0}
+                  menuPlacement="auto"
+                />
                 <img
                   className="img-fluid rounded mx-auto d-block"
-                  src={`data:image/png;base64,${disaggPlotData.src}`}
+                  src={`data:image/png;base64,${
+                    disaggPlotData.src[localSelectedRP["value"]]
+                  }`}
                   alt={CONSTANTS.SOURCE_DISAGG_PLOT_ALT}
                 />
               </Fragment>
@@ -319,9 +386,18 @@ const HazardViewerDisaggregation = () => {
             showContribTable === true &&
             showErrorMessage.isError === false && (
               <Fragment>
+                <Select
+                  value={localSelectedRP}
+                  onChange={(rpOption) => setLocalSelectedRP(rpOption)}
+                  options={disaggRPOptions}
+                  isDisabled={disaggRPOptions.length === 0}
+                  menuPlacement="auto"
+                />
                 <ContributionTable
-                  meanData={disaggMeanData}
-                  contributionData={disaggContributionData}
+                  meanData={disaggMeanData[localSelectedRP["value"]]}
+                  contributionData={
+                    disaggContributionData[localSelectedRP["value"]]
+                  }
                 />
                 <button
                   className="btn btn-info hazard-disagg-contrib-button"
@@ -339,7 +415,7 @@ const HazardViewerDisaggregation = () => {
         downloadToken={{
           disagg_token: downloadToken,
         }}
-        fileName={`Projects_Disaggregation_${filteredSelectedIM}_RP_${projectSelectedDisagRP}.zip`}
+        fileName={`Projects_Disaggregation_${filteredSelectedIM}.zip`}
       />
     </div>
   );

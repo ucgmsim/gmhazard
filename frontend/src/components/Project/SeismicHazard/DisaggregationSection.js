@@ -1,11 +1,14 @@
 import React, { useState, useContext, Fragment } from "react";
 
+import Select from "react-select";
 import { v4 as uuidv4 } from "uuid";
+import makeAnimated from "react-select/animated";
 
 import { GlobalContext } from "context";
 import * as CONSTANTS from "constants/Constants";
 
-import { CustomSelect, GuideTooltip } from "components/common";
+import { GuideTooltip } from "components/common";
+import { createAnnualExceedanceArray } from "utils/Utils";
 
 const DisaggregationSection = () => {
   const {
@@ -17,10 +20,12 @@ const DisaggregationSection = () => {
     setProjectDisaggGetClick,
   } = useContext(GlobalContext);
 
+  const animatedComponents = makeAnimated();
+
   const [localSelectedRP, setLocalSelectedRP] = useState(null);
 
   const getDisagg = () => {
-    setProjectSelectedDisagRP(localSelectedRP["value"]);
+    setProjectSelectedDisagRP(localSelectedRP);
     setProjectDisaggGetClick(uuidv4());
   };
 
@@ -45,11 +50,24 @@ const DisaggregationSection = () => {
         />
       </div>
       <div className="form-group">
-        <CustomSelect
-          title={`${CONSTANTS.RETURN_PERIOD} ${CONSTANTS.YEARS_UNIT}`}
-          value={localSelectedRP}
-          setSelect={setLocalSelectedRP}
-          options={projectDisagRPs}
+        <label className="control-label" htmlFor="disagg-return-period">
+          {CONSTANTS.ANNUAL_EXCEEDANCE_RATE} (years<sup>-1</sup>)
+        </label>
+        <Select
+          id="disagg-return-period"
+          closeMenuOnSelect={false}
+          components={animatedComponents}
+          isMulti
+          placeholder={
+            projectDisagRPs.length === 0
+              ? `${CONSTANTS.PLACEHOLDER_NOT_AVAILABLE}`
+              : `${CONSTANTS.PLACEHOLDER_SELECT_SIGN}`
+          }
+          onChange={(value) => setLocalSelectedRP(value || [])}
+          options={createAnnualExceedanceArray(projectDisagRPs)}
+          isDisabled={projectDisagRPs.length === 0}
+          menuPlacement="auto"
+          menuPortalTarget={document.body}
         />
       </div>
 

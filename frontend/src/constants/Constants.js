@@ -115,9 +115,10 @@ export const INTERMEDIATE_API_ALL_PUBLIC_PROJECTS_ENDPOINT =
 // Labels
 // General usage
 export const SITE_SELECTION = "Site Selection";
+export const PROJECT_AND_SITE_SELECTION = "Project and Site Selection";
 export const SEISMIC_HAZARD = "Seismic Hazard";
 export const GROUND_MOTION_SELECTION = "Ground Motion Selection";
-export const SCENARIOS = "Scenarios";
+export const SCENARIOS = "Scenario Spectra";
 export const HAZARD_CURVE = "Hazard Curve";
 export const DISAGGREGATION = "Disaggregation";
 export const UNIFORM_HAZARD_SPECTRUM = "Uniform Hazard Spectrum";
@@ -138,10 +139,12 @@ export const INTENSITY_MEASURE = "Intensity Measure";
 export const EPSILON = "Epsilon";
 export const FAULT_DISTRIBUTED_SEISMICITY = "Fault/distributed seismicity";
 export const SOURCE_CONTRIBUTIONS = "Source contributions";
-export const MEAN_HAZARDS = "Mean Hazards";
+export const MEAN_HAZARDS = "Mean Hazard";
 export const EPISTEMIC_UNCERTAINTY = "Epistemic Uncertainty";
 export const PROJECT_NAME = "Project Name";
+export const PROJECT_ID = "Project ID";
 export const LOCATION = "Location";
+export const SITE_LOCATION = "Site Location";
 export const REGIONAL = "Regional";
 export const DISTRIBUTED_SEISMICITY = "Distributed Seismicity";
 export const COMPONENT = "Component";
@@ -159,6 +162,9 @@ export const MAXIMUM = "Max";
 export const DISTRIBUTION = "distribution";
 export const MORE_DETAIL = "More detail";
 export const MEDIAN = "Median";
+export const SCENARIO_RUPTURES = "Scenario Ruptures";
+export const DISCLAIMER = "Disclaimer";
+export const SCENARIO_RUPTURE_METADATA = "Rupture metadata";
 
 // Navbar
 export const LOGIN = "Log in";
@@ -177,7 +183,7 @@ export const REGIONAL_MAP_DESCRIPTION =
   "Source locations (Lichfield, 2014) and historical events (Geonet, 2003-present)";
 export const REGIONAL_MAP_IMG_ALT = "Regional Map";
 export const VS30_MAP_DESCRIPTION =
-  "Regional Vs30 predictions in the vicinity of the site. (Foster et al. 2019)";
+  "Regional Vs30 predictions in the vicinity of the site (Foster et al. 2019)";
 export const VS30_MAP_IMG_ALT = "Vs30 Map";
 export const EPSILON_DISAGG_PLOT_ALT = "Epsilon disagg plot";
 export const SOURCE_DISAGG_PLOT_ALT = "Source disagg plot";
@@ -205,6 +211,13 @@ export const ANNUAL_RATE_OF_EXCEEDANCE = "Annual rate of exceedance";
 export const LOWER_PERCENTILE = "16<sup>th</sup> percentile";
 export const UPPER_PERCENTILE = "84<sup>th</sup> percentile";
 export const ROTD_FIFTY = "RotD50";
+export const NZ_CODE_DISCLAIMER =
+  "NZS 1170.5 IM values have been converted from Larger to RotD50";
+export const METADATA_Z1P0_LABEL = "Z1p0";
+export const METADATA_Z2P5_LABEL = "Z2p5";
+export const NZS_1170P5_Z_FACTOR = "NZS 1170.5 Z Factor";
+export const NZS_1170P5_SOIL_CLASS = "NZS 1170.5 Soil Class";
+export const NZTA_SOIL_CLASS = "NZTA Soil Class";
 
 // Disaggregation labels
 export const MEAN_MAGNITUDE = "Mean Magnitude";
@@ -233,8 +246,8 @@ export const CUMULATIVE_PROB_CDF = "Cumulative Probability, CDF";
 export const SHORTEN_SELECTED_GM = "Selected GMs";
 export const SELECTED_GM = "Selected Ground Motions";
 export const REALISATIONS = "Realisations";
-export const GCIM = "GCIM";
-export const KS_BOUNDS = "KS_BOUNDS";
+export const GCIM = "Target Distribution";
+export const KS_BOUNDS = "KS bounds";
 export const SPECTRAL_ACCELERATION = "Spectral acceleration";
 export const BOUNDS = "Bounds";
 export const RUPTURE_DISTANCE = "Rupture distance";
@@ -259,7 +272,7 @@ export const MW_RRUP_PLOT_DISAGG_MEAN_VALUES_LABEL =
 export const MW_RRUP_PLOT_SELECTED_GMS_METADATA_LABEL =
   "Mean M<sub>w</sub>-R<sub>rup</sub> of selected GMs<br>16<sup>th</sup> to 84<sup>th</sup> percentile M<sub>w</sub>-R<sub>rup</sub> limits";
 export const MW_RRUP_PLOT_DROPDOWN_LABEL =
-  "Magnitude and Rupture distance (M<sub>w</sub>-R<sub>rup</sub>) distribution";
+  "Magnitude and rupture distance (M<sub>w</sub>-R<sub>rup</sub>) distribution";
 
 // Select's placeholders
 export const PLACEHOLDER_NOT_AVAILABLE = "Not available";
@@ -276,6 +289,7 @@ export const PLACEHOLDER_SELECT_PERIOD = "Select period...";
 export const PLACEHOLDER_NOT_APPLICABLE = "N/A";
 export const PLACEHOLDER_SELECT_COMPONENT = "Select component...";
 
+export const PERIOD = "Period";
 // Units in labels
 export const SECONDS_UNIT = "(s)";
 export const KILOMETRE_UNIT = "(km)";
@@ -283,7 +297,10 @@ export const METRE_PER_SECOND_UNIT = "(m/s)";
 export const YEARS_UNIT = "(years)";
 export const PERCENTAGE_UNIT = "(%)";
 export const GRAVITY_UNIT = "(g)";
+// Symbols in labels
 export const MAGNITUDE_SYMBOL = "Mw";
+export const SPECTRAL_ACCELERATION_SYMBOL = "SA";
+export const PERIOD_SYMBOL = "T";
 
 // Units in adornment - units in input field
 export const ADORNMENT_KILOMETRE_UNIT = "km";
@@ -294,6 +311,7 @@ export const APP_LOCATION_DEFAULT_ENSEMBLE = "v20p5emp";
 export const APP_UI_CONTRIB_TABLE_ROWS = 10;
 export const APP_UI_VS30_DP = 1;
 export const APP_UI_SIGFIGS = 4;
+export const APP_UI_DECIFIGS = 4;
 export const APP_UI_UHS_RATETABLE_RATE_SIGFIGS = 3;
 
 export const UHS_TABLE_MESSAGE = "No rates added";
@@ -408,7 +426,7 @@ export const SCENARIO_VIEWER_GUIDE_MSG =
 export const SCENARIO_VIEWER_GUIDE_INSTRUCTION = [
   "Select an IM Component",
   "Click the Compute button",
-  "Select scenarios to plot when available",
+  "Select scenario ruptures to plot when available",
 ];
 
 // Project Tabs
@@ -442,7 +460,7 @@ export const PROJECT_DISAGG_INSTRUCTION_TABLE = [
 export const PROJECT_SCENARIO_VIEWER_GUIDE_INSTRUCTION = [
   "Select an IM Component",
   "Click the Get button",
-  "Select scenarios to plot when available",
+  "Select scenario ruptures to plot when available",
 ];
 
 // Error Messages
@@ -533,6 +551,8 @@ export const PLOT_CONFIG = {
   doubleClick: "autosize",
 };
 
+export const PLOT_LINE_WIDTH = 2;
+
 // Constant Tooltips Message
 export const TOOLTIP_MESSAGES = {
   SITE_SELECTION_LOCATION:
@@ -606,18 +626,18 @@ export const TOOLTIP_URL = {
 
 // GMS Labels
 export const GMS_LABELS = {
-  mag: "Magnitude (Mw)",
-  rrup: "Rupture distance (R<sub>rup</sub>)",
-  sf: "Scale factor (SF)",
-  vs30: "30m-averaged shear-wave velocity (V<sub>s30</sub>)",
+  mag: "Magnitude, Mw",
+  rrup: "Rupture distance, R<sub>rup</sub>",
+  sf: "Scale factor, SF",
+  vs30: "30m-averaged shear-wave velocity, V<sub>s30</sub>",
 };
 
 // Projects' Metadata
-export const NZTA_SOIL_CLASS = {
+export const NZTA_SOIL_CLASS_OBJ = {
   A: "A - rock",
   D: "D - soft or deep soil",
 };
-export const NZS_SOIL_CLASS = {
+export const NZS_SOIL_CLASS_OBJ = {
   A: "A - rock",
   B: "B - weak rock",
   C: "C - intermediate soil",

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, Fragment } from "react";
 
 import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import { makeStyles } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -11,6 +13,7 @@ import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 
 import "assets/style/TwoColumnView.css";
+import "katex/dist/katex.min.css";
 
 // Reference
 // https://webpack.js.org/guides/dependency-management/#requirecontext
@@ -183,9 +186,11 @@ const FrameworkDocView = () => {
           <div className="two-column-view-right-pane">
             {selectedDoc["header"] !== "" && selectedDoc["body"] !== "" ? (
               <ReactMarkdown
-                source={
+                children={
                   markdownFilesObj[selectedDoc["header"]][selectedDoc["body"]]
                 }
+                remarkPlugins={[remarkMath]}
+                rehypePlugins={[rehypeKatex]}
               />
             ) : null}
           </div>

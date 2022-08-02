@@ -8,14 +8,14 @@ import { GlobalContext } from "context";
 import * as CONSTANTS from "constants/Constants";
 
 import { GuideTooltip } from "components/common";
-import { createSelectArray, isPSANotInIMList } from "utils/Utils";
+import { createAnnualExceedanceArray, isPSANotInIMList } from "utils/Utils";
 
 const UHSSection = () => {
   const {
-    projectUHSRPs,
-    setProjectSelectedUHSRP,
-    setProjectUHSGetClick,
     projectIMs,
+    projectUHSRPs,
+    setProjectUHSGetClick,
+    setProjectSelectedUHSRP,
     projectSiteSelectionGetClick,
   } = useContext(GlobalContext);
 
@@ -28,7 +28,7 @@ const UHSSection = () => {
   useEffect(() => {
     setLocalRPs([]);
     if (projectUHSRPs.length !== 0) {
-      setRPOptions(createSelectArray(projectUHSRPs));
+      setRPOptions(createAnnualExceedanceArray(projectUHSRPs));
     } else {
       setRPOptions([]);
     }
@@ -54,7 +54,7 @@ const UHSSection = () => {
             htmlFor="uhs-return-period"
             className="control-label"
           >
-            {CONSTANTS.RETURN_PERIOD} {CONSTANTS.YEARS_UNIT}
+            {CONSTANTS.ANNUAL_EXCEEDANCE_RATE} (years<sup>-1</sup>)
           </label>
           <Select
             id="uhs-return-period"

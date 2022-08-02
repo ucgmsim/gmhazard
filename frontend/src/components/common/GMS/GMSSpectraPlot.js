@@ -1,8 +1,9 @@
-import React from "react";
+import React, { memo } from "react";
 
 import Plot from "react-plotly.js";
 
 import * as CONSTANTS from "constants/Constants";
+import { createAxisLabel } from "utils/Utils";
 
 import "assets/style/GMSPlot.css";
 
@@ -17,19 +18,35 @@ const GMSSpectraPlot = ({ GMSSpectraData }) => {
       layout={{
         xaxis: {
           type: "log",
-          title: { text: "Period, T (s)" },
-          showexponent: "first",
-          exponentformat: "power",
-          autorange: true,
-        },
-        yaxis: {
-          type: "log",
           title: {
-            text: `${CONSTANTS.SPECTRAL_ACCELERATION} ${CONSTANTS.GRAVITY_UNIT}`,
+            text: createAxisLabel(
+              CONSTANTS.PERIOD,
+              CONSTANTS.PERIOD_SYMBOL,
+              CONSTANTS.SECONDS_UNIT
+            ),
           },
           showexponent: "first",
           exponentformat: "power",
           autorange: true,
+          showline: true,
+          linewidth: CONSTANTS.PLOT_LINE_WIDTH,
+          zeroline: false,
+        },
+        yaxis: {
+          type: "log",
+          title: {
+            text: createAxisLabel(
+              CONSTANTS.SPECTRAL_ACCELERATION,
+              CONSTANTS.SPECTRAL_ACCELERATION_SYMBOL,
+              CONSTANTS.GRAVITY_UNIT
+            ),
+          },
+          showexponent: "first",
+          exponentformat: "power",
+          autorange: true,
+          showline: true,
+          linewidth: CONSTANTS.PLOT_LINE_WIDTH,
+          zeroline: false,
         },
         autosize: true,
         margin: CONSTANTS.PLOT_MARGIN,
@@ -40,4 +57,4 @@ const GMSSpectraPlot = ({ GMSSpectraData }) => {
   );
 };
 
-export default GMSSpectraPlot;
+export default memo(GMSSpectraPlot);

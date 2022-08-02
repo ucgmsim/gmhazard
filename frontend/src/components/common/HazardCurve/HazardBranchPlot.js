@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import Plot from "react-plotly.js";
 
@@ -27,7 +27,6 @@ const HazardBranchPlot = ({
       scatterArr.push({
         x: curPlotData.index,
         y: curPlotData.values,
-        type: "scatter",
         mode: "lines",
         line: { color: "gray", width: 0.5 },
         name: `${CONSTANTS.BRANCHES}`,
@@ -48,7 +47,6 @@ const HazardBranchPlot = ({
     scatterArr.push({
       x: ensTotalData.index,
       y: ensTotalData.values,
-      type: "scatter",
       mode: "lines",
       line: { color: "red" },
       name: `${CONSTANTS.ENSEMBLE_MEAN}`,
@@ -59,13 +57,44 @@ const HazardBranchPlot = ({
         "%{yaxis.title.text}: %{y}<extra></extra>",
     });
 
+    // For Percentiles
+    if (percentileData) {
+      const percentile16 = getPlotData(percentileData["16th"]);
+      const percentile84 = getPlotData(percentileData["84th"]);
+      scatterArr.push(
+        {
+          x: percentile16.index,
+          y: percentile16.values,
+          mode: "lines",
+          line: { color: "red", dash: "dash" },
+          name: `${CONSTANTS.LOWER_PERCENTILE}`,
+          hoverinfo: "none",
+          hovertemplate:
+            `<b>${CONSTANTS.LOWER_PERCENTILE}</b><br><br>` +
+            "%{xaxis.title.text}: %{x}<br>" +
+            "%{yaxis.title.text}: %{y}<extra></extra>",
+        },
+        {
+          x: percentile84.index,
+          y: percentile84.values,
+          mode: "lines",
+          line: { color: "red", dash: "dash" },
+          name: `${CONSTANTS.UPPER_PERCENTILE}`,
+          hoverinfo: "none",
+          hovertemplate:
+            `<b>${CONSTANTS.UPPER_PERCENTILE}</b><br><br>` +
+            "%{xaxis.title.text}: %{x}<br>" +
+            "%{yaxis.title.text}: %{y}<extra></extra>",
+        }
+      );
+    }
+
     // For NZS1170P5 code
     if (nzs1170p5Data) {
       const nzs1170p5 = getPlotData(nzs1170p5Data);
       scatterArr.push({
         x: nzs1170p5.values,
         y: nzs1170p5.index,
-        type: "scatter",
         mode: "lines+markers",
         name: `${CONSTANTS.NZS1170P5}`,
         marker: {
@@ -90,7 +119,6 @@ const HazardBranchPlot = ({
         scatterArr.push({
           x: nzta.values,
           y: nzta.index,
-          type: "scatter",
           mode: "lines+markers",
           name: `${CONSTANTS.NZTA}`,
           marker: {
@@ -108,40 +136,6 @@ const HazardBranchPlot = ({
       }
     }
 
-    // For Percentiles
-    if (percentileData) {
-      const percentile16 = getPlotData(percentileData["16th"]);
-      const percentile84 = getPlotData(percentileData["84th"]);
-      scatterArr.push(
-        {
-          x: percentile16.index,
-          y: percentile16.values,
-          type: "scatter",
-          mode: "lines",
-          line: { color: "red", dash: "dash" },
-          name: `${CONSTANTS.LOWER_PERCENTILE}`,
-          hoverinfo: "none",
-          hovertemplate:
-            `<b>${CONSTANTS.LOWER_PERCENTILE}</b><br><br>` +
-            "%{xaxis.title.text}: %{x}<br>" +
-            "%{yaxis.title.text}: %{y}<extra></extra>",
-        },
-        {
-          x: percentile84.index,
-          y: percentile84.values,
-          type: "scatter",
-          mode: "lines",
-          line: { color: "red", dash: "dash" },
-          name: `${CONSTANTS.UPPER_PERCENTILE}`,
-          hoverinfo: "none",
-          hovertemplate:
-            `<b>${CONSTANTS.UPPER_PERCENTILE}</b><br><br>` +
-            "%{xaxis.title.text}: %{x}<br>" +
-            "%{yaxis.title.text}: %{y}<extra></extra>",
-        }
-      );
-    }
-
     return (
       <Plot
         className={"hazard-plot"}
@@ -152,6 +146,9 @@ const HazardBranchPlot = ({
             title: { text: hazardData["im"] },
             showexponent: "first",
             exponentformat: "power",
+            showline: true,
+            linewidth: CONSTANTS.PLOT_LINE_WIDTH,
+            zeroline: false,
           },
           yaxis: {
             type: "log",
@@ -159,6 +156,9 @@ const HazardBranchPlot = ({
             showexponent: "first",
             exponentformat: "power",
             range: [-5, 0],
+            showline: true,
+            linewidth: CONSTANTS.PLOT_LINE_WIDTH,
+            zeroline: false,
           },
           autosize: true,
           margin: CONSTANTS.PLOT_MARGIN,
@@ -185,4 +185,4 @@ const HazardBranchPlot = ({
   return <ErrorMessage />;
 };
 
-export default HazardBranchPlot;
+export default memo(HazardBranchPlot);

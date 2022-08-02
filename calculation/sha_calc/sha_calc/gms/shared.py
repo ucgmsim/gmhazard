@@ -90,7 +90,9 @@ def query_non_parametric_cdf(
     y: array of floats
         The corresponding y-values
     """
-    assert cdf_y[0] >= 0.0 and np.isclose(cdf_y[-1], 1.0, rtol=1e-2)
+    assert cdf_y[0] >= 0.0 and np.isclose(
+        cdf_y[-1], 1.0, rtol=1e-2
+    ), f"cdf_y[0] = {cdf_y[0]}, cdf_y[-1] = {cdf_y[-1]}"
 
     mask, y = cdf_x <= x[:, np.newaxis], []
     for ix in range(x.size):

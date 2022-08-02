@@ -6,6 +6,7 @@ import GuideTooltip from "./GuideTooltip";
 import IMCustomSelect from "./IMCustomSelect";
 import Loading from "./Loading";
 import LoadingSpinner from "./LoadingSpinner";
+import MetadataBox from "./MetadataBox";
 import ModalComponent from "./ModalComponent";
 import SingleColumnView from "./SingleColumnView";
 import TwoColumnView from "./TwoColumnView";
@@ -14,11 +15,12 @@ import PermissionDashboard from "./PermissionConfig/PermissionDashboard";
 import ContributionTable from "./Disaggregation/ContributionTable";
 import HazardBranchPlot from "./HazardCurve/HazardBranchPlot";
 import HazardEnsemblePlot from "./HazardCurve/HazardEnsemblePlot";
-import HazardCurveMetadata from "./HazardCurve/HazardCurveMetadata";
+import NZTADisclaimerModal from "./HazardCurve/NZTADisclaimerModal";
+
 import UHSPlot from "./UHS/UHSPlot";
 import UHSBranchPlot from "./UHS/UHSBranchPlot";
+import ScenarioRuptureMetaTable from "./Scenarios/ScenarioRuptureMetaTable";
 import ScenarioPlot from "./Scenarios/ScenarioPlot";
-
 import GMSAvailableGMPlot from "./GMS/GMSAvailableGMPlot";
 import GMSCausalParamPlot from "./GMS/GMSCausalParamPlot";
 import GMSDisaggDistributionPlot from "./GMS/GMSDisaggDistributionPlot";
@@ -37,6 +39,7 @@ export {
   IMCustomSelect,
   Loading,
   LoadingSpinner,
+  MetadataBox,
   ModalComponent,
   SingleColumnView,
   TwoColumnView,
@@ -44,9 +47,10 @@ export {
   ContributionTable,
   HazardBranchPlot,
   HazardEnsemblePlot,
-  HazardCurveMetadata,
+  NZTADisclaimerModal,
   UHSPlot,
   UHSBranchPlot,
+  ScenarioRuptureMetaTable,
   ScenarioPlot,
   GMSAvailableGMPlot,
   GMSCausalParamPlot,

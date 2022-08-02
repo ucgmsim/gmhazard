@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import Plot from "react-plotly.js";
 
@@ -29,7 +29,6 @@ const HazardEnsemblePlot = ({
       {
         x: plotData["fault"].index,
         y: plotData["fault"].values,
-        type: "scatter",
         mode: "lines",
         name: `${CONSTANTS.FAULT}`,
         line: { color: "black" },
@@ -43,7 +42,6 @@ const HazardEnsemblePlot = ({
       {
         x: plotData["ds"].index,
         y: plotData["ds"].values,
-        type: "scatter",
         mode: "lines",
         name: CONSTANTS.DISTRIBUTED_SEISMICITY,
         line: { color: "green" },
@@ -57,7 +55,6 @@ const HazardEnsemblePlot = ({
       {
         x: plotData["total"].index,
         y: plotData["total"].values,
-        type: "scatter",
         mode: "lines",
         name: `${CONSTANTS.TOTAL}`,
         line: { color: "red" },
@@ -69,13 +66,46 @@ const HazardEnsemblePlot = ({
       },
     ];
 
+    // Percentiles
+    if (percentileData) {
+      const percentile16 = getPlotData(percentileData["16th"]);
+      const percentile84 = getPlotData(percentileData["84th"]);
+      // Percentile 16
+      scatterArr.push(
+        {
+          x: percentile16.index,
+          y: percentile16.values,
+          mode: "lines",
+          name: `${CONSTANTS.LOWER_PERCENTILE}`,
+          line: { color: "red", dash: "dash" },
+          hoverinfo: "none",
+          hovertemplate:
+            `<b>${CONSTANTS.LOWER_PERCENTILE}</b><br><br>` +
+            "%{xaxis.title.text}: %{x}<br>" +
+            "%{yaxis.title.text}: %{y}<extra></extra>",
+        },
+        // Percentile 84
+        {
+          x: percentile84.index,
+          y: percentile84.values,
+          mode: "lines",
+          name: `${CONSTANTS.UPPER_PERCENTILE}`,
+          line: { color: "red", dash: "dash" },
+          hoverinfo: "none",
+          hovertemplate:
+            `<b>${CONSTANTS.UPPER_PERCENTILE}</b><br><br>` +
+            "%{xaxis.title.text}: %{x}<br>" +
+            "%{yaxis.title.text}: %{y}<extra></extra>",
+        }
+      );
+    }
+
     // NZS1170P5 code
     if (nzs1170p5Data) {
       const nzs1170p5 = getPlotData(nzs1170p5Data);
       scatterArr.push({
         x: nzs1170p5.values,
         y: nzs1170p5.index,
-        type: "scatter",
         mode: "lines+markers",
         name: `${CONSTANTS.NZS1170P5}`,
         marker: {
@@ -100,7 +130,6 @@ const HazardEnsemblePlot = ({
         scatterArr.push({
           x: nzta.values,
           y: nzta.index,
-          type: "scatter",
           mode: "lines+markers",
           name: `${CONSTANTS.NZTA}`,
           marker: {
@@ -118,42 +147,6 @@ const HazardEnsemblePlot = ({
       }
     }
 
-    // Percentiles
-    if (percentileData) {
-      const percentile16 = getPlotData(percentileData["16th"]);
-      const percentile84 = getPlotData(percentileData["84th"]);
-      // Percentile 16
-      scatterArr.push(
-        {
-          x: percentile16.index,
-          y: percentile16.values,
-          type: "scatter",
-          mode: "lines",
-          name: `${CONSTANTS.LOWER_PERCENTILE}`,
-          line: { color: "red", dash: "dash" },
-          hoverinfo: "none",
-          hovertemplate:
-            `<b>${CONSTANTS.LOWER_PERCENTILE}</b><br><br>` +
-            "%{xaxis.title.text}: %{x}<br>" +
-            "%{yaxis.title.text}: %{y}<extra></extra>",
-        },
-        // Percentile 84
-        {
-          x: percentile84.index,
-          y: percentile84.values,
-          type: "scatter",
-          mode: "lines",
-          name: `${CONSTANTS.UPPER_PERCENTILE}`,
-          line: { color: "red", dash: "dash" },
-          hoverinfo: "none",
-          hovertemplate:
-            `<b>${CONSTANTS.UPPER_PERCENTILE}</b><br><br>` +
-            "%{xaxis.title.text}: %{x}<br>" +
-            "%{yaxis.title.text}: %{y}<extra></extra>",
-        }
-      );
-    }
-
     return (
       <Plot
         className={"hazard-plot"}
@@ -164,6 +157,9 @@ const HazardEnsemblePlot = ({
             title: { text: hazardData["im"] },
             showexponent: "first",
             exponentformat: "power",
+            showline: true,
+            linewidth: CONSTANTS.PLOT_LINE_WIDTH,
+            zeroline: false,
           },
           yaxis: {
             type: "log",
@@ -171,6 +167,9 @@ const HazardEnsemblePlot = ({
             showexponent: "first",
             exponentformat: "power",
             range: [-5, 0],
+            showline: true,
+            linewidth: CONSTANTS.PLOT_LINE_WIDTH,
+            zeroline: false,
           },
           autosize: true,
           margin: CONSTANTS.PLOT_MARGIN,
@@ -197,4 +196,4 @@ const HazardEnsemblePlot = ({
   return <ErrorMessage />;
 };
 
-export default HazardEnsemblePlot;
+export default memo(HazardEnsemblePlot);

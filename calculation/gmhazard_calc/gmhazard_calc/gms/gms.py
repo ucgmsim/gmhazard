@@ -77,12 +77,10 @@ def run_ensemble_gms(
     IMs = IMs[IMs != IMj]
     if im_weights is None:
         im_weights = default_IM_weights(IMj, IMs)
-    else:
-        im_weights.index = to_im_list(im_weights.index)
 
     # Sanity checks
     assert np.all(
-        np.isin(IMs, im_weights.index)
+        np.isin(to_string_list(IMs), im_weights.index)
     ), "IM weights are not specified for all IMs"
     assert np.isclose(np.sum(im_weights), 1.0), "IM weights need to sum to 1.0"
     ensemble.check_im(IMj)
@@ -174,6 +172,15 @@ def run_ensemble_gms(
     IMi_gcims = {}
     im_ensembles = list({ensemble.get_im_ensemble(IMi.im_type) for IMi in IMs})
 
+    # Select the random ruptures to use for realisation generation
+    # Shape: [N_GMs, N_Replica]
+    rel_ruptures = np.random.choice(
+        P_Rup_IMj.index.values.astype(str),
+        size=n_gms * n_replica,
+        replace=True,
+        p=P_Rup_IMj.values,
+    ).reshape((n_gms, n_replica))
+
     # Computation of GCIM distribution and random realisation generation
     # Overview of main steps:
     # Iterate over each IMEnsemble (i.e. IMi set) and compute
@@ -192,9 +199,8 @@ def run_ensemble_gms(
     #       For each replica_ix in n_replica:
     #           7) Select n_gms random branches using the adjusted
     #              branch weights for IMi
-    #           For each of the selected branches:
-    #               8) Select random rupture using rupture weights (at IMj=imj)
-    #               9) Using current branch & rupture lnIMi|IMj,Rup
+    #           For each of the selected branches / ruptures:
+    #               8) Using current branch & rupture lnIMi|IMj,Rup
     #                  generate random realisation
     for cur_im_ensemble in im_ensembles:
         # Get the relevant IMi for this IMEnsemble
@@ -327,12 +333,9 @@ def run_ensemble_gms(
                     cur_branch_cdf.index.values.astype(str),
                     cur_branch_cdf.values,
                 )
-                for rel_ix, cur_branch_name in enumerate(cur_sel_branches):
-                    # Select random rupture based on rupture contributions at IMj=imj
-                    cur_rupture = np.random.choice(
-                        P_Rup_IMj.index.values.astype(str), size=1, p=P_Rup_IMj.values
-                    )[0]
-
+                for rel_ix, (cur_branch_name, cur_rupture) in enumerate(
+                    zip(cur_sel_branches, rel_ruptures[:, replica_ix])
+                ):
                     # Apply mean & sigma of selected lnIMi|IMj,Rup to
                     # to correponding value of correlated vector
                     cur_branch_gcim = cur_branch_gcims[cur_branch_name][IMi]
@@ -346,9 +349,17 @@ def run_ensemble_gms(
                     ] = cur_branch_gcim.lnIMi_IMj_Rup.sigma[cur_rupture]
 
     # Convert results to dataframes (one per replica)
-    rel_IM_values = [pd.DataFrame(cur_values) for cur_values in rel_IM_values]
+    rel_IM_values = [
+        pd.DataFrame(
+            {str(cur_key): cur_value for cur_key, cur_value in cur_values.items()}
+        )
+        for cur_values in rel_IM_values
+    ]
     rel_sigma_lnIMi_IMj_Rup = [
-        pd.DataFrame(cur_sigma_values) for cur_sigma_values in rel_sigma_lnIMi_IMj_Rup
+        pd.DataFrame(
+            {str(cur_key): cur_value for cur_key, cur_value in cur_sigma_values.items()}
+        )
+        for cur_sigma_values in rel_sigma_lnIMi_IMj_Rup
     ]
 
     # IM scaling, such that IM_j=im_j for all
@@ -365,26 +376,28 @@ def run_ensemble_gms(
         cs_param_bounds=cs_param_bounds,
         sf=sf,
     )
-    gms_im_df.columns = to_im_list(gms_im_df.columns)
     assert (
         gms_im_df.shape[0] > 0
     ), "No GMs to select from after applying the causual parameter bounds"
-    assert np.allclose(gms_im_df.loc[:, IMj], im_j)
+    assert np.allclose(gms_im_df.loc[:, str(IMj)], im_j)
 
     # Compute residuals and select GMs for each replica
     R_values, sel_gms_ind = [], []
     for replica_ix in range(n_replica):
         # Compute residuals between available GMs and current set of realisations
         cur_sigma_IMi_Rup_IMj = (
-            rel_sigma_lnIMi_IMj_Rup[replica_ix].loc[:, IMs].values[:, np.newaxis, :]
+            rel_sigma_lnIMi_IMj_Rup[replica_ix]
+            .loc[:, to_string_list(IMs)]
+            .values[:, np.newaxis, :]
         )
-        cur_diff = rel_IM_values[replica_ix].loc[:, IMs].values[
+        cur_diff = rel_IM_values[replica_ix].loc[:, to_string_list(IMs)].values[
             :, np.newaxis, :
-        ] - np.log(gms_im_df.loc[:, IMs].values)
+        ] - np.log(gms_im_df.loc[:, to_string_list(IMs)].values)
         cur_misfit = pd.DataFrame(
             index=rel_IM_values[replica_ix].index,
             data=np.sum(
-                im_weights.loc[IMs].values * (cur_diff / cur_sigma_IMi_Rup_IMj) ** 2,
+                im_weights.loc[to_string_list(IMs)].values
+                * (cur_diff / cur_sigma_IMi_Rup_IMj) ** 2,
                 axis=2,
             ),
         )
@@ -398,7 +411,7 @@ def run_ensemble_gms(
         D = []
         for IMi in IMs:
             cur_d, _ = stats.kstest(
-                gms_im_df.loc[cur_selected_gms_ind, IMi].values,
+                gms_im_df.loc[cur_selected_gms_ind, str(IMi)].values,
                 lambda x: sha_calc.query_non_parametric_cdf(
                     x,
                     IMi_gcims[IMi].lnIMi_IMj.cdf.index.values,
@@ -406,7 +419,7 @@ def run_ensemble_gms(
                 ),
             )
             D.append(cur_d)
-        D = pd.Series(index=IMs, data=D)
+        D = pd.Series(index=to_string_list(IMs), data=D)
 
         # Compute the overall residual & save selected ground motions
         R_values.append(np.sum(im_weights * (D ** 2)))
@@ -475,7 +488,7 @@ def default_IM_weights(IM_j: IM, IMs: np.ndarray) -> pd.Series:
         )
         im_weights = np.ones(IMs.size, dtype=float) / IMs.size
 
-    return pd.Series(data=im_weights, index=IMs)
+    return pd.Series(data=im_weights, index=to_string_list(IMs))
 
 
 def default_causal_params(

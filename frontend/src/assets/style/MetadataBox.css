@@ -1,0 +1,23 @@
+div.custom-metadata-box {
+  width: 100%;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  color: red;
+  background-color: #e9ecef;
+  resize: none;
+}
+
+div.custom-metadata-box > p {
+  margin-bottom: 0;
+}
+
+span.metabox-disclaimer {
+  text-decoration: underline;
+}
+
+span.metabox-disclaimer:hover {
+  color: blue;
+  cursor: pointer;
+}
