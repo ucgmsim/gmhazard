@@ -34,7 +34,7 @@ MODEL_CONFIG_PATH = (
     / "22p5.yaml"
 )
 EMPIRICAL_WEIGHT_CONFIG_PATH = (
-    SCRIPTS_DIR / "ensemble_creation" / "gmm_weights_21p10.yaml"
+    SCRIPTS_DIR / "ensemble_creation" / "gmm_weights_22p5.yaml"
 )
 
 
@@ -163,7 +163,7 @@ def create_project(
 
         # Generate the PSHA project data and GMS
         psha.gen_psha_project_data(project_dir, n_procs=n_procs, use_mp=use_mp)
-        pg.gen_gms_project_data(project_dir, n_procs=n_procs)
+        # pg.gen_gms_project_data(project_dir, n_procs=n_procs)
     except Exception as ex:
         print(f"Failed to create new project, due to an exception:\n{ex}")
         print(f"Traceback:\n{traceback.format_exc()}")
@@ -417,6 +417,8 @@ def generate_dbs(
         assert (
             ds_imdbs_result.returncode == 0
         ), "Distributed Seismicity IMDB generation failed"
+
+    im_types.append("AI")
 
     flt_erf_base_fn = FLT_ERF_MAPPING[flt_erf_version]
 

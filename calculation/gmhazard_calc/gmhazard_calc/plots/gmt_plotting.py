@@ -319,7 +319,7 @@ def plot_disagg(
     ]
     TYPE_LEGEND_EXPAND = 0.35
     TYPE_COLOURS = ["blue", "green"]
-    TYPE_LABELS = ["Fault", "DS"]
+    TYPE_LABELS = ["Fault", "Distributed Seismicity"]
 
     out_dir = Path(out_ffp_no_ext).parent
     out_name = Path(out_ffp_no_ext).name
