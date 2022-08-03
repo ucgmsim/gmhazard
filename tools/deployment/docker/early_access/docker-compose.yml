@@ -3,8 +3,6 @@
 version: "3.8"
 
 networks:
-  gmhazard_ea:
-    driver: bridge
   backend_ea:
     driver: bridge
 
@@ -29,7 +27,7 @@ services:
       - backend_ea
   intermediate_api:
     image: intermediate_api:early_access
-    container_name: intermediate_api-ea
+    container_name: intermediate_api_ea
     restart: on-failure:5
     build:
       context: ../../../../apis/intermediate_api
@@ -42,6 +40,7 @@ services:
       - ALGORITHMS=${ALGORITHMS_EA}
       - CORE_API_SECRET=${CORE_API_SECRET_EA}
       - PROJECT_API_SECRET=${PROJECT_API_SECRET_EA}
+      - SALT=${SALT_EA}
       - DOWNLOAD_URL_SECRET_KEY_CORE_API=${DOWNLOAD_URL_SECRET_KEY_CORE_API_EA}
       - DOWNLOAD_URL_SECRET_KEY_PROJECT_API=${DOWNLOAD_URL_SECRET_KEY_PROJECT_API_EA}
       - CORE_API_BASE=${CORE_API_BASE_EA}
@@ -60,7 +59,6 @@ services:
       - SLACK_TOKEN=${SLACK_TOKEN_EA}
       - SLACK_CHANNEL=${SLACK_CHANNEL_EA}
     networks:
-      - gmhazard_ea
       - backend_ea
     depends_on:
       - userdb_ea
@@ -68,28 +66,6 @@ services:
       - ${INTER_API_PORT_EA}
     ports:
       - ${INTER_API_PORT_EA}:${INTER_API_PORT_EA}
-  frontend:
-    image: frontend:early_access
-    build: ../../../../frontend
-    restart: on-failure:5
-    environment:
-      - REACT_APP_ENV=EA
-      - REACT_APP_INTERMEDIATE_API_URL=${BASE_URL_EA}
-      - PORT=${FRONT_END_PORT_EA}
-      - REACT_APP_BUILD_DATE=${BUILD_DATE}
-      - REACT_APP_GIT_SHA=${GIT_SHA}
-      - REACT_APP_AUTH0_DOMAIN=${REACT_APP_AUTH0_DOMAIN_EA}
-      - REACT_APP_AUTH0_CLIENTID=${REACT_APP_AUTH0_CLIENTID_EA}
-      - REACT_APP_AUTH0_AUDIENCE=${REACT_APP_AUTH0_AUDIENCE_EA}
-      - REACT_APP_MAP_BOX_TOKEN=${REACT_APP_MAP_BOX_TOKEN_EA}
-    stdin_open: true
-    tty: true
-    networks:
-      - gmhazard_ea
-    expose:
-      - ${FRONT_END_PORT_EA}
-    ports:
-      - ${FRONT_END_PORT_EA}:${FRONT_END_PORT_EA}
 
 volumes:
   db_data:
