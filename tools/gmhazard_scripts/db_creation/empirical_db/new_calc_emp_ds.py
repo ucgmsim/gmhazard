@@ -75,7 +75,13 @@ def compute_meta_model(
     gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
         GMM,
         classdef.TectType["ACTIVE_SHALLOW"]
-        if tect_type != "ACTIVE_SHALLOW" and GMM.name in ("CB_10", "CB_12", "AS_16",)
+        if tect_type != "ACTIVE_SHALLOW"
+        and GMM.name
+        in (
+            "CB_10",
+            "CB_12",
+            "AS_16",
+        )
         else classdef.TectType[tect_type],
         rupture_context_df,
         str(im),
@@ -93,11 +99,14 @@ def compute_meta_model(
     # Relabel the columns
     # PGA_mean -> PGA
     gmm_calculated_df.columns = np.char.rstrip(
-        gmm_calculated_df.columns.values.astype(str), "_mean",
+        gmm_calculated_df.columns.values.astype(str),
+        "_mean",
     )
     # PGA_std_Total -> PGA_sigma
     gmm_calculated_df.columns = np.char.replace(
-        gmm_calculated_df.columns.values.astype(str), "_std_Total", "_sigma",
+        gmm_calculated_df.columns.values.astype(str),
+        "_std_Total",
+        "_sigma",
     )
     # results.append(gmm_calculated_df)
     return gmm_calculated_df
@@ -169,7 +178,9 @@ def calculate_emp_ds(
                     meta_GMMs = None
                     if model_weights_ffp:
                         meta_GMMs = meta_model.load_weights(
-                            model_weights_ffp, str(im), classdef.TectType[tect_type],
+                            model_weights_ffp,
+                            str(im),
+                            classdef.TectType[tect_type],
                         )
                         # Transform the key, model from string into classdef.GMM enum
                         meta_GMMs = {
@@ -193,7 +204,12 @@ def calculate_emp_ds(
                                 GMM,
                                 classdef.TectType["ACTIVE_SHALLOW"]
                                 if tect_type != "ACTIVE_SHALLOW"
-                                and GMM.name in ("CB_10", "CB_12", "AS_16",)
+                                and GMM.name
+                                in (
+                                    "CB_10",
+                                    "CB_12",
+                                    "AS_16",
+                                )
                                 else classdef.TectType[tect_type],
                                 rupture_context_df,
                                 str(im),
@@ -214,7 +230,8 @@ def calculate_emp_ds(
                             # Relabel the columns
                             # PGA_mean -> PGA
                             gmm_calculated_df.columns = np.char.rstrip(
-                                gmm_calculated_df.columns.values.astype(str), "_mean",
+                                gmm_calculated_df.columns.values.astype(str),
+                                "_mean",
                             )
                             # PGA_std_Total -> PGA_sigma
                             gmm_calculated_df.columns = np.char.replace(
@@ -251,7 +268,8 @@ def parse_args():
     parser.add_argument("vs30_file")
     parser.add_argument("output_dir")
     parser.add_argument(
-        "--z-file", help="File name of the Z data",
+        "--z-file",
+        help="File name of the Z data",
     )
     parser.add_argument(
         "--periods",
@@ -275,7 +293,10 @@ def parse_args():
         help="model weights dictionary to specify which model to use for each tect-type",
     )
     parser.add_argument(
-        "--suffix", "-s", help="suffix for the end of the imdb files", default=None,
+        "--suffix",
+        "-s",
+        help="suffix for the end of the imdb files",
+        default=None,
     )
 
     return parser.parse_args()
