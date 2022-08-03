@@ -78,7 +78,7 @@ class GMDataset:
         self,
         site_info: site.SiteInfo,
         IMs: np.ndarray,
-        filter_params: CausalParamBounds = None,
+        cs_param_bounds: CausalParamBounds = None,
         sf: pd.Series = None,
     ) -> pd.DataFrame:
         """
@@ -98,7 +98,7 @@ class GMDataset:
             Site of interest
         IMs: array of IM
             The IMs of interest
-        filter_params: CausalFilterParams, optional
+        cs_param_bounds: CausalFilterParams, optional
             The causal filter parameters to use
         sf: series, optional
             The scaling factor for each GM, only relevant for

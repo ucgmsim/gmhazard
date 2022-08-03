@@ -12,3 +12,12 @@ div.custom-metadata-box {
 div.custom-metadata-box > p {
   margin-bottom: 0;
 }
+
+span.metabox-disclaimer {
+  text-decoration: underline;
+}
+
+span.metabox-disclaimer:hover {
+  color: blue;
+  cursor: pointer;
+}

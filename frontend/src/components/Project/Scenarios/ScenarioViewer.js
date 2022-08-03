@@ -13,7 +13,7 @@ import {
   GuideMessage,
   ErrorMessage,
   ScenarioPlot,
-  MetadataTable,
+  ScenarioRuptureMetaTable,
 } from "components/common";
 import { getProjectScenario } from "apis/ProjectAPI";
 import { handleErrors, APIQueryBuilder, createStationID } from "utils/Utils";
@@ -61,6 +61,8 @@ const ScenarioViewer = () => {
     if (projectSiteSelectionGetClick !== null) {
       setProjectScenarioGetClick(null);
       setShowErrorMessage({ isError: false, errorCode: null });
+      setRowsToggled(true);
+      setToggleText(CONSTANTS.SHOW_MORE);
     }
   }, [projectSiteSelectionGetClick]);
 
@@ -76,6 +78,8 @@ const ScenarioViewer = () => {
       setIsLoading(true);
       setProjectScenarioData(null);
       setShowErrorMessage({ isError: false, errorCode: null });
+      setRowsToggled(true);
+      setToggleText(CONSTANTS.SHOW_MORE);
 
       let token = null;
       const queryString = APIQueryBuilder({
@@ -172,7 +176,7 @@ const ScenarioViewer = () => {
               />
             )}
         </Tab>
-        <Tab eventKey="table" title={CONSTANTS.SOURCE_CONTRIBUTIONS}>
+        <Tab eventKey="table" title={CONSTANTS.SCENARIO_RUPTURE_METADATA}>
           {projectScenarioGetClick === null && (
             <GuideMessage
               header={CONSTANTS.SCENARIOS}
@@ -190,7 +194,9 @@ const ScenarioViewer = () => {
             projectScenarioData !== null &&
             showErrorMessage.isError === false && (
               <Fragment>
-                <MetadataTable metadata={projectScenarioData["metadata"]} />
+                <ScenarioRuptureMetaTable
+                  metadata={projectScenarioData["rupture_metadata"]}
+                />
                 <button
                   className="btn btn-info hazard-disagg-contrib-button"
                   onClick={() => rowToggle()}
