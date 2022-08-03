@@ -100,6 +100,11 @@ def process_station_gms_config_comb(
             range for this site, skipping!"
         )
         return
+    except AssertionError as ex:
+        print(
+            f"\tFailed to compute GMS for gms id {gms_id}, site {site_info.station_name}, IM {IMs} and "
+            f"exceedance {exceedance} due an assert error:\n{ex}")
+        return
 
 
 def _get_gms_ims(IMj: str, im_strings: List[str], ensemble: gc.gm_data.Ensemble):
