@@ -37,7 +37,9 @@ const ScenarioRuptureMetaTable = ({ metadata }) => {
           <thead>
             <tr>
               <th scope="col">{CONSTANTS.NAME}</th>
-              <th scope="col">{CONSTANTS.ANNUAL_RECURRENCE_RATE}</th>
+              <th scope="col">
+                {CONSTANTS.RUPTURE_RATE} (yr<sup>-1</sup>)
+              </th>
               <th scope="col">{CONSTANTS.MAGNITUDE}</th>
               <th scope="col">
                 {CONSTANTS.RRUP} {CONSTANTS.KILOMETRE_UNIT}
