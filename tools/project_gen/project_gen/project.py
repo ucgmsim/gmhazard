@@ -3,7 +3,6 @@ import traceback
 import os
 from typing import Dict, List, Union, Sequence
 from pathlib import Path
-import time
 
 import git
 import pandas as pd
@@ -163,8 +162,8 @@ def create_project(
             return
 
         # Generate the PSHA project data and GMS
-        # psha.gen_psha_project_data(project_dir, n_procs=n_procs, use_mp=use_mp)
-        # pg.gen_gms_project_data(project_dir, n_procs=n_procs)
+        psha.gen_psha_project_data(project_dir, n_procs=n_procs, use_mp=use_mp)
+        pg.gen_gms_project_data(project_dir, n_procs=n_procs)
     except Exception as ex:
         print(f"Failed to create new project, due to an exception:\n{ex}")
         print(f"Traceback:\n{traceback.format_exc()}")
@@ -353,7 +352,6 @@ def generate_dbs(
         ), "Distributed Seismicity site-source DB generation failed"
 
     print("Generating DS IMDBs")
-    ds_start = time.time()
     ds_db_dir = dbs_dir / "ds"
     if ds_db_dir.exists():
         print("DS IMDB folder already exists, skipping")
@@ -396,8 +394,7 @@ def generate_dbs(
 
         ds_imdbs_cmd = [
             "python",
-            # str(empirical_db_scripts_dir / "new_calc_emp_ds.py"),
-            str(empirical_db_scripts_dir / "calc_emp_ds_meta.py"),
+            str(empirical_db_scripts_dir / "new_calc_emp_ds.py"),
             str(erf_dir / "NZBCK2015_Chch50yearsAftershock_OpenSHA_modType4.txt"),
             str(ds_site_source_db_ffp),
             str(vs30_ffp),
@@ -422,7 +419,6 @@ def generate_dbs(
         ), "Distributed Seismicity IMDB generation failed"
 
     flt_erf_base_fn = FLT_ERF_MAPPING[flt_erf_version]
-    ds_stop = time.time()
 
     print("Generating fault distance db")
     flt_site_source_db_ffp = dbs_dir / FLT_SITE_SOURCE_DB_FILENAME
@@ -487,8 +483,6 @@ def generate_dbs(
             print("STDOUT:\n" + flt_imdbs_result.stdout.decode())
             print("STDERR:\n" + flt_imdbs_result.stderr.decode())
             assert flt_imdbs_result.returncode == 0, "Fault IMDB generation failed"
-
-    print(f"DS gen took about {(ds_stop - ds_start):.2f}")
 
 
 def create_ensemble_config(
