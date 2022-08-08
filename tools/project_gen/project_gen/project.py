@@ -406,7 +406,7 @@ def generate_dbs(
             "--im",
             *im_types,
         ]
-        ds_timeout = (n_stations * (60 * 60 * 10)) / (min(n_procs - 1, n_stations))
+        ds_timeout = (n_stations * (60 * 60 * 5)) / (min(n_procs - 1, n_stations))
         print(f"Using a timeout of {ds_timeout} seconds")
         print(f"Running command:\n\t{' '.join(ds_imdbs_cmd)}")
         ds_imdbs_result = subprocess.run(
