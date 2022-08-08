@@ -67,42 +67,6 @@ def create_rupture_context_df(
     return rupture_df.loc[rupture_df["tect_type"] == tect_type.name]
 
 
-def compute_meta_model(
-    model, tect_type, rupture_context_df, im, psa_periods, rupture_df
-):
-    # results = []
-    GMM = classdef.GMM[model]
-    gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
-        GMM,
-        classdef.TectType["ACTIVE_SHALLOW"]
-        if tect_type != "ACTIVE_SHALLOW" and GMM.name in ("CB_10", "CB_12", "AS_16",)
-        else classdef.TectType[tect_type],
-        rupture_context_df,
-        str(im),
-        psa_periods if im is gc.im.IMType.pSA else None,
-    )
-    # Matching the index with rupture_df
-    # to have a right rupture label
-    gmm_calculated_df.set_index(
-        rupture_df[
-            rupture_df["rupture_name"].isin(rupture_context_df["rupture_name"])
-        ].index,
-        inplace=True,
-    )
-
-    # Relabel the columns
-    # PGA_mean -> PGA
-    gmm_calculated_df.columns = np.char.rstrip(
-        gmm_calculated_df.columns.values.astype(str), "_mean",
-    )
-    # PGA_std_Total -> PGA_sigma
-    gmm_calculated_df.columns = np.char.replace(
-        gmm_calculated_df.columns.values.astype(str), "_std_Total", "_sigma",
-    )
-    # results.append(gmm_calculated_df)
-    return gmm_calculated_df
-
-
 def calculate_emp_ds(
     background_sources_ffp: str,
     site_source_db_ffp: str,
