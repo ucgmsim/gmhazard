@@ -92,8 +92,6 @@ SUBDUCTION_SLAB:
     geom:
       - ZA_06
       - P_20
-      - A_18
-      - BCH_16
       - AG_20
       - AG_20_NZ
       - K_20
@@ -102,8 +100,6 @@ SUBDUCTION_SLAB:
     geom:
       - ZA_06
       - P_20
-      - A_18
-      - BCH_16
       - AG_20
       - AG_20_NZ
       - K_20
@@ -130,8 +126,6 @@ SUBDUCTION_INTERFACE:
     geom:
       - ZA_06
       - P_20
-      - A_18
-      - BCH_16
       - AG_20
       - AG_20_NZ
       - K_20
@@ -140,8 +134,6 @@ SUBDUCTION_INTERFACE:
     geom:
       - ZA_06
       - P_20
-      - A_18
-      - BCH_16
       - AG_20
       - AG_20_NZ
       - K_20
