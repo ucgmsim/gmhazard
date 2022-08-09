@@ -54,7 +54,7 @@ const UHSSection = () => {
             htmlFor="uhs-return-period"
             className="control-label"
           >
-            {CONSTANTS.ANNUAL_EXCEEDANCE_RATE} (years<sup>-1</sup>)
+            {CONSTANTS.ANNUAL_EXCEEDANCE_RATE} (yr<sup>-1</sup>)
           </label>
           <Select
             id="uhs-return-period"
