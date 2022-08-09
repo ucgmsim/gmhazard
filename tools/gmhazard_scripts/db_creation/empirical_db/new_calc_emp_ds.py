@@ -75,7 +75,7 @@ def calculate_emp_ds(
     ims: Optional[List[gc.im.IMType]],
     psa_periods: Optional[List[float]],
     model_dict_ffp: Optional[str],
-    model_weights_ffp: Optional[str],
+    model_weights_ffp: Optional[str] = None,
     suffix: Optional[str] = None,
 ):
     nhm_data = gc.utils.ds_nhm_to_rup_df(background_sources_ffp)
