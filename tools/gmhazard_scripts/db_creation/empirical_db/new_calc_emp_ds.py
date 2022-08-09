@@ -1,4 +1,3 @@
-import multiprocessing as mp
 import argparse
 import time
 from typing import List, Optional
