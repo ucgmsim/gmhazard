@@ -12,6 +12,7 @@ import gmhazard_calc as gc
 from empirical.util import classdef
 from empirical.util import empirical_factory
 from empirical.util import openquake_wrapper_vectorized
+from empirical.GMM_models import meta_model
 
 MAG = [
     5.25,
@@ -74,6 +75,7 @@ def calculate_emp_ds(
     ims: Optional[List[gc.im.IMType]],
     psa_periods: Optional[List[float]],
     model_dict_ffp: Optional[str],
+    model_weights_ffp: Optional[str] = None,
     suffix: Optional[str] = None,
 ):
     nhm_data = gc.utils.ds_nhm_to_rup_df(background_sources_ffp)
@@ -126,6 +128,19 @@ def calculate_emp_ds(
                     print(
                         f"Processing Model: {GMM.name} for {tect_type}, {GMM_idx + 1} / {len(GMMs)}"
                     )
+
+                    meta_GMMs = None
+                    if model_weights_ffp:
+                        meta_GMMs = meta_model.load_weights(
+                            model_weights_ffp,
+                            str(im),
+                            classdef.TectType[tect_type],
+                        )
+                        # Transform the key, model from string into classdef.GMM enum
+                        meta_GMMs = {
+                            classdef.GMM[model]: weight
+                            for model, weight in meta_GMMs.items()
+                        }
                     with imdb as imdb:
                         for site in sites:
                             rupture_context_df = create_rupture_context_df(
@@ -138,15 +153,22 @@ def calculate_emp_ds(
                                 nhm_data,
                                 classdef.TectType[tect_type],
                             )
+
                             gmm_calculated_df = openquake_wrapper_vectorized.oq_run(
                                 GMM,
                                 classdef.TectType["ACTIVE_SHALLOW"]
                                 if tect_type != "ACTIVE_SHALLOW"
-                                and GMM.name in ("CB_10", "CB_12", "AS_16",)
+                                and GMM.name
+                                in (
+                                    "CB_10",
+                                    "CB_12",
+                                    "AS_16",
+                                )
                                 else classdef.TectType[tect_type],
                                 rupture_context_df,
                                 str(im),
                                 psa_periods if im is gc.im.IMType.pSA else None,
+                                meta_config=meta_GMMs,
                             )
                             # Matching the index with rupture_df
                             # to have a right rupture label
@@ -162,7 +184,8 @@ def calculate_emp_ds(
                             # Relabel the columns
                             # PGA_mean -> PGA
                             gmm_calculated_df.columns = np.char.rstrip(
-                                gmm_calculated_df.columns.values.astype(str), "_mean"
+                                gmm_calculated_df.columns.values.astype(str),
+                                "_mean",
                             )
                             # PGA_std_Total -> PGA_sigma
                             gmm_calculated_df.columns = np.char.replace(
@@ -170,7 +193,6 @@ def calculate_emp_ds(
                                 "_std_Total",
                                 "_sigma",
                             )
-
                             # Write an im_df to the given station/site
                             imdb.add_im_data(
                                 site,
@@ -200,7 +222,8 @@ def parse_args():
     parser.add_argument("vs30_file")
     parser.add_argument("output_dir")
     parser.add_argument(
-        "--z-file", help="File name of the Z data",
+        "--z-file",
+        help="File name of the Z data",
     )
     parser.add_argument(
         "--periods",
@@ -220,7 +243,14 @@ def parse_args():
         help="model dictionary to specify which model to use for each tect-type",
     )
     parser.add_argument(
-        "--suffix", "-s", help="suffix for the end of the imdb files", default=None,
+        "--model-weights",
+        help="model weights dictionary to specify which model to use for each tect-type",
+    )
+    parser.add_argument(
+        "--suffix",
+        "-s",
+        help="suffix for the end of the imdb files",
+        default=None,
     )
 
     return parser.parse_args()
@@ -238,6 +268,7 @@ if __name__ == "__main__":
         ims=args.im,
         psa_periods=args.periods,
         model_dict_ffp=args.model_dict,
+        model_weights_ffp=args.model_weights,
         suffix=args.suffix,
     )
     print(f"Finished in {(time.time() - start) / 60:.2f} minutes")
