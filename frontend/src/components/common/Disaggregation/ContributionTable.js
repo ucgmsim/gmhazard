@@ -104,7 +104,9 @@ const ContributionTable = ({ meanData, contributionData }) => {
               <th scope="col">
                 {CONSTANTS.CONTRIBUTION} {CONSTANTS.PERCENTAGE_UNIT}
               </th>
-              <th scope="col">{CONSTANTS.ANNUAL_RECURRENCE_RATE}</th>
+              <th scope="col">
+                {CONSTANTS.RUPTURE_RATE} (yr<sup>-1</sup>)
+              </th>
               <th scope="col">{CONSTANTS.MAGNITUDE}</th>
               <th scope="col">
                 {CONSTANTS.RRUP} {CONSTANTS.KILOMETRE_UNIT}
