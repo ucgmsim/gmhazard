@@ -85,7 +85,7 @@ pga_psa_gms:
       im_j: null
       IMs: [PGA, pSA]
       n_gms: 10
-      dataset_id: nga_west_2
+      dataset_id: nga_combined
       n_replica: 10
     pSA_0p3_0p002_PGA_pSA:
       IMj: pSA_0.3
@@ -93,7 +93,7 @@ pga_psa_gms:
       im_j: null
       IMs: [PGA, pSA]
       n_gms: 10
-      dataset_id: nga_west_2
+      dataset_id: nga_combined
       n_replica: 10
     pSA_0p3_0p0004_PGA_pSA:
       IMj: pSA_0.3
@@ -101,7 +101,7 @@ pga_psa_gms:
       im_j: null
       IMs: [PGA, pSA]
       n_gms: 10
-      dataset_id: nga_west_2
+      dataset_id: nga_combined
       n_replica: 10
 
     pSA_3p0_0p01_PGA_pSA:
@@ -110,7 +110,7 @@ pga_psa_gms:
       im_j: null
       IMs: [PGA, pSA]
       n_gms: 10
-      dataset_id: nga_west_2
+      dataset_id: nga_combined
       n_replica: 10
     pSA_3p0_0p002_PGA_pSA:
       IMj: pSA_3.0
@@ -118,7 +118,7 @@ pga_psa_gms:
       im_j: null
       IMs: [PGA, pSA]
       n_gms: 10
-      dataset_id: nga_west_2
+      dataset_id: nga_combined
       n_replica: 10
     pSA_3p0_0p0004_PGA_pSA:
       IMj: pSA_3.0
@@ -126,7 +126,7 @@ pga_psa_gms:
       im_j: null
       IMs: [PGA, pSA]
       n_gms: 10
-      dataset_id: nga_west_2
+      dataset_id: nga_combined
       n_replica: 10
 
     pSA_0p3_0p01_PGA_pSA_CAV_Ds:
@@ -135,7 +135,7 @@ pga_psa_gms:
       im_j: null
       IMs: [PGA, pSA, CAV, Ds595, Ds575]
       n_gms: 10
-      dataset_id: nga_west_2
+      dataset_id: nga_combined
       n_replica: 10
     pSA_0p3_0p002_PGA_pSA_CAV_Ds:
       IMj: pSA_0.3
@@ -143,7 +143,7 @@ pga_psa_gms:
       im_j: null
       IMs: [PGA, pSA, CAV, Ds595, Ds575]
       n_gms: 10
-      dataset_id: nga_west_2
+      dataset_id: nga_combined
       n_replica: 10
     pSA_0p3_0p0004_PGA_pSA_CAV_Ds:
       IMj: pSA_0.3
@@ -151,7 +151,7 @@ pga_psa_gms:
       im_j: null
       IMs: [PGA, pSA, CAV, Ds595, Ds575]
       n_gms: 10
-      dataset_id: nga_west_2
+      dataset_id: nga_combined
       n_replica: 10
 
     pSA_3p0_0p01_PGA_pSA_CAV_Ds:
@@ -160,7 +160,7 @@ pga_psa_gms:
       im_j: null
       IMs: [PGA, pSA, CAV, Ds595, Ds575]
       n_gms: 10
-      dataset_id: nga_west_2
+      dataset_id: nga_combined
       n_replica: 10
     pSA_3p0_0p002_PGA_pSA_CAV_Ds:
       IMj: pSA_3.0
@@ -168,7 +168,7 @@ pga_psa_gms:
       im_j: null
       IMs: [PGA, pSA, CAV, Ds595, Ds575]
       n_gms: 10
-      dataset_id: nga_west_2
+      dataset_id: nga_combined
       n_replica: 10
     pSA_3p0_0p0004_PGA_pSA_CAV_Ds:
       IMj: pSA_3.0
@@ -176,7 +176,7 @@ pga_psa_gms:
       im_j: null
       IMs: [PGA, pSA, CAV, Ds595, Ds575]
       n_gms: 10
-      dataset_id: nga_west_2
+      dataset_id: nga_combined
       n_replica: 10
 
 pga_psa_rotd50:
