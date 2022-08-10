@@ -404,8 +404,7 @@ def plot_psa_mag(
     period,
     tect_type,
 ):
-    """Plots for pSA versus Magnitude
-    """
+    """Plots for pSA versus Magnitude"""
     fig, ax = plt.subplots(
         len(vs30_values), len(rrup_values), figsize=(18, 12), dpi=300
     )
@@ -456,8 +455,7 @@ def plot_psa_vs30(
     tect_type,
     period=None,
 ):
-    """Plots for SA versus Vs30
-    """
+    """Plots for SA versus Vs30"""
     fig, ax = plt.subplots(len(mag_list), len(rrup_values), figsize=(18, 12), dpi=300)
     x_position = 0
     for mag in mag_list:
@@ -499,6 +497,7 @@ def plot_psa_vs30(
 
 
 def psa_sigma_plot(
+    faults: Dict,
     mag_dict: Dict,
     vs30_values: np.ndarray,
     psa_periods: np.ndarray,
@@ -520,13 +519,14 @@ def psa_sigma_plot(
     save_path: pathlib.Path
         Directory to save plots
     """
-    faults = get_faults(vs30_values, mag_dict)
     for rrup in rrup_values:
         sites = get_sites(vs30_values, rrup)
 
+        start = time.time()
         result_dict = get_computed_gmms(
             vs30_values, sites, mag_dict, faults, psa_periods, True
         )
+        print(f"Results took about {time.time() - start}")
 
         root_path = (
             pathlib.Path(__file__).resolve().parent.parent
@@ -542,6 +542,7 @@ def psa_sigma_plot(
 
 
 def psa_plot(
+    faults: Dict,
     mag_dict: Dict,
     vs30_values: np.ndarray,
     psa_periods: np.ndarray,
@@ -552,6 +553,8 @@ def psa_plot(
 
     Parameters
     ----------
+    faults: Dict
+
     mag_dict: Dict
         Dictionary with a different Mw lists for a different tectonic type
     vs30_values: List
@@ -563,7 +566,7 @@ def psa_plot(
     save_path: pathlib.Path
         Directory to save plots
     """
-    faults = get_faults(vs30_values, mag_dict)
+
     for rrup in rrup_values:
         sites = get_sites(vs30_values, rrup)
 
@@ -584,6 +587,7 @@ def psa_plot(
 
 
 def psa_median_plot(
+    faults: Dict,
     mag_dict: Dict,
     vs30_values: np.ndarray,
     psa_periods: np.ndarray,
@@ -605,7 +609,6 @@ def psa_median_plot(
     save_path: pathlib.Path
         Directory to save plots
     """
-    faults = get_faults(vs30_values, mag_dict)
     for rrup in rrup_value:
         sites = get_sites(vs30_values, rrup)
 
@@ -836,7 +839,12 @@ def pga_vs30_plot(
                             else gmm_result[0]
                         )
         plot_psa_vs30(
-            vs30_values, rrup_values, mag_list, results, plot_directory, tect_type,
+            vs30_values,
+            rrup_values,
+            mag_list,
+            results,
+            plot_directory,
+            tect_type,
         )
 
 
@@ -855,14 +863,20 @@ if __name__ == "__main__":
         "/home/tom/Documents/QuakeCoRE/resource/verification_plots/special"
     )
     start = time.time()
-    psa_sigma_plot(mag_dict, vs30_list, period_list, rrup, save_path)
-    psa_plot(mag_dict, vs30_list, period_list, rrup, save_path)
-    psa_median_plot(mag_dict, vs30_list, period_list, rrup, save_path)
+    # Setup some data
+    faults = get_faults(vs30_list, mag_dict)
+
+    psa_sigma_plot(faults, mag_dict, vs30_list, period_list, rrup, save_path)
+    psa_plot(faults, mag_dict, vs30_list, period_list, rrup, save_path)
+    psa_median_plot(faults, mag_dict, vs30_list, period_list, rrup, save_path)
+
+    print(f"Finished in {(time.time() - start):.2f}s")
 
     # Special requests
+    special = time.time()
     psa_mag_plot(mag_dict, vs30_list, period_list, rrup, save_path)
     vs30_list = np.arange(100, 2001, 100)
     psa_vs30_plot(mag_dict, vs30_list, period_list, rrup, save_path)
     pga_vs30_plot(mag_dict, vs30_list, rrup, save_path)
 
-    print(f"Finished in {(time.time() - start):.2f}s")
+    print(f"Special Finished in {(time.time() - special):.2f}s")

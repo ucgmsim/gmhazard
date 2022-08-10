@@ -163,7 +163,10 @@ def get_computed_gmms(
                                         )
                                 else:
                                     result = empirical_factory.compute_gmm(
-                                        fault, site, empirical_factory.GMM[model], im,
+                                        fault,
+                                        site,
+                                        empirical_factory.GMM[model],
+                                        im,
                                     )
                                     # result is always tuple
                                     # For Meta
@@ -368,9 +371,14 @@ if __name__ == "__main__":
     plot_start = time.time()
 
     # Plotting process
-    # plot_im_rrup(vs30_lists, mag_dict, rrup_dict, computed_gmms_dict, plot_directory)
+    plot_im_rrup(vs30_lists, mag_dict, rrup_dict, computed_gmms_dict, plot_directory)
     plot_psa_rrup(
-        vs30_lists, mag_dict, psa_lists, rrup_dict, computed_gmms_dict, plot_directory,
+        vs30_lists,
+        mag_dict,
+        psa_lists,
+        rrup_dict,
+        computed_gmms_dict,
+        plot_directory,
     )
 
     plot_done = time.time()
