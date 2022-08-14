@@ -312,7 +312,6 @@ def plot_psa_rrup(
                     y_position += 1
                 x_position += 1
 
-            # fig.tight_layout()
             plt.savefig(
                 f"{plot_directory}/{tect_type}_{im_label.replace('.', 'p')}.png"
             )
