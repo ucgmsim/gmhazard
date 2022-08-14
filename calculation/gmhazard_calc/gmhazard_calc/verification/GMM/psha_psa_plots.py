@@ -1,5 +1,4 @@
 import pathlib
-import time
 from typing import List, Dict, Union
 
 import numpy as np
@@ -522,11 +521,9 @@ def psa_sigma_plot(
     for rrup in rrup_values:
         sites = get_sites(vs30_values, rrup)
 
-        start = time.time()
         result_dict = get_computed_gmms(
             vs30_values, sites, mag_dict, faults, psa_periods, True
         )
-        print(f"Results took about {time.time() - start}")
 
         root_path = (
             pathlib.Path(__file__).resolve().parent.parent
@@ -839,12 +836,7 @@ def pga_vs30_plot(
                             else gmm_result[0]
                         )
         plot_psa_vs30(
-            vs30_values,
-            rrup_values,
-            mag_list,
-            results,
-            plot_directory,
-            tect_type,
+            vs30_values, rrup_values, mag_list, results, plot_directory, tect_type,
         )
 
 
@@ -862,7 +854,6 @@ if __name__ == "__main__":
     save_path = pathlib.Path(
         "/home/tom/Documents/QuakeCoRE/resource/verification_plots/special"
     )
-    start = time.time()
     # Setup some data
     faults = get_faults(vs30_list, mag_dict)
 
@@ -870,13 +861,8 @@ if __name__ == "__main__":
     psa_plot(faults, mag_dict, vs30_list, period_list, rrup, save_path)
     psa_median_plot(faults, mag_dict, vs30_list, period_list, rrup, save_path)
 
-    print(f"Finished in {(time.time() - start):.2f}s")
-
     # Special requests
-    special = time.time()
     psa_mag_plot(mag_dict, vs30_list, period_list, rrup, save_path)
     vs30_list = np.arange(100, 2001, 100)
     psa_vs30_plot(mag_dict, vs30_list, period_list, rrup, save_path)
     pga_vs30_plot(mag_dict, vs30_list, rrup, save_path)
-
-    print(f"Special Finished in {(time.time() - special):.2f}s")

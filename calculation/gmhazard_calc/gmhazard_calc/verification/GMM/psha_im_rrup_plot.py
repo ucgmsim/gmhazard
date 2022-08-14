@@ -1,9 +1,8 @@
 import pathlib
+from typing import List, Dict
+
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import List, Dict
-import time
-from collections.abc import Iterable
 
 import constants as const
 from empirical.util import empirical_factory
@@ -163,10 +162,7 @@ def get_computed_gmms(
                                         )
                                 else:
                                     result = empirical_factory.compute_gmm(
-                                        fault,
-                                        site,
-                                        empirical_factory.GMM[model],
-                                        im,
+                                        fault, site, empirical_factory.GMM[model], im,
                                     )
                                     # result is always tuple
                                     # For Meta
@@ -235,7 +231,6 @@ def plot_im_rrup(
                         ax[x_position, y_position].yaxis.set_label_text(f"{im}")
                         # ax[x_position, y_position].set_xscale("log")
                         ax[x_position, y_position].set_yscale("log")
-                        # ax[x_position, y_position].margins(x=0)
                         ax[x_position, y_position].set_xlim([10, 1000])
                         ax[x_position, y_position].set_ylim([0.0001, 10])
                         ax[x_position, y_position].xaxis.grid(
@@ -248,7 +243,7 @@ def plot_im_rrup(
                     x_position += 1
 
                 fig.tight_layout()
-                plt.savefig(f"{plot_directory}/{tect_type}_{im}.png", transparent=True)
+                plt.savefig(f"{plot_directory}/{tect_type}_{im}.png")
                 plt.close()
 
 
@@ -320,8 +315,7 @@ def plot_psa_rrup(
 
             # fig.tight_layout()
             plt.savefig(
-                f"{plot_directory}/{tect_type}_{im_label.replace('.', 'p')}.png",
-                transparent=True,
+                f"{plot_directory}/{tect_type}_{im_label.replace('.', 'p')}.png"
             )
             plt.close()
 
@@ -351,14 +345,9 @@ if __name__ == "__main__":
         "SUBDUCTION_SLAB": second_rrup_lists,
     }
     # Update the path to the directory to save plots
-    # save_path = pathlib.Path(
-    #     "/home/tom/Documents/QuakeCoRE/resource/verification_plots"
-    # )
     save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/resource/uhs_debug_data")
     plot_directory = save_path / "im_rrup"
     plot_directory.mkdir(exist_ok=True, parents=True)
-
-    start_time = time.time()
 
     # Set up process
     faults, result_dict = init_setup(mag_dict, vs30_lists, psa_lists)
@@ -367,20 +356,9 @@ if __name__ == "__main__":
     computed_gmms_dict = get_computed_gmms(
         vs30_lists, sites, mag_dict, faults, result_dict, psa_lists
     )
-    setup_done = time.time()
-    plot_start = time.time()
 
     # Plotting process
     plot_im_rrup(vs30_lists, mag_dict, rrup_dict, computed_gmms_dict, plot_directory)
     plot_psa_rrup(
-        vs30_lists,
-        mag_dict,
-        psa_lists,
-        rrup_dict,
-        computed_gmms_dict,
-        plot_directory,
+        vs30_lists, mag_dict, psa_lists, rrup_dict, computed_gmms_dict, plot_directory,
     )
-
-    plot_done = time.time()
-    print("SET UP IS DONE!: ", setup_done - start_time)
-    print("PLOTTING DONE!: ", plot_done - plot_start)
