@@ -229,7 +229,6 @@ def plot_im_rrup(
                         ax[x_position, y_position].legend(models)
                         ax[x_position, y_position].xaxis.set_label_text("Rrup [km]")
                         ax[x_position, y_position].yaxis.set_label_text(f"{im}")
-                        # ax[x_position, y_position].set_xscale("log")
                         ax[x_position, y_position].set_yscale("log")
                         ax[x_position, y_position].set_xlim([10, 1000])
                         ax[x_position, y_position].set_ylim([0.0001, 10])

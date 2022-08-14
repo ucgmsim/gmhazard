@@ -427,7 +427,6 @@ def plot_psa_mag(
             ax[x_position, y_position].legend(psa_results.index.values)
             ax[x_position, y_position].xaxis.set_label_text("Magnitude")
             ax[x_position, y_position].yaxis.set_label_text("SA [g]")
-            # ax[x_position, y_position].set_xscale("log")
             ax[x_position, y_position].set_yscale("log")
             ax[x_position, y_position].margins(x=0)
             ax[x_position, y_position].set_ylim([0.0001, 10])
