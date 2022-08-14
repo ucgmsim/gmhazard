@@ -51,7 +51,7 @@ const DisaggregationSection = () => {
       </div>
       <div className="form-group">
         <label className="control-label" htmlFor="disagg-return-period">
-          {CONSTANTS.ANNUAL_EXCEEDANCE_RATE} (years<sup>-1</sup>)
+          {CONSTANTS.ANNUAL_EXCEEDANCE_RATE} (yr<sup>-1</sup>)
         </label>
         <Select
           id="disagg-return-period"
