@@ -287,7 +287,7 @@ def write_station_details(locations: Dict, dbs_dir: Path, project_id: str):
                     loc_data["lon"],
                     np.nan if z1p0 is None else z1p0,
                     np.nan if z2p5 is None else z2p5,
-                    0, # default sigma value - project gen doesn't use it
+                    0,  # default sigma value - project gen doesn't use it
                 )
             )
 
@@ -387,7 +387,7 @@ def generate_dbs(
             print("STDOUT:\n" + ds_imdbs_result.stdout.decode())
             print("STDERR:\n" + ds_imdbs_result.stderr.decode())
             assert (
-                    ds_imdbs_result.returncode == 0
+                ds_imdbs_result.returncode == 0
             ), "Distributed Seismicity IMDB generation failed"
 
             im_types.remove("AI")
