@@ -164,16 +164,14 @@ def get_computed_gmms(
                                     result = empirical_factory.compute_gmm(
                                         fault, site, empirical_factory.GMM[model], im,
                                     )
-                                    # result is always tuple
-                                    # For Meta
-                                    # result_dict[tect_type][im][vs30][mag][model].append(
-                                    #     result[0][0]
-                                    #     if isinstance(result, Iterable)
-                                    #     else result[0]
-                                    # )
+                                    # For Meta - it is a tuple inside a list
                                     result_dict[tect_type][im][vs30][mag][model].append(
-                                        result[0]
+                                        result[0][0]
                                     )
+                                    # For non-Meta - result is always tuple
+                                    # result_dict[tect_type][im][vs30][mag][model].append(
+                                    #     result[0]
+                                    # )
 
     return result_dict
 
@@ -218,7 +216,9 @@ def plot_im_rrup(
                                 rrup_values.get(tect_type),
                                 result_dict[tect_type][im][vs30][mag][model],
                                 label=model,
-                                color=const.DEFAULT_LABEL_COLOR[model],
+                                color=const.DEFAULT_LABEL_COLOR[model]
+                                if model != "META"
+                                else "#000000",
                                 linestyle="dashed" if model.endswith("NZ") else "solid",
                             )
 
@@ -288,7 +288,9 @@ def plot_psa_rrup(
                                 psa_period
                             ][model],
                             label=model,
-                            color=const.DEFAULT_LABEL_COLOR[model],
+                            color=const.DEFAULT_LABEL_COLOR[model]
+                            if model != "META"
+                            else "#000000",
                             linestyle="dashed" if model.endswith("NZ") else "solid",
                         )
 
@@ -325,25 +327,20 @@ if __name__ == "__main__":
         "SUBDUCTION_INTERFACE": [7, 8, 9],
     }
     vs30_lists = [400, 760]
-    # psa_lists = [1.0, 3.0]
     psa_lists = [0.2]
     # For ACTIVE_SHALLOW and INTERFACE
-    # first_rrup_lists = np.linspace(1, 1000, 500)
-    # first_rrup_lists = np.logspace(np.log10(1), np.log10(500), 100)
-    first_rrup_lists = np.linspace(10, 1000, 200)
+    asc_rrups = np.linspace(10, 1000, 200)
     # For SLAB
-    # second_rrup_lists = np.linspace(50, 1000, 500)
-    second_rrup_lists = np.logspace(np.log10(50), np.log10(500), 100)
+    ss_rrups = np.logspace(np.log10(50), np.log10(500), 100)
     # For INTERFACE
-    # third_rrup_lists = np.logspace(np.log10(10), np.log10(1000), 100)
-    third_rrup_lists = np.linspace(10, 1000, 500)
+    si_rrups = np.linspace(10, 1000, 500)
     rrup_dict = {
-        "ACTIVE_SHALLOW": first_rrup_lists,
-        "SUBDUCTION_INTERFACE": third_rrup_lists,
-        "SUBDUCTION_SLAB": second_rrup_lists,
+        "ACTIVE_SHALLOW": asc_rrups,
+        "SUBDUCTION_INTERFACE": si_rrups,
+        "SUBDUCTION_SLAB": ss_rrups,
     }
     # Update the path to the directory to save plots
-    save_path = pathlib.Path("/home/tom/Documents/QuakeCoRE/resource/uhs_debug_data")
+    save_path = pathlib.Path("put_your_path_here")
     plot_directory = save_path / "im_rrup"
     plot_directory.mkdir(exist_ok=True, parents=True)
 

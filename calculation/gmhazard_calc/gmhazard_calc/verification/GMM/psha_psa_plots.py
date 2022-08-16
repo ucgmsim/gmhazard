@@ -90,11 +90,10 @@ def get_computed_gmms(
     results_dict = {}
     for tect_type, im_models in const.MODELS_DICT.items():
         results_dict[tect_type] = {}
-        results_dict[tect_type][const.PSA_IM_NAME] = {}
         for vs30 in vs30_values:
-            results_dict[tect_type][const.PSA_IM_NAME][vs30] = {}
+            results_dict[tect_type][vs30] = {}
             for mag in mag_dict[tect_type]:
-                results_dict[tect_type][const.PSA_IM_NAME][vs30][mag] = {}
+                results_dict[tect_type][vs30][mag] = {}
                 for model in im_models[const.PSA_IM_NAME]:
                     results = empirical_factory.compute_gmm(
                         faults[tect_type][vs30][mag],
@@ -104,12 +103,12 @@ def get_computed_gmms(
                         period_values,
                     )
                     if isinstance(results, list):
-                        results_dict[tect_type][const.PSA_IM_NAME][vs30][mag][model] = [
+                        results_dict[tect_type][vs30][mag][model] = [
                             result[1][0] if for_sigma else result[0]
                             for result in results
                         ]
                     else:
-                        results_dict[tect_type][const.PSA_IM_NAME][vs30][mag][model] = [
+                        results_dict[tect_type][vs30][mag][model] = [
                             results[1][0] if for_sigma else results[0]
                         ]
 
@@ -149,7 +148,7 @@ def plot_psha_psa_sigma(
                 for model in im_models[const.PSA_IM_NAME]:
                     ax[x_position, y_position].plot(
                         period_values,
-                        result_dict[tect_type][const.PSA_IM_NAME][vs30][mag][model],
+                        result_dict[tect_type][vs30][mag][model],
                         label=model,
                         color=const.DEFAULT_LABEL_COLOR[model],
                         linestyle="dashed" if model.endswith("NZ") else "solid",
@@ -213,43 +212,27 @@ def plot_psha_psa(
                 for model in im_models[const.PSA_IM_NAME]:
                     ax[x_position, y_position].plot(
                         period_values,
-                        result_dict[tect_type][const.PSA_IM_NAME][vs30][mag][model],
+                        result_dict[tect_type][vs30][mag][model],
                         label=model if x_position == 0 and y_position == 0 else None,
                         color=const.DEFAULT_LABEL_COLOR[model],
                         linestyle="dashed" if model.endswith("NZ") else "solid",
                     )
 
                 if len(im_models) > 1:
-                    # Create DatFrame to make life easier
+                    # Create DataFrame to make life easier
                     df = np.log(
                         pd.DataFrame(
-                            list(
-                                result_dict[tect_type][const.PSA_IM_NAME][vs30][
-                                    mag
-                                ].values()
-                            ),
+                            list(result_dict[tect_type][vs30][mag].values()),
                             columns=period_values,
-                            index=list(
-                                result_dict[tect_type][const.PSA_IM_NAME][vs30][
-                                    mag
-                                ].keys()
-                            ),
+                            index=list(result_dict[tect_type][vs30][mag].keys()),
                         )
                     )
                     average_medians = df.sum(axis=0) / len(
-                        list(
-                            result_dict[tect_type][const.PSA_IM_NAME][vs30][mag].keys()
-                        )
+                        list(result_dict[tect_type][vs30][mag].keys())
                     )
                     sigma_intermodel = np.sqrt(
                         np.square(df - average_medians).sum(axis=0)
-                        / len(
-                            list(
-                                result_dict[tect_type][const.PSA_IM_NAME][vs30][
-                                    mag
-                                ].keys()
-                            )
-                        )
+                        / len(list(result_dict[tect_type][vs30][mag].keys()))
                     )
                     ax[x_position, y_position].plot(
                         period_values,
@@ -332,22 +315,22 @@ def plot_psha_median_psa(
         for vs30 in vs30_values:
             y_position = 0
             for mag in mag_dict[tect_type]:
-                # Create DatFrame to make life easier
+                # Create DataFrame to make life easier
                 df = np.log(
                     pd.DataFrame(
-                        list(result_dict[tect_type]["pSA"][vs30][mag].values()),
+                        list(result_dict[tect_type][vs30][mag].values()),
                         columns=period_values,
-                        index=list(result_dict[tect_type]["pSA"][vs30][mag].keys()),
+                        index=list(result_dict[tect_type][vs30][mag].keys()),
                     )
                 )
 
                 if len(im_models) > 1:
                     average_medians = df.sum(axis=0) / len(
-                        list(result_dict[tect_type]["pSA"][vs30][mag].keys())
+                        list(result_dict[tect_type][vs30][mag].keys())
                     )
                     sigma_intermodel = np.sqrt(
                         np.square(df - average_medians).sum(axis=0)
-                        / len(list(result_dict[tect_type]["pSA"][vs30][mag].keys()))
+                        / len(list(result_dict[tect_type][vs30][mag].keys()))
                     )
 
                     ax[x_position, y_position].plot(
@@ -850,9 +833,7 @@ if __name__ == "__main__":
     period_list = np.array([0.01, 0.1, 1.0, 2.0, 3.0, 5.0])
     rrup = [75, 200]
     # Update the path to the directory to save plots
-    save_path = pathlib.Path(
-        "/home/tom/Documents/QuakeCoRE/resource/verification_plots/special"
-    )
+    save_path = pathlib.Path("put_your_path_here")
     # Setup some data
     faults = get_faults(vs30_list, mag_dict)
 

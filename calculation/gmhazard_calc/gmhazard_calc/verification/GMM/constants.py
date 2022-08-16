@@ -78,7 +78,7 @@ MODELS_DICT = {
     },
 }
 
-# Temporary for META CONFIG
+# Uncomment for META CONFIG
 # MODELS_DICT = {
 #     "ACTIVE_SHALLOW": {"PGV": ["META"], "PGA": ["META"], "pSA": ["META"],},
 #     "SUBDUCTION_SLAB": {"PGV": ["META"], "PGA": ["META"], "pSA": ["META"],},
