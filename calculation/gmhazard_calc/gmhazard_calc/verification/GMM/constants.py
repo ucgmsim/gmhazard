@@ -86,6 +86,7 @@ MODELS_DICT = {
 # }
 
 DEFAULT_LABEL_COLOR = {
+    "META": "#000000",
     "Br_10": "#000000",
     "ASK_14": "#00ff00",
     "BSSA_14": "#ff0000",

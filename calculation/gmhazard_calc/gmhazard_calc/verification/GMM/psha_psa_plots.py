@@ -833,7 +833,7 @@ if __name__ == "__main__":
     period_list = np.array([0.01, 0.1, 1.0, 2.0, 3.0, 5.0])
     rrup = [75, 200]
     # Update the path to the directory to save plots
-    save_path = pathlib.Path("put_your_path_here")
+    save_path = pathlib.Path(".")
     # Setup some data
     faults = get_faults(vs30_list, mag_dict)
 

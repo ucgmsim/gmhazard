@@ -165,13 +165,12 @@ def get_computed_gmms(
                                         fault, site, empirical_factory.GMM[model], im,
                                     )
                                     # For Meta - it is a tuple inside a list
+                                    # For non-Meta - result is always a tuple
                                     result_dict[tect_type][im][vs30][mag][model].append(
                                         result[0][0]
+                                        if isinstance(result, list)
+                                        else result[0]
                                     )
-                                    # For non-Meta - result is always tuple
-                                    # result_dict[tect_type][im][vs30][mag][model].append(
-                                    #     result[0]
-                                    # )
 
     return result_dict
 
@@ -216,9 +215,7 @@ def plot_im_rrup(
                                 rrup_values.get(tect_type),
                                 result_dict[tect_type][im][vs30][mag][model],
                                 label=model,
-                                color=const.DEFAULT_LABEL_COLOR[model]
-                                if model != "META"
-                                else "#000000",
+                                color=const.DEFAULT_LABEL_COLOR[model],
                                 linestyle="dashed" if model.endswith("NZ") else "solid",
                             )
 
@@ -288,9 +285,7 @@ def plot_psa_rrup(
                                 psa_period
                             ][model],
                             label=model,
-                            color=const.DEFAULT_LABEL_COLOR[model]
-                            if model != "META"
-                            else "#000000",
+                            color=const.DEFAULT_LABEL_COLOR[model],
                             linestyle="dashed" if model.endswith("NZ") else "solid",
                         )
 
@@ -340,7 +335,7 @@ if __name__ == "__main__":
         "SUBDUCTION_SLAB": ss_rrups,
     }
     # Update the path to the directory to save plots
-    save_path = pathlib.Path("put_your_path_here")
+    save_path = pathlib.Path(".")
     plot_directory = save_path / "im_rrup"
     plot_directory.mkdir(exist_ok=True, parents=True)
 
