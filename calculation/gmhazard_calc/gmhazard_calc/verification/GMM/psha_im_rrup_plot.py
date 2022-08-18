@@ -1,7 +1,8 @@
 import pathlib
+from typing import List, Dict
+
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import List, Dict
 
 import constants as const
 from empirical.util import empirical_factory
@@ -161,14 +162,14 @@ def get_computed_gmms(
                                         )
                                 else:
                                     result = empirical_factory.compute_gmm(
-                                        fault,
-                                        site,
-                                        empirical_factory.GMM[model],
-                                        im,
+                                        fault, site, empirical_factory.GMM[model], im,
                                     )
-                                    # result is always tuple
+                                    # For Meta - it is a tuple inside a list
+                                    # For non-Meta - result is always a tuple
                                     result_dict[tect_type][im][vs30][mag][model].append(
-                                        result[0]
+                                        result[0][0]
+                                        if isinstance(result, list)
+                                        else result[0]
                                     )
 
     return result_dict
@@ -179,7 +180,7 @@ def plot_im_rrup(
     mag_dict: Dict,
     rrup_values: Dict,
     result_dict: Dict,
-    plot_directory: pathlib.PosixPath,
+    plot_directory: pathlib.Path,
 ):
     """Plots for IM(no pSA) versus Rrup
 
@@ -203,25 +204,20 @@ def plot_im_rrup(
                 fig, ax = plt.subplots(
                     len(vs30_values),
                     len(mag_dict[tect_type]),
-                    figsize=(18, 13.5),
+                    figsize=(18, 12),
                     dpi=300,
                 )
                 for vs30 in vs30_values:
                     y_position = 0
                     for mag in mag_dict[tect_type]:
-                        color_index = 0
                         for model in models:
-                            # To match the color with global version
-                            if model.endswith("NZ"):
-                                color_index -= 1
                             ax[x_position, y_position].plot(
                                 rrup_values.get(tect_type),
                                 result_dict[tect_type][im][vs30][mag][model],
                                 label=model,
-                                color=const.DEFAULT_LABEL_COLOR[color_index],
+                                color=const.DEFAULT_LABEL_COLOR[model],
                                 linestyle="dashed" if model.endswith("NZ") else "solid",
                             )
-                            color_index += 1
 
                         ax[x_position, y_position].set_title(
                             f"{im} versus Rrup - Mw{mag}, Vs30-{vs30}"
@@ -230,9 +226,9 @@ def plot_im_rrup(
                         ax[x_position, y_position].legend(models)
                         ax[x_position, y_position].xaxis.set_label_text("Rrup [km]")
                         ax[x_position, y_position].yaxis.set_label_text(f"{im}")
-                        ax[x_position, y_position].set_xscale("log")
                         ax[x_position, y_position].set_yscale("log")
-                        ax[x_position, y_position].set_xlim(left=10)
+                        ax[x_position, y_position].set_xlim([10, 1000])
+                        ax[x_position, y_position].set_ylim([0.0001, 10])
                         ax[x_position, y_position].xaxis.grid(
                             True, which="both", linestyle="dotted"
                         )
@@ -253,7 +249,7 @@ def plot_psa_rrup(
     psa_periods: List,
     rrup_values: Dict,
     result_dict: Dict,
-    plot_directory: pathlib.PosixPath,
+    plot_directory: pathlib.Path,
 ):
     """Plots for pSA versus Rrup
 
@@ -276,27 +272,22 @@ def plot_psa_rrup(
         for psa_period in psa_periods:
             x_position = 0
             fig, ax = plt.subplots(
-                len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 13.5), dpi=300
+                len(vs30_values), len(mag_dict[tect_type]), figsize=(18, 12), dpi=300
             )
             im_label = f"SA({psa_period}s)"
             for vs30 in vs30_values:
                 y_position = 0
                 for mag in mag_dict[tect_type]:
-                    color_index = 0
                     for model in im_models[const.PSA_IM_NAME]:
-                        # To match the color with global version
-                        if model.endswith("NZ"):
-                            color_index -= 1
                         ax[x_position, y_position].plot(
                             rrup_values.get(tect_type),
                             result_dict[tect_type][const.PSA_IM_NAME][vs30][mag][
                                 psa_period
                             ][model],
                             label=model,
-                            color=const.DEFAULT_LABEL_COLOR[color_index],
+                            color=const.DEFAULT_LABEL_COLOR[model],
                             linestyle="dashed" if model.endswith("NZ") else "solid",
                         )
-                        color_index += 1
 
                     ax[x_position, y_position].set_title(
                         f"{im_label} versus Rrup - Mw{mag}, Vs30-{vs30}"
@@ -307,7 +298,8 @@ def plot_psa_rrup(
                     ax[x_position, y_position].yaxis.set_label_text("SA [g]")
                     ax[x_position, y_position].set_xscale("log")
                     ax[x_position, y_position].set_yscale("log")
-                    ax[x_position, y_position].set_xlim(left=10)
+                    ax[x_position, y_position].margins(x=0)
+                    ax[x_position, y_position].set_ylim([0.0001, 10])
                     ax[x_position, y_position].xaxis.grid(
                         True, which="both", linestyle="dotted"
                     )
@@ -317,95 +309,46 @@ def plot_psa_rrup(
                     y_position += 1
                 x_position += 1
 
-            fig.tight_layout()
             plt.savefig(
                 f"{plot_directory}/{tect_type}_{im_label.replace('.', 'p')}.png"
             )
             plt.close()
 
 
-def im_rrup_plot(
-    mag_dict: Dict, vs30_values: List, psa_periods: List, rrup_values: Dict
-):
-    """Plot function for a IM(no pSA) versus Rrup
-
-    Parameters
-    ----------
-    mag_dict: Dict
-        Dictionary with a different Mw lists for a different tectonic type
-    vs30_values: List
-        list of Vs30s
-    psa_periods: List
-        list of Periods
-    rrup_values: Dict
-        dictionary of Rrups np.ndarray
-    """
-
-    plot_directory = pathlib.Path(__file__).resolve().parent.parent / "plot" / "im_rrup"
-    plot_directory.mkdir(exist_ok=True, parents=True)
-
-    faults, result_dict = init_setup(mag_dict, vs30_values, psa_periods)
-    sites = get_sites(vs30_values, rrup_values)
-
-    faults = get_faults(vs30_values, mag_dict, faults)
-    result_dict = get_computed_gmms(
-        vs30_values, sites, mag_dict, faults, result_dict, psa_periods
-    )
-
-    plot_im_rrup(vs30_values, mag_dict, rrup_values, result_dict, plot_directory)
-
-
-def psa_rrup_plot(
-    mag_dict: Dict, vs30_values: List, psa_periods: List, rrup_values: Dict
-):
-    """Plot function for a IM(pSA) versus Rrup
-
-    Parameters
-    ----------
-    mag_dict: Dict
-        Dictionary with a different Mw lists for a different tectonic type
-    vs30_values: List
-        list of Vs30s
-    psa_periods: List
-        list of Periods
-    rrup_values: Dict
-        dictionary of Rrups np.ndarray
-    """
-
-    plot_directory = pathlib.Path(__file__).resolve().parent.parent / "plot" / "im_rrup"
-    plot_directory.mkdir(exist_ok=True, parents=True)
-
-    faults, result_dict = init_setup(mag_dict, vs30_values, psa_periods)
-    sites = get_sites(vs30_values, rrup_values)
-
-    faults = get_faults(vs30_values, mag_dict, faults)
-
-    result_dict = get_computed_gmms(
-        vs30_values, sites, mag_dict, faults, result_dict, psa_periods
-    )
-
-    plot_psa_rrup(
-        vs30_values, mag_dict, psa_periods, rrup_values, result_dict, plot_directory
-    )
-
-
 if __name__ == "__main__":
     mag_dict = {
-        "ACTIVE_SHALLOW": [5, 6, 7, 8],
-        "SUBDUCTION_SLAB": [5, 6, 7],
+        "ACTIVE_SHALLOW": [6, 7, 8],
+        "SUBDUCTION_SLAB": [6, 7, 8],
         "SUBDUCTION_INTERFACE": [7, 8, 9],
     }
-    vs30_lists = [200, 400, 760]
-    psa_lists = [0.2, 1.0, 3.0, 10.0]
+    vs30_lists = [400, 760]
+    psa_lists = [0.2]
     # For ACTIVE_SHALLOW and INTERFACE
-    first_rrup_lists = np.linspace(1, 1000, 500)
+    asc_rrups = np.linspace(10, 1000, 200)
     # For SLAB
-    second_rrup_lists = np.linspace(50, 1000, 500)
+    ss_rrups = np.logspace(np.log10(50), np.log10(500), 100)
+    # For INTERFACE
+    si_rrups = np.linspace(10, 1000, 500)
     rrup_dict = {
-        "ACTIVE_SHALLOW": first_rrup_lists,
-        "SUBDUCTION_INTERFACE": first_rrup_lists,
-        "SUBDUCTION_SLAB": second_rrup_lists,
+        "ACTIVE_SHALLOW": asc_rrups,
+        "SUBDUCTION_INTERFACE": si_rrups,
+        "SUBDUCTION_SLAB": ss_rrups,
     }
+    # Update the path to the directory to save plots
+    save_path = pathlib.Path(".")
+    plot_directory = save_path / "im_rrup"
+    plot_directory.mkdir(exist_ok=True, parents=True)
 
-    im_rrup_plot(mag_dict, vs30_lists, psa_lists, rrup_dict)
-    psa_rrup_plot(mag_dict, vs30_lists, psa_lists, rrup_dict)
+    # Set up process
+    faults, result_dict = init_setup(mag_dict, vs30_lists, psa_lists)
+    sites = get_sites(vs30_lists, rrup_dict)
+    faults = get_faults(vs30_lists, mag_dict, faults)
+    computed_gmms_dict = get_computed_gmms(
+        vs30_lists, sites, mag_dict, faults, result_dict, psa_lists
+    )
+
+    # Plotting process
+    plot_im_rrup(vs30_lists, mag_dict, rrup_dict, computed_gmms_dict, plot_directory)
+    plot_psa_rrup(
+        vs30_lists, mag_dict, psa_lists, rrup_dict, computed_gmms_dict, plot_directory,
+    )
