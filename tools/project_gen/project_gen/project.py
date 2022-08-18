@@ -34,7 +34,7 @@ MODEL_CONFIG_PATH = (
     / "22p5.yaml"
 )
 EMPIRICAL_WEIGHT_CONFIG_PATH = (
-    SCRIPTS_DIR / "ensemble_creation" / "gmm_weights_21p10.yaml"
+    SCRIPTS_DIR / "ensemble_creation" / "gmm_weights_22p5.yaml"
 )
 
 
@@ -417,6 +417,10 @@ def generate_dbs(
         assert (
             ds_imdbs_result.returncode == 0
         ), "Distributed Seismicity IMDB generation failed"
+
+    # We had to temporarily remove, so it works with OQ wrapper which does not support AI
+    if AI_to_gen:
+        im_types.append("AI")
 
     flt_erf_base_fn = FLT_ERF_MAPPING[flt_erf_version]
 
