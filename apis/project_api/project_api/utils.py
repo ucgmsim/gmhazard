@@ -155,7 +155,13 @@ def load_disagg_data(station_data_dir: Path, im: gc.im.IM, rps: List[int]):
     src_pngs, eps_pngs = [], []
 
     for rp in rps:
-        data_dir = station_data_dir / f"disagg_{im.file_format()}_{rp}"
+        # No data exists for that RP
+        if not (
+            data_dir := station_data_dir / f"disagg_{im.file_format()}_{rp}"
+        ).exists():
+            print(f"No data available for disagg {im} and RP {rp}, skipping")
+            continue
+
         ensemble_results.append(gc.disagg.EnsembleDisaggResult.load(data_dir))
 
         metadata_results.append(
@@ -399,5 +405,3 @@ def _write_station(
         au.api.write_uhs_download_data(
             uhs_results, nzs1170p5_results, str(cur_comp_out_dir)
         )
-
-        print(f"wtf")

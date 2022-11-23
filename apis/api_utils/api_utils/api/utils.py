@@ -17,7 +17,7 @@ from itsdangerous.url_safe import URLSafeTimedSerializer
 import gmhazard_calc as sc
 
 DOWNLOAD_URL_VALID_FOR = 24 * 60 * 60
-SALT = os.environ["SALT"]
+SALT = os.environ.get("SALT")
 
 
 class MissingKeyError(Exception):
@@ -222,7 +222,6 @@ def get_repo_version():
     try:
         repo = git.Repo(Path(__file__).absolute(), search_parent_directories=True)
     except Exception as ex:
-        print(f"Failed to get the the git repo id")
         return "N/A"
     logging.disable(logging.NOTSET)
 

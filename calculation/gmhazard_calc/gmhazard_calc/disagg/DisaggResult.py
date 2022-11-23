@@ -102,8 +102,13 @@ class BaseDisaggResult:
 
     @property
     def total_contributions(self) -> pd.Series:
-        return self.fault_disagg_id.contribution.append(
-            pd.Series({"distributed_seismicity": self.ds_disagg_id.contribution.sum()})
+        return pd.concat(
+            [
+                self.fault_disagg_id.contribution,
+                pd.Series(
+                    {"distributed_seismicity": self.ds_disagg_id.contribution.sum()}
+                ),
+            ]
         ).sort_values(ascending=False)
 
     @property
