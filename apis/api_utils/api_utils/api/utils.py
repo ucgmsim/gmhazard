@@ -219,7 +219,11 @@ def get_cache_key(type: str, logger: logging.Logger = None, **kwargs):
 def get_repo_version():
     """Gets the current commit hash"""
     logging.disable(logging.ERROR)
-    repo = git.Repo(Path(__file__).absolute(), search_parent_directories=True)
+    try:
+        repo = git.Repo(Path(__file__).absolute(), search_parent_directories=True)
+    except Exception as ex:
+        print(f"Failed to get the the git repo id")
+        return "N/A"
     logging.disable(logging.NOTSET)
 
     return repo.head.object.hexsha

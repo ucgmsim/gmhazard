@@ -196,11 +196,11 @@ def create_hazard_download_zip(
 
 
 def write_disagg_download_data(
-    disagg_data: sc.disagg.EnsembleDisaggResult,
-    metadata_df: pd.DataFrame,
+    disagg_data: Sequence[sc.disagg.EnsembleDisaggResult],
+    metadata_df: Sequence[pd.DataFrame],
     out_dir: str,
-    src_plot_data: bytes = None,
-    eps_plot_data: bytes = None,
+    src_plot_data: Sequence[bytes] = None,
+    eps_plot_data: Sequence[bytes] = None,
     prefix: str = None,
 ):
     prefix = "" if prefix is None else f"{prefix}_"

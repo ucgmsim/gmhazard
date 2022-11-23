@@ -801,11 +801,11 @@ def plot_gms_mw_rrup(
         fmt="^",
         xerr=[
             [selected_gms_agg["rrup_mean"] - selected_gms_agg["rrup_error_bounds"][0]],
-            [selected_gms_agg["rrup_error_bounds"][1] - selected_gms_agg["rrup_mean"]],
+            [np.abs(selected_gms_agg["rrup_error_bounds"][1] - selected_gms_agg["rrup_mean"])],
         ],
         yerr=[
             [selected_gms_agg["mag_mean"] - selected_gms_agg["mag_error_bounds"][0]],
-            [selected_gms_agg["mag_error_bounds"][1] - selected_gms_agg["mag_mean"]],
+            [np.abs(selected_gms_agg["mag_error_bounds"][1] - selected_gms_agg["mag_mean"])],
         ],
         capsize=15,
         color=[0, 0, 0, 0.4],
