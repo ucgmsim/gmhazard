@@ -34,7 +34,7 @@ services:
       args:
         - BRANCH_NAME
     environment:
-      - ENV=DEV
+      - ENV=dev
       - AUTH0_DOMAIN=${AUTH0_DOMAIN_DEV}
       - API_AUDIENCE=${API_AUDIENCE_DEV}
       - ALGORITHMS=${ALGORITHMS_DEV}
