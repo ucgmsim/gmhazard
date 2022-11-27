@@ -344,8 +344,11 @@ def _write_station(
         )
 
         (out_dir := output_dir / cur_gms_param.id).mkdir(exist_ok=False)
-        au.api.create_gms_download_zip(
-            cur_gms_result, str(out_dir), cur_disagg_data, cur_cs_bounds
+        au.api.write_gms_download_data(
+            cur_gms_result,
+            str(out_dir),
+            disagg_data=cur_disagg_data,
+            cs_param_bounds=cur_cs_bounds,
         )
 
     for component in project.components:
