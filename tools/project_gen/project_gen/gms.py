@@ -103,7 +103,8 @@ def process_station_gms_config_comb(
     except AssertionError as ex:
         print(
             f"\tFailed to compute GMS for gms id {gms_id}, site {site_info.station_name}, IM {IMs} and "
-            f"exceedance {exceedance} due an assert error:\n{ex}")
+            f"exceedance {exceedance} due an assert error:\n{ex}"
+        )
         return
 
 
@@ -173,24 +174,41 @@ def gen_gms_project_data(project_dir: Path, n_procs: int = 1):
     ]
 
     results_dir = project_dir / "results"
-    with mp.Pool(processes=n_procs) as p:
-        p.starmap(
-            process_station_gms_config_comb,
-            [
-                (
-                    ensemble,
-                    cur_station,
-                    cur_id,
-                    gc.im.IM.from_str(gms_params[cur_id]["IMj"]),
-                    _get_gms_ims(
-                        gms_params[cur_id]["IMj"], gms_params[cur_id]["IMs"], ensemble
-                    ),
-                    gms_params[cur_id]["n_gms"],
-                    results_dir / cur_station,
-                    gms_params[cur_id]["dataset_id"],
-                    gms_params[cur_id].get("im_j"),
-                    gms_params[cur_id].get("exceedance"),
-                )
-                for cur_station, cur_id in station_id_comb
-            ],
-        )
+    if n_procs == 1:
+        for cur_station, cur_id in station_id_comb:
+            process_station_gms_config_comb(
+                ensemble,
+                cur_station,
+                cur_id,
+                gc.im.IM.from_str(gms_params[cur_id]["IMj"]),
+                _get_gms_ims(
+                    gms_params[cur_id]["IMj"], gms_params[cur_id]["IMs"], ensemble
+                ),
+                gms_params[cur_id]["n_gms"],
+                results_dir / cur_station,
+                gms_params[cur_id]["dataset_id"],
+                gms_params[cur_id].get("im_j"),
+                gms_params[cur_id].get("exceedance"),
+            )
+    else:
+        with mp.Pool(processes=n_procs) as p:
+            p.starmap(
+                process_station_gms_config_comb,
+                [
+                    (
+                        ensemble,
+                        cur_station,
+                        cur_id,
+                        gc.im.IM.from_str(gms_params[cur_id]["IMj"]),
+                        _get_gms_ims(
+                            gms_params[cur_id]["IMj"], gms_params[cur_id]["IMs"], ensemble
+                        ),
+                        gms_params[cur_id]["n_gms"],
+                        results_dir / cur_station,
+                        gms_params[cur_id]["dataset_id"],
+                        gms_params[cur_id].get("im_j"),
+                        gms_params[cur_id].get("exceedance"),
+                    )
+                    for cur_station, cur_id in station_id_comb
+                ],
+            )

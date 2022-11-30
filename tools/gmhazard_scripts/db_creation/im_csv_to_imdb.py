@@ -19,7 +19,8 @@ The association between the rows of the arrays and stations is made at a
 fault level, by storing the indices of the stations (in the station list) per fault,
 and ensuring that stations are in order.
 
-Note: This script requires python3.7+, otherwise a pickle error will occur
+Note I: This script requires python3.7+, otherwise a pickle error will occur
+Note II: Requires ray version 1.x, does not work with 2.x
 """
 import gc
 import os
@@ -221,6 +222,8 @@ class StationProcessor:
                 f"Completed station {station_name}, {ix + 1}/{len(station_names)}, took {time.time() - start_time:.5}"
             )
         print("Completed all assigned stations")
+
+
 
     def _process_station(self, station_ix: int) -> Union[None, pd.DataFrame]:
         """Creates the IM dataframe for the specified station
@@ -472,7 +475,7 @@ def run(
             else stations[ix * n_stations_per :]
         )
         cur_station_ind = np.arange(
-            ix * n_stations_per, (ix * n_stations_per) + cur_stations.size, dtype=np.int
+            ix * n_stations_per, (ix * n_stations_per) + cur_stations.size, dtype=int
         )
         worker_run_ids.append(
             worker_procs[ix].run.remote(cur_stations, cur_station_ind)
@@ -481,9 +484,12 @@ def run(
     # Wait for the worker processes to finish
     print("Collecting and writing station data")
     ray.wait(worker_run_ids, num_returns=len(worker_run_ids))
+    print(f"wtf")
 
     close_id = writer.close_db.remote()
+    print(f"wtf2")
     ray.wait([close_id], num_returns=1)
+    print(f"wtf3")
     print(f"Total time {time.time() - total_start_time}")
 
     if rupture_lookup:
