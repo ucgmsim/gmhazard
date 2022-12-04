@@ -713,6 +713,7 @@ def plot_gms_im_distribution(
                 save_dir / f"gms_im_distribution_{str(IMi).replace('.', 'p')}_plot.png"
             )
             plt.clf()
+            plt.close()
         else:
             plt.show()
 
