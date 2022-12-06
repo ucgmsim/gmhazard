@@ -43,7 +43,10 @@ class Project:
             # Vs30 and Z1.0, Z2.5 values for correct mapping
             assert len(z1p0) == len(cur_data["vs30"]) and len(z1p0) == len(z2p5)
             self.locations[cur_loc_id] = Location(
-                cur_data["name"], cur_data["vs30"], z1p0, z2p5,
+                cur_data["name"],
+                cur_data["vs30"],
+                z1p0,
+                z2p5,
             )
         self.station_ids = [
             pg.utils.create_station_id(cur_loc, cur_vs30, z1p0=cur_z1p0, z2p5=cur_z2p5)
@@ -152,12 +155,19 @@ def load_disagg_data(station_data_dir: Path, im: gc.im.IM, rps: List[int]):
     src_pngs, eps_pngs = [], []
 
     for rp in rps:
-        data_dir = station_data_dir / f"disagg_{im.file_format()}_{rp}"
+        # No data exists for that RP
+        if not (
+            data_dir := station_data_dir / f"disagg_{im.file_format()}_{rp}"
+        ).exists():
+            print(f"No data available for disagg {im} and RP {rp}, skipping")
+            continue
+
         ensemble_results.append(gc.disagg.EnsembleDisaggResult.load(data_dir))
 
         metadata_results.append(
             pd.read_csv(
-                data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv", index_col=0,
+                data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv",
+                index_col=0,
             )
         )
 
@@ -320,6 +330,27 @@ def _write_station(
     shutil.copy(cur_data_dir / "context_map_plot.png", output_dir)
     shutil.copy(cur_data_dir / "vs30_map_plot.png", output_dir)
 
+    for cur_gms_param in project.gms_params:
+        if not (
+            cur_gms_dir := cur_data_dir
+            / gc.gms.GMSResult.get_save_dir(cur_gms_param.id)
+        ).exists():
+            print(
+                f"Failed to write GMS results for id {cur_gms_param.id}, as the path {cur_gms_dir} does not exists"
+            )
+
+        cur_gms_result, cur_cs_bounds, cur_disagg_data = load_gms_data(
+            cur_data_dir, cur_gms_param.id
+        )
+
+        (out_dir := output_dir / cur_gms_param.id).mkdir(exist_ok=False)
+        au.api.write_gms_download_data(
+            cur_gms_result,
+            str(out_dir),
+            disagg_data=cur_disagg_data,
+            cs_param_bounds=cur_cs_bounds,
+        )
+
     for component in project.components:
         cur_comp_out_dir = output_dir / str(component)
         cur_comp_out_dir.mkdir(exist_ok=False)
@@ -331,38 +362,37 @@ def _write_station(
             )
             au.api.write_hazard_download_data(
                 ensemble_hazard,
-                nzs1170p5_hazard,
                 str(cur_comp_out_dir),
+                nzs1170p5_hazard,
                 nzta_hazard=nzta_hazard,
             )
 
-            # Load & Write disagg for all return periods
-            mean_values, contributions = {}, {}
-            for cur_rp in project.disagg_rps:
-                try:
-                    (
-                        ensemble_disagg,
-                        metadata_df,
-                        src_png_data,
-                        eps_png_data,
-                    ) = load_disagg_data(cur_data_dir / str(component), cur_im, cur_rp)
-                except FileNotFoundError:
-                    print(
-                        f"Failed to write disagg data for IM {cur_im} "
-                        f"and RP {cur_rp} as the "
-                        f"results are missing or incomplete"
-                    )
-                else:
-                    au.api.write_disagg_download_data(
-                        ensemble_disagg,
-                        metadata_df,
-                        str(cur_comp_out_dir),
-                        src_plot_data=src_png_data,
-                        eps_plot_data=eps_png_data,
-                    )
+            # Load disagg data
+            (
+                ensemble_disagg,
+                metadata_df,
+                src_png_data,
+                eps_png_data,
+            ) = load_disagg_data(
+                cur_data_dir / str(component), cur_im, project.disagg_rps
+            )
+            mean_values = {
+                cur_rp: cur_disagg.mean_values
+                for cur_disagg, cur_rp in zip(ensemble_disagg, project.disagg_rps)
+            }
+            contributions = {
+                cur_rp: cur_disagg.total_contributions
+                for cur_disagg, cur_rp in zip(ensemble_disagg, project.disagg_rps)
+            }
 
-                    mean_values[cur_rp] = ensemble_disagg.mean_values
-                    contributions[cur_rp] = ensemble_disagg.total_contributions
+            # Write disagg data
+            au.api.write_disagg_download_data(
+                ensemble_disagg,
+                metadata_df,
+                str(cur_comp_out_dir),
+                src_plot_data=src_png_data,
+                eps_plot_data=eps_png_data,
+            )
 
             pd.concat(contributions, axis=1).to_csv(
                 cur_comp_out_dir / f"{cur_im}_disagg_contributions.csv"

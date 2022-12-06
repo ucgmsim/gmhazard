@@ -93,7 +93,7 @@ def get_work(distance_store, vs30_file, z_file, rank, size, stations_calculated=
         site_df.join(formats.load_z_file(z_file)) if z_file is not None else site_df
     )
 
-    site_to_do_df = site_df
+    site_to_do_df = site_df.copy()
 
     if stations_calculated is not None and len(stations_calculated) > 0:
         site_to_do_df = site_to_do_df[~site_to_do_df.index.isin(stations_calculated)]

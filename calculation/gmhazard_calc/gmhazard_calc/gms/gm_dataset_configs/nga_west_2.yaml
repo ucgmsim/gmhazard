@@ -1,5 +1,0 @@
-name: "NGA West 2"
-type: "historical"
-
-empirical_IM_csv_ffp: "$PATH$/nga_west_2_geo_ims.csv"
-empirical_GMs_dir: "$PATH$/waveforms"

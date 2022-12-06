@@ -265,10 +265,7 @@ class HistoricalGMDataset(GMDataset):
         return im_df.loc[mask, IMs]
 
     def compute_scaling_factor(
-        self,
-        IMj: IM,
-        im_j: float,
-        gm_ids: np.ndarray = None,
+        self, IMj: IM, im_j: float, gm_ids: np.ndarray = None,
     ) -> Tuple[pd.DataFrame, pd.Series]:
         """
         Computes the amplitude scaling factor such that IM_j == im_j
@@ -410,10 +407,8 @@ class SimulationGMDataset(GMDataset):
         **kwargs,
     ) -> pd.DataFrame:
         """See GMDataset method for parameter specifications"""
-        # Using a leaf here is a bit of a hack, however loading IM values will
-        # get an overhaul in the near future, so this will be updated as well then
-        leaf = gm_data.Leaf(None, self.imdb_ffp, constants.SourceType.fault)
-        im_df = shared.get_IM_values([leaf], site_info).reset_index(0)
+        with dbs.IMDBNonParametric(self.imdb_ffp) as db:
+            im_df = db.im_data(site_info.station_name).reset_index(0)
 
         if cs_param_bounds is not None:
             # Add source metadata

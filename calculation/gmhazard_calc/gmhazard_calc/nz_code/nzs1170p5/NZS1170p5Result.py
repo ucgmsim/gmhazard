@@ -154,14 +154,13 @@ class NZS1170p5Result:
                 data_dir / cls.IM_VALUES_FN,
                 index_col=0,
                 float_precision="round_trip",
-                squeeze=True,
-            ),
-            pd.read_csv(data_dir / cls.CH_FN, index_col=0, squeeze=True),
+            ).squeeze("columns"),
+            pd.read_csv(data_dir / cls.CH_FN, index_col=0).squeeze("columns"),
             const.NZSSoilClass(metadata["soil_class"]),
             metadata["Z"],
-            pd.read_csv(data_dir / cls.R_FN, index_col=0, squeeze=True),
+            pd.read_csv(data_dir / cls.R_FN, index_col=0).squeeze("columns"),
             metadata["D"],
-            pd.read_csv(data_dir / cls.N_FN, index_col=0, squeeze=True),
+            pd.read_csv(data_dir / cls.N_FN, index_col=0).squeeze("columns"),
         )
 
     @staticmethod

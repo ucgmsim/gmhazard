@@ -102,15 +102,20 @@ class BaseDisaggResult:
 
     @property
     def total_contributions(self) -> pd.Series:
-        return self.fault_disagg_id.contribution.append(
-            pd.Series({"distributed_seismicity": self.ds_disagg_id.contribution.sum()})
+        return pd.concat(
+            [
+                self.fault_disagg_id.contribution,
+                pd.Series(
+                    {"distributed_seismicity": self.ds_disagg_id.contribution.sum()}
+                ),
+            ]
         ).sort_values(ascending=False)
 
     @property
     def total_contributions_df(self) -> pd.DataFrame:
-        df = (
-            self.fault_disagg_id[["contribution", "epsilon"]]
-            .append(
+        df = pd.concat(
+            [
+                self.fault_disagg_id[["contribution", "epsilon"]],
                 pd.DataFrame.from_dict(
                     {
                         "distributed_seismicity": {
@@ -119,10 +124,9 @@ class BaseDisaggResult:
                         }
                     },
                     orient="index",
-                )
-            )
-            .sort_values("contribution", ascending=False)
-        )
+                ),
+            ]
+        ).sort_values("contribution", ascending=False)
         df.index.name = "record_id"
 
         return df

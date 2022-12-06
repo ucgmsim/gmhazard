@@ -8,7 +8,6 @@ import argparse
 import os
 
 from mpi4py import MPI
-import numba
 import numpy as np
 import pandas as pd
 

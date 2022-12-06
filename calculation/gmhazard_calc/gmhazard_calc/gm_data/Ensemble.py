@@ -340,7 +340,7 @@ class Ensemble:
                 self._rupture_df = im_ensemble.rupture_df_id_ix
             else:
                 # Append and drop duplicates
-                self._rupture_df = self._rupture_df.append(im_ensemble.rupture_df_id_ix)
+                self._rupture_df = pd.concat([self._rupture_df, im_ensemble.rupture_df_id_ix])
                 self._rupture_df = self._rupture_df.loc[
                     ~self._rupture_df.index.duplicated()
                 ]
