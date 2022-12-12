@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import celery
 
-import gmhazard_calc as sc
+import gmhazard_calc as gc
 from . import tasks
 from . import utils
 
@@ -24,22 +24,22 @@ def gen_psha_project_data(project_dir: Path, n_procs: int = 1, use_mp: bool = Tr
 
     # Load the project parameters
     project_params = project_dict["project_parameters"]
-    ims = sc.im.to_im_list(project_params["ims"])
+    ims = gc.im.to_im_list(project_params["ims"])
 
     # TODO: Change this to only do the specified components
-    im_components = [sc.im.IMComponent.RotD50]
+    im_components = [gc.im.IMComponent.RotD50]
     if "im_components" in project_params.keys():
         im_components = [
-            sc.im.IMComponent[component]
+            gc.im.IMComponent[component]
             for component in project_params["im_components"]
         ]
         for im_component in im_components:
-            if im_component != sc.im.IMComponent.RotD50:
+            if im_component != gc.im.IMComponent.RotD50:
                 ims.extend(
                     [
-                        sc.im.IM(im.im_type, im.period, im_component)
+                        gc.im.IM(im.im_type, im.period, im_component)
                         for im in ims
-                        if im.is_pSA() or im.im_type == sc.im.IMType.PGA
+                        if im.is_pSA() or im.im_type == gc.im.IMType.PGA
                     ]
                 )
 
@@ -51,7 +51,7 @@ def gen_psha_project_data(project_dir: Path, n_procs: int = 1, use_mp: bool = Tr
 
     # Load the ensemble
     ensemble_ffp = project_dict["ensemble_ffp"]
-    ensemble = sc.gm_data.Ensemble(
+    ensemble = gc.gm_data.Ensemble(
         project_id, config_ffp=ensemble_ffp, use_im_data_cache=False
     )
 
@@ -110,7 +110,7 @@ def gen_psha_project_data(project_dir: Path, n_procs: int = 1, use_mp: bool = Tr
 
     if len(uhs_exceedances) > 0:
         for cur_station in station_ids:
-            cur_site_info = sc.site.get_site_from_name(ensemble, cur_station)
+            cur_site_info = gc.site.get_site_from_name(ensemble, cur_station)
 
             # Computing UHS for each of the IM Components
             for im_component in im_components:
@@ -128,7 +128,7 @@ def gen_psha_project_data(project_dir: Path, n_procs: int = 1, use_mp: bool = Tr
                 )
 
                 # Compute & write UHS
-                uhs_results = sc.uhs.run_ensemble_uhs(
+                uhs_results = gc.uhs.run_ensemble_uhs(
                     ensemble,
                     cur_site_info,
                     np.asarray(uhs_exceedances),
@@ -142,7 +142,7 @@ def gen_psha_project_data(project_dir: Path, n_procs: int = 1, use_mp: bool = Tr
                 # Compute & write UHS NZS1170.5
                 cur_uhs_nzs1170p5_dir = cur_output_dir / "uhs_nzs1170p5"
                 cur_uhs_nzs1170p5_dir.mkdir(exist_ok=False, parents=False)
-                uhs_nzs1170p5 = sc.uhs.run_nzs1170p5_uhs(
+                uhs_nzs1170p5 = gc.uhs.run_nzs1170p5_uhs(
                     ensemble,
                     cur_site_info,
                     np.asarray(uhs_exceedances),
@@ -187,7 +187,7 @@ def gen_psha_project_data(project_dir: Path, n_procs: int = 1, use_mp: bool = Tr
 
 
 def generate_maps(
-    ensemble: sc.gm_data.Ensemble, station_name: str, results_dir: Union[str, Path]
+    ensemble: gc.gm_data.Ensemble, station_name: str, results_dir: Union[str, Path]
 ):
     """Generates the context and vs30 map for the specified station
 
@@ -195,7 +195,7 @@ def generate_maps(
     """
     results_dir = Path(results_dir)
 
-    site_info = sc.site.get_site_from_name(ensemble, station_name)
+    site_info = gc.site.get_site_from_name(ensemble, station_name)
     output_dir = results_dir / station_name
 
     # Create the current output directory (if required)
@@ -204,7 +204,7 @@ def generate_maps(
     # Generate the context maps
     if not (output_dir / "context_map_plot.png").exists():
         print(f"Generating context maps for station {site_info.station_name}")
-        sc.plots.gmt_context(
+        gc.plots.gmt_context(
             site_info.lon, site_info.lat, str(output_dir / "context_map_plot"),
         )
     else:
@@ -212,7 +212,7 @@ def generate_maps(
 
     # Generate the vs30 map
     if not (output_dir / "vs30_map_plot.png").exists():
-        sc.plots.gmt_vs30(
+        gc.plots.gmt_vs30(
             str(output_dir / "vs30_map_plot.png"),
             site_info.lon,
             site_info.lat,
@@ -226,32 +226,32 @@ def generate_maps(
 
 
 def process_station_scenarios(
-    ensemble: sc.gm_data.Ensemble,
+    ensemble: gc.gm_data.Ensemble,
     station_name: str,
-    im_component: sc.im.IMComponent,
+    im_component: gc.im.IMComponent,
     output_dir: Path,
 ):
     """Computes Scenarios for the specified station and IM Component"""
     print(f"Computing Scenarios for station {station_name} - Component {im_component}")
 
-    site_info = sc.site.get_site_from_name(ensemble, station_name)
+    site_info = gc.site.get_site_from_name(ensemble, station_name)
 
     # Compute and Write Scenario
-    if (output_dir / sc.scenario.EnsembleScenarioResult.get_save_dir()).exists():
+    if (output_dir / gc.scenario.EnsembleScenarioResult.get_save_dir()).exists():
         print(
             f"Skipping scenario computation for station {station_name} "
             f"- IM component {im_component} as it already exists"
         )
     else:
-        sc.scenario.run_ensemble_scenario(
+        gc.scenario.run_ensemble_scenario(
             ensemble, site_info, im_component=im_component,
         ).save(output_dir)
 
 
 def process_station_im(
-    ensemble: sc.gm_data.Ensemble,
+    ensemble: gc.gm_data.Ensemble,
     station_name: str,
-    im: sc.im.IM,
+    im: gc.im.IM,
     disagg_exceedances: Sequence[float],
     output_dir: Union[str, Path],
 ):
@@ -272,11 +272,11 @@ def process_station_im(
     print(f"\t{os.getpid()} - Processing station {station_name} and IM {im}")
 
     # Get the site
-    site_info = sc.site.get_site_from_name(ensemble, station_name)
+    site_info = gc.site.get_site_from_name(ensemble, station_name)
 
     # Compute & write hazard if needed
     ens_hazard = None
-    if (output_dir / sc.hazard.EnsembleHazardResult.get_save_dir(im)).exists():
+    if (output_dir / gc.hazard.EnsembleHazardResult.get_save_dir(im)).exists():
         print(
             f"\t{os.getpid()} - Skipping hazard computation for station {site_info.station_name} - "
             f"IM {im} - Component {im.component} as it already exists"
@@ -286,15 +286,15 @@ def process_station_im(
             f"\t{os.getpid()} - Computing hazard for station"
             f" {site_info.station_name} - IM {im} - Component {im.component}"
         )
-        ens_hazard = sc.hazard.run_ensemble_hazard(
+        ens_hazard = gc.hazard.run_ensemble_hazard(
             ensemble, site_info, im, calc_percentiles=True
         )
         ens_hazard.save(output_dir)
 
     # Compute & write NZS1170.5 if needed
-    if im.im_type == sc.im.IMType.PGA or im.is_pSA():
+    if im.im_type == gc.im.IMType.PGA or im.is_pSA():
         if (
-            output_dir / sc.nz_code.nzs1170p5.NZS1170p5Result.get_save_dir(im, "hazard")
+                output_dir / gc.nz_code.nzs1170p5.NZS1170p5Result.get_save_dir(im, "hazard")
         ).exists():
             print(
                 f"\t{os.getpid()} - Skipping NZS1170.5 computation for station {site_info.station_name} - "
@@ -305,13 +305,13 @@ def process_station_im(
                 f"\t{os.getpid()} - Computing NZS1170.5 for station "
                 f"{site_info.station_name} - IM {im} - Component {im.component}"
             )
-            sc.nz_code.nzs1170p5.run_ensemble_nzs1170p5(ensemble, site_info, im).save(
+            gc.nz_code.nzs1170p5.run_ensemble_nzs1170p5(ensemble, site_info, im).save(
                 output_dir, "hazard"
             )
 
     # Compute & write NZTA hazard if needed
-    if im.im_type == sc.im.IMType.PGA:
-        if (output_dir / sc.nz_code.nzta_2018.NZTAResult.get_save_dir()).exists():
+    if im.im_type == gc.im.IMType.PGA:
+        if (output_dir / gc.nz_code.nzta_2018.NZTAResult.get_save_dir()).exists():
             print(
                 f"\t{os.getpid()} - Skipping NZTA computation for station {site_info.station_name} "
                 f"as it already exists"
@@ -320,15 +320,15 @@ def process_station_im(
             print(
                 f"\t{os.getpid()} - Computing NZTA for station {site_info.station_name}"
             )
-            sc.nz_code.nzta_2018.run_ensemble_nzta(ensemble, site_info).save(output_dir)
+            gc.nz_code.nzta_2018.run_ensemble_nzta(ensemble, site_info).save(output_dir)
 
     # Compute & write disagg for the different exceedances
     for cur_excd in disagg_exceedances:
         cur_rp = int(1.0 / cur_excd)
 
         if (
-            output_dir
-            / sc.disagg.EnsembleDisaggResult.get_save_dir(im, exceedance=cur_excd)
+                output_dir
+                / gc.disagg.EnsembleDisaggResult.get_save_dir(im, exceedance=cur_excd)
         ).exists():
             print(
                 f"\t{os.getpid()} - Skipping disagg computation for station {site_info.station_name} - "
@@ -340,7 +340,7 @@ def process_station_im(
                 f"IM {im} - Component {im.component} - Return period {cur_rp}"
             )
             try:
-                cur_disagg_data = sc.disagg.run_ensemble_disagg(
+                cur_disagg_data = gc.disagg.run_ensemble_disagg(
                     ensemble,
                     site_info,
                     im,
@@ -348,13 +348,13 @@ def process_station_im(
                     calc_mean_values=True,
                     hazard_result=ens_hazard,
                 )
-            except sc.exceptions.ExceedanceOutOfRangeError as ex:
+            except gc.exceptions.ExceedanceOutOfRangeError as ex:
                 print(
                     f"\t{os.getpid()} - Failed to compute disagg for IM {ex.im} and exceedance {ex.exceedance} as the"
                     f"exceedance is outside of the computed hazard range for this site, skipping!"
                 )
             else:
-                cur_disagg_grid_data = sc.disagg.run_disagg_gridding(cur_disagg_data)
+                cur_disagg_grid_data = gc.disagg.run_disagg_gridding(cur_disagg_data)
 
                 # Save
                 cur_disagg_data_dir = cur_disagg_data.save(output_dir)
@@ -365,7 +365,7 @@ def process_station_im(
                 ruptures_df = ensemble.get_im_ensemble(im.im_type).rupture_df_id.loc[
                     cur_disagg_data.fault_disagg_id.index.values
                 ]
-                flt_dist_df = sc.site_source.get_distance_df(
+                flt_dist_df = gc.site_source.get_distance_df(
                     ensemble.flt_ssddb_ffp, site_info
                 )
                 merged_df = pd.merge(
@@ -385,14 +385,14 @@ def process_station_im(
                 )
 
                 # Generate the disagg plots
-                sc.plots.gmt_disagg(
+                gc.plots.gmt_disagg(
                     str(
                         cur_disagg_data_dir / f"disagg_{im.file_format()}_{cur_rp}_src"
                     ),
                     cur_disagg_grid_data.to_dict(),
                     bin_type="src",
                 )
-                sc.plots.gmt_disagg(
+                gc.plots.gmt_disagg(
                     str(
                         cur_disagg_data_dir / f"disagg_{im.file_format()}_{cur_rp}_eps"
                     ),

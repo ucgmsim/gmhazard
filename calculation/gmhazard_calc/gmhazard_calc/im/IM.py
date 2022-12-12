@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, List
+from typing import Optional, Sequence
 
 
 class IMType(Enum):
@@ -81,6 +81,9 @@ class IM:
         else:
             return f"{self.im_type}"
 
+    def __repr__(self):
+        return f"IM(\"{str(self)}\")"
+
     def __hash__(self):
         return hash((self.im_type, self.period, self.component))
 
@@ -94,6 +97,7 @@ class IM:
     def __ne__(self, other):
         return not self.__eq__(other)
 
+
     def file_format(self):
         """
         Outputs the normal str version of the IM
@@ -106,12 +110,12 @@ class IM:
         return self.im_type == IMType.pSA
 
 
-def to_string_list(IMs: List[IM]):
+def to_string_list(IMs: Sequence[IM]):
     """Converts a list of IM Objects to their string form"""
     return [str(im) for im in IMs]
 
 
-def to_im_list(IMs: List[str]):
+def to_im_list(IMs: Sequence[str]):
     """Converts a list of string to IM Objects"""
     return [IM.from_str(im) for im in IMs]
 

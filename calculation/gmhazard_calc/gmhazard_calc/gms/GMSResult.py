@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Union
 
 import pandas as pd
 import numpy as np
@@ -11,7 +11,7 @@ from gmhazard_calc import gm_data
 from gmhazard_calc import site
 from .GroundMotionDataset import GMDataset
 from .CausalParamBounds import CausalParamBounds
-from .GCIMResult import IMEnsembleUniGCIM
+from .GCIMResult import IMEnsembleUniGCIM, SimEnsembleUniGCIM
 
 
 class GMSResult:
@@ -67,7 +67,7 @@ class GMSResult:
         im_j: float,
         IMs: np.ndarray,
         selected_gms_im_df: pd.DataFrame,
-        IMi_gcims: Dict[str, IMEnsembleUniGCIM],
+        IMi_gcims: Dict[str, Union[SimEnsembleUniGCIM, IMEnsembleUniGCIM]],
         realisations: pd.DataFrame,
         gm_dataset: GMDataset,
         cs_param_bounds: CausalParamBounds,
@@ -123,9 +123,11 @@ class GMSResult:
         self._selected_gms_metadata_df = self.gm_dataset.get_metadata_df(
             self.site_info, self.selected_gms_ids
         )
-        self._selected_gms_metadata_df["sf"] = self.sf.loc[
-            self._selected_gms_metadata_df.index
-        ]
+
+        if "sf" in self._selected_gms_metadata_df.columns:
+            self._selected_gms_metadata_df["sf"] = self.sf.loc[
+                self._selected_gms_metadata_df.index
+            ]
 
         # Get 16/84th for each selected GM
         n_gms = self.selected_gms_im_df.shape[0]

@@ -115,6 +115,9 @@ class IMEnsembleUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):
         Conditioning IM
     im_j: float
         Value of the conditioning IM
+    ln_IMi_IMj: Uni_lnIMi_IMj
+        The non-parametric univariate
+        lnIMi|IMj distribution
     branch_uni_gcims: dictionary
         Dictionary of the branch GCIM's that
         make up this combined GCIM
@@ -184,4 +187,82 @@ class IMEnsembleUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):
                 )
                 for cur_branch_name, cur_branch in im_ensemble.branches_dict.items()
             },
+        )
+
+
+class SimEnsembleUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):
+    """
+    Represents the GCIM for a specific IMi and
+    simulation based ensemble
+
+    Parameters:
+    -----------
+    See Attributes
+
+    Attributes:
+    -----------
+    im_ensemble: IMEnsemble
+    IMi: IM
+        IM Object of the IMi
+    IMj: IM
+        Conditioning IM
+    im_j: float
+        Value of the conditioning IM
+    ln_IMi_IMj: Uni_lnIMi_IMj
+        The non-parametric univariate
+        lnIMi|IMj distribution
+    """
+
+    VARIABLES_FN = "variables.json"
+    LNIMI_IMJ_CDF_FN = "lnIMi_IMj_cdf.csv"
+
+    def __init__(
+        self,
+        ensemble: gm_data.Ensemble,
+        IMi: IM,
+        IMj: IM,
+        im_j: float,
+        ln_IMi_IMj: sha_calc.Uni_lnIMi_IMj,
+    ):
+        sha_calc.UniIMiDist.__init__(self, IMi)
+        sha_calc.CondIMjDist.__init__(self, IMj, im_j)
+
+        self.lnIMi_IMj = ln_IMi_IMj
+        self.im_ensemble = ensemble
+
+    def save(self, base_dir: Path):
+        save_dir = base_dir / f"{self.IMi}"
+        save_dir.mkdir(exist_ok=False)
+
+        with open(save_dir / self.VARIABLES_FN, "w") as f:
+            json.dump(dict(IMi=str(self.IMi), IMj=str(self.IMj), im_j=self.im_j), f)
+
+        self.lnIMi_IMj.cdf.to_csv(save_dir / self.LNIMI_IMJ_CDF_FN)
+
+    @classmethod
+    def load(cls, data_dir: Path, ensemble: gm_data.Ensemble):
+        with open(data_dir / cls.VARIABLES_FN, "r") as f:
+            variables_dict = json.load(f)
+
+        IMi = IM.from_str(variables_dict["IMi"])
+        IMj, im_j = IM.from_str(variables_dict["IMj"]), variables_dict["im_j"]
+
+        sha_calc.Uni_lnIMi_IMj(
+            pd.read_csv(data_dir / cls.LNIMI_IMJ_CDF_FN, index_col=0).squeeze(),
+            IMi,
+            IMj,
+            im_j,
+        )
+
+        return cls(
+            ensemble,
+            IMi,
+            IMj,
+            im_j,
+            sha_calc.Uni_lnIMi_IMj(
+                pd.read_csv(data_dir / cls.LNIMI_IMJ_CDF_FN, index_col=0).squeeze(),
+                IMi,
+                IMj,
+                im_j,
+            ),
         )

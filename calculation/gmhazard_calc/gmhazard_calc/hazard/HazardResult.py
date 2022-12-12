@@ -112,7 +112,7 @@ class BaseHazardResult:
         ):
             result_dict[name] = {
                 cur_im_value: f"{cur_excd:.10E}"
-                for cur_im_value, cur_excd in hazard_series.iteritems()
+                for cur_im_value, cur_excd in hazard_series.items()
             }
 
         return result_dict

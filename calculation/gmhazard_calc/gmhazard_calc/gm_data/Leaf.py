@@ -52,19 +52,16 @@ class Leaf:
         branch: "Branch",
         flt_imdb_ffps: List[str],
         ds_imdb_ffps: List[str],
+        model: str,
+        tect_type: str,
     ):
         self.id = id
         self.branch = branch
         self.flt_imdb_ffps = flt_imdb_ffps
         self.ds_imdb_ffps = ds_imdb_ffps
 
-        # Grabs the model and tec_type from the ffps available in the leaf
-        path = (
-            Path(flt_imdb_ffps[0]) if len(flt_imdb_ffps) != 0 else Path(ds_imdb_ffps[0])
-        )
-        split_fp = path.stem.split("_")
-        self.model = "_".join(split_fp[:2])
-        self.tec_type = "_".join(split_fp[2:-1])
+        self.model = model
+        self.tect_type = tect_type
 
         self._flt_stations, self._ds_stations, self._ims = None, None, None
         self._flt_im_data_type, self._ds_im_data_type = None, None

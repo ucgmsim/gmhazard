@@ -1091,28 +1091,30 @@ def plot_gms_available_gm(
         edgecolors="black",
         facecolors="none",
     )
-    # Boundary box plot
-    plt.plot(
-        [
-            cs_param_bounds.rrup_low,
-            cs_param_bounds.rrup_high,
-            cs_param_bounds.rrup_high,
-            cs_param_bounds.rrup_low,
-            cs_param_bounds.rrup_low,
-        ],
-        [
-            cs_param_bounds.mw_low,
-            cs_param_bounds.mw_low,
-            cs_param_bounds.mw_high,
-            cs_param_bounds.mw_high,
-            cs_param_bounds.mw_low,
-        ],
-        color="red",
-        linestyle="dashed",
-        label="Bounds",
-        linewidth=1,
-        dashes=(5, 5),
-    )
+
+    if cs_param_bounds is not None:
+        # Boundary box plot
+        plt.plot(
+            [
+                cs_param_bounds.rrup_low,
+                cs_param_bounds.rrup_high,
+                cs_param_bounds.rrup_high,
+                cs_param_bounds.rrup_low,
+                cs_param_bounds.rrup_low,
+            ],
+            [
+                cs_param_bounds.mw_low,
+                cs_param_bounds.mw_low,
+                cs_param_bounds.mw_high,
+                cs_param_bounds.mw_high,
+                cs_param_bounds.mw_low,
+            ],
+            color="red",
+            linestyle="dashed",
+            label="Bounds",
+            linewidth=1,
+            dashes=(5, 5),
+        )
 
     plt.xscale("log")
     plt.xlabel("Rupture distance, $R_{rup}$(km)")

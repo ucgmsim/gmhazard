@@ -77,7 +77,7 @@ class GMDataset:
     def get_im_df(
         self,
         site_info: site.SiteInfo,
-        IMs: np.ndarray,
+        IMs: Sequence[str],
         cs_param_bounds: CausalParamBounds = None,
         sf: pd.Series = None,
     ) -> pd.DataFrame:
@@ -238,7 +238,7 @@ class HistoricalGMDataset(GMDataset):
     def get_im_df(
         self,
         site_info: site.SiteInfo,
-        IMs: np.ndarray,
+        IMs: Sequence[str],
         cs_param_bounds: CausalParamBounds = None,
         sf: pd.Series = None,
     ) -> pd.DataFrame:
@@ -402,7 +402,7 @@ class SimulationGMDataset(GMDataset):
     def get_im_df(
         self,
         site_info: site.SiteInfo,
-        IMs: np.ndarray,
+        IMs: Sequence[str],
         cs_param_bounds: CausalParamBounds = None,
         **kwargs,
     ) -> pd.DataFrame:
@@ -441,7 +441,7 @@ class SimulationGMDataset(GMDataset):
             return ssdb.station_data(site_info.station_name)
 
     def get_metadata_df(
-        self, site_info: site.SiteInfo, gm_ids: List[Any] = None
+        self, site_info: site.SiteInfo, selected_gms: List[Any] = None
     ) -> pd.DataFrame:
         """See GMDataset method for parameter specifications"""
         vs30_df = pd.read_csv(
@@ -455,14 +455,19 @@ class SimulationGMDataset(GMDataset):
         # Site-source dataframe
         site_source_df = self._get_site_source_df(site_info)
 
-        meta_dict = {}
-        for cur_rel in gm_ids:
-            meta_dict[cur_rel] = [
-                self.source_metadata_df.loc[cur_rel, "mag"],
-                site_source_df.loc[cur_rel.split("_")[0]].rrup,
-                site_vs30,
-            ]
-        meta_df = pd.DataFrame.from_dict(meta_dict, orient="index")
-        meta_df.columns = ["mag", "rrup", "vs30"]
+        if selected_gms is not None:
+            meta_dict = {}
+            for cur_rel in selected_gms:
+                meta_dict[cur_rel] = [
+                    self.source_metadata_df.loc[cur_rel, "mag"],
+                    site_source_df.loc[cur_rel.split("_")[0]].rrup,
+                    site_vs30,
+                ]
+            meta_df = pd.DataFrame.from_dict(meta_dict, orient="index")
+            meta_df.columns = ["mag", "rrup", "vs30"]
+        else:
+            meta_df = pd.merge(self.source_metadata_df, site_source_df, how="left", left_on="fault", right_index=True)
+            meta_df["vs30"] = site_vs30
+            meta_df = meta_df[["fault", "mag", "rrup", "vs30"]]
 
         return meta_df

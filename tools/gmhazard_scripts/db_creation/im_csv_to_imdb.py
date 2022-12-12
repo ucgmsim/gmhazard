@@ -484,12 +484,9 @@ def run(
     # Wait for the worker processes to finish
     print("Collecting and writing station data")
     ray.wait(worker_run_ids, num_returns=len(worker_run_ids))
-    print(f"wtf")
 
     close_id = writer.close_db.remote()
-    print(f"wtf2")
     ray.wait([close_id], num_returns=1)
-    print(f"wtf3")
     print(f"Total time {time.time() - total_start_time}")
 
     if rupture_lookup:

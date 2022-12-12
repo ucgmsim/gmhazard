@@ -62,7 +62,7 @@ def get_ensemble_hazard():
             **result,
             "percentiles": {
                 key: {
-                    im_value: exceedance for im_value, exceedance in value.iteritems()
+                    im_value: exceedance for im_value, exceedance in value.items()
                 }
                 for key, value in ensemble_hazard.percentiles.items()
             },

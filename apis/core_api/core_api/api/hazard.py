@@ -91,7 +91,7 @@ def get_ensemble_hazard():
     # Adding percentiles based on flag
     if calc_percentiles:
         percentiles = {
-            key: {im_value: exceedance for im_value, exceedance in value.iteritems()}
+            key: {im_value: exceedance for im_value, exceedance in value.items()}
             for key, value in ensemble_hazard.percentiles.items()
         }
         result = {**result, "percentiles": percentiles}
