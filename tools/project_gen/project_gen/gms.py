@@ -1,7 +1,7 @@
 """Script for generating the ground motion selection results"""
 import multiprocessing as mp
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 import yaml
 import numpy as np
@@ -21,6 +21,8 @@ def process_station_gms_config_comb(
     gm_dataset_id: str,
     im_j: float = None,
     exceedance: float = None,
+    n_replica: int = 10,
+    sf_bounds: Tuple[float, float] = None,
 ):
     """Processes to a single station and GMS-config"""
     # Get the site
@@ -68,6 +70,7 @@ def process_station_gms_config_comb(
         exceedance=exceedance,
         im_value=im_j,
         disagg_data=disagg_data,
+        sf_bounds=sf_bounds,
     )
 
     # Get the GM dataset
@@ -88,6 +91,8 @@ def process_station_gms_config_comb(
             cs_param_bounds=cs_param_bounds,
             im_j=im_j,
             exceedance=exceedance,
+            n_replica=n_replica,
+            gms_id=gms_id,
         ).save(output_dir, gms_id)
     # Require additional exceedance error handling here, as it is possible to run
     # fine for disagg, but get an exceedance error here.
@@ -187,8 +192,10 @@ def gen_gms_project_data(project_dir: Path, n_procs: int = 1):
                 gms_params[cur_id]["n_gms"],
                 results_dir / cur_station,
                 gms_params[cur_id]["dataset_id"],
-                gms_params[cur_id].get("im_j"),
-                gms_params[cur_id].get("exceedance"),
+                im_j=gms_params[cur_id].get("im_j"),
+                exceedance=gms_params[cur_id].get("exceedance"),
+                n_replica=gms_params[cur_id].get("n_replica"),
+                sf_bounds=gms_params[cur_id].get("sf_bounds"),
             )
     else:
         with mp.Pool(processes=n_procs) as p:
@@ -201,13 +208,17 @@ def gen_gms_project_data(project_dir: Path, n_procs: int = 1):
                         cur_id,
                         gc.im.IM.from_str(gms_params[cur_id]["IMj"]),
                         _get_gms_ims(
-                            gms_params[cur_id]["IMj"], gms_params[cur_id]["IMs"], ensemble
+                            gms_params[cur_id]["IMj"],
+                            gms_params[cur_id]["IMs"],
+                            ensemble,
                         ),
                         gms_params[cur_id]["n_gms"],
                         results_dir / cur_station,
                         gms_params[cur_id]["dataset_id"],
                         gms_params[cur_id].get("im_j"),
                         gms_params[cur_id].get("exceedance"),
+                        gms_params[cur_id].get("n_replica"),
+                        gms_params[cur_id].get("sf_bounds")
                     )
                     for cur_station, cur_id in station_id_comb
                 ],
