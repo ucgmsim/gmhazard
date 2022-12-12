@@ -1,4 +1,4 @@
-from typing import Optional, Sequence, Dict
+from typing import Optional, Sequence, Dict, Tuple
 
 import pandas as pd
 import numpy as np
@@ -18,7 +18,7 @@ from .GMSResult import GMSResult
 from .GCIMResult import BranchUniGCIM, IMEnsembleUniGCIM, SimEnsembleUniGCIM
 from .CausalParamBounds import CausalParamBounds
 
-SF_LOW, SF_HIGH = 0.3, 3.0
+SF_LOW, SF_HIGH = 0.3, 10.0
 
 
 def run_ensemble_gms(
@@ -33,6 +33,7 @@ def run_ensemble_gms(
     n_replica: int = 10,
     im_weights: pd.Series = None,
     cs_param_bounds: CausalParamBounds = None,
+    gms_id: str =None,
 ) -> GMSResult:
     """
     Performs ensemble based ground motion selection
@@ -146,6 +147,7 @@ def run_ensemble_gms(
             n_replica=n_replica,
             im_weights=im_weights,
             cs_param_bounds=cs_param_bounds,
+            gms_id=gms_id
         )
     else:
         return run_non_parametric_ensemble_gms(
@@ -159,6 +161,7 @@ def run_ensemble_gms(
             n_replica=n_replica,
             im_weights=im_weights,
             cs_param_bounds=cs_param_bounds,
+            gms_id=gms_id
         )
 
 
@@ -174,6 +177,7 @@ def run_non_parametric_ensemble_gms(
     im_weights: pd.Series = None,
     cs_param_bounds: CausalParamBounds = None,
     sigma_lnIMj: float = 0.05,
+    gms_id: str = None,
 ) -> GMSResult:
     """Performs GMS based on a simulation ensemble
 
@@ -420,6 +424,7 @@ def run_parametric_ensemble_gms(
     n_replica: int = 10,
     im_weights: pd.Series = None,
     cs_param_bounds: CausalParamBounds = None,
+    gms_id: str = None
 ) -> GMSResult:
     assert all(
         [
@@ -630,8 +635,14 @@ def run_parametric_ensemble_gms(
             # 3) Apply the mean & sigma of the selected lnIMi|IMj,Rup to the
             #    vector of correlated random numbers
             for replica_ix in range(n_replica):
-                # Select n_gms random branches based on IMi adjusted branch weights
                 cur_branch_cdf = cur_adj_branch_weights[IMi].sort_values().cumsum()
+
+                # Ensure it goes to exactly 1.0, to prevent any issues
+                # (as rand_branch_float can go to 1.0)
+                assert np.isclose(cur_branch_cdf.iloc[-1], 1.0, rtol=1e-3)
+                cur_branch_cdf.iloc[-1] = 1.0
+
+                # Select n_gms random branches based on IMi adjusted branch weights
                 cur_sel_branches = sha_calc.query_non_parametric_cdf_invs(
                     rand_branch_float[:, replica_ix],
                     cur_branch_cdf.index.values.astype(str),
@@ -685,6 +696,10 @@ def run_parametric_ensemble_gms(
     ), "No GMs to select from after applying the causual parameter bounds"
     assert np.allclose(gm_im_df.loc[:, str(IMj)], im_j)
 
+    print(
+        f"{gm_im_df} {site_info.station_name}:\nPool of available GMs: {gm_im_df.shape[0]}"
+    )
+
     # Compute residuals and select GMs for each replica
     R_values, sel_gm_ind = [], []
     for replica_ix in range(n_replica):
@@ -730,6 +745,27 @@ def run_parametric_ensemble_gms(
         # Compute the overall residual & save selected ground motions
         R_values.append(np.sum(im_weights * (D ** 2)))
         sel_gm_ind.append(list(cur_selected_gms_ind))
+
+    # Only select from the replica which have number of unique GMs == n_gms, or
+    # if there are none select from the set that has
+    # number of unique GMs == max number of unique GMs
+    # to prevent selection of duplicate GMs
+    n_unique_gms = np.asarray(
+        [
+            np.count_nonzero(np.unique(cur_sel_gms_ind))
+            for cur_sel_gms_ind in sel_gm_ind
+        ]
+    )
+    filter_ind = np.flatnonzero(
+        n_unique_gms == n_gms
+        if np.any(n_unique_gms == n_gms)
+        else n_unique_gms == n_unique_gms.max()
+    )
+    print(
+        f"{gms_id} {site_info.station_name}:\n"
+        f"{filter_ind.size} replica with {n_unique_gms.max()}"
+        f" unique GMs (n_gms = {n_gms}"
+    )
 
     # Select the best fitting set of ground motions (if multiple replica were run)
     selected_ix = np.argmin(R_values)
@@ -841,6 +877,7 @@ def default_causal_params(
     exceedance: Optional[float] = None,
     im_value: Optional[float] = None,
     disagg_data: Optional[disagg.EnsembleDisaggResult] = None,
+    sf_bounds: Tuple[float, float] = None,
 ) -> CausalParamBounds:
     """
     Computes default causal parameters based on
@@ -884,6 +921,9 @@ def default_causal_params(
             im_value=im_value,
             calc_mean_values=True,
         )
+
+    if sf_bounds is None:
+        sf_bounds = (SF_LOW, SF_HIGH)
 
     # Vs30 bounds
     vs_low, vs_high = site_info.vs30 * 0.5, site_info.vs30 * 1.5
@@ -987,7 +1027,7 @@ def default_causal_params(
         (mw_low, mw_high),
         (rrup_low, rrup_high),
         (vs_low, vs_high),
-        sf_bounds=(SF_LOW, SF_HIGH),
+        sf_bounds=sf_bounds,
         contr_df=contr_df,
         exceedance=exceedance,
         im_value=im_value,
