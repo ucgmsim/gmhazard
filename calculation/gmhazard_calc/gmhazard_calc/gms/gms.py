@@ -180,14 +180,6 @@ def run_non_parametric_ensemble_gms(
     They can obviously be the same, however are treated separately
     in this implementation
     """
-    # Only support ensembles with a single branch per IM Ensemble at this stage
-    assert np.all(
-        [
-            len(cur_im_ensemble.branches) == 1
-            for cur_im_ensemble in ensemble.im_ensembles
-        ]
-    )
-
     n_ims = len(IMs)
     IMs_str = to_string_list(IMs)
     im_ensembles = list({ensemble.get_im_ensemble(IMi.im_type) for IMi in IMs})
@@ -222,7 +214,7 @@ def run_non_parametric_ensemble_gms(
         f"Number of simulation available to compute lnIMi|IMj: {sim_lnIMj_df.shape[0]}"
     )
     if sim_lnIMj_df.shape[0] < 20:
-        raise exceptions.NotSufficientNumberOfSimulationsError(
+        raise exceptions.InsufficientNumberOfSimulationsError(
             IMj,
             f"{site_info} - IMj={IMj} - imj={im_j} - "
             f"Not enough simulations available to compute IMi|IMj accurately.",
@@ -326,6 +318,9 @@ def run_non_parametric_ensemble_gms(
     )
     corr_matrix = im_sigma / denominator
 
+    # Generate the realisations and
+    # compute the misfits & replica score
+    # (for each replica)
     rep_rel_lnIMi_dfs = []
     R_values, sel_gm_ind = [], []
     IMi_gcim_sigmas = pd.Series(
@@ -481,7 +476,7 @@ def run_parametric_ensemble_gms(
 
     # Pre-allocate the realisation IM value array (and array for
     # sigma of selected lnIMi|IMj,Rup distributions, required for residual calculation)
-    rep_rel_lnIMi_dfs = [
+    rep_rel_lnIMi_data = [
         {IMi: np.full(n_gms, np.nan) for IMi in IMs} for ix in range(n_replica)
     ]
     rel_sigma_lnIMi_IMj_Rup = [
@@ -665,7 +660,7 @@ def run_parametric_ensemble_gms(
                     # Apply mean & sigma of selected lnIMi|IMj,Rup to
                     # to correponding value of correlated vector
                     cur_branch_gcim = cur_branch_gcims[cur_branch_name][IMi]
-                    rep_rel_lnIMi_dfs[replica_ix][IMi][rel_ix] = (
+                    rep_rel_lnIMi_data[replica_ix][IMi][rel_ix] = (
                         cur_branch_gcim.lnIMi_IMj_Rup.mu[cur_rupture]
                         + cur_branch_gcim.lnIMi_IMj_Rup.sigma[cur_rupture]
                         * v_vectors[replica_ix].loc[rel_ix, str(IMi)]
@@ -675,11 +670,11 @@ def run_parametric_ensemble_gms(
                     ] = cur_branch_gcim.lnIMi_IMj_Rup.sigma[cur_rupture]
 
     # Convert results to dataframes (one per replica)
-    rep_rel_lnIMi_dfs = [
+    rep_rel_lnIMi_data = [
         pd.DataFrame(
             {str(cur_key): cur_value for cur_key, cur_value in cur_values.items()}
         )
-        for cur_values in rep_rel_lnIMi_dfs
+        for cur_values in rep_rel_lnIMi_data
     ]
     rel_sigma_lnIMi_IMj_Rup = [
         pd.DataFrame(
@@ -719,13 +714,13 @@ def run_parametric_ensemble_gms(
             rel_sigma_lnIMi_IMj_Rup[replica_ix].loc[:, IMs_str].values[:, np.newaxis, :]
         )
         cur_diff = (
-            rep_rel_lnIMi_dfs[replica_ix]
+            rep_rel_lnIMi_data[replica_ix]
             .loc[:, to_string_list(IMs)]
             .values[:, np.newaxis, :]
             - gm_lnIMi_df.loc[:, IMs_str].values
         )
         cur_misfit = pd.DataFrame(
-            index=rep_rel_lnIMi_dfs[replica_ix].index,
+            index=rep_rel_lnIMi_data[replica_ix].index,
             data=np.sum(
                 im_weights.loc[to_string_list(IMs)].values
                 * (cur_diff / cur_sigma_lnIMi_Rup_IMj) ** 2,
@@ -771,7 +766,7 @@ def run_parametric_ensemble_gms(
 
     # Select the best fitting set of ground motions (if multiple replica were run)
     selected_ix = np.argmin(R_values)
-    gm_ind, rel_lnIMi_df = sel_gm_ind[selected_ix], rep_rel_lnIMi_dfs[selected_ix]
+    gm_ind, rel_lnIMi_df = sel_gm_ind[selected_ix], rep_rel_lnIMi_data[selected_ix]
 
     return GMSResult(
         ensemble,

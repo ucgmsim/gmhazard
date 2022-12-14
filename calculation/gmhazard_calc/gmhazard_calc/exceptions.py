@@ -6,7 +6,7 @@ class GMHazardError(BaseException):
     def __init__(self, message: str):
         self.message = message
 
-class NotSufficientNumberOfSimulationsError(GMHazardError):
+class InsufficientNumberOfSimulationsError(GMHazardError):
     """Raised when there aren't enough simulations with
     IMj near imj for simulation based GMS"""
 

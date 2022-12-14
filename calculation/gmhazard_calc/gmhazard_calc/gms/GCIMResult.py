@@ -192,8 +192,8 @@ class IMEnsembleUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):
 
 class SimUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):
     """
-    Represents the GCIM for a specific IMi and
-    simulation based ensemble
+    Represents the GCIM for a specific IMi
+    and of simulation based ensemble
 
     Parameters:
     -----------
@@ -201,7 +201,7 @@ class SimUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):
 
     Attributes:
     -----------
-    im_ensemble: IMEnsemble
+    ensemble: Ensemble
     IMi: IM
         IM Object of the IMi
     IMj: IM

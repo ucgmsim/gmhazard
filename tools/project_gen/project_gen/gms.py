@@ -107,7 +107,7 @@ def process_station_gms_config_comb(
             range for this site, skipping!"
         )
         return
-    except gc.exceptions.NotSufficientNumberOfSimulationsError as ex:
+    except gc.exceptions.InsufficientNumberOfSimulationsError as ex:
         print(f"Failed to compute GMS for gms id {gms_id}, site {site_info.station_name}, "
               f"IMj {ex.IMj}, and exceedance {exceedance} as there are "
               f"not enough simulations available to compute IMi|IMj")
