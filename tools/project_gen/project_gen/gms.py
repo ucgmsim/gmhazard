@@ -179,7 +179,7 @@ def gen_gms_project_data(project_dir: Path, n_procs: int = 1):
 
     # Generate the station -  combinations
     # Breaking calculations down into "smallest" chunks
-    station_ids = ids if (ids:= project_params.get("location_ids")) is not None else utils.get_station_ids(project_params)
+    station_ids = project_params.get("location_ids", utils.get_station_ids(project_params))
     station_id_comb = [
         (cur_station, cur_id) for cur_station in station_ids for cur_id in gms_ids
     ]

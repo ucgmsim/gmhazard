@@ -78,6 +78,7 @@ class GMSourceType(Enum):
 
 class EventType(Enum):
     """Event types for hypocentre distributions"""
+
     strike_slip = "strike_slip"
     dip_slip = "dip_slip"
     all = "all"

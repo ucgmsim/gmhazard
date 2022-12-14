@@ -233,7 +233,8 @@ def setup_project(base_dir: Path, project_id: str, ensemble_ffp: Path = None):
     project_dir.mkdir(exist_ok=False, parents=False)
 
     # Copy the specified ensemble into the project directory
-    ensemble_ffp = shutil.copy(ensemble_ffp, project_dir)
+    if ensemble_ffp is not None:
+        ensemble_ffp = shutil.copy(ensemble_ffp, project_dir)
 
     try:
         commit_hash = git.Repo(search_parent_directories=True).head.object.hexsha
