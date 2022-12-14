@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt, cm as cm, colors as ml_colors
 
 import sha_calc as sha_calc
 from gmhazard_calc import gms
-from gmhazard_calc.im import IM
+from gmhazard_calc.im import IM, IMType, to_string_list
 
 
 GCIM_LABEL = {
@@ -621,11 +621,11 @@ def plot_uhs_branches(
 
 
 def plot_gms_im_distribution(
-    gms_result: gms.GMSResult,
-    save_dir: Path = None,
+    gms_result: gms.GMSResult, save_dir: Path = None,
 ):
-    """Plots the CDF of the GCIM and selected GMs
-    for each specified IM
+    """
+    Plots the CDF of the GCIM and selected GMs
+    for each IM
 
     Also shows the KS bounds
 
@@ -657,24 +657,24 @@ def plot_gms_im_distribution(
         columns=gms_result.selected_gms_im_df.columns.values,
     )
 
-    plt.figure(figsize=(16, 9))
-
     for IMi in gms_result.IMs:
+        fig = plt.figure(figsize=(16, 9))
+
         plt.plot(
-            gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.index.values,
+            np.exp(gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.index.values),
             gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.values,
             color="red",
             label="GCIM",
         )
         plt.plot(
-            gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.index.values,
+            np.exp(gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.index.values),
             gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.values + ks_bounds,
             color="red",
             label="KS bounds, \u03B1 = 0.1",
             linestyle="dashdot",
         )
         plt.plot(
-            gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.index.values,
+            np.exp(gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.index.values),
             gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.values - ks_bounds,
             color="red",
             linestyle="dashdot",
@@ -698,7 +698,7 @@ def plot_gms_im_distribution(
         )
 
         plt.xlim(xmin=0)
-        plt.ylim(0, 1)
+        plt.ylim(0, 1.02)
         plt.xlabel(
             f"Pseudo spectral acceleration, pSA({str(IMi).split('_')[-1]}) (g)"
             if str(IMi).startswith("pSA")
@@ -707,13 +707,14 @@ def plot_gms_im_distribution(
         plt.ylabel("Cumulative Probability, CDF")
         plt.title(f"{IMi}")
         plt.legend()
+        plt.grid(which="major", linestyle="--", alpha=0.5)
 
+        fig.tight_layout()
         if save_dir is not None:
-            plt.savefig(
+            fig.savefig(
                 save_dir / f"gms_im_distribution_{str(IMi).replace('.', 'p')}_plot.png"
             )
-            plt.clf()
-            plt.close()
+            plt.close(fig)
         else:
             plt.show()
 
@@ -802,11 +803,21 @@ def plot_gms_mw_rrup(
         fmt="^",
         xerr=[
             [selected_gms_agg["rrup_mean"] - selected_gms_agg["rrup_error_bounds"][0]],
-            [np.abs(selected_gms_agg["rrup_error_bounds"][1] - selected_gms_agg["rrup_mean"])],
+            [
+                np.abs(
+                    selected_gms_agg["rrup_error_bounds"][1]
+                    - selected_gms_agg["rrup_mean"]
+                )
+            ],
         ],
         yerr=[
             [selected_gms_agg["mag_mean"] - selected_gms_agg["mag_error_bounds"][0]],
-            [np.abs(selected_gms_agg["mag_error_bounds"][1] - selected_gms_agg["mag_mean"])],
+            [
+                np.abs(
+                    selected_gms_agg["mag_error_bounds"][1]
+                    - selected_gms_agg["mag_mean"]
+                )
+            ],
         ],
         capsize=15,
         color=[0, 0, 0, 0.4],
@@ -847,7 +858,7 @@ def plot_gms_causal_param(
     save_file: Path, optional
     """
     selected_gms_metadata = gms_result.selected_gms_metdata_df.to_dict(orient="list")
-    bounds = _get_causal_params_bounds(cs_param_bounds)
+    bounds = _get_causal_params_bounds(cs_param_bounds) if cs_param_bounds is not None else None
     # To achieve Empirical distribution function with matplotlib's step plotting
     copied_metadata = selected_gms_metadata[metadata_key][:]
     copied_metadata.append(min(copied_metadata))
@@ -882,7 +893,7 @@ def plot_gms_causal_param(
     if metadata_key == "sf":
         plt.plot([1, 1], bounds_y_range, color="red", label="Reference point")
 
-    elif metadata_key == "vs30":
+    elif metadata_key == "vs30" and bounds is not None:
         plt.plot(
             [
                 bounds.get(metadata_key).get("vs30"),
@@ -907,8 +918,7 @@ def plot_gms_causal_param(
 
 
 def plot_gms_spectra(
-    gms_result: gms.GMSResult,
-    save_file: Path = None,
+    gms_result: gms.GMSResult, save_file: Path = None,
 ):
     """Plot of the pSA values of the realisations and
      selected ground motions and the median, 16th,
@@ -919,24 +929,20 @@ def plot_gms_spectra(
     gms_result: gms.GMSResult
     save_file: Path, optional
     """
-    (
-        gcim_df,
-        realisations_df,
-        selected_gms_df,
-    ) = _prepare_gms_spectra(gms_result)
+    (gcim_df, realisations_df, selected_gms_df,) = _prepare_gms_spectra(gms_result)
 
     plt.figure(figsize=(20, 9))
 
-    for label, cur_gcim in gcim_df.iloc[:, 1:].iterrows():
+    for label, cur_gcim in gcim_df.iterrows():
         plt.plot(
-            cur_gcim.index,
+            cur_gcim.index.values,
             cur_gcim.values,
             color="red",
             linestyle="solid" if label == "median" else "dashdot",
             label=GCIM_LABEL[label],
         )
 
-    for cur_ix, cur_rel in realisations_df.iloc[:, 1:].iterrows():
+    for cur_ix, cur_rel in realisations_df.iterrows():
         plt.plot(
             cur_rel.index.values,
             cur_rel.values,
@@ -946,7 +952,7 @@ def plot_gms_spectra(
             linewidth=0.4,
         )
 
-    for cur_ix, cur_rel in selected_gms_df.iloc[:, 1:].iterrows():
+    for cur_ix, cur_rel in selected_gms_df.iterrows():
         plt.plot(
             cur_rel.index.values,
             cur_rel.values,
@@ -956,13 +962,16 @@ def plot_gms_spectra(
             linewidth=0.4,
         )
 
+    plt.xlim(gcim_df.columns[0], gcim_df.columns[-1])
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel("Period, T (s)")
     plt.ylabel("Spectral acceleration, SA (g)")
     plt.title("Pseudo acceleration response spectra")
+    plt.grid(which="both", linestyle="--", alpha=0.5)
     plt.legend()
 
+    plt.tight_layout()
     if save_file is not None:
         plt.savefig(save_file)
         plt.close()
@@ -1053,7 +1062,7 @@ def plot_gms_disagg_distribution(
 
 def plot_gms_available_gm(
     gms_result: gms.GMSResult,
-    cs_param_bounds: gms.CausalParamBounds,
+    cs_param_bounds: gms.CausalParamBounds = None,
     save_file: Path = None,
 ):
     """Distance (Rrup) - Magnitude plot of the GMs in the GM-dataset
@@ -1067,8 +1076,7 @@ def plot_gms_available_gm(
     save_file: Path, optional
     """
     n_gms_in_bounds = gms_result.gm_dataset.get_n_gms_in_bounds(
-        gms_result.gm_dataset.get_metadata_df(gms_result.site_info),
-        cs_param_bounds,
+        gms_result.gm_dataset.get_metadata_df(gms_result.site_info), cs_param_bounds,
     )
 
     plt.figure(figsize=(16, 9))
@@ -1085,8 +1093,7 @@ def plot_gms_available_gm(
             .values
         ),
         label=f"Dataset GMs (for the datapoints), "
-        f"N={gms_result.gm_dataset.get_metadata_df(gms_result.site_info).index.size}\n"
-        f"Causal params bounding box (for the bounding box), N={n_gms_in_bounds}",
+        f"N={gms_result.gm_dataset.get_metadata_df(gms_result.site_info).index.size}",
         marker="s",
         edgecolors="black",
         facecolors="none",
@@ -1111,9 +1118,9 @@ def plot_gms_available_gm(
             ],
             color="red",
             linestyle="dashed",
-            label="Bounds",
             linewidth=1,
             dashes=(5, 5),
+            label=f"Causal params bounding box, N={n_gms_in_bounds}",
         )
 
     plt.xscale("log")
@@ -1145,75 +1152,59 @@ def _prepare_gms_spectra(
     realisations_df: pd.DataFrame
     selected_gms_df: pd.DataFrame,
     """
-    cdf_x = {
-        str(IMi): list(
-            gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.index.values.astype(float)
-        )
-        for IMi in gms_result.IMs
-    }
-    cdf_y = {
-        str(IMi): list(gms_result.IMi_gcims[IMi].lnIMi_IMj.cdf.values.astype(float))
-        for IMi in gms_result.IMs
-    }
-    realisations = {
-        str(key): value
-        for key, value in gms_result.realisations.to_dict(orient="list").items()
-    }
-    selected_gms = {
-        str(key): value
-        for key, value in gms_result.selected_gms_im_df.to_dict(orient="list").items()
-    }
     im_j = gms_result.im_j
-    IM_j = str(gms_result.IM_j)
+    IM_j = gms_result.IM_j
 
-    # for CDF_X
-    cdf_x_df = pd.DataFrame(cdf_x)
-    cdf_x_df.columns = [
-        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
-        for cur_col in cdf_x_df.columns
-    ]
-    cdf_x_df = cdf_x_df.T.sort_index().T
+    pSA_IMs = np.asarray(
+        [cur_im for cur_im in gms_result.IMs if cur_im.im_type is IMType.pSA]
+    )
 
-    # For CDF_Y
-    cdf_y_df = pd.DataFrame(cdf_y)
-    cdf_y_df.columns = [
-        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
-        for cur_col in cdf_y_df.columns
-    ]
-    cdf_y_df = cdf_y_df.T.sort_index().T
+    # Sort the periods
+    periods = np.asarray([cur_im.period for cur_im in pSA_IMs])
+    sort_ind = np.argsort(periods)
+    pSA_IMs, periods = pSA_IMs[sort_ind], periods[sort_ind]
+    pSA_IMs_str = to_string_list(pSA_IMs)
+
+    # Create the relevant dataframes
+    cdf_x = pd.DataFrame.from_dict(
+        {
+            str(cur_im): gms_result.IMi_gcims[cur_im].lnIMi_IMj.cdf.index.values.astype(
+                float
+            )
+            for cur_im in pSA_IMs
+        }
+    ).apply(np.exp)
+    cdf_y = pd.DataFrame.from_dict(
+        {
+            str(cur_im): gms_result.IMi_gcims[cur_im].lnIMi_IMj.cdf.values.astype(float)
+            for cur_im in pSA_IMs
+        }
+    )
+
+    realisations_df = gms_result.realisations.loc[:, pSA_IMs_str]
+    realisations_df.columns = periods
+    selected_gms_df = gms_result.selected_gms_im_df.loc[:, pSA_IMs_str]
+    selected_gms_df.columns = periods
 
     upper_bound, median, lower_bound = sha_calc.query_non_parametric_multi_cdf_invs(
-        [0.84, 0.5, 0.16], cdf_x_df.T.values, cdf_y_df.T.values
+        [0.84, 0.5, 0.16], cdf_x.T.values, cdf_y.T.values
     )
 
     gcim_df = pd.DataFrame(
-        index=cdf_x_df.columns,
+        index=cdf_x.columns,
         columns=np.asarray(["84th", "median", "16th"]),
         data=np.asarray([upper_bound, median, lower_bound]).T,
     ).T
+    gcim_df.columns = periods
 
-    if IM_j.startswith("pSA"):
-        gcim_df[float(IM_j.split("_")[-1])] = im_j
+    # Add the conditioning IM
+    if IM_j.im_type is IMType.pSA:
+        gcim_df[IM_j.period] = im_j
         gcim_df = gcim_df.T.sort_index().T
 
-    # Realisations
-    realisations_df = pd.DataFrame(realisations)
-    realisations_df.columns = [
-        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
-        for cur_col in realisations_df.columns
-    ]
-    if IM_j.startswith("pSA"):
-        realisations_df[float(IM_j.split("_")[-1])] = im_j
-
-    realisations_df = realisations_df.T.sort_index().T
-
-    # Selected Ground Motions
-    selected_gms_df = pd.DataFrame(selected_gms)
-    selected_gms_df.columns = [
-        float(cur_col.split("_")[-1]) if cur_col.startswith("pSA") else 0.0
-        for cur_col in selected_gms_df.columns
-    ]
-    selected_gms_df = selected_gms_df.T.sort_index().T
+        realisations_df[IM_j.period] = selected_gms_df[IM_j.period] = im_j
+        realisations_df = realisations_df.T.sort_index().T
+        selected_gms_df = selected_gms_df.T.sort_index().T
 
     return (
         gcim_df,
@@ -1224,14 +1215,8 @@ def _prepare_gms_spectra(
 
 def _get_causal_params_bounds(cs_param_bounds: gms.CausalParamBounds):
     return {
-        "mag": {
-            "min": cs_param_bounds.mw_low,
-            "max": cs_param_bounds.mw_high,
-        },
-        "rrup": {
-            "min": cs_param_bounds.rrup_low,
-            "max": cs_param_bounds.rrup_high,
-        },
+        "mag": {"min": cs_param_bounds.mw_low, "max": cs_param_bounds.mw_high,},
+        "rrup": {"min": cs_param_bounds.rrup_low, "max": cs_param_bounds.rrup_high,},
         "vs30": {
             "min": cs_param_bounds.vs30_low,
             "max": cs_param_bounds.vs30_high,

@@ -56,6 +56,7 @@ def query_non_parametric_multi_cdf_invs(
     cdf_x: 2d array of floats
     cdf_y: 2d array of floats
         The x and y values of the non-parametric cdf
+        With each row representing one CDF
 
     Returns
     -------

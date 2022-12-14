@@ -111,7 +111,7 @@ def compute_site_source_distances(
             and cur_fault_data.tectonic_type in DIR_SUPPORTED_TECTONIC_TYPYES
         ):
             n_hypo_data = gc.directivity.NHypoData(
-                gc.constants.HypoMethod.LATIN_HYPERCUBE, nhypo=100
+                gc.constants.HypoMethod.latin_hypercube, nhypo=100
             )
             fd, _, phi_red = gc.directivity.compute_fault_directivity(
                 srf_points,

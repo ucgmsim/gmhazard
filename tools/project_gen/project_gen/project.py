@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 import traceback
 import os
@@ -10,7 +11,7 @@ import numpy as np
 import yaml
 
 import gmhazard_utils as su
-import gmhazard_calc
+import gmhazard_calc as gc
 import project_gen as pg
 from . import psha
 
@@ -51,6 +52,7 @@ def create_project(
     setup_only: bool = False,
     model_config_ffp: Path = MODEL_CONFIG_PATH,
     empirical_weight_config_ffp: Path = EMPIRICAL_WEIGHT_CONFIG_PATH,
+    ensemble_ffp: Path = None,
 ):
     """
     Creates a new project, generates the required DBs,
@@ -96,6 +98,17 @@ def create_project(
         Path to the weights config file.
         model_config_ffp and weights_config_ffp
         can be specified in certain cases(E.g., test case)
+    ensemble_ffp: path, optional
+        If given, then this ensemble is used for
+        the project. The ensemble has to support
+        the sites of interest
+
+        If this option is set, then the following
+        parameters are ignored:
+            - erf_dir
+            - erf_pert_dir
+            - model_config_ffp and
+            - empirical_weight_config_ffp
     """
     erf_dir = ERF_DIR if erf_dir is None else erf_dir
 
@@ -107,11 +120,10 @@ def create_project(
 
         _, version_str = su.utils.get_package_version("project_api")
         project_dir = projects_base_dir / version_str / project_id
-        dbs_dir = project_dir / "dbs"
 
         if new_project:
             # Setup the project structure
-            setup_project(projects_base_dir, project_id)
+            setup_project(projects_base_dir, project_id, ensemble_ffp=ensemble_ffp)
 
             if "im_components" not in project_specs:
                 project_specs["im_components"] = ["RotD50"]
@@ -119,44 +131,75 @@ def create_project(
             # Write the config
             project_config = write_project_config(project_dir, project_specs)
 
-            # Write the station location and vs30 file
-            ll_ffp, vs30_ffp, z_ffp = write_station_details(
-                project_config["locations"], dbs_dir, project_id
-            )
+            if ensemble_ffp is None:
+                dbs_dir = project_dir / "dbs"
 
-            # Generate the DBs
-            generate_dbs(
-                dbs_dir,
-                ll_ffp,
-                vs30_ffp,
-                model_config_ffp,
-                scripts_dir,
-                erf_dir,
-                erf_pert_dir,
-                flt_erf_version,
-                list(
-                    {
-                        str(im.im_type)
-                        for im in gmhazard_calc.im.to_im_list(project_config["ims"])
-                    }
-                ),
-                n_procs=n_procs,
-                z_ffp=z_ffp,
-                n_perturbations=n_perturbations,
-            )
+                # Write the station location and vs30 file
+                ll_ffp, vs30_ffp, z_ffp = write_station_details(
+                    project_config["locations"], dbs_dir, project_id
+                )
 
-        # Create the ensemble config file
-        create_ensemble_config(
-            EMPIRICAL_VERSION,
-            project_dir,
-            project_id,
-            dbs_dir,
-            erf_dir,
-            erf_pert_dir,
-            flt_erf_version,
-            n_perturbations=n_perturbations,
-            empirical_weight_config_ffp=empirical_weight_config_ffp,
-        )
+                # Generate the DBs
+                generate_dbs(
+                    dbs_dir,
+                    ll_ffp,
+                    vs30_ffp,
+                    model_config_ffp,
+                    scripts_dir,
+                    erf_dir,
+                    erf_pert_dir,
+                    flt_erf_version,
+                    list(
+                        {
+                            str(im.im_type)
+                            for im in gc.im.to_im_list(project_config["ims"])
+                        }
+                    ),
+                    n_procs=n_procs,
+                    z_ffp=z_ffp,
+                    n_perturbations=n_perturbations,
+                )
+
+                # Create the ensemble config file
+                create_ensemble_config(
+                    EMPIRICAL_VERSION,
+                    project_dir,
+                    project_id,
+                    dbs_dir,
+                    erf_dir,
+                    erf_pert_dir,
+                    flt_erf_version,
+                    n_perturbations=n_perturbations,
+                    empirical_weight_config_ffp=empirical_weight_config_ffp,
+                )
+            else:
+                print(
+                    f"An existing ensemble has been specified, "
+                    f"no dbs will be generated."
+                )
+
+                ens = gc.gm_data.Ensemble(project_id, str(ensemble_ffp))
+
+                # Check that the specified location ids exist
+                if (
+                    project_loc_ids := project_config.get("location_ids")
+                ) is None or np.any(
+                    ~np.isin(project_loc_ids, ens.stations.index.values.astype(str))
+                ):
+                    raise ValueError(
+                        "Either no location ids are specified, or one of the "
+                        "specified locations is not supported by the ensemble"
+                    )
+
+                # Check that the specified IMs are supported
+                project_ims = np.asarray(project_config["ims"])
+                if not np.all(
+                    im_mask := np.isin(project_ims, gc.im.to_string_list(ens.ims))
+                ):
+                    raise ValueError(
+                        f"The ims {project_ims[~im_mask]} are not "
+                        f"supported by the ensemble"
+                    )
 
         if setup_only:
             return
@@ -174,7 +217,7 @@ def create_project(
     return
 
 
-def setup_project(base_dir: Path, project_id: str):
+def setup_project(base_dir: Path, project_id: str, ensemble_ffp: Path = None):
     """Sets up the required directories and files for a project"""
     # Get the current projectAPI version
     _, version_str = su.utils.get_package_version("project_api")
@@ -189,17 +232,26 @@ def setup_project(base_dir: Path, project_id: str):
         return
     project_dir.mkdir(exist_ok=False, parents=False)
 
+    # Copy the specified ensemble into the project directory
+    ensemble_ffp = shutil.copy(ensemble_ffp, project_dir)
+
+    try:
+        commit_hash = git.Repo(search_parent_directories=True).head.object.hexsha
+    except git.exc.InvalidGitRepositoryError as ex:
+        commit_hash = ""
+
     # Create empty project definition file
     project_def = {
-        "ensemble_ffp": None,
-        "commit_hash": git.Repo(search_parent_directories=True).head.object.hexsha,
+        "ensemble_ffp": str(ensemble_ffp) if ensemble_ffp is not None else None,
+        "commit_hash": commit_hash,
         "project_parameters": None,
     }
     with open(project_dir / f"{project_id}.yaml", "w") as f:
         yaml.safe_dump(project_def, f)
 
     # Create the database folder
-    (project_dir / "dbs").mkdir()
+    if ensemble_ffp is None:
+        (project_dir / "dbs").mkdir()
 
     # Create the results folder
     (project_dir / "results").mkdir()
@@ -214,9 +266,7 @@ def write_project_config(project_dir: Path, project_specs: Dict):
         project_config = yaml.safe_load(f)
 
         if project_specs.get("project_parameters") is not None:
-            print(
-                "Project parameters are already specified set, skipping package type mapping"
-            )
+            print("Project parameters are already set, skipping package type mapping")
             project_config["project_parameters"] = project_specs["project_parameters"]
         else:
             project_config["project_parameters"] = {

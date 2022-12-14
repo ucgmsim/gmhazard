@@ -26,7 +26,7 @@ def process_station_gms_config_comb(
 ):
     """Processes to a single station and GMS-config"""
     # Get the site
-    if (output_dir / gc.gms.GMSResult.get_save_dir(gms_id)).exists():
+    if (gms_out_dir := output_dir / gc.gms.GMSResult.get_save_dir(gms_id)).exists():
         print(
             f"Skipping GMS computation for station {station_name} and "
             f"id {gms_id} as it already exists"
@@ -39,39 +39,41 @@ def process_station_gms_config_comb(
     site_info = gc.site.get_site_from_name(ensemble, station_name)
     output_dir.mkdir(exist_ok=True, parents=False)
 
-    # Calculates Disagg
-    try:
-        disagg_data = gc.disagg.run_ensemble_disagg(
+    cs_param_bounds = None
+    if ensemble.flt_im_data_type is gc.IMDataType.parametric:
+        # Calculates Disagg
+        try:
+            disagg_data = gc.disagg.run_ensemble_disagg(
+                ensemble,
+                site_info,
+                IMj,
+                exceedance=exceedance,
+                im_value=im_j,
+                calc_mean_values=True,
+            )
+        except gc.exceptions.ExceedanceOutOfRangeError as ex:
+            print(
+                f"\tFailed to compute disagg for gms id {gms_id}, site {site_info.station_name}, IM {ex.im} "
+                f"and exceedance {ex.exceedance} as the exceedance is outside of the computed "
+                f"hazard range for this site, skipping!"
+            )
+            return
+
+        # Save the Disagg Data
+        disagg_output_dir = output_dir / f"gms_{gms_id}" / "disagg_data"
+        disagg_output_dir.mkdir(exist_ok=True, parents=True)
+        disagg_data.save(disagg_output_dir)
+
+        # Retrieve the default causal filter parameters
+        cs_param_bounds = gc.gms.default_causal_params(
             ensemble,
             site_info,
             IMj,
             exceedance=exceedance,
             im_value=im_j,
-            calc_mean_values=True,
+            disagg_data=disagg_data,
+            sf_bounds=sf_bounds,
         )
-    except gc.exceptions.ExceedanceOutOfRangeError as ex:
-        print(
-            f"\tFailed to compute disagg for gms id {gms_id}, site {site_info.station_name}, IM {ex.im} "
-            f"and exceedance {ex.exceedance} as the exceedance is outside of the computed "
-            f"hazard range for this site, skipping!"
-        )
-        return
-
-    # Save the Disagg Data
-    disagg_output_dir = output_dir / f"gms_{gms_id}" / "disagg_data"
-    disagg_output_dir.mkdir(exist_ok=True, parents=True)
-    disagg_data.save(disagg_output_dir)
-
-    # Retrieve the default causal filter parameters
-    cs_param_bounds = gc.gms.default_causal_params(
-        ensemble,
-        site_info,
-        IMj,
-        exceedance=exceedance,
-        im_value=im_j,
-        disagg_data=disagg_data,
-        sf_bounds=sf_bounds,
-    )
 
     # Get the GM dataset
     gm_dataset = gc.gms.GMDataset.get_GMDataset(gm_dataset_id)
@@ -101,14 +103,18 @@ def process_station_gms_config_comb(
     except gc.exceptions.ExceedanceOutOfRangeError as ex:
         print(
             f"\tFailed to compute GMS for gms id {gms_id}, site {site_info.station_name}, IM {ex.im} and "
-            f"exceedance {ex.exceedance} as the exceedance is outside of the computed hazard \
+            f"exceedance {exceedance} as the exceedance is outside of the computed hazard \
             range for this site, skipping!"
         )
         return
+    except gc.exceptions.NotSufficientNumberOfSimulationsError as ex:
+        print(f"Failed to compute GMS for gms id {gms_id}, site {site_info.station_name}, "
+              f"IMj {ex.IMj}, and exceedance {exceedance} as there are "
+              f"not enough simulations available to compute IMi|IMj")
     except AssertionError as ex:
         print(
-            f"\tFailed to compute GMS for gms id {gms_id}, site {site_info.station_name}, IM {IMs} and "
-            f"exceedance {exceedance} due an assert error:\n{ex}"
+            f"\tFailed to compute GMS for gms id {gms_id}, site {site_info.station_name}, "
+            f"IM {IMj} and exceedance {exceedance} due an assert error:\n{ex}"
         )
         return
 
@@ -173,7 +179,7 @@ def gen_gms_project_data(project_dir: Path, n_procs: int = 1):
 
     # Generate the station -  combinations
     # Breaking calculations down into "smallest" chunks
-    station_ids = utils.get_station_ids(project_params)
+    station_ids = ids if (ids:= project_params.get("location_ids")) is not None else utils.get_station_ids(project_params)
     station_id_comb = [
         (cur_station, cur_id) for cur_station in station_ids for cur_id in gms_ids
     ]

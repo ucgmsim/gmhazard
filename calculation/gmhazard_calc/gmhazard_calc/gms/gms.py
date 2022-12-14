@@ -13,9 +13,10 @@ from gmhazard_calc import hazard
 from gmhazard_calc import shared
 from gmhazard_calc import site_source
 from gmhazard_calc import disagg
+from gmhazard_calc import exceptions
 from .GroundMotionDataset import GMDataset, HistoricalGMDataset
 from .GMSResult import GMSResult
-from .GCIMResult import BranchUniGCIM, IMEnsembleUniGCIM, SimEnsembleUniGCIM
+from .GCIMResult import BranchUniGCIM, IMEnsembleUniGCIM, SimUniGCIM
 from .CausalParamBounds import CausalParamBounds
 
 SF_LOW, SF_HIGH = 0.3, 10.0
@@ -33,7 +34,7 @@ def run_ensemble_gms(
     n_replica: int = 10,
     im_weights: pd.Series = None,
     cs_param_bounds: CausalParamBounds = None,
-    gms_id: str =None,
+    gms_id: str = None,
 ) -> GMSResult:
     """
     Performs ensemble based ground motion selection
@@ -82,7 +83,7 @@ def run_ensemble_gms(
 
     assert np.all(np.isin(IMs, ensemble.ims)), (
         f"Not all of the specified IM types are "
-        f"availble in the ensemble {ensemble.name}"
+        f"available in the ensemble {ensemble.name}"
     )
 
     assert exceedance is not None or im_j is not None, (
@@ -118,24 +119,7 @@ def run_ensemble_gms(
             )
         im_j = ens_hazard.exceedance_to_im(exceedance)
 
-    # Determine if GMS should be done based on
-    # parametric data (i.e. from GMMS) or using
-    # non-parametric data (i.e. simulations)
-    # Check that all fault imdbs for the relevant IMs
-    # are either parametric or non-parametric
-    rel_ims = list(IMs) + [IMj]
-    im_types = set([cur_im.im_type for cur_im in rel_ims])
-
-    im_data_types = [
-        ensemble.get_im_ensemble(cur_im_type).flt_im_data_type
-        for cur_im_type in im_types
-    ]
-    if len(set(im_data_types)) > 1:
-        raise NotImplementedError(
-            "Hybrid (fault) ensemble are not supported for GMS at this stage"
-        )
-
-    if im_data_types[0] is constants.IMDataType.parametric:
+    if ensemble.flt_im_data_type is constants.IMDataType.parametric:
         return run_parametric_ensemble_gms(
             ensemble,
             site_info,
@@ -147,9 +131,12 @@ def run_ensemble_gms(
             n_replica=n_replica,
             im_weights=im_weights,
             cs_param_bounds=cs_param_bounds,
-            gms_id=gms_id
+            gms_id=gms_id,
         )
-    else:
+    elif (
+        ensemble.is_simple
+        and ensemble.flt_im_data_type is constants.IMDataType.non_parametric
+    ):
         return run_non_parametric_ensemble_gms(
             ensemble,
             site_info,
@@ -161,7 +148,11 @@ def run_ensemble_gms(
             n_replica=n_replica,
             im_weights=im_weights,
             cs_param_bounds=cs_param_bounds,
-            gms_id=gms_id
+            gms_id=gms_id,
+        )
+    else:
+        raise NotImplementedError(
+            "Hybrid ensembles are currently not supported for GMS"
         )
 
 
@@ -219,20 +210,22 @@ def run_non_parametric_ensemble_gms(
     gm_lnIMi_df = gm_dataset.get_im_df(site_info, IMs_str, cs_param_bounds).apply(
         np.log
     )
-    # gm_lnIMj = gm_dataset.get_im_df(site_info, [str(IMj)], cs_param_bounds).apply(np.log).squeeze()
     assert np.all(gm_lnIMi_df.columns == IMs_str)
 
-    # TODO: Move this to sha_calc
     # Truncate
     n_trunc_sigmas = 3
     sim_lnIMj_df = sim_lnIMj_df.loc[
         (sim_lnIMj_df >= np.log(im_j) - n_trunc_sigmas * sigma_lnIMj)
         & (sim_lnIMj_df <= np.log(im_j) + n_trunc_sigmas * sigma_lnIMj)
     ]
-    print(f"Number of simulation used to compute lnIMi|IMj: {sim_lnIMj_df.shape[0]}")
+    print(
+        f"Number of simulation available to compute lnIMi|IMj: {sim_lnIMj_df.shape[0]}"
+    )
     if sim_lnIMj_df.shape[0] < 20:
-        raise ValueError(
-            "Not enough simulations available to compute IMi|IMj accurately."
+        raise exceptions.NotSufficientNumberOfSimulationsError(
+            IMj,
+            f"{site_info} - IMj={IMj} - imj={im_j} - "
+            f"Not enough simulations available to compute IMi|IMj accurately.",
         )
 
     # Relevant simulation ids
@@ -294,7 +287,7 @@ def run_non_parametric_ensemble_gms(
                     alpha * (cur_sim_lnIMi_df[str(cur_im)] - cur_weighted_mean) ** 2
                 )
             )
-            IMi_gcims[cur_im] = SimEnsembleUniGCIM(
+            IMi_gcims[cur_im] = SimUniGCIM(
                 ensemble,
                 cur_im,
                 IMj,
@@ -361,11 +354,11 @@ def run_non_parametric_ensemble_gms(
                 IMi_gcims[cur_im].lnIMi_IMj.cdf.index.values,
                 IMi_gcims[cur_im].lnIMi_IMj.cdf.values,
             )
-        cur_rel_im_df = pd.DataFrame(data=cur_rel_im_values, columns=IMs_str)
-        rep_rel_lnIMi_dfs.append(cur_rel_im_df)
+        cur_rel_lnIMi_df = pd.DataFrame(data=cur_rel_im_values, columns=IMs_str)
+        rep_rel_lnIMi_dfs.append(cur_rel_lnIMi_df)
 
         cur_diff = (
-            cur_rel_im_df.values[
+            cur_rel_lnIMi_df.values[
                 :,
                 np.newaxis,
                 :,
@@ -374,7 +367,7 @@ def run_non_parametric_ensemble_gms(
         )
 
         cur_misfit = pd.DataFrame(
-            index=cur_rel_im_df.index,
+            index=cur_rel_lnIMi_df.index,
             data=np.sum(
                 im_weights.values
                 * (cur_diff / IMi_gcim_sigmas.values[np.newaxis, np.newaxis, :]) ** 2,
@@ -395,6 +388,24 @@ def run_non_parametric_ensemble_gms(
         R_values.append(np.sum(im_weights * (D ** 2)))
         sel_gm_ind.append(list(cur_selected_gms_ind))
 
+    # Only select from the replica which have number of unique GMs == n_gms, or
+    # if there are none select from the set that has
+    # number of unique GMs == max number of unique GMs
+    # to prevent selection of duplicate GMs
+    n_unique_gms = np.asarray(
+        [np.count_nonzero(np.unique(cur_sel_gms_ind)) for cur_sel_gms_ind in sel_gm_ind]
+    )
+    filter_ind = np.flatnonzero(
+        n_unique_gms == n_gms
+        if np.any(n_unique_gms == n_gms)
+        else n_unique_gms == n_unique_gms.max()
+    )
+    print(
+        f"{gms_id} {site_info.station_name}:\n"
+        f"{filter_ind.size} replica with {n_unique_gms.max()}"
+        f" unique GMs (n_gms = {n_gms})"
+    )
+
     # Select the best fitting set of ground motions (if multiple replica were run)
     selected_ix = np.argmin(R_values)
     gm_ind, rel_lnIMi_df = sel_gm_ind[selected_ix], rep_rel_lnIMi_dfs[selected_ix]
@@ -405,11 +416,11 @@ def run_non_parametric_ensemble_gms(
         IMj,
         im_j,
         IMs,
-        gm_lnIMi_df.loc[gm_ind],
+        gm_lnIMi_df.loc[gm_ind].apply(np.exp),
         IMi_gcims,
         rel_lnIMi_df.apply(np.exp),
         gm_dataset,
-        cs_param_bounds,
+        constants.GMSType.simulation,
     )
 
 
@@ -424,7 +435,7 @@ def run_parametric_ensemble_gms(
     n_replica: int = 10,
     im_weights: pd.Series = None,
     cs_param_bounds: CausalParamBounds = None,
-    gms_id: str = None
+    gms_id: str = None,
 ) -> GMSResult:
     assert all(
         [
@@ -685,60 +696,54 @@ def run_parametric_ensemble_gms(
 
     # Get the (scaled) ground motions IM values that fall
     # within the specified causal parameter bounds
-    gm_im_df = gm_dataset.get_im_df(
+    gm_lnIMi_df = gm_dataset.get_im_df(
         site_info,
-        np.concatenate((to_string_list(IMs), [str(IMj)])),
+        IMs_str + [str(IMj)],
         cs_param_bounds=cs_param_bounds,
         sf=sf,
-    )
+    ).apply(np.log)
     assert (
-        gm_im_df.shape[0] > 0
+        gm_lnIMi_df.shape[0] > 0
     ), "No GMs to select from after applying the causual parameter bounds"
-    assert np.allclose(gm_im_df.loc[:, str(IMj)], im_j)
+    assert np.allclose(gm_lnIMi_df.loc[:, str(IMj)], np.log(im_j))
 
     print(
-        f"{gm_im_df} {site_info.station_name}:\nPool of available GMs: {gm_im_df.shape[0]}"
+        f"{gm_lnIMi_df} {site_info.station_name}:\nPool of available GMs: {gm_lnIMi_df.shape[0]}"
     )
 
     # Compute residuals and select GMs for each replica
     R_values, sel_gm_ind = [], []
     for replica_ix in range(n_replica):
         # Compute residuals between available GMs and current set of realisations
-        cur_sigma_IMi_Rup_IMj = rel_sigma_lnIMi_IMj_Rup[replica_ix].loc[:, IMs_str]
-        cur_diff = rep_rel_lnIMi_dfs[replica_ix].loc[:, to_string_list(IMs)].values[
-            :, np.newaxis, :
-        ] - np.log(gm_im_df.loc[:, to_string_list(IMs)].values)
+        cur_sigma_lnIMi_Rup_IMj = (
+            rel_sigma_lnIMi_IMj_Rup[replica_ix].loc[:, IMs_str].values[:, np.newaxis, :]
+        )
+        cur_diff = (
+            rep_rel_lnIMi_dfs[replica_ix]
+            .loc[:, to_string_list(IMs)]
+            .values[:, np.newaxis, :]
+            - gm_lnIMi_df.loc[:, IMs_str].values
+        )
         cur_misfit = pd.DataFrame(
             index=rep_rel_lnIMi_dfs[replica_ix].index,
             data=np.sum(
                 im_weights.loc[to_string_list(IMs)].values
-                * (cur_diff / cur_sigma_IMi_Rup_IMj) ** 2,
+                * (cur_diff / cur_sigma_lnIMi_Rup_IMj) ** 2,
                 axis=2,
             ),
         )
 
         # Select best matching GMs
-        cur_selected_gms_ind = gm_im_df.index.values[cur_misfit.idxmin(axis=1).values]
+        cur_selected_gms_ind = gm_lnIMi_df.index.values[
+            cur_misfit.idxmin(axis=1).values
+        ]
 
         # Compute the KS test statistic for each IM_i
         # I.e. Check how well the empirical distribution of selected GMs
         # matches with the target distribution (i.e. lnIMi|IMj)
-        D = []
-        for IMi in IMs:
-            cur_d, _ = stats.kstest(
-                gm_im_df.loc[cur_selected_gms_ind, str(IMi)].values,
-                lambda x: sha_calc.query_non_parametric_cdf(
-                    x,
-                    IMi_gcims[IMi].lnIMi_IMj.cdf.index.values,
-                    IMi_gcims[IMi].lnIMi_IMj.cdf.values,
-                ),
-            )
-            D.append(cur_d)
-        D = pd.Series(index=to_string_list(IMs), data=D)
-
-        D_test = ks_stats(
+        D = ks_stats(
             IMs,
-            gm_im_df.loc[cur_selected_gms_ind],
+            gm_lnIMi_df.loc[cur_selected_gms_ind],
             {cur_IMi: cur_gcim.lnIMi_IMj for cur_IMi, cur_gcim in IMi_gcims.items()},
         )
 
@@ -751,10 +756,7 @@ def run_parametric_ensemble_gms(
     # number of unique GMs == max number of unique GMs
     # to prevent selection of duplicate GMs
     n_unique_gms = np.asarray(
-        [
-            np.count_nonzero(np.unique(cur_sel_gms_ind))
-            for cur_sel_gms_ind in sel_gm_ind
-        ]
+        [np.count_nonzero(np.unique(cur_sel_gms_ind)) for cur_sel_gms_ind in sel_gm_ind]
     )
     filter_ind = np.flatnonzero(
         n_unique_gms == n_gms
@@ -777,11 +779,12 @@ def run_parametric_ensemble_gms(
         IMj,
         im_j,
         IMs,
-        gm_im_df.loc[gm_ind],
+        gm_lnIMi_df.loc[gm_ind].apply(np.exp),
         IMi_gcims,
         rel_lnIMi_df.apply(np.exp),
         gm_dataset,
-        cs_param_bounds,
+        constants.GMSType.empirical,
+        cs_param_bounds=cs_param_bounds,
         sf=sf,
     )
 

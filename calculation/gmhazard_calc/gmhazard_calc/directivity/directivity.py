@@ -30,7 +30,7 @@ class NHypoData:
         """
         Checks to ensure that the given parameters are correct for the method specified
         """
-        if self.method == constants.HypoMethod.UNIFORM_GRID:
+        if self.method == constants.HypoMethod.uniform_grid:
             if self.hypo_along_strike is None or self.hypo_down_dip is None:
                 raise ValueError(
                     f"hypo_along_strike and hypo_down_dip need to be defined for {str(self.method)}"
@@ -38,8 +38,8 @@ class NHypoData:
             else:
                 self.nhypo = self.hypo_along_strike * self.hypo_down_dip
         elif (
-            self.method == constants.HypoMethod.LATIN_HYPERCUBE
-            or self.method == constants.HypoMethod.MONTE_CARLO
+            self.method == constants.HypoMethod.latin_hypercube
+            or self.method == constants.HypoMethod.monte_carlo
         ):
             if self.nhypo is None:
                 raise ValueError(f"nhypo needs to be defined for {str(self.method)}")
@@ -71,15 +71,15 @@ def set_hypocentres(
         plane["shyp"] = -999.9
         plane["dhyp"] = -999.9
 
-    if n_hypo_data.method == constants.HypoMethod.LATIN_HYPERCUBE:
+    if n_hypo_data.method == constants.HypoMethod.latin_hypercube:
         return hypo_sampling.latin_hypercube_sampling(
             n_hypo_data.nhypo, planes, event_type, total_length, n_hypo_data.seed
         )
-    elif n_hypo_data.method == constants.HypoMethod.MONTE_CARLO:
+    elif n_hypo_data.method == constants.HypoMethod.monte_carlo:
         return hypo_sampling.mc_sampling(
             n_hypo_data.nhypo, planes, event_type, total_length, n_hypo_data.seed
         )
-    elif n_hypo_data.method == constants.HypoMethod.UNIFORM_GRID:
+    elif n_hypo_data.method == constants.HypoMethod.uniform_grid:
         return hypo_sampling.uniform_grid(
             n_hypo_data.hypo_along_strike,
             n_hypo_data.hypo_down_dip,
@@ -228,7 +228,7 @@ def compute_fault_directivity(
     phired = np.stack(phired, axis=0)
 
     # Apply weights if uniform grid
-    if n_hypo_data.method == constants.HypoMethod.UNIFORM_GRID:
+    if n_hypo_data.method == constants.HypoMethod.uniform_grid:
         fdi_average = np.sum(weights[:, None, None] * fdi, axis=0)
         phired_average = np.sum(weights[:, None, None] * phired, axis=0)
     # Otherwise use average

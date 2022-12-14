@@ -61,7 +61,7 @@ def test_directivity():
         site_coords = np.stack((x, y), axis=2).reshape(-1, 2)
 
         n_hypo_data = directivity.NHypoData(
-            HypoMethod.LATIN_HYPERCUBE, nhypo=100, seed=1
+            HypoMethod.latin_hypercube, nhypo=100, seed=1
         )
 
         fd, _, _ = directivity.compute_fault_directivity(

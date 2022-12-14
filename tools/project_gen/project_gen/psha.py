@@ -56,7 +56,11 @@ def gen_psha_project_data(project_dir: Path, n_procs: int = 1, use_mp: bool = Tr
     )
 
     # Get the full list of station ids
-    station_ids = utils.get_station_ids(project_params)
+    station_ids = (
+        utils.get_station_ids(project_params)
+        if "locations" in project_params.keys()
+        else project_params.get("location_ids")
+    )
 
     # Create the context & vs30 maps
     if use_mp:
@@ -151,6 +155,15 @@ def gen_psha_project_data(project_dir: Path, n_procs: int = 1, use_mp: bool = Tr
                 for cur_uhs_nzs1170p5 in uhs_nzs1170p5:
                     cur_uhs_nzs1170p5.save(cur_uhs_nzs1170p5_dir, "uhs")
 
+    if any(
+        [
+            cur_im_ens.im_data_type is gc.IMDataType.mixed
+            for cur_im_ens in ensemble.im_ensembles
+        ]
+    ):
+        print(f"Skipping Scenario generation as not all IM data is parametric")
+        return
+
     # Generate the station - IMComponent combinations
     # Breaking calculations down into "smallest" chunks
     station_component_comb = [
@@ -205,7 +218,9 @@ def generate_maps(
     if not (output_dir / "context_map_plot.png").exists():
         print(f"Generating context maps for station {site_info.station_name}")
         gc.plots.gmt_context(
-            site_info.lon, site_info.lat, str(output_dir / "context_map_plot"),
+            site_info.lon,
+            site_info.lat,
+            str(output_dir / "context_map_plot"),
         )
     else:
         print("Skipping context map generation as it already exists")
@@ -244,7 +259,9 @@ def process_station_scenarios(
         )
     else:
         gc.scenario.run_ensemble_scenario(
-            ensemble, site_info, im_component=im_component,
+            ensemble,
+            site_info,
+            im_component=im_component,
         ).save(output_dir)
 
 
@@ -294,7 +311,7 @@ def process_station_im(
     # Compute & write NZS1170.5 if needed
     if im.im_type == gc.im.IMType.PGA or im.is_pSA():
         if (
-                output_dir / gc.nz_code.nzs1170p5.NZS1170p5Result.get_save_dir(im, "hazard")
+            output_dir / gc.nz_code.nzs1170p5.NZS1170p5Result.get_save_dir(im, "hazard")
         ).exists():
             print(
                 f"\t{os.getpid()} - Skipping NZS1170.5 computation for station {site_info.station_name} - "
@@ -327,8 +344,8 @@ def process_station_im(
         cur_rp = int(1.0 / cur_excd)
 
         if (
-                output_dir
-                / gc.disagg.EnsembleDisaggResult.get_save_dir(im, exceedance=cur_excd)
+            output_dir
+            / gc.disagg.EnsembleDisaggResult.get_save_dir(im, exceedance=cur_excd)
         ).exists():
             print(
                 f"\t{os.getpid()} - Skipping disagg computation for station {site_info.station_name} - "

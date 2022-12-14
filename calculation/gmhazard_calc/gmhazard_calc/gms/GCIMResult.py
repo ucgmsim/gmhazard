@@ -190,7 +190,7 @@ class IMEnsembleUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):
         )
 
 
-class SimEnsembleUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):
+class SimUniGCIM(sha_calc.UniIMiDist, sha_calc.CondIMjDist):
     """
     Represents the GCIM for a specific IMi and
     simulation based ensemble

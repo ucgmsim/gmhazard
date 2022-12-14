@@ -150,9 +150,43 @@ class Ensemble:
         # with the same rupture erf
         self._branch_rupture_dfs = {}
 
+        self._is_simple = None
+
         if not lazy_loading:
             self.__load_rupture_df()
             self.__load_stations()
+
+    @property
+    def is_simple(self):
+        """
+        True if each IMEnsemble only has a
+        single branch with weight = 1
+        """
+        if self._is_simple is None:
+            self._is_simple = all(
+                [
+                    len(cur_im_ens.branches) == 1
+                    and cur_im_ens.branches[0].weight == 1.0
+                    for cur_im_ens in self.im_ensembles
+                ]
+            )
+        return self._is_simple
+
+    @property
+    def flt_im_data_type(self):
+        return (
+            const.IMDataType.mixed
+            if len({cur_branch.flt_im_data_type for cur_branch in self.im_ensembles}) > 1
+            else self.im_ensembles[0].flt_im_data_type
+        )
+
+    @property
+    def ds_im_data_type(self):
+        return (
+            const.IMDataType.mixed
+            if len({cur_branch.ds_im_data_type for cur_branch in self.im_ensembles}) > 1
+            else self.im_ensembles[0].ds_im_data_type
+        )
 
     @property
     def stations(self):
@@ -340,7 +374,9 @@ class Ensemble:
                 self._rupture_df = im_ensemble.rupture_df_id_ix
             else:
                 # Append and drop duplicates
-                self._rupture_df = pd.concat([self._rupture_df, im_ensemble.rupture_df_id_ix])
+                self._rupture_df = pd.concat(
+                    [self._rupture_df, im_ensemble.rupture_df_id_ix]
+                )
                 self._rupture_df = self._rupture_df.loc[
                     ~self._rupture_df.index.duplicated()
                 ]

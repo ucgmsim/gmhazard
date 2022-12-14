@@ -115,7 +115,7 @@ class IMEnsemble:
             const.IMDataType.mixed
             if len({cur_branch.flt_im_data_type for cur_branch in self.branches}) > 1
             else self.branches[0].flt_im_data_type
-        )
+         )
 
     @property
     def ds_im_data_type(self):

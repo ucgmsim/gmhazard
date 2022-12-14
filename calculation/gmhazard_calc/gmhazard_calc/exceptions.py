@@ -1,8 +1,20 @@
+from gmhazard_calc.im import IM
+
 class GMHazardError(BaseException):
     """Base GMHazard error"""
 
     def __init__(self, message: str):
         self.message = message
+
+class NotSufficientNumberOfSimulationsError(GMHazardError):
+    """Raised when there aren't enough simulations with
+    IMj near imj for simulation based GMS"""
+
+    def __init__(self, IMj: IM, message: str):
+        super().__init__(message)
+
+        self.IMj = IMj
+
 
 
 class ExceedanceOutOfRangeError(GMHazardError):

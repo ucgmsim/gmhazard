@@ -78,24 +78,29 @@ class GMSourceType(Enum):
 
 class EventType(Enum):
     """Event types for hypocentre distributions"""
-    STRIKE_SLIP = "STRIKE_SLIP"
-    DIP_SLIP = "DIP_SLIP"
-    ALL = "ALL"
+    strike_slip = "strike_slip"
+    dip_slip = "dip_slip"
+    all = "all"
 
     @classmethod
     def from_rake(cls, rake: float):
         """Converts a rake value to an event type"""
         if -30 <= rake <= 30 or 150 <= rake <= 210:
-            return EventType.STRIKE_SLIP
+            return EventType.strike_slip
         elif 60 <= rake <= 120 or -120 <= rake <= -60:
-            return EventType.DIP_SLIP
+            return EventType.dip_slip
         else:
-            return EventType.ALL
+            return EventType.all
 
 
 class HypoMethod(Enum):
     """Hypocentre placement methods"""
 
-    LATIN_HYPERCUBE = "LATIN_HYPERCUBE"
-    MONTE_CARLO = "MONTE_CARLO"
-    UNIFORM_GRID = "UNIFORM_GRID"
+    latin_hypercube = "latin_hypercube"
+    monte_carlo = "monte_carlo"
+    uniform_grid = "uniform_grid"
+
+
+class GMSType(Enum):
+    simulation = "simulation"
+    empirical = "empirical"
