@@ -218,9 +218,9 @@ def _get_down_dip_distribution(event_type: EventType):
     Works out the depth method for down dip placement of hypocentres
     Based on Weilbull or Gamma distributions depending on the EventType
     """
-    if event_type == EventType.DIP_SLIP:
+    if event_type == EventType.dip_slip:
         return stats.gamma(a=7.364, scale=0.072)
-    elif event_type == EventType.STRIKE_SLIP:
+    elif event_type == EventType.strike_slip:
         return stats.weibull_min(scale=0.626, c=3.921)
     else:
         return stats.weibull_min(scale=0.612, c=3.353)

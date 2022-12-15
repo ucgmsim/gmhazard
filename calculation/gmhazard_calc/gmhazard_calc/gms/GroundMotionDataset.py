@@ -12,12 +12,10 @@ from qcore.timeseries import BBSeis
 from qcore import simulation_structure as ss
 
 import sha_calc as sha
-from gmhazard_calc.im import IM, IMType
-from gmhazard_calc import gm_data
+from gmhazard_calc.im import IM, IMType, to_im_list
 from gmhazard_calc import site
 from gmhazard_calc import constants
 from gmhazard_calc import dbs
-from gmhazard_calc import shared
 from .CausalParamBounds import CausalParamBounds
 
 
@@ -72,12 +70,12 @@ class GMDataset:
         site_info: SiteInfo
         output_dir: str
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def get_im_df(
         self,
         site_info: site.SiteInfo,
-        IMs: np.ndarray,
+        IMs: Sequence[str],
         cs_param_bounds: CausalParamBounds = None,
         sf: pd.Series = None,
     ) -> pd.DataFrame:
@@ -108,7 +106,7 @@ class GMDataset:
         -------
         dataframe
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def get_metadata_df(
         self, site_info: site.SiteInfo, selected_gms: Sequence[Any] = None
@@ -238,7 +236,7 @@ class HistoricalGMDataset(GMDataset):
     def get_im_df(
         self,
         site_info: site.SiteInfo,
-        IMs: np.ndarray,
+        IMs: Sequence[str],
         cs_param_bounds: CausalParamBounds = None,
         sf: pd.Series = None,
     ) -> pd.DataFrame:
@@ -358,7 +356,7 @@ class SimulationGMDataset(GMDataset):
         super().__init__(name)
 
         # Simulation
-        self.imdb_ffp = self._config["simulations_imdb"]
+        self.imdb_ffps = self._config["simulations_imdbs"]
         self.simulation_dir = self._config["simulations_dir"]
         self.source_metadata_df = pd.read_csv(
             self._config["source_metadata_ffp"], index_col=0
@@ -373,10 +371,15 @@ class SimulationGMDataset(GMDataset):
     @property
     def ims(self):
         if self._ims is None:
-            # Using a leaf here is a bit of a hack, however loading IM values will
-            # get an overhaul in the near future, so this will be updated as well then
-            with dbs.IMDBNonParametric(self.imdb_ffp) as imdb:
-                self._ims = [IM.from_str(im) for im in imdb.ims if IMType.has_value(im)]
+            for cur_imdb_ffp in self.imdb_ffps:
+                with dbs.IMDBNonParametric(cur_imdb_ffp) as imdb:
+                    cur_ims = [im for im in imdb.ims if IMType.has_value(im)]
+                    if self._ims is None:
+                        self._ims = set(cur_ims)
+                    else:
+                        self._ims.intersection_update(cur_ims)
+
+        self._ims = to_im_list(list(self._ims))
 
         return self._ims
 
@@ -402,13 +405,16 @@ class SimulationGMDataset(GMDataset):
     def get_im_df(
         self,
         site_info: site.SiteInfo,
-        IMs: np.ndarray,
+        IMs: Sequence[str],
         cs_param_bounds: CausalParamBounds = None,
         **kwargs,
     ) -> pd.DataFrame:
         """See GMDataset method for parameter specifications"""
-        with dbs.IMDBNonParametric(self.imdb_ffp) as db:
-            im_df = db.im_data(site_info.station_name).reset_index(0)
+        im_dfs = []
+        for cur_imdb_ffp in self.imdb_ffps:
+            with dbs.IMDBNonParametric(cur_imdb_ffp) as db:
+                im_dfs.append(db.im_data(site_info.station_name).reset_index(0))
+        im_df = pd.concat(im_dfs, axis=0)
 
         if cs_param_bounds is not None:
             # Add source metadata
@@ -441,7 +447,7 @@ class SimulationGMDataset(GMDataset):
             return ssdb.station_data(site_info.station_name)
 
     def get_metadata_df(
-        self, site_info: site.SiteInfo, gm_ids: List[Any] = None
+        self, site_info: site.SiteInfo, selected_gms: List[Any] = None
     ) -> pd.DataFrame:
         """See GMDataset method for parameter specifications"""
         vs30_df = pd.read_csv(
@@ -455,14 +461,19 @@ class SimulationGMDataset(GMDataset):
         # Site-source dataframe
         site_source_df = self._get_site_source_df(site_info)
 
-        meta_dict = {}
-        for cur_rel in gm_ids:
-            meta_dict[cur_rel] = [
-                self.source_metadata_df.loc[cur_rel, "mag"],
-                site_source_df.loc[cur_rel.split("_")[0]].rrup,
-                site_vs30,
-            ]
-        meta_df = pd.DataFrame.from_dict(meta_dict, orient="index")
-        meta_df.columns = ["mag", "rrup", "vs30"]
+        if selected_gms is not None:
+            meta_data = []
+            for cur_rel in selected_gms:
+                meta_data.append(
+                    (self.source_metadata_df.loc[cur_rel, "mag"],
+                    site_source_df.loc[cur_rel.split("_")[0]].rrup,
+                    site_vs30,)
+                )
+            meta_df = pd.DataFrame.from_records(meta_data)
+            meta_df.columns = ["mag", "rrup", "vs30"]
+        else:
+            meta_df = pd.merge(self.source_metadata_df, site_source_df, how="left", left_on="fault", right_index=True)
+            meta_df["vs30"] = site_vs30
+            meta_df = meta_df[["fault", "mag", "rrup", "vs30"]]
 
         return meta_df

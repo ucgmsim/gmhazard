@@ -41,6 +41,7 @@ def get_IM_values(
     imdb_ffps: Sequence[str],
     site_info: site.SiteInfo,
     ensemble: gm_data.Ensemble = None,
+    IMs: Sequence[str] = None,
 ) -> Union[pd.DataFrame, None]:
     """Load the IM values/parameters from the specified
     IMDBs or the IM data cache if an Ensemble that has
@@ -147,6 +148,11 @@ def get_IM_values(
 
     im_df = pd.concat(im_dfs) if len(im_dfs) > 1 else im_dfs[0]
     im_df.sort_index(inplace=True)
+
+    if IMs is not None:
+        assert np.all(np.isin(IMs, im_df.columns))
+        return im_df.loc[:, IMs]
+
     return im_df
 
 
@@ -336,10 +342,10 @@ def get_im_data(
                 raise NotImplementedError()
 
             rupture_id_ind = rupture.rupture_name_to_id_ix(
-                ensemble, branch.flt_erf_ffp, im_data.index.unique(0).values.astype(str)
+                ensemble, branch.flt_erf_ffp, im_data.index.get_level_values(0).values.astype(str)
             )
-            im_data.index.set_levels(rupture_id_ind, level=0, inplace=True)
-            im_data.sort_index(inplace=True)
+            im_data.index = pd.MultiIndex.from_arrays([rupture_id_ind, im_data.index.get_level_values(1)], names=["rupture_id_ix", "realisation"])
+            im_data = im_data.sort_index()
 
     return im_data, im_data_type
 

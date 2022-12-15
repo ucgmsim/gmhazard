@@ -192,7 +192,7 @@ class EnsembleUHSResult(BaseUHSResult):
         if self.percentiles is not None:
             percentiles = {
                 key: {
-                    exceedance: sa_value for exceedance, sa_value in value.iteritems()
+                    exceedance: sa_value for exceedance, sa_value in value.items()
                 }
                 for key, value in self.percentiles.fillna("nan").items()
             }
@@ -300,7 +300,7 @@ class EnsembleUHSResult(BaseUHSResult):
 
             # Adding the percentiles
             if result.percentiles is not None:
-                for percentile in result.percentiles.iteritems():
+                for percentile in result.percentiles.items():
                     column_values.append(
                         str(int(1 / result.exceedance)) + "_" + str(percentile[0])
                     )

@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Union
 
 import pandas as pd
 import numpy as np
@@ -9,9 +9,10 @@ import sha_calc as sha_calc
 from gmhazard_calc.im import IM, to_im_list, to_string_list
 from gmhazard_calc import gm_data
 from gmhazard_calc import site
+from gmhazard_calc import constants
 from .GroundMotionDataset import GMDataset
 from .CausalParamBounds import CausalParamBounds
-from .GCIMResult import IMEnsembleUniGCIM
+from .GCIMResult import IMEnsembleUniGCIM, SimUniGCIM
 
 
 class GMSResult:
@@ -67,10 +68,11 @@ class GMSResult:
         im_j: float,
         IMs: np.ndarray,
         selected_gms_im_df: pd.DataFrame,
-        IMi_gcims: Dict[str, IMEnsembleUniGCIM],
+        IMi_gcims: Dict[str, Union[SimUniGCIM, IMEnsembleUniGCIM]],
         realisations: pd.DataFrame,
         gm_dataset: GMDataset,
-        cs_param_bounds: CausalParamBounds,
+        gms_type: constants.GMSType,
+        cs_param_bounds: CausalParamBounds = None,
         sf: pd.DataFrame = None,
         metadata: Tuple[pd.DataFrame, Dict, pd.DataFrame] = (None, None, None),
     ):
@@ -87,6 +89,8 @@ class GMSResult:
         self.IMi_gcims = IMi_gcims
         self.realisations = realisations
         self.selected_gms_im_df = selected_gms_im_df
+
+        self.gms_type = gms_type
 
         self.sf = sf
 
@@ -123,9 +127,11 @@ class GMSResult:
         self._selected_gms_metadata_df = self.gm_dataset.get_metadata_df(
             self.site_info, self.selected_gms_ids
         )
-        self._selected_gms_metadata_df["sf"] = self.sf.loc[
-            self._selected_gms_metadata_df.index
-        ]
+
+        if "sf" in self._selected_gms_metadata_df.columns:
+            self._selected_gms_metadata_df["sf"] = self.sf.loc[
+                self._selected_gms_metadata_df.index
+            ]
 
         # Get 16/84th for each selected GM
         n_gms = self.selected_gms_im_df.shape[0]
@@ -193,6 +199,7 @@ class GMSResult:
                     ensemble_params=self.ensemble.get_save_params(),
                     gm_dataset_id=self.gm_dataset.name,
                     metadata_dict=self._metadata_dict,
+                    gms_type=self.gms_type.value
                 ),
                 f,
             )
@@ -228,13 +235,23 @@ class GMSResult:
             variable_dict = json.load(f)
         ensemble = gm_data.Ensemble.load(variable_dict["ensemble_params"])
 
+        gms_type = constants.GMSType(variable_dict["gms_type"])
+
         IMs = np.asarray(to_im_list(variable_dict["IMs"]))
-        IMi_gcims = {
-            IMi: IMEnsembleUniGCIM.load(
-                data_dir / f"{IMi}", ensemble.get_im_ensemble(IMi.im_type)
-            )
-            for IMi in IMs
-        }
+        if gms_type is constants.GMSType.empirical:
+            IMi_gcims = {
+                IMi: IMEnsembleUniGCIM.load(
+                    data_dir / f"{IMi}", ensemble.get_im_ensemble(IMi.im_type)
+                )
+                for IMi in IMs
+            }
+        else:
+            IMi_gcims = {
+                IMi: SimUniGCIM.load(
+                    data_dir / f"{IMi}", ensemble
+                )
+                for IMi in IMs
+            }
 
         return cls(
             ensemble,

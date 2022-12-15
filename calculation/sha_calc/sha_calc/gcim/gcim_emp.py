@@ -89,23 +89,23 @@ def comb_lnIMi_IMj(lnIMi_IMj: Dict[str, dist.Uni_lnIMi_IMj], weights: pd.Series)
     assert np.isclose(weights.sum(), 1.0, rtol=1e-3)
 
     branch_names = np.asarray(list(lnIMi_IMj.keys()))
-    branch_mu_IMi_IMj = pd.Series(
+    branch_mu_lnIMi_IMj = pd.Series(
         index=branch_names,
         data=[lnIMi_IMj[cur_name].mu for cur_name in branch_names],
         name="mu_IMi_IMj",
     )
-    sigma_IMi_IMj_df = pd.Series(
+    branch_sigma_lnIMi_IMj_df = pd.Series(
         index=branch_names,
         data=[lnIMi_IMj[cur_name].sigma for cur_name in branch_names],
         name="sigma_IMi_IMj",
     )
 
     # Compute the combined mu and sigma
-    mu_IMi_IMj = branch_mu_IMi_IMj.multiply(weights, axis=0).sum(axis=0)
+    mu_lnIMi_IMj = branch_mu_lnIMi_IMj.multiply(weights, axis=0).sum(axis=0)
     sigma_IMi_IMj = np.sqrt(
         (
             (
-                (sigma_IMi_IMj_df ** 2) + ((branch_mu_IMi_IMj - mu_IMi_IMj) ** 2)
+                (branch_sigma_lnIMi_IMj_df ** 2) + ((branch_mu_lnIMi_IMj - mu_lnIMi_IMj) ** 2)
             ).multiply(weights, axis=0)
         ).sum(axis=0)
     )
@@ -113,7 +113,7 @@ def comb_lnIMi_IMj(lnIMi_IMj: Dict[str, dist.Uni_lnIMi_IMj], weights: pd.Series)
     # Compute the IM values for +/- sigma
     z = np.linspace(-3, 3, 1000)
     cdf_x = pd.Series(
-        data=np.exp(mu_IMi_IMj + sigma_IMi_IMj * z),
+        data=mu_lnIMi_IMj + sigma_IMi_IMj * z,
         name="cdf_x",
     )
     cdf_y = pd.Series(data=np.zeros(cdf_x.shape[0]), name="cdf_y")
@@ -182,21 +182,18 @@ def compute_lnIMi_IMj(
         ).sum(axis=0)
     )
 
-    # Compute the CDF of the target distribution IMi|IMj between +/- 3 standard deviations for each IMi
+    # Compute the CDF of the target distribution lnIMi|IMj between +/- 3 standard deviations for each IMi
     # As we are summing lognormal conditional distributions, the target distribution IMi|IMj
     # is not lognormal, hence it is computed as a non-parametric CDF
     z = np.linspace(-3, 3, 1000)
     # Compute the IM values for +/- sigma for each GCIM (i.e. f_IMi|IMj)
-    cdf_x = np.exp(
-        mu_IMi_IMj.loc[IMs].values
-        + sigma_IMi_IMj.loc[IMs].values[np.newaxis, :] * z[:, np.newaxis]
-    )
+    cdf_x = mu_IMi_IMj.loc[IMs].values + sigma_IMi_IMj.loc[IMs].values[np.newaxis, :] * z[:, np.newaxis]
     cdf_y = np.full((z.size, IMs.size), np.nan)
     for ix, cur_z in enumerate(z):
         # Compute the corresponding z-value for the
         # f_IMi|Rup,IMj distributions for each rupture
         cur_z_IMi_Rup_IMj = (
-            np.log(cdf_x[ix]) - mu_lnIMi_IMj_Rup.loc[:, IMs]
+            cdf_x[ix] - mu_lnIMi_IMj_Rup.loc[:, IMs]
         ) / sigma_lnIMi_IMj_Rup.loc[:, IMs]
 
         # Compute the CDF, assumes that

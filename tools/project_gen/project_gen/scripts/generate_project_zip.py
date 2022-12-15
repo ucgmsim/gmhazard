@@ -1,5 +1,6 @@
 """Writes the specified project as a zip file"""
 import argparse
+import importlib.metadata
 from pathlib import Path
 
 import gmhazard_utils as su
@@ -8,6 +9,7 @@ import project_api as pa
 
 def main(project_dir: Path, output_dir: Path, n_procs: int = 1):
     _, version_str = su.utils.get_package_version("project_api")
+
     project_dir_version_str = str(project_dir.parent.name)
     assert project_dir_version_str == version_str, "Versions have to match"
 

@@ -44,8 +44,8 @@ def perform_mp_directivity(
     )
 
     if n_hypo_data.method in [
-        gmhazard_calc.HypoMethod.MONTE_CARLO,
-        gmhazard_calc.HypoMethod.LATIN_HYPERCUBE,
+        gmhazard_calc.HypoMethod.monte_carlo,
+        gmhazard_calc.HypoMethod.latin_hypercube,
     ]:
         total_fd = np.zeros((repeats, len(site_coords), 1))
         total_fd_array = np.zeros((repeats, nhypo, len(site_coords), 1))

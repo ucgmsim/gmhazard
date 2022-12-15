@@ -109,8 +109,24 @@ class IMEnsemble:
             else self.branches[0].im_data_type
         )
 
+    @property
+    def flt_im_data_type(self):
+        return (
+            const.IMDataType.mixed
+            if len({cur_branch.flt_im_data_type for cur_branch in self.branches}) > 1
+            else self.branches[0].flt_im_data_type
+         )
+
+    @property
+    def ds_im_data_type(self):
+        return (
+            const.IMDataType.mixed
+            if len({cur_branch.ds_im_data_type for cur_branch in self.branches}) > 1
+            else self.branches[0].ds_im_data_type
+        )
+
     def check_im(self, im: IM):
-        """Checks if the specified IM type is supported by
+        """Checks if the specified IM is supported by
         the ensemble, otherwise raises an exception
         """
         if im not in self.ims:
@@ -135,7 +151,9 @@ class IMEnsemble:
                 self._rupture_df = cur_branch.rupture_df_id_ix
             else:
                 # Append and drop duplicates
-                self._rupture_df = pd.concat([self._rupture_df, cur_branch.rupture_df_id_ix])
+                self._rupture_df = pd.concat(
+                    [self._rupture_df, cur_branch.rupture_df_id_ix]
+                )
                 self._rupture_df = self._rupture_df.loc[
                     ~self._rupture_df.index.duplicated()
                 ]
@@ -145,6 +163,9 @@ class IMEnsemble:
             self._ims = set(list(self.branches[0].ims))
             for cur_branch in self.branches:
                 self._ims.intersection_update(list(cur_branch.ims))
+
+            # Ensure only ims of IMType.pSA are exposed
+            self._ims = [cur_im for cur_im in self._ims if cur_im.im_type == IMType.pSA]
         else:
             self._ims = [IM(im) for im in self._im_types]
 
@@ -158,8 +179,10 @@ class IMEnsemble:
         )
 
     def __load_stations(self):
-        branch_stations = list(set.intersection(
-            *[set(branch.stations) for branch in self.branches_dict.values()]
-        ).intersection(self.ensemble.stations_ll_df.index))
+        branch_stations = list(
+            set.intersection(
+                *[set(branch.stations) for branch in self.branches_dict.values()]
+            ).intersection(self.ensemble.stations_ll_df.index)
+        )
 
         self._stations = self.ensemble.stations_ll_df.loc[branch_stations].sort_index()

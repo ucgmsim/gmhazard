@@ -34,7 +34,7 @@ def hypo_average_plots(
     )
 
     n_hypo_data = directivity.NHypoData(
-        HypoMethod.LATIN_HYPERCUBE, nhypo=10
+        HypoMethod.latin_hypercube, nhypo=10
     )
 
     fd, fd_array, _ = directivity.compute_fault_directivity(

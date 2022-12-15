@@ -13,40 +13,6 @@ import pandas as pd
 from . import shared
 
 
-def compute_weighted_sigma(im_df: pd.DataFrame, alpha: pd.Series) -> pd.Series:
-    """Computes the weighted sigma_lnIMi|Rup,IMj from equation 10 in [1],
-    which for the simulation based GM selection process is rupture
-    independent (as no rupture selection is done)
 
-    [1] Bradley, Brendon A. "A ground motion selection
-    algorithm based on the generalized conditional
-    intensity measure approach."
 
-    Parameters
-    ----------
-    im_df: pandas dataframe
-        The IM values for each simulation
-        Shape: [n_simulation, n_IMs]
-    alpha: pandas series
-        The normalized simulation weights
 
-    Returns
-    -------
-    pandas series
-        The weighted standard deviation for each IM
-    """
-    # Sanity checks
-    assert np.isclose(np.sum(alpha), 1.0), "The simulations have to be normalized"
-    im_df, alpha = shared.__align_check_indices(im_df, alpha)
-
-    # Compute the weighted mean
-    mu_ln = np.sum((alpha.values * np.log(im_df.values.T)).T, axis=0)
-
-    # Compute the weighted standard deviation
-    # Note: This requires the weights to be normalized (hence the assert above)
-    sigma_ln = np.sqrt(
-        np.sum((alpha.values * ((np.log(im_df.values) - mu_ln) ** 2).T).T, axis=0)
-        / (1 - np.sum(alpha.values ** 2))
-    )
-
-    return pd.Series(data=sigma_ln, index=im_df.columns)

@@ -59,7 +59,12 @@ class Branch:
 
         self.leafs_dict = {
             leaf_id: Leaf(
-                leaf_id, self, leaf_config["flt_imdbs"], leaf_config["ds_imdbs"]
+                leaf_id,
+                self,
+                leaf_config["flt_imdbs"],
+                leaf_config["ds_imdbs"],
+                leaf_config["model"],
+                leaf_config["tect-type"],
             )
             for leaf_id, leaf_config in self._config["leaves"].items()
         }
@@ -222,7 +227,7 @@ class Branch:
                     )
                 except AssertionError:
                     raise AssertionError(
-                        "The fault IMDBs of a branch has to be the same source type"
+                        "The fault IMDBs of a branch have to be for the same IM type"
                     )
                 if leaf.flt_im_data_type is not None:
                     self._flt_im_data_type = leaf.flt_im_data_type
@@ -240,8 +245,7 @@ class Branch:
                     )
                 except AssertionError:
                     raise AssertionError(
-                        "Some of the benchmark tests failed, "
-                        "check the output to determine which ones failed."
+                        "The fault IMDBs of a branch have to be for the same IM type"
                     )
                 if leaf._ds_im_data_type is not None:
                     self._ds_im_data_type = leaf.ds_im_data_type
