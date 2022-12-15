@@ -703,7 +703,7 @@ def run_parametric_ensemble_gms(
     assert np.allclose(gm_lnIMi_df.loc[:, str(IMj)], np.log(im_j))
 
     print(
-        f"{gm_lnIMi_df} {site_info.station_name}:\nPool of available GMs: {gm_lnIMi_df.shape[0]}"
+        f"{gms_id} {site_info.station_name}:\nPool of available GMs: {gm_lnIMi_df.shape[0]}"
     )
 
     # Compute residuals and select GMs for each replica

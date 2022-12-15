@@ -70,7 +70,7 @@ class GMDataset:
         site_info: SiteInfo
         output_dir: str
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def get_im_df(
         self,
@@ -106,7 +106,7 @@ class GMDataset:
         -------
         dataframe
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def get_metadata_df(
         self, site_info: site.SiteInfo, selected_gms: Sequence[Any] = None
