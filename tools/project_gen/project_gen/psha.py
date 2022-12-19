@@ -56,11 +56,11 @@ def gen_psha_project_data(project_dir: Path, n_procs: int = 1, use_mp: bool = Tr
     )
 
     # Get the full list of station ids
-    station_ids = (
-        utils.get_station_ids(project_params)
-        if "locations" in project_params.keys()
-        else project_params.get("location_ids")
-    )
+    station_ids = project_params.get("location_ids")
+    if station_ids is None:
+        station_ids = [
+            cur_site.station_name for cur_site in utils.get_site_infos(project_params)
+        ]
 
     # Create the context & vs30 maps
     if use_mp:
@@ -218,9 +218,7 @@ def generate_maps(
     if not (output_dir / "context_map_plot.png").exists():
         print(f"Generating context maps for station {site_info.station_name}")
         gc.plots.gmt_context(
-            site_info.lon,
-            site_info.lat,
-            str(output_dir / "context_map_plot"),
+            site_info.lon, site_info.lat, str(output_dir / "context_map_plot"),
         )
     else:
         print("Skipping context map generation as it already exists")
@@ -259,9 +257,7 @@ def process_station_scenarios(
         )
     else:
         gc.scenario.run_ensemble_scenario(
-            ensemble,
-            site_info,
-            im_component=im_component,
+            ensemble, site_info, im_component=im_component,
         ).save(output_dir)
 
 

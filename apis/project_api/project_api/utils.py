@@ -29,33 +29,7 @@ class Project:
 
         if "locations" in project_params.keys():
             self.locations = {}
-            for cur_loc_id, cur_data in project_params["locations"].items():
-                z1p0 = (
-                    cur_data["z1.0"]
-                    if "z1.0" in cur_data
-                    else [None] * len(cur_data["vs30"])
-                )
-                z2p5 = (
-                    cur_data["z2.5"]
-                    if "z2.5" in cur_data
-                    else [None] * len(cur_data["vs30"])
-                )
-                # Checks that we have the same lengths for
-                # Vs30 and Z1.0, Z2.5 values for correct mapping
-                assert len(z1p0) == len(cur_data["vs30"]) and len(z1p0) == len(z2p5)
-                self.locations[cur_loc_id] = Location(
-                    cur_data["name"],
-                    cur_data["vs30"],
-                    z1p0,
-                    z2p5,
-                )
-            self.station_ids = [
-                pg.utils.create_station_id(cur_loc, cur_vs30, z1p0=cur_z1p0, z2p5=cur_z2p5)
-                for cur_loc, cur_data in self.locations.items()
-                for cur_vs30, cur_z1p0, cur_z2p5 in zip(
-                    cur_data.vs30_values, cur_data.z1p0_values, cur_data.z2p5_values
-                )
-            ]
+            self.station_ids = pg.get_station_ids(project_params)
         else:
             self.station_ids = project_params["location_ids"]
 

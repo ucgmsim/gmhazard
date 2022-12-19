@@ -1,10 +1,11 @@
+import time
 from typing import Optional, Sequence, Dict, Tuple
 
 import pandas as pd
 import numpy as np
 from scipy import stats
 
-import sha_calc as sha_calc
+import sha_calc as sha
 from gmhazard_calc.im import IM, IMType, to_im_list, to_string_list
 from gmhazard_calc import gm_data
 from gmhazard_calc import site
@@ -284,7 +285,7 @@ def run_non_parametric_ensemble_gms(
                 cur_im,
                 IMj,
                 im_j,
-                sha_calc.Uni_lnIMi_IMj(
+                sha.Uni_lnIMi_IMj(
                     cur_cdf_series,
                     str(cur_im),
                     str(IMj),
@@ -344,7 +345,7 @@ def run_non_parametric_ensemble_gms(
         # Transform to IM values
         cur_rel_im_values = np.full((n_gms, n_ims), fill_value=np.nan)
         for im_ix, cur_im in enumerate(IMs):
-            cur_rel_im_values[:, im_ix] = sha_calc.query_non_parametric_cdf_invs(
+            cur_rel_im_values[:, im_ix] = sha.query_non_parametric_cdf_invs(
                 U[str(cur_im)].values,
                 IMi_gcims[cur_im].lnIMi_IMj.cdf.index.values,
                 IMi_gcims[cur_im].lnIMi_IMj.cdf.values,
@@ -443,7 +444,7 @@ def run_parametric_ensemble_gms(
     IMs_str = to_string_list(IMs)
 
     # Compute the combined rupture weights
-    P_Rup_IMj = sha_calc.compute_rupture_weights(
+    P_Rup_IMj = sha.compute_rupture_weights(
         im_j,
         {
             cur_branch_name: (
@@ -467,10 +468,10 @@ def run_parametric_ensemble_gms(
     P_Rup_IMj = P_Rup_IMj.multiply(IMj_adj_branch_weights, axis=1).sum(axis=1)
 
     # Compute the correlation matrix
-    rho = sha_calc.compute_correlation_matrix(np.asarray(to_string_list(IMs)), str(IMj))
+    rho = sha.compute_correlation_matrix(np.asarray(to_string_list(IMs)), str(IMj))
 
     # Get correlated vector
-    v_vectors = sha_calc.generate_correlated_vector(
+    v_vectors = sha.generate_correlated_vector(
         n_gms, np.asarray(to_string_list(IMs)), rho, n_replica=n_replica
     )
 
@@ -523,7 +524,7 @@ def run_parametric_ensemble_gms(
 
         # Get the correlation coefficients
         corr_coeffs = pd.Series(
-            data=[sha_calc.get_im_correlations(str(IMi), str(IMj)) for IMi in cur_IMs],
+            data=[sha.get_im_correlations(str(IMi), str(IMj)) for IMi in cur_IMs],
             index=to_string_list(cur_IMs),
         )
 
@@ -557,7 +558,7 @@ def run_parametric_ensemble_gms(
             sigma_cols = [f"{IMi}_sigma" for IMi in cur_IMs]
 
             # Compute lnIMi|IMj, Rup
-            cur_lnIMi_IMj_Rup = sha_calc.compute_lnIMi_IMj_Rup(
+            cur_lnIMi_IMj_Rup = sha.compute_lnIMi_IMj_Rup(
                 im_df[to_string_list(cur_IMs)],
                 im_df[sigma_cols].rename(
                     columns={
@@ -570,7 +571,7 @@ def run_parametric_ensemble_gms(
             )
 
             # Compute lnIMi|IMj
-            cur_lnIMi_IMj = sha_calc.compute_lnIMi_IMj(
+            cur_lnIMi_IMj = sha.compute_lnIMi_IMj(
                 cur_lnIMi_IMj_Rup, P_Rup_IMj, str(IMj), im_j
             )
 
@@ -616,7 +617,7 @@ def run_parametric_ensemble_gms(
 
             # Combine the branches lnIMi|IMj to get
             # the target distribution for IMi
-            comb_lnIMi_IMj = sha_calc.comb_lnIMi_IMj(
+            comb_lnIMi_IMj = sha.comb_lnIMi_IMj(
                 {
                     cur_name: cur_branch_gcim[IMi].lnIMi_IMj
                     for cur_name, cur_branch_gcim in cur_branch_gcims.items()
@@ -649,7 +650,7 @@ def run_parametric_ensemble_gms(
                 cur_branch_cdf.iloc[-1] = 1.0
 
                 # Select n_gms random branches based on IMi adjusted branch weights
-                cur_sel_branches = sha_calc.query_non_parametric_cdf_invs(
+                cur_sel_branches = sha.query_non_parametric_cdf_invs(
                     rand_branch_float[:, replica_ix],
                     cur_branch_cdf.index.values.astype(str),
                     cur_branch_cdf.values,
@@ -683,27 +684,26 @@ def run_parametric_ensemble_gms(
         for cur_sigma_values in rel_sigma_lnIMi_IMj_Rup
     ]
 
-    # IM scaling, such that IM_j=im_j for all
-    # ground motions in the GM dataset
-    sf = None
-    if isinstance(gm_dataset, HistoricalGMDataset):
-        sf = gm_dataset.compute_scaling_factor(IMj, im_j)
-
     # Get the (scaled) ground motions IM values that fall
     # within the specified causal parameter bounds
-    gm_lnIMi_df = gm_dataset.get_im_df(
+    gm_IM_df = gm_dataset.get_im_df(
         site_info,
         IMs_str + [str(IMj)],
         cs_param_bounds=cs_param_bounds,
-        sf=sf,
-    ).apply(np.log)
+    )
+
+    # Apply amp scaling
+    sf = sha.compute_scaling_factor(gm_IM_df[str(IMj)], str(IMj), im_j)
+    gm_lnIM_df = sha.apply_amp_scaling(gm_IM_df, sf).apply(np.log)
+
+    # Sanity check
     assert (
-        gm_lnIMi_df.shape[0] > 0
+        gm_lnIM_df.shape[0] > 0
     ), "No GMs to select from after applying the causual parameter bounds"
-    assert np.allclose(gm_lnIMi_df.loc[:, str(IMj)], np.log(im_j))
+    assert np.allclose(gm_lnIM_df.loc[:, str(IMj)], np.log(im_j))
 
     print(
-        f"{gms_id} {site_info.station_name}:\nPool of available GMs: {gm_lnIMi_df.shape[0]}"
+        f"{gms_id} {site_info.station_name}:\nPool of available GMs: {gm_lnIM_df.shape[0]}"
     )
 
     # Compute residuals and select GMs for each replica
@@ -717,7 +717,7 @@ def run_parametric_ensemble_gms(
             rep_rel_lnIMi_data[replica_ix]
             .loc[:, to_string_list(IMs)]
             .values[:, np.newaxis, :]
-            - gm_lnIMi_df.loc[:, IMs_str].values
+            - gm_lnIM_df.loc[:, IMs_str].values
         )
         cur_misfit = pd.DataFrame(
             index=rep_rel_lnIMi_data[replica_ix].index,
@@ -729,22 +729,29 @@ def run_parametric_ensemble_gms(
         )
 
         # Select best matching GMs
-        cur_selected_gms_ind = gm_lnIMi_df.index.values[
+        cur_selected_gms_ind = gm_lnIM_df.index.values[
             cur_misfit.idxmin(axis=1).values
         ]
 
         # Compute the KS test statistic for each IM_i
         # I.e. Check how well the empirical distribution of selected GMs
         # matches with the target distribution (i.e. lnIMi|IMj)
+        start_time = time.time()
         D = ks_stats(
             IMs,
-            gm_lnIMi_df.loc[cur_selected_gms_ind],
+            gm_lnIM_df.loc[cur_selected_gms_ind],
             {cur_IMi: cur_gcim.lnIMi_IMj for cur_IMi, cur_gcim in IMi_gcims.items()},
         )
+        print(f"Took {time.time() - start_time}")
 
         # Compute the overall residual & save selected ground motions
         R_values.append(np.sum(im_weights * (D ** 2)))
         sel_gm_ind.append(list(cur_selected_gms_ind))
+
+    # Free memory, as these can be large if the
+    # pool of available GMs is large
+    del cur_diff
+    del cur_misfit
 
     # Only select from the replica which have number of unique GMs == n_gms, or
     # if there are none select from the set that has
@@ -774,7 +781,7 @@ def run_parametric_ensemble_gms(
         IMj,
         im_j,
         IMs,
-        gm_lnIMi_df.loc[gm_ind].apply(np.exp),
+        gm_lnIM_df.loc[gm_ind].apply(np.exp),
         IMi_gcims,
         rel_lnIMi_df.apply(np.exp),
         gm_dataset,
@@ -787,7 +794,7 @@ def run_parametric_ensemble_gms(
 def ks_stats(
     IMs: Sequence[IM],
     gms_im_df: pd.DataFrame,
-    IMi_gcims: Dict[IM, sha_calc.Uni_lnIMi_IMj],
+    IMi_gcims: Dict[IM, sha.Uni_lnIMi_IMj],
 ):
     """
     Compute the KS test statistic for each IM_i
@@ -811,7 +818,7 @@ def ks_stats(
     for IMi in IMs:
         cur_d, _ = stats.kstest(
             gms_im_df[str(IMi)].values,
-            lambda x: sha_calc.query_non_parametric_cdf(
+            lambda x: sha.query_non_parametric_cdf(
                 x,
                 IMi_gcims[IMi].cdf.index.values,
                 IMi_gcims[IMi].cdf.values,
@@ -943,12 +950,12 @@ def default_causal_params(
     ).sort_values("magnitude")
     non_nan_mask = ~contr_df.magnitude.isna()
     mw_low = min(
-        sha_calc.query_non_parametric_cdf_invs(
+        sha.query_non_parametric_cdf_invs(
             np.asarray([0.01]),
             contr_df.magnitude.values[non_nan_mask],
             contr_df.contribution.cumsum().values[non_nan_mask],
         )[0],
-        sha_calc.query_non_parametric_cdf_invs(
+        sha.query_non_parametric_cdf_invs(
             np.asarray([0.1]),
             contr_df.magnitude.values[non_nan_mask],
             contr_df.contribution.cumsum().values[non_nan_mask],
@@ -956,12 +963,12 @@ def default_causal_params(
         - 0.5,
     )
     mw_high = max(
-        sha_calc.query_non_parametric_cdf_invs(
+        sha.query_non_parametric_cdf_invs(
             np.asarray([0.99]),
             contr_df.magnitude.values[non_nan_mask],
             contr_df.contribution.cumsum().values[non_nan_mask],
         )[0],
-        sha_calc.query_non_parametric_cdf_invs(
+        sha.query_non_parametric_cdf_invs(
             np.asarray([0.90]),
             contr_df.magnitude.values[non_nan_mask],
             contr_df.contribution.cumsum().values[non_nan_mask],
@@ -992,12 +999,12 @@ def default_causal_params(
     non_nan_mask = ~contr_df.rrup.isna()
     # Rrup bounds
     rrup_low = min(
-        sha_calc.query_non_parametric_cdf_invs(
+        sha.query_non_parametric_cdf_invs(
             np.asarray([0.01]),
             contr_df.rrup.values[non_nan_mask],
             contr_df.contribution.cumsum().values[non_nan_mask],
         )[0],
-        sha_calc.query_non_parametric_cdf_invs(
+        sha.query_non_parametric_cdf_invs(
             np.asarray([0.1]),
             contr_df.rrup.values[non_nan_mask],
             contr_df.contribution.cumsum().values[non_nan_mask],
@@ -1005,12 +1012,12 @@ def default_causal_params(
         * 0.5,
     )
     rrup_high = max(
-        sha_calc.query_non_parametric_cdf_invs(
+        sha.query_non_parametric_cdf_invs(
             np.asarray([0.99]),
             contr_df.rrup.values[non_nan_mask],
             contr_df.contribution.cumsum().values[non_nan_mask],
         )[0],
-        sha_calc.query_non_parametric_cdf_invs(
+        sha.query_non_parametric_cdf_invs(
             np.asarray([0.90]),
             contr_df.rrup.values[non_nan_mask],
             contr_df.contribution.cumsum().values[non_nan_mask],

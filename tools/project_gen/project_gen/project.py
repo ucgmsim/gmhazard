@@ -12,10 +12,12 @@ import yaml
 
 import gmhazard_utils as su
 import gmhazard_calc as gc
-import project_gen as pg
-from . import psha
 
-EMPIRICAL_VERSION = "v21p10emp"
+from . import utils
+from . import psha
+from . import gms
+
+EMPIRICAL_VERSION = "v22p5emp"
 FLT_SITE_SOURCE_DB_FILENAME = "flt_site_source.db"
 DS_SITE_SOURCE_DB_FILENAME = "ds_site_source.db"
 
@@ -131,12 +133,15 @@ def create_project(
             # Write the config
             project_config = write_project_config(project_dir, project_specs)
 
+            # Get the site info
+
             if ensemble_ffp is None:
                 dbs_dir = project_dir / "dbs"
 
                 # Write the station location and vs30 file
+                site_infos = utils.get_site_infos(project_config)
                 ll_ffp, vs30_ffp, z_ffp = write_station_details(
-                    project_config["locations"], dbs_dir, project_id
+                    site_infos, dbs_dir, project_id
                 )
 
                 # Generate the DBs
@@ -206,8 +211,9 @@ def create_project(
 
         # Generate the PSHA project data and GMS
         psha.gen_psha_project_data(project_dir, n_procs=n_procs, use_mp=use_mp)
-        pg.gen_gms_project_data(project_dir, n_procs=n_procs)
-    except Exception as ex:
+        gms.gen_gms_project_data(project_dir, n_procs=n_procs)
+    # except Exception as ex:
+    except NotImplementedError:
         print(f"Failed to create new project, due to an exception:\n{ex}")
         print(f"Traceback:\n{traceback.format_exc()}")
 
@@ -304,61 +310,37 @@ def write_project_config(project_dir: Path, project_specs: Dict):
     return project_config["project_parameters"]
 
 
-def write_station_details(locations: Dict, dbs_dir: Path, project_id: str):
+def write_station_details(
+    site_infos: Sequence[gc.site.SiteInfo], dbs_dir: Path, project_id: str
+):
     """Writes the station location, vs30 and Z file"""
-
-    def write_file_data(
-        station_detail_indexes: List,
-        station_details: List,
-        ffp: Path,
-        header=None,
-        delim=" ",
-    ):
-        """Writes lines into a given file path based on indexes in the station details"""
-        lines = [
-            delim.join(f"{cur_stat_details[index]}" for index in station_detail_indexes)
-            + "\n"
-            for cur_stat_details in station_details
-        ]
-        with open(ffp, "w") as f:
-            if header:
-                f.write(header)
-            f.writelines(lines)
-
-    stations_details = []
-    for loc_id, loc_data in locations.items():
-        for vs30, z1p0, z2p5 in zip(
-            loc_data["vs30"], loc_data["z1.0"], loc_data["z2.5"]
-        ):
-            stations_details.append(
-                (
-                    pg.utils.create_station_id(loc_id, vs30, z1p0=z1p0, z2p5=z2p5),
-                    vs30,
-                    loc_data["lat"],
-                    loc_data["lon"],
-                    np.nan if z1p0 is None else z1p0,
-                    np.nan if z2p5 is None else z2p5,
-                    0,  # default sigma value - project gen doesn't use it
-                )
-            )
-
     ll_ffp = dbs_dir / f"{project_id}.ll"
     if not ll_ffp.exists():
-        write_file_data([3, 2, 0], stations_details, ll_ffp)
+        lines = [
+            f"{cur_site.lon} {cur_site.lat} {cur_site.station_name}"
+            for cur_site in site_infos
+        ]
+        with ll_ffp.open("w") as f:
+            f.writelines(lines)
 
     vs30_ffp = dbs_dir / f"{project_id}.vs30"
     if not vs30_ffp.exists():
-        write_file_data([0, 1], stations_details, vs30_ffp)
+        lines = [
+            f"{cur_site.station_name} {cur_site.db_vs30}" for cur_site in site_infos
+        ]
+        with vs30_ffp.open("w") as f:
+            f.writelines(lines)
 
     z_ffp = dbs_dir / f"{project_id}.z"
     if not z_ffp.exists():
-        write_file_data(
-            [0, 4, 5, 6],
-            stations_details,
-            z_ffp,
-            header="Station_Name,Z_1.0(km),Z_2.5(km),sigma\n",
-            delim=",",
-        )
+        header = "Station_Name,Z_1.0(km),Z_2.5(km),sigma\n"
+        lines = [
+            f"{cur_site.station_name},{cur_site.z1p0},{cur_site.z2p5},0"
+            for cur_site in site_infos
+        ]
+        with z_ffp.open("w") as f:
+            f.write(header)
+            f.writelines(lines)
 
     return ll_ffp, vs30_ffp, z_ffp
 

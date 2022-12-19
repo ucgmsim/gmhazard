@@ -12,7 +12,7 @@ from qcore.timeseries import BBSeis
 from qcore import simulation_structure as ss
 
 import sha_calc as sha
-from gmhazard_calc.im import IM, IMType, to_im_list
+from gmhazard_calc.im import IM, IMType, to_im_list, to_string_list
 from gmhazard_calc import site
 from gmhazard_calc import constants
 from gmhazard_calc import dbs
@@ -171,14 +171,21 @@ class GMDataset:
         config = GMDataset.gms_sources[name]
         gms_type = constants.GMSourceType(config["type"])
 
-        return (
-            SimulationGMDataset(name)
-            if gms_type is constants.GMSourceType.simulations
-            else HistoricalGMDataset(name)
-        )
+        if gms_type is constants.GMSourceType.simulations:
+            return SimulationGMDataset(name)
+        elif gms_type is constants.GMSourceType.historical:
+            return HistoricalGMDataset(name)
+        else:
+            return MixedGMDataset(name)
 
 
 class HistoricalGMDataset(GMDataset):
+    """
+    Represents dataset of historical GM records
+
+    Supports filtering of records via CausalParamBounds
+    """
+
     def __init__(self, name):
         super().__init__(name)
 
@@ -266,9 +273,7 @@ class HistoricalGMDataset(GMDataset):
         self, IMj: IM, im_j: float, gm_ids: np.ndarray = None,
     ) -> Tuple[pd.DataFrame, pd.Series]:
         """
-        Computes the amplitude scaling factor such that IM_j == im_j
-        for all of the specified GM ids.
-        See equations (13) and (14) of Bradley 2012
+        Scales the GM records such that IMj == imj
 
         Parameters
         ----------
@@ -287,19 +292,15 @@ class HistoricalGMDataset(GMDataset):
         """
         gm_ids = self._im_df.index.values if gm_ids is None else gm_ids
 
-        # Compute the scaling factor
-        IMj_alpha = sha.get_scale_alpha([str(IMj)]).loc[str(IMj)]
-        sf = np.power(im_j / self._im_df.loc[gm_ids, str(IMj)], 1.0 / IMj_alpha)
+        return sha.compute_scaling_factor(str(IMj), im_j, self._im_df.loc[gm_ids, :])
 
-        return sf
-
-    def apply_amp_scaling(self, IMs: np.ndarray, sf: pd.Series):
+    def apply_amp_scaling(self, IMs: Sequence[str], sf: pd.Series):
         """
         Applies amplitude to the specified GMs
 
         Parameters
         ----------
-        IMs: array of strings
+        IMs: sequence of strings
             The IM types to scale and return
         sf: series
             The scaling factor for each GM of interest
@@ -310,12 +311,8 @@ class HistoricalGMDataset(GMDataset):
         dataframe:
             The scaled IMs
         """
-        IMs_alpha = sha.get_scale_alpha(IMs).loc[IMs].values
-        im_sf_df = pd.DataFrame(
-            index=sf.index, data=np.power(sf.values[:, None], IMs_alpha), columns=IMs
-        )
-        scaled_im_df = self._im_df.loc[sf.index, IMs] * im_sf_df
-        return scaled_im_df
+        return sha.apply_amp_scaling(self._im_df, IMs, sf)
+
 
     def get_metadata_df(
         self, site_info: site.SiteInfo, selected_gms: List[Any] = None
@@ -352,6 +349,16 @@ class HistoricalGMDataset(GMDataset):
 
 
 class SimulationGMDataset(GMDataset):
+    """
+    Represents Simulation GM dataset
+
+    Used for site-specific GM selection,
+    i.e. only supports simulation based GMS and
+        does not support filtering by CausalParamBounds
+        as only simulations from the site
+        of interest are used
+    """
+
     def __init__(self, name: str):
         super().__init__(name)
 
@@ -413,38 +420,22 @@ class SimulationGMDataset(GMDataset):
         im_dfs = []
         for cur_imdb_ffp in self.imdb_ffps:
             with dbs.IMDBNonParametric(cur_imdb_ffp) as db:
-                im_dfs.append(db.im_data(site_info.station_name).reset_index(0))
+                cur_im_data = db.im_data(site_info.station_name)
+                if cur_im_data is None:
+                    raise ValueError(
+                        f"No IM data found for station {site_info.station_name}"
+                    )
+
+                im_dfs.append(cur_im_data.reset_index(0))
         im_df = pd.concat(im_dfs, axis=0)
 
         if cs_param_bounds is not None:
-            # Add source metadata
-            assert np.all(
-                np.isin(im_df.index, self.source_metadata_df.index)
-            ), "No source metadata for all realisations"
-            im_df = self.source_metadata_df.join(im_df, how="inner")
-
-            # Add Add site_source metadata
-            site_source_df = self._get_site_source_df(site_info)
-            assert np.all(
-                np.isin(
-                    np.unique(im_df.fault),
-                    np.unique(site_source_df.index.values.astype(str)),
-                )
+            raise ValueError(
+                "CausalParamBounds should not be specified for "
+                "simulation based GMS as it is already site-specific"
             )
-            im_df = im_df.merge(site_source_df, left_on="fault", right_index=True)
-
-            # Get the filter mask
-            mask = self._get_filter_mask(im_df, cs_param_bounds, ignore_vs30=True)
-
-            return im_df.loc[mask, IMs]
 
         return im_df.loc[:, IMs]
-
-    def _get_site_source_df(self, site_info: site.SiteInfo):
-        with dbs.SiteSourceDB(
-            self.site_source_db_ffp, constants.SourceType.fault
-        ) as ssdb:
-            return ssdb.station_data(site_info.station_name)
 
     def get_metadata_df(
         self, site_info: site.SiteInfo, selected_gms: List[Any] = None
@@ -459,21 +450,196 @@ class SimulationGMDataset(GMDataset):
         site_vs30 = float(vs30_df.loc[site_info.station_name])
 
         # Site-source dataframe
-        site_source_df = self._get_site_source_df(site_info)
+        site_source_df = _get_site_source_df(self.site_source_db_ffp, site_info)
 
         if selected_gms is not None:
             meta_data = []
             for cur_rel in selected_gms:
                 meta_data.append(
-                    (self.source_metadata_df.loc[cur_rel, "mag"],
-                    site_source_df.loc[cur_rel.split("_")[0]].rrup,
-                    site_vs30,)
+                    (
+                        self.source_metadata_df.loc[cur_rel, "mag"],
+                        site_source_df.loc[cur_rel.split("_")[0]].rrup,
+                        site_vs30,
+                    )
                 )
             meta_df = pd.DataFrame.from_records(meta_data)
             meta_df.columns = ["mag", "rrup", "vs30"]
         else:
-            meta_df = pd.merge(self.source_metadata_df, site_source_df, how="left", left_on="fault", right_index=True)
+            meta_df = pd.merge(
+                self.source_metadata_df,
+                site_source_df,
+                how="left",
+                left_on="fault",
+                right_index=True,
+            )
             meta_df["vs30"] = site_vs30
             meta_df = meta_df[["fault", "mag", "rrup", "vs30"]]
 
         return meta_df
+
+
+class MixedGMDataset(GMDataset):
+    """
+    GM dataset that consists of both
+    observed and simulation records
+
+    For the case where GMS is run using
+    an parametric ensemble, but set of available
+    GM records to select from is supplemented with
+    simulations
+
+    Note: Currently only supports selecting from simulations
+    Todo: Complete this
+    """
+
+    def __init__(self, name):
+        super().__init__(name)
+
+        # Simulation
+        self.imdb_ffps = self._config["simulations"]["imdbs"]
+        self.simulations_dir = self._config["simulations"]["waveforms_dir"]
+        self.source_metadata_df = pd.read_csv(
+            self._config["simulations"]["source_metadata_ffp"], index_col=0
+        )
+
+        self.vs30_params_csv_ffp = self._config["simulations"]["vs30_params_csv_ffp"]
+        self.site_source_db_ffp = self._config["simulations"]["site_source_db_ffp"]
+        self.sources_dir = Path(self._config["simulations"]["sources_dir"])
+
+        self._ims = None
+
+    @property
+    def ims(self):
+        if self._ims is None:
+            for cur_imdb_ffp in self.imdb_ffps:
+                with dbs.IMDBNonParametric(cur_imdb_ffp) as imdb:
+                    cur_ims = [im for im in imdb.ims if IMType.has_value(im)]
+                    if self._ims is None:
+                        self._ims = set(cur_ims)
+                    else:
+                        self._ims.intersection_update(cur_ims)
+
+        self._ims = to_im_list(list(self._ims))
+
+        return self._ims
+
+    def get_waveforms(
+        self, gms: Sequence[Any], site_info: site.SiteInfo, output_dir: str
+    ) -> List:
+        raise NotImplementedError()
+
+    def get_im_df(
+        self,
+        site_info: site.SiteInfo,
+        IMs: Sequence[str],
+        cs_param_bounds: CausalParamBounds = None,
+        sf: pd.Series = None,
+    ) -> pd.DataFrame:
+        """See GMDataset method for parameter specifications"""
+        if cs_param_bounds is None:
+            # Need some sanity checking here to
+            # as the number of records could be massive
+            raise NotImplementedError()
+
+        # Filter based on Vs30
+        vs30_df = pd.read_csv(
+            self.vs30_params_csv_ffp,
+            names=["station", "vs30"],
+            delimiter="\s+",
+            index_col="station",
+        )
+        vs30_mask = (vs30_df.vs30 >= cs_param_bounds.vs30_low) & (
+            vs30_df.vs30 <= cs_param_bounds.vs30_high
+        )
+        station_ids = vs30_df.index.values.astype(str)[vs30_mask]
+
+        # Filter realisations based on magnitude
+        realisations = self.source_metadata_df.loc[
+            (self.source_metadata_df.mag >= cs_param_bounds.mw_low)
+            & (self.source_metadata_df.mag <= cs_param_bounds.mw_high)
+        ].index.values.astype(str)
+
+        im_dfs = []
+
+        # Iterate over each IMDB and get the
+        # data for all available stations
+        with dbs.SiteSourceDB(
+            self.site_source_db_ffp, constants.SourceType.fault
+        ) as ssdb:
+            for cur_imdb_ffp in self.imdb_ffps:
+                with dbs.IMDBNonParametric(cur_imdb_ffp) as db:
+                    # Iterate over each station
+                    for cur_station_id in station_ids:
+                        # Get the IM data
+                        cur_im_df = db.im_data(cur_station_id, im=IMs)
+                        if cur_im_df is None:
+                            continue
+
+                        cur_im_df = cur_im_df.reset_index(0)
+
+                        # Identify faults that meet rrup bounds
+                        cur_dist_df = ssdb.station_data(cur_station_id)
+                        cur_faults = cur_dist_df.loc[(cur_dist_df.rrup >= cs_param_bounds.rrup_low) & (
+                            cur_dist_df.rrup <= cs_param_bounds.rrup_high
+                        )].index.values.astype(str)
+
+                        # Filter based on rrup
+                        cur_im_df = cur_im_df.loc[np.isin(cur_im_df.fault, cur_faults)]
+
+                        # Filter based on mag
+                        cur_im_df = cur_im_df.loc[np.isin(cur_im_df.index.values, realisations)]
+
+                        if cur_im_df.shape[0] > 0:
+                            im_dfs.append(cur_im_df)
+
+        im_df = pd.concat(im_dfs, axis=0)
+
+        return im_df.loc[:, IMs]
+
+    def get_metadata_df(
+        self, site_info: site.SiteInfo, selected_gms: Sequence[Any] = None
+    ) -> pd.DataFrame:
+        """See GMDataset method for parameter specifications"""
+        raise NotImplementedError()
+
+        vs30_df = pd.read_csv(
+            self.vs30_params_csv_ffp,
+            names=["station", "vs30"],
+            delimiter="\s+",
+            index_col="station",
+        )
+        site_vs30 = float(vs30_df.loc[site_info.station_name])
+
+        # Site-source dataframe
+        site_source_df = _get_site_source_df(self.site_source_db_ffp, site_info)
+
+        if selected_gms is not None:
+            meta_data = []
+            for cur_rel in selected_gms:
+                meta_data.append(
+                    (
+                        self.source_metadata_df.loc[cur_rel, "mag"],
+                        site_source_df.loc[cur_rel.split("_")[0]].rrup,
+                        site_vs30,
+                    )
+                )
+            meta_df = pd.DataFrame.from_records(meta_data)
+            meta_df.columns = ["mag", "rrup", "vs30"]
+        else:
+            meta_df = pd.merge(
+                self.source_metadata_df,
+                site_source_df,
+                how="left",
+                left_on="fault",
+                right_index=True,
+            )
+            meta_df["vs30"] = site_vs30
+            meta_df = meta_df[["fault", "mag", "rrup", "vs30"]]
+
+        return meta_df
+
+
+def _get_site_source_df(site_source_db_ffp: Path, site_info: site.SiteInfo):
+    with dbs.SiteSourceDB(str(site_source_db_ffp), constants.SourceType.fault) as ssdb:
+        return ssdb.station_data(site_info.station_name)
+
