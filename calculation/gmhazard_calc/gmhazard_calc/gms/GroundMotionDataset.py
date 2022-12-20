@@ -313,7 +313,6 @@ class HistoricalGMDataset(GMDataset):
         """
         return sha.apply_amp_scaling(self._im_df, IMs, sf)
 
-
     def get_metadata_df(
         self, site_info: site.SiteInfo, selected_gms: List[Any] = None
     ) -> pd.DataFrame:
@@ -421,11 +420,12 @@ class SimulationGMDataset(GMDataset):
             with dbs.IMDBNonParametric(cur_imdb_ffp) as db:
                 cur_im_data = db.im_data(site_info.station_name)
                 if cur_im_data is None:
-                    raise ValueError(
-                        f"No IM data found for station {site_info.station_name}"
-                    )
+                    continue
 
                 im_dfs.append(cur_im_data.reset_index(0))
+
+        if len(im_dfs) == 0:
+            raise ValueError(f"No IM data found for station {site_info.station_name}")
         im_df = pd.concat(im_dfs, axis=0)
 
         if cs_param_bounds is not None:
@@ -578,15 +578,18 @@ class MixedGMDataset(GMDataset):
 
                         # Identify faults that meet rrup bounds
                         cur_dist_df = ssdb.station_data(cur_station_id)
-                        cur_faults = cur_dist_df.loc[(cur_dist_df.rrup >= cs_param_bounds.rrup_low) & (
-                            cur_dist_df.rrup <= cs_param_bounds.rrup_high
-                        )].index.values.astype(str)
+                        cur_faults = cur_dist_df.loc[
+                            (cur_dist_df.rrup >= cs_param_bounds.rrup_low)
+                            & (cur_dist_df.rrup <= cs_param_bounds.rrup_high)
+                        ].index.values.astype(str)
 
                         # Filter based on rrup
                         cur_im_df = cur_im_df.loc[np.isin(cur_im_df.fault, cur_faults)]
 
                         # Filter based on mag
-                        cur_im_df = cur_im_df.loc[np.isin(cur_im_df.index.values, realisations)]
+                        cur_im_df = cur_im_df.loc[
+                            np.isin(cur_im_df.index.values, realisations)
+                        ]
 
                         if cur_im_df.shape[0] > 0:
                             im_dfs.append(cur_im_df)
@@ -641,4 +644,3 @@ class MixedGMDataset(GMDataset):
 def _get_site_source_df(site_source_db_ffp: Path, site_info: site.SiteInfo):
     with dbs.SiteSourceDB(str(site_source_db_ffp), constants.SourceType.fault) as ssdb:
         return ssdb.station_data(site_info.station_name)
-
