@@ -270,7 +270,10 @@ class HistoricalGMDataset(GMDataset):
         return im_df.loc[mask, IMs]
 
     def compute_scaling_factor(
-        self, IMj: IM, im_j: float, gm_ids: np.ndarray = None,
+        self,
+        IMj: IM,
+        im_j: float,
+        gm_ids: np.ndarray = None,
     ) -> Tuple[pd.DataFrame, pd.Series]:
         """
         Scales the GM records such that IMj == imj
@@ -363,7 +366,9 @@ class SimulationGMDataset(GMDataset):
 
         # Simulation
         self.imdb_ffps = self._config["simulations_imdbs"]
-        self.simulation_dir = Path(self._config["simulations_dir"])
+        self.simulation_dirs = [
+            Path(cur_dir) for cur_dir in self._config["simulations_dirs"]
+        ]
         self.source_metadata_df = pd.read_csv(
             self._config["source_metadata_ffp"], index_col=0
         )
@@ -394,17 +399,23 @@ class SimulationGMDataset(GMDataset):
         """See GMDataset method for parameter specifications"""
         no_waveforms = []
         for sim_name in gms:
-            # Find the binary waveform
-            cur_bb_bin_path = list(self.simulation_dir.rglob(f"{sim_name}.bb"))
+            # Find & Save the binary waveform
+            cur_bb = None
+            for cur_dir in self.simulation_dirs:
+                if os.path.exists(
+                    cur_bb_bin_path := ss.get_bb_bin_path(
+                        ss.get_sim_dir(str(cur_dir), sim_name)
+                    )
+                ):
+                    # Convert to text files and store in the specified output directory
+                    cur_bb = BBSeis(cur_bb_bin_path)
+                    cur_bb.save_txt(
+                        site_info.station_name, prefix=f"{output_dir}/{sim_name}_"
+                    )
 
-            # Convert to text files and store in the specified output directory
-            if len(cur_bb_bin_path) == 1:
-                bb = BBSeis(cur_bb_bin_path)
-                bb.save_txt(site_info.station_name, prefix=f"{output_dir}/{sim_name}_")
-            elif len(cur_bb_bin_path) > 1:
-                raise ValueError(f"More than waveform exist for {sim_name}")
-            else:
+            if cur_bb is None:
                 no_waveforms.append(sim_name)
+
         return no_waveforms
 
     def get_im_df(
