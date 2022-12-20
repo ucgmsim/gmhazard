@@ -722,7 +722,6 @@ def plot_gms_im_distribution(
 def plot_gms_mw_rrup(
     gms_result: gms.GMSResult,
     disagg_mean_values: pd.Series,
-    cs_param_bounds: gms.CausalParamBounds = None,
     save_file: Path = None,
 ):
     """Magnitude - Distance (Rrup) plot of the selected GMs and the mean of the
@@ -733,7 +732,6 @@ def plot_gms_mw_rrup(
     ----------
     gms_result: gms.GMSResult
     disagg_mean_values: pd.Series
-    cs_param_bounds: gms.CausalParamBounds, optional
     save_file: Path, optional
     """
     metadata = {
@@ -754,21 +752,21 @@ def plot_gms_mw_rrup(
     )
 
     # Boundary box plot
-    if cs_param_bounds is not None:
+    if gms_result.cs_param_bounds is not None:
         plt.plot(
             [
-                cs_param_bounds.rrup_low,
-                cs_param_bounds.rrup_high,
-                cs_param_bounds.rrup_high,
-                cs_param_bounds.rrup_low,
-                cs_param_bounds.rrup_low,
+                gms_result.cs_param_bounds.rrup_low,
+                gms_result.cs_param_bounds.rrup_high,
+                gms_result.cs_param_bounds.rrup_high,
+                gms_result.cs_param_bounds.rrup_low,
+                gms_result.cs_param_bounds.rrup_low,
             ],
             [
-                cs_param_bounds.mw_low,
-                cs_param_bounds.mw_low,
-                cs_param_bounds.mw_high,
-                cs_param_bounds.mw_high,
-                cs_param_bounds.mw_low,
+                gms_result.cs_param_bounds.mw_low,
+                gms_result.cs_param_bounds.mw_low,
+                gms_result.cs_param_bounds.mw_high,
+                gms_result.cs_param_bounds.mw_high,
+                gms_result.cs_param_bounds.mw_low,
             ],
             color="red",
             linestyle="dashed",

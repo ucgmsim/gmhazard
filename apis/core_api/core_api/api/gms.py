@@ -189,7 +189,6 @@ def download_gms_results():
                 cached_data.gms_result,
                 tmp_dir,
                 disagg_data=None,
-                cs_param_bounds=None,
                 prefix=f"{cached_data.ensemble.name}",
             )
             return flask.send_file(

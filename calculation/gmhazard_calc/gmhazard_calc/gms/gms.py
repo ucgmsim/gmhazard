@@ -121,14 +121,15 @@ def run_ensemble_gms(
         im_j = ens_hazard.exceedance_to_im(exceedance)
 
     if ensemble.flt_im_data_type is constants.IMDataType.parametric:
-        return run_parametric_ensemble_gms(
+        return _run_parametric_ensemble_gms(
             ensemble,
             site_info,
             n_gms,
             IMj,
             gm_dataset,
             IMs,
-            im_j=im_j,
+            im_j,
+            exceedance=exceedance,
             n_replica=n_replica,
             im_weights=im_weights,
             cs_param_bounds=cs_param_bounds,
@@ -138,14 +139,15 @@ def run_ensemble_gms(
         ensemble.is_simple
         and ensemble.flt_im_data_type is constants.IMDataType.non_parametric
     ):
-        return run_non_parametric_ensemble_gms(
+        return _run_non_parametric_ensemble_gms(
             ensemble,
             site_info,
             n_gms,
             IMj,
             gm_dataset,
             IMs,
-            im_j=im_j,
+            im_j,
+            exceedance=exceedance,
             n_replica=n_replica,
             im_weights=im_weights,
             cs_param_bounds=cs_param_bounds,
@@ -157,14 +159,15 @@ def run_ensemble_gms(
         )
 
 
-def run_non_parametric_ensemble_gms(
+def _run_non_parametric_ensemble_gms(
     ensemble: gm_data.Ensemble,
     site_info: site.SiteInfo,
     n_gms: int,
     IMj: IM,
     gm_dataset: GMDataset,
     IMs: np.ndarray,
-    im_j: float = None,
+    im_j: float,
+    exceedance: float = None,
     n_replica: int = 10,
     im_weights: pd.Series = None,
     cs_param_bounds: CausalParamBounds = None,
@@ -417,17 +420,19 @@ def run_non_parametric_ensemble_gms(
         rel_lnIMi_df.apply(np.exp),
         gm_dataset,
         constants.GMSType.simulation,
+        exceedance=exceedance
     )
 
 
-def run_parametric_ensemble_gms(
+def _run_parametric_ensemble_gms(
     ensemble: gm_data.Ensemble,
     site_info: site.SiteInfo,
     n_gms: int,
     IMj: IM,
     gm_dataset: HistoricalGMDataset,
     IMs: np.ndarray,
-    im_j: float = None,
+    im_j: float,
+    exceedance: float = None,
     n_replica: int = 10,
     im_weights: pd.Series = None,
     cs_param_bounds: CausalParamBounds = None,
@@ -788,6 +793,7 @@ def run_parametric_ensemble_gms(
         constants.GMSType.empirical,
         cs_param_bounds=cs_param_bounds,
         sf=sf,
+        exceedance=exceedance
     )
 
 

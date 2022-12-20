@@ -72,6 +72,7 @@ class GMSResult:
         realisations: pd.DataFrame,
         gm_dataset: GMDataset,
         gms_type: constants.GMSType,
+        exceedance: float = None,
         cs_param_bounds: CausalParamBounds = None,
         sf: pd.DataFrame = None,
         metadata: Tuple[pd.DataFrame, Dict, pd.DataFrame] = (None, None, None),
@@ -83,6 +84,8 @@ class GMSResult:
         self.IM_j = IMj
         self.im_j = im_j
         self.IMs = IMs
+
+        self.exceedance = exceedance
 
         self.cs_param_bounds = cs_param_bounds
 
@@ -199,7 +202,8 @@ class GMSResult:
                     ensemble_params=self.ensemble.get_save_params(),
                     gm_dataset_id=self.gm_dataset.name,
                     metadata_dict=self._metadata_dict,
-                    gms_type=self.gms_type.value
+                    gms_type=self.gms_type.value,
+                    exceedance=self.exceedance,
                 ),
                 f,
             )
@@ -263,8 +267,10 @@ class GMSResult:
             IMi_gcims,
             realisations,
             GMDataset.get_GMDataset(variable_dict["gm_dataset_id"]),
-            cs_param_bounds,
+            constants.GMSType(variable_dict["gms_type"]),
+            cs_param_bounds=cs_param_bounds,
             sf=sf,
+            exceedance=variable_dict.get("exceedance"),
             metadata=(
                 pd.read_csv(data_dir / cls.SELECTED_GMS_METDATA_FN, index_col=0),
                 variable_dict["metadata_dict"],

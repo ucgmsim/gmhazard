@@ -364,14 +364,13 @@ class SimulationGMDataset(GMDataset):
 
         # Simulation
         self.imdb_ffps = self._config["simulations_imdbs"]
-        self.simulation_dir = self._config["simulations_dir"]
+        self.simulation_dir = Path(self._config["simulations_dir"])
         self.source_metadata_df = pd.read_csv(
             self._config["source_metadata_ffp"], index_col=0
         )
 
         self.vs30_params_csv_ffp = self._config["vs30_params_csv_ffp"]
         self.site_source_db_ffp = self._config["site_source_db_ffp"]
-        self.sources_dir = Path(self._config["sources_dir"])
 
         self._ims = None
 
@@ -397,14 +396,14 @@ class SimulationGMDataset(GMDataset):
         no_waveforms = []
         for sim_name in gms:
             # Find the binary waveform
-            cur_bb_bin_path = ss.get_bb_bin_path(
-                ss.get_sim_dir(self.simulation_dir, sim_name)
-            )
+            cur_bb_bin_path = list(self.simulation_dir.rglob(f"{sim_name}.bb"))
 
             # Convert to text files and store in the specified output directory
-            if os.path.isfile(cur_bb_bin_path):
+            if len(cur_bb_bin_path) == 1:
                 bb = BBSeis(cur_bb_bin_path)
                 bb.save_txt(site_info.station_name, prefix=f"{output_dir}/{sim_name}_")
+            elif len(cur_bb_bin_path) > 1:
+                raise ValueError(f"More than waveform exist for {sim_name}")
             else:
                 no_waveforms.append(sim_name)
         return no_waveforms

@@ -143,8 +143,7 @@ def load_disagg_data(station_data_dir: Path, im: gc.im.IM, rps: List[int]):
 
         metadata_results.append(
             pd.read_csv(
-                data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv",
-                index_col=0,
+                data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv", index_col=0,
             )
         )
 
@@ -219,15 +218,17 @@ def load_gms_data(station_data_dir: Path, gms_id: str):
     data_dir = station_data_dir / f"gms_{gms_id}"
 
     gms_result = gc.gms.GMSResult.load(data_dir)
-    cs_param_bounds = gc.gms.CausalParamBounds.load(data_dir / "causal_param_bounds")
-    disagg_data = gc.disagg.EnsembleDisaggResult.load(
-        data_dir
-        / "disagg_data"
-        / f"disagg_{str(gms_result.cs_param_bounds.IM_j).replace('.', 'p')}"
-        f"_{int(1 / gms_result.cs_param_bounds.exceedance)}"
-    )
 
-    return gms_result, cs_param_bounds, disagg_data
+    disagg_data = None
+    if (
+        disagg_data_dir := data_dir
+        / "disagg_data"
+        / f"disagg_{str(gms_result.IM_j).replace('.', 'p')}"
+          f"_{int(1 / gms_result.exceedance)}"
+    ).exists():
+        disagg_data = gc.disagg.EnsembleDisaggResult.load(disagg_data_dir,)
+
+    return gms_result, disagg_data
 
 
 def create_project_zip(
@@ -318,7 +319,7 @@ def _write_station(
             )
             continue
 
-        cur_gms_result, cur_cs_bounds, cur_disagg_data = load_gms_data(
+        cur_gms_result, cur_disagg_data = load_gms_data(
             cur_data_dir, cur_gms_param.id
         )
 
@@ -327,7 +328,6 @@ def _write_station(
             cur_gms_result,
             str(out_dir),
             disagg_data=cur_disagg_data,
-            cs_param_bounds=cur_cs_bounds,
         )
 
     for component in project.components:
