@@ -5,7 +5,7 @@ import pandas as pd
 
 from gmhazard_calc import rupture
 from gmhazard_calc import constants as const
-from gmhazard_calc.im import IM, IMType, IM_COMPONENT_MAPPING
+from gmhazard_calc.im import IM, IMType, IM_COMPONENT_MAPPING, IMComponent
 from .Branch import Branch
 
 if TYPE_CHECKING:

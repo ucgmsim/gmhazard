@@ -115,9 +115,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    if args.n_procs < 2:
-        parser.error("Minimum n_procs is 2.")
-
     main(
         args.project_parameters_config_ffp,
         args.projects_base_dir,

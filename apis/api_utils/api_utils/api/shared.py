@@ -475,9 +475,15 @@ def write_gms_download_data(
 ):
     prefix = "" if prefix is None else f"{prefix}_"
 
+    # Get the waveforms
     missing_waveforms = gms_result.gm_dataset.get_waveforms(
         gms_result.selected_gms_ids, gms_result.site_info, out_dir
     )
+
+    # Save the relevant raw data
+    gms_result.selected_gms_im_df.to_csv(out_dir)
+    gms_result.selected_gms_metdata_df.to_csv(out_dir)
+    gms_result.realisations.to_csv(out_dir)
 
     # IM distribution plots
     sc.plots.plt_gms_im_distribution(gms_result, save_dir=Path(out_dir))

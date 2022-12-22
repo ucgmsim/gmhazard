@@ -84,7 +84,16 @@ def gen_psha_project_data(project_dir: Path, n_procs: int = 1, use_mp: bool = Tr
     ]
 
     # Run the hazard and disagg calculation
-    if use_mp:
+    if n_procs == 1:
+        for cur_station, cur_im in station_im_comb:
+            process_station_im(
+                ensemble,
+                cur_station,
+                cur_im,
+                disagg_exceedances,
+                str(results_dir / cur_station / str(cur_im.component)),
+            )
+    elif use_mp:
         with mp.Pool(processes=n_procs) as p:
             p.starmap(
                 process_station_im,

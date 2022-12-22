@@ -270,10 +270,7 @@ class HistoricalGMDataset(GMDataset):
         return im_df.loc[mask, IMs]
 
     def compute_scaling_factor(
-        self,
-        IMj: IM,
-        im_j: float,
-        gm_ids: np.ndarray = None,
+        self, IMj: IM, im_j: float, gm_ids: np.ndarray = None,
     ) -> Tuple[pd.DataFrame, pd.Series]:
         """
         Scales the GM records such that IMj == imj
@@ -407,6 +404,10 @@ class SimulationGMDataset(GMDataset):
                         ss.get_sim_dir(str(cur_dir), sim_name)
                     )
                 ):
+                    # Hack due to incorrect folder structure in 21p6 BBs......
+                    if Path(cur_bb_bin_path).is_dir():
+                        cur_bb_bin_path = os.path.join(cur_bb_bin_path / "BB.bin")
+
                     # Convert to text files and store in the specified output directory
                     cur_bb = BBSeis(cur_bb_bin_path)
                     cur_bb.save_txt(
@@ -472,7 +473,7 @@ class SimulationGMDataset(GMDataset):
                         site_vs30,
                     )
                 )
-            meta_df = pd.DataFrame.from_records(meta_data)
+            meta_df = pd.DataFrame.from_records(meta_data, index=selected_gms)
             meta_df.columns = ["mag", "rrup", "vs30"]
         else:
             meta_df = pd.merge(
@@ -586,6 +587,7 @@ class MixedGMDataset(GMDataset):
                             continue
 
                         cur_im_df = cur_im_df.reset_index(0)
+                        cur_im_df["site"] = cur_station_id
 
                         # Identify faults that meet rrup bounds
                         cur_dist_df = ssdb.station_data(cur_station_id)
@@ -607,14 +609,34 @@ class MixedGMDataset(GMDataset):
 
         im_df = pd.concat(im_dfs, axis=0)
 
-        return im_df.loc[:, IMs]
+        # Give each GM record a unique id
+        im_df.index = np.char.add(
+            np.char.add(im_df.index.values.astype(str), "_"),
+            im_df.site.values.astype(str),
+        )
+        im_df = im_df.loc[:, IMs]
+
+        # Apply amp scaling if specified
+        if sf is not None:
+            # Sanity check
+            if not np.all(sf.index == im_df.index):
+                raise ValueError(
+                    "The scaling factor and IM dataframe indices have to match"
+                )
+
+            if cs_param_bounds.sf_bounds is not None:
+                mask = (sf >= cs_param_bounds.sf_low) & (sf <= cs_param_bounds.sf_high)
+                sf = sf.loc[mask]
+                im_df = im_df.loc[mask]
+
+            im_df = sha.apply_amp_scaling(im_df, sf)
+
+        return im_df
 
     def get_metadata_df(
         self, site_info: site.SiteInfo, selected_gms: Sequence[Any] = None
     ) -> pd.DataFrame:
         """See GMDataset method for parameter specifications"""
-        raise NotImplementedError()
-
         vs30_df = pd.read_csv(
             self.vs30_params_csv_ffp,
             names=["station", "vs30"],
@@ -627,16 +649,19 @@ class MixedGMDataset(GMDataset):
         site_source_df = _get_site_source_df(self.site_source_db_ffp, site_info)
 
         if selected_gms is not None:
+            rel_ids = [cur_id.rsplit("_", maxsplit=1)[0] for cur_id in selected_gms]
+            faults = [cur_rel_id.split("_")[0] for cur_rel_id in rel_ids]
+
             meta_data = []
-            for cur_rel in selected_gms:
+            for cur_rel_id, cur_fault, in zip(rel_ids, faults):
                 meta_data.append(
                     (
-                        self.source_metadata_df.loc[cur_rel, "mag"],
-                        site_source_df.loc[cur_rel.split("_")[0]].rrup,
+                        self.source_metadata_df.loc[cur_rel_id, "mag"],
+                        site_source_df.loc[cur_fault].rrup,
                         site_vs30,
                     )
                 )
-            meta_df = pd.DataFrame.from_records(meta_data)
+            meta_df = pd.DataFrame.from_records(meta_data, index=selected_gms)
             meta_df.columns = ["mag", "rrup", "vs30"]
         else:
             meta_df = pd.merge(

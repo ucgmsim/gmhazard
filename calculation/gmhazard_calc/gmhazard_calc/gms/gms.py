@@ -184,6 +184,12 @@ def _run_non_parametric_ensemble_gms(
     They can obviously be the same, however are treated separately
     in this implementation
     """
+    if cs_param_bounds is not None:
+        raise ValueError(
+            "Causal Parameters Bounds are not supported "
+            "for non-parametric (site-specific) GMS"
+        )
+
     n_ims = len(IMs)
     IMs_str = to_string_list(IMs)
     im_ensembles = list({ensemble.get_im_ensemble(IMi.im_type) for IMi in IMs})
@@ -203,10 +209,14 @@ def _run_non_parametric_ensemble_gms(
         .apply(np.log)
     )
 
+    # Get the IM values for the ground motions simulations to select from
     gm_lnIMi_df = gm_dataset.get_im_df(site_info, IMs_str, cs_param_bounds).apply(
         np.log
     )
     assert np.all(gm_lnIMi_df.columns == IMs_str)
+    gm_lnIMj_df = gm_dataset.get_im_df(site_info, str(IMj), cs_param_bounds).apply(
+        np.log
+    )
 
     # Truncate
     n_trunc_sigmas = 3
@@ -400,7 +410,7 @@ def _run_non_parametric_ensemble_gms(
         else n_unique_gms == n_unique_gms.max()
     )
     print(
-        f"{gms_id} {site_info.station_name}:\n"
+        f"{gms_id} {site_info.station_name}:"
         f"{filter_ind.size} replica with {n_unique_gms.max()}"
         f" unique GMs (n_gms = {n_gms})"
     )
@@ -415,12 +425,14 @@ def _run_non_parametric_ensemble_gms(
         IMj,
         im_j,
         IMs,
-        gm_lnIMi_df.loc[gm_ind].apply(np.exp),
+        pd.concat((gm_lnIMi_df.loc[gm_ind], gm_lnIMj_df.loc[gm_ind]), axis=1).apply(
+            np.exp
+        ),
         IMi_gcims,
         rel_lnIMi_df.apply(np.exp),
         gm_dataset,
         constants.GMSType.simulation,
-        exceedance=exceedance
+        exceedance=exceedance,
     )
 
 
@@ -691,15 +703,19 @@ def _run_parametric_ensemble_gms(
 
     # Get the (scaled) ground motions IM values that fall
     # within the specified causal parameter bounds
-    gm_IM_df = gm_dataset.get_im_df(
+    gm_IMj_df = gm_dataset.get_im_df(
+        site_info,
+        str(IMj),
+        cs_param_bounds=cs_param_bounds,
+    )
+    sf = sha.compute_scaling_factor(gm_IMj_df.squeeze(), str(IMj), im_j)
+    gm_lnIM_df = gm_dataset.get_im_df(
         site_info,
         IMs_str + [str(IMj)],
         cs_param_bounds=cs_param_bounds,
-    )
-
-    # Apply amp scaling
-    sf = sha.compute_scaling_factor(gm_IM_df[str(IMj)], str(IMj), im_j)
-    gm_lnIM_df = sha.apply_amp_scaling(gm_IM_df, sf).apply(np.log)
+        sf=sf
+    ).apply(np.log)
+    assert np.all(np.isclose(gm_lnIM_df[str(IMj)], np.log(im_j)))
 
     # Sanity check
     assert (
@@ -720,7 +736,7 @@ def _run_parametric_ensemble_gms(
         )
         cur_diff = (
             rep_rel_lnIMi_data[replica_ix]
-            .loc[:, to_string_list(IMs)]
+            .loc[:, IMs_str]
             .values[:, np.newaxis, :]
             - gm_lnIM_df.loc[:, IMs_str].values
         )
@@ -734,20 +750,16 @@ def _run_parametric_ensemble_gms(
         )
 
         # Select best matching GMs
-        cur_selected_gms_ind = gm_lnIM_df.index.values[
-            cur_misfit.idxmin(axis=1).values
-        ]
+        cur_selected_gms_ind = gm_lnIM_df.index.values[cur_misfit.idxmin(axis=1).values]
 
         # Compute the KS test statistic for each IM_i
         # I.e. Check how well the empirical distribution of selected GMs
         # matches with the target distribution (i.e. lnIMi|IMj)
-        start_time = time.time()
         D = ks_stats(
             IMs,
             gm_lnIM_df.loc[cur_selected_gms_ind],
             {cur_IMi: cur_gcim.lnIMi_IMj for cur_IMi, cur_gcim in IMi_gcims.items()},
         )
-        print(f"Took {time.time() - start_time}")
 
         # Compute the overall residual & save selected ground motions
         R_values.append(np.sum(im_weights * (D ** 2)))
@@ -771,7 +783,7 @@ def _run_parametric_ensemble_gms(
         else n_unique_gms == n_unique_gms.max()
     )
     print(
-        f"{gms_id} {site_info.station_name}:\n"
+        f"{gms_id} {site_info.station_name}:"
         f"{filter_ind.size} replica with {n_unique_gms.max()}"
         f" unique GMs (n_gms = {n_gms}"
     )
@@ -793,7 +805,7 @@ def _run_parametric_ensemble_gms(
         constants.GMSType.empirical,
         cs_param_bounds=cs_param_bounds,
         sf=sf,
-        exceedance=exceedance
+        exceedance=exceedance,
     )
 
 
