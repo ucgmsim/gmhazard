@@ -481,9 +481,9 @@ def write_gms_download_data(
     )
 
     # Save the relevant raw data
-    gms_result.selected_gms_im_df.to_csv(out_dir)
-    gms_result.selected_gms_metdata_df.to_csv(out_dir)
-    gms_result.realisations.to_csv(out_dir)
+    gms_result.selected_gms_im_df.to_csv(Path(out_dir) / "selected_gms_im_df.csv")
+    gms_result.selected_gms_metdata_df.to_csv(Path(out_dir) / "selected_gms_metadata_df.csv")
+    gms_result.realisations.to_csv(Path(out_dir) / "realisations.csv")
 
     # IM distribution plots
     sc.plots.plt_gms_im_distribution(gms_result, save_dir=Path(out_dir))
