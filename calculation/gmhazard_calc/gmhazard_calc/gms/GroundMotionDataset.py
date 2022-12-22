@@ -406,7 +406,7 @@ class SimulationGMDataset(GMDataset):
                 ):
                     # Hack due to incorrect folder structure in 21p6 BBs......
                     if Path(cur_bb_bin_path).is_dir():
-                        cur_bb_bin_path = os.path.join(cur_bb_bin_path / "BB.bin")
+                        cur_bb_bin_path = os.path.join(cur_bb_bin_path, "BB.bin")
 
                     # Convert to text files and store in the specified output directory
                     cur_bb = BBSeis(cur_bb_bin_path)
