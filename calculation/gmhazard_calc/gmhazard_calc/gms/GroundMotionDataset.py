@@ -461,7 +461,7 @@ class SimulationGMDataset(GMDataset):
         site_vs30 = float(vs30_df.loc[site_info.station_name])
 
         # Site-source dataframe
-        site_source_df = _get_site_source_df(self.site_source_db_ffp, site_info)
+        site_source_df = _get_site_source_df(self.site_source_db_ffp, site_info.station_name)
 
         if selected_gms is not None:
             meta_data = []
@@ -508,7 +508,7 @@ class MixedGMDataset(GMDataset):
 
         # Simulation
         self.imdb_ffps = self._config["simulations"]["imdbs"]
-        self.simulations_dir = self._config["simulations"]["waveforms_dir"]
+        self.simulation_dirs = self._config["simulations"]["waveforms_dirs"]
         self.source_metadata_df = pd.read_csv(
             self._config["simulations"]["source_metadata_ffp"], index_col=0
         )
@@ -537,7 +537,31 @@ class MixedGMDataset(GMDataset):
     def get_waveforms(
         self, gms: Sequence[Any], site_info: site.SiteInfo, output_dir: str
     ) -> List:
-        raise NotImplementedError()
+        """See GMDataset method for parameter specifications"""
+        no_waveforms = []
+        for sim_name in gms:
+            # Find & Save the binary waveform
+            cur_bb = None
+            for cur_dir in self.simulation_dirs:
+                if os.path.exists(
+                        cur_bb_bin_path := ss.get_bb_bin_path(
+                            ss.get_sim_dir(str(cur_dir), sim_name)
+                        )
+                ):
+                    # Hack due to incorrect folder structure in 21p6 BBs......
+                    if Path(cur_bb_bin_path).is_dir():
+                        cur_bb_bin_path = os.path.join(cur_bb_bin_path, "BB.bin")
+
+                    # Convert to text files and store in the specified output directory
+                    cur_bb = BBSeis(cur_bb_bin_path)
+                    cur_bb.save_txt(
+                        site_info.station_name, prefix=f"{output_dir}/{sim_name}_"
+                    )
+
+            if cur_bb is None:
+                no_waveforms.append(sim_name)
+
+        return no_waveforms
 
     def get_im_df(
         self,
@@ -643,40 +667,43 @@ class MixedGMDataset(GMDataset):
             delimiter="\s+",
             index_col="station",
         )
-        site_vs30 = float(vs30_df.loc[site_info.station_name])
 
         # Site-source dataframe
-        site_source_df = _get_site_source_df(self.site_source_db_ffp, site_info)
-
         if selected_gms is not None:
             rel_ids = [cur_id.rsplit("_", maxsplit=1)[0] for cur_id in selected_gms]
             faults = [cur_rel_id.split("_")[0] for cur_rel_id in rel_ids]
+            sites = [cur_id.rsplit("_", maxsplit=1)[1] for cur_id in selected_gms]
 
             meta_data = []
-            for cur_rel_id, cur_fault, in zip(rel_ids, faults):
+            for cur_rel_id, cur_fault, cur_site_name in zip(rel_ids, faults, sites):
+                cur_site_source_df = _get_site_source_df(self.site_source_db_ffp, cur_site_name)
+
                 meta_data.append(
                     (
                         self.source_metadata_df.loc[cur_rel_id, "mag"],
-                        site_source_df.loc[cur_fault].rrup,
-                        site_vs30,
+                        cur_site_source_df.loc[cur_fault].rrup,
+                        vs30_df.loc[cur_site_name, "vs30"],
                     )
                 )
             meta_df = pd.DataFrame.from_records(meta_data, index=selected_gms)
             meta_df.columns = ["mag", "rrup", "vs30"]
         else:
-            meta_df = pd.merge(
-                self.source_metadata_df,
-                site_source_df,
-                how="left",
-                left_on="fault",
-                right_index=True,
-            )
-            meta_df["vs30"] = site_vs30
-            meta_df = meta_df[["fault", "mag", "rrup", "vs30"]]
+            # This would be massive, as it would encompass all site-source combinations
+            raise NotImplementedError()
+
+            # meta_df = pd.merge(
+            #     self.source_metadata_df,
+            #     site_source_df,
+            #     how="left",
+            #     left_on="fault",
+            #     right_index=True,
+            # )
+            # meta_df["vs30"] = site_vs30
+            # meta_df = meta_df[["fault", "mag", "rrup", "vs30"]]
 
         return meta_df
 
 
-def _get_site_source_df(site_source_db_ffp: Path, site_info: site.SiteInfo):
+def _get_site_source_df(site_source_db_ffp: Path, site_name: str):
     with dbs.SiteSourceDB(str(site_source_db_ffp), constants.SourceType.fault) as ssdb:
-        return ssdb.station_data(site_info.station_name)
+        return ssdb.station_data(site_name)
