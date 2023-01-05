@@ -9,48 +9,11 @@ import sha_calc
 from IM_calculation.source_site_dist.src_site_dist import calc_rrup_rjb
 
 
-def load_stations_fault_data(
-    imdb_ffps: Sequence[str], stations: Sequence[str], im: gc.im.IM, fault: str
-):
-    """
-    Loads the IM data for the specified stations and fault from the IMDB's
-
-    Parameters
-    ----------
-    imdb_ffps: Sequence[str]
-        List of imdb full file paths to load
-    stations: Sequence[str]
-        List of station names to grab data for from the imdbs
-    im: IM
-        IM Object to extract values from the imdb
-    fault: String
-        Fault name to extract data from the imdb
-    """
-    # Obtain the IMDB with the correct fault information
-    # Assuming only 1 GMM is being used so only 1 IMDB will have the fault information
-    fault_imdbs = []
-    for imdb_ffp in imdb_ffps:
-        with gc.dbs.IMDB.get_imdb(imdb_ffp, writeable=False) as imdb:
-            if fault in imdb.rupture_names():
-                fault_imdbs.append(imdb_ffp)
-    # Ensure only 1 IMDB has the given fault data
-    assert len(fault_imdbs) == 1
-
-    # Extract rupture data from imdb for each station and combine to a DataFrame
-    site_rupture_data = []
-    with gc.dbs.IMDB.get_imdb(fault_imdbs[0], writeable=False) as imdb:
-        for station in stations:
-            cur_data = imdb.im_data(station, im, incl_within_between_sigma=True)
-            # Check fault data was found
-            assert cur_data is not None
-            site_rupture_data.append(cur_data.loc[fault])
-    return pd.DataFrame(site_rupture_data, index=stations)
-
-
 def calculate_distance_matrix(stations: Sequence[str], locations_df: pd.DataFrame):
     """
-    Given a set of stations and their locations (in lat, lon format), calculate the matrix containing
-    the pairwise distance between each one
+    Given a set of stations and their locations (in lat, lon format),
+    calculate the matrix containing
+    the pairwise distance
 
     Parameters
     ----------
@@ -115,8 +78,10 @@ def generate_im_values(
     emp_df: pd.DataFrame,
 ):
     """
-    Given a number of stations with their empirical values, create uncorrelated random values and then
-    correlate them using the Cholesky decomposition of the correlation matrix (R).
+    Given a number of stations with their empirical values,
+     create uncorrelated random values and then
+    correlate them using the Cholesky decomposition
+     of the correlation matrix (R).
 
     Parameters
     ----------
@@ -141,18 +106,22 @@ def generate_im_values(
         pd_R = sha_calc.nearest_pd(R)
         L = cholesky(pd_R, lower=True)
 
-    # Calculate random between event residual value per realisation and multiply by between event sigma
+    # Calculate random between event residual value
+    #  per realisation and multiply by between event sigma
     between_event = (
-        np.random.normal(0.0, 1.0, size=N)[:, None] * between_event_std[None, :]
+        np.random.normal(0.0, 1.0, size=N)[:, np.newaxis] * between_event_std.values[np.newaxis, :]
     )
 
-    # Calculate random within event residual value per site and per realisation
-    # Then matrix multiply against the result of the Cholesky decomposition for each realisation
+    # Calculate random within event residual value
+    #  per site and per realisation
+    # Then matrix multiply against the result of
+    #  the Cholesky decomposition for each realisation
     within_event = np.matmul(
         L, np.random.normal(0.0, within_event_std, size=(N, len(within_event_std))).T
     ).T
 
-    # Combine the between and within event values with the mean IM values broadcast across realisations
+    # Combine the between and within event values with
+    #  the mean IM values broadcast across realisations
     im_values = mean_lnIM[None, :] + between_event + within_event
 
     return im_values, between_event, within_event

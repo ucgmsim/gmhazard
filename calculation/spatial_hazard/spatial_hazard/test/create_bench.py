@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from spatial_hazard import correlate_ims
+import spatial_hazard as sh
 
 
 def create_correlated_im_bench_data(
@@ -20,20 +20,20 @@ def create_correlated_im_bench_data(
 
     # Get realisations
     print("Retrieving GMM parameters")
-    emp_df = correlate_ims.load_stations_fault_data(imdb_ffps, stations, im, fault)
+    emp_df = sh.utils.load_stations_fault_data(imdb_ffps, stations, im, fault)
 
     print("Computing distance matrix")
-    dist_matrix = correlate_ims.calculate_distance_matrix(stations, stations_df)
+    dist_matrix = sh.im_dist.calculate_distance_matrix(stations, stations_df)
 
     assert np.all(
         dist_matrix.index.values == emp_df.index.values
     ), "Order of the stations has to be the same"
 
     print("Computing correlation matrix")
-    R = correlate_ims.get_corr_matrix(stations, dist_matrix, im)
+    R = sh.im_dist.get_corr_matrix(stations, dist_matrix, im)
 
     print("Generating realisation")
-    random_IMs, between_event, within_event = correlate_ims.generate_im_values(
+    random_IMs, between_event, within_event = sh.im_dist.generate_im_values(
         1, R, emp_df
     )
 

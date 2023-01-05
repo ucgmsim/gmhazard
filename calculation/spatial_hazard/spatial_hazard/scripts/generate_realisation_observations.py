@@ -36,42 +36,23 @@ def main(
     print("Computing correlation matrix")
     R = sh.im_dist.get_corr_matrix(stations, dist_matrix, IM)
 
-    print("Generating realisation")
-    random_IMs, between_event, within_event = sh.im_dist.generate_im_values(
-        N, R, emp_df
-    )
 
-    ln_im_values, between, within = (
-        pd.DataFrame(data=random_IMs.T, index=stations),
-        pd.DataFrame(data=between_event.T, index=stations),
-        pd.DataFrame(data=within_event.T, index=stations),
-    )
 
-    # Save the data
-    ln_im_values.to_csv(output_dir / "realisation_im_values.csv", index_label="station")
-    between.to_csv(
-        output_dir / "realisation_between_residuals.csv", index_label="station"
-    )
-    within.to_csv(
-        output_dir / "realisation_within_residuals.csv", index_label="station"
-    )
-    emp_df.to_csv(output_dir / "gmm_parameters.csv", index_label="station")
 
-    # Generate the plots
-    print(f"Generating plots")
-    plot_dir = output_dir / "plots"
-    plot_dir.mkdir(exist_ok=True)
 
-    im_values = ln_im_values.apply(np.exp)
-    sh.plots.plot_realisations(
-        im_values,
-        stations_df,
-        plot_dir,
-        f"{fault}_{IM.file_format()}_Realisation",
-        label=f"{IM}",
-        n_procs=n_procs,
-        cpt_max=0.125,
-    )
+    # print("Generating realisation")
+    # random_IMs, between_event, within_event = sh.im_dist.generate_im_values(
+    #     N, R, emp_df
+    # )
+    #
+    # ln_im_values, between, within = (
+    #     pd.DataFrame(data=random_IMs.T, index=stations),
+    #     pd.DataFrame(data=between_event.T, index=stations),
+    #     pd.DataFrame(data=within_event.T, index=stations),
+    # )
+
+
+
 
 
 if __name__ == "__main__":
