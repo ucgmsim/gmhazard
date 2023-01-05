@@ -410,7 +410,7 @@ def _run_non_parametric_ensemble_gms(
         else n_unique_gms == n_unique_gms.max()
     )
     print(
-        f"{gms_id} {site_info.station_name}:"
+        f"{gms_id} {site_info.station_name}: "
         f"{filter_ind.size} replica with {n_unique_gms.max()}"
         f" unique GMs (n_gms = {n_gms})"
     )
@@ -783,9 +783,9 @@ def _run_parametric_ensemble_gms(
         else n_unique_gms == n_unique_gms.max()
     )
     print(
-        f"{gms_id} {site_info.station_name}:"
+        f"{gms_id} {site_info.station_name}: "
         f"{filter_ind.size} replica with {n_unique_gms.max()}"
-        f" unique GMs (n_gms = {n_gms}"
+        f" unique GMs (n_gms = {n_gms})"
     )
 
     # Select the best fitting set of ground motions (if multiple replica were run)
