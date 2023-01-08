@@ -29,7 +29,9 @@ class Project:
 
         if "locations" in project_params.keys():
             self.locations = {}
-            self.station_ids = pg.get_station_ids(project_params)
+            self.station_ids = [
+                cur_site.station_name for cur_site in pg.get_site_infos(project_params)
+            ]
         else:
             self.station_ids = project_params["location_ids"]
 
@@ -143,7 +145,8 @@ def load_disagg_data(station_data_dir: Path, im: gc.im.IM, rps: List[int]):
 
         metadata_results.append(
             pd.read_csv(
-                data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv", index_col=0,
+                data_dir / f"disagg_{im.file_format()}_{rp}_metadata.csv",
+                index_col=0,
             )
         )
 
@@ -224,9 +227,11 @@ def load_gms_data(station_data_dir: Path, gms_id: str):
         disagg_data_dir := data_dir
         / "disagg_data"
         / f"disagg_{str(gms_result.IM_j).replace('.', 'p')}"
-          f"_{int(1 / gms_result.exceedance)}"
+        f"_{int(1 / gms_result.exceedance)}"
     ).exists():
-        disagg_data = gc.disagg.EnsembleDisaggResult.load(disagg_data_dir,)
+        disagg_data = gc.disagg.EnsembleDisaggResult.load(
+            disagg_data_dir,
+        )
 
     return gms_result, disagg_data
 
@@ -319,9 +324,7 @@ def _write_station(
             )
             continue
 
-        cur_gms_result, cur_disagg_data = load_gms_data(
-            cur_data_dir, cur_gms_param.id
-        )
+        cur_gms_result, cur_disagg_data = load_gms_data(cur_data_dir, cur_gms_param.id)
 
         (out_dir := output_dir / cur_gms_param.id).mkdir(exist_ok=False)
         au.api.write_gms_download_data(
