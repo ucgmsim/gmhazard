@@ -98,7 +98,7 @@ class GMSResult:
         self.sf = sf
 
         self._metadata_dict, self._selected_gms_metadata_df = metadata[1], metadata[0]
-        self._selected_gms_im_16_84_df = metadata[2]
+        self._selected_gms_im_16th_50th_84th_df = metadata[2]
 
     @property
     def metadata_dict(self) -> Dict:
@@ -116,10 +116,10 @@ class GMSResult:
 
     @property
     def selected_gms_im_16_84_df(self):
-        if self._selected_gms_im_16_84_df is None:
+        if self._selected_gms_im_16th_50th_84th_df is None:
             self._compute_metadata()
 
-        return self._selected_gms_im_16_84_df
+        return self._selected_gms_im_16th_50th_84th_df
 
     @property
     def selected_gms_ids(self) -> np.ndarray:
@@ -141,12 +141,16 @@ class GMSResult:
         var_dict = {}
         for cur_im in self.selected_gms_im_df.columns:
             cur_result = sha_calc.query_non_parametric_cdf_invs(
-                np.asarray([0.16, 0.84]),
+                np.asarray([0.16, 0.5, 0.84]),
                 np.sort(self.selected_gms_im_df[cur_im].values),
                 np.linspace(1.0 / n_gms, 1.0, n_gms),
             )
-            var_dict[f"{cur_im}"] = {"16th": cur_result[0], "84th": cur_result[1]}
-        self._selected_gms_im_16_84_df = pd.DataFrame(var_dict)
+            var_dict[f"{cur_im}"] = {
+                "16th": cur_result[0],
+                "median": cur_result[1],
+                "84th": cur_result[2],
+            }
+        self._selected_gms_im_16th_50th_84th_df = pd.DataFrame(var_dict)
 
         # Get the 16th, mean and 84th values for magnitude/rrup of the selected GMs
         self._metadata_dict = dict(
@@ -191,7 +195,7 @@ class GMSResult:
         if self._metadata_dict is None:
             self._compute_metadata()
         self._selected_gms_metadata_df.to_csv(save_dir / self.SELECTED_GMS_METDATA_FN)
-        self._selected_gms_im_16_84_df.to_csv(save_dir / self.SELECTED_GMS_IM_16_84_FN)
+        self._selected_gms_im_16th_50th_84th_df.to_csv(save_dir / self.SELECTED_GMS_IM_16_84_FN)
 
         with open(save_dir / self.VARIABLES_FN, "w") as f:
             json.dump(
@@ -251,10 +255,7 @@ class GMSResult:
             }
         else:
             IMi_gcims = {
-                IMi: SimUniGCIM.load(
-                    data_dir / f"{IMi}", ensemble
-                )
-                for IMi in IMs
+                IMi: SimUniGCIM.load(data_dir / f"{IMi}", ensemble) for IMi in IMs
             }
 
         return cls(

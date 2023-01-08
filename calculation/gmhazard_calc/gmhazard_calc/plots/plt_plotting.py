@@ -1150,9 +1150,6 @@ def _prepare_gms_spectra(
     realisations_df: pd.DataFrame
     selected_gms_df: pd.DataFrame,
     """
-    im_j = gms_result.im_j
-    IM_j = gms_result.IM_j
-
     pSA_IMs = np.asarray(
         [cur_im for cur_im in gms_result.IMs if cur_im.im_type is IMType.pSA]
     )
@@ -1194,15 +1191,6 @@ def _prepare_gms_spectra(
         data=np.asarray([upper_bound, median, lower_bound]).T,
     ).T
     gcim_df.columns = periods
-
-    # Add the conditioning IM
-    if IM_j.im_type is IMType.pSA:
-        gcim_df[IM_j.period] = im_j
-        gcim_df = gcim_df.T.sort_index().T
-
-        realisations_df[IM_j.period] = selected_gms_df[IM_j.period] = im_j
-        realisations_df = realisations_df.T.sort_index().T
-        selected_gms_df = selected_gms_df.T.sort_index().T
 
     return (
         gcim_df,

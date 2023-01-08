@@ -419,6 +419,9 @@ def _run_non_parametric_ensemble_gms(
     selected_ix = np.argmin(R_values)
     gm_ind, rel_lnIMi_df = sel_gm_ind[selected_ix], rep_rel_lnIMi_dfs[selected_ix]
 
+    # Add IMj
+    rel_lnIMi_df[str(IMj)] = np.log(im_j)
+
     return GMSResult(
         ensemble,
         site_info,
@@ -791,6 +794,9 @@ def _run_parametric_ensemble_gms(
     # Select the best fitting set of ground motions (if multiple replica were run)
     selected_ix = np.argmin(R_values)
     gm_ind, rel_lnIMi_df = sel_gm_ind[selected_ix], rep_rel_lnIMi_data[selected_ix]
+
+    # Add IMj
+    rel_lnIMi_df[str(IMj)] = np.log(im_j)
 
     return GMSResult(
         ensemble,
