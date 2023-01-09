@@ -621,7 +621,8 @@ def plot_uhs_branches(
 
 
 def plot_gms_im_distribution(
-    gms_result: gms.GMSResult, save_dir: Path = None,
+    gms_result: gms.GMSResult,
+    save_dir: Path = None,
 ):
     """
     Plots the CDF of the GCIM and selected GMs
@@ -856,7 +857,11 @@ def plot_gms_causal_param(
     save_file: Path, optional
     """
     selected_gms_metadata = gms_result.selected_gms_metdata_df.to_dict(orient="list")
-    bounds = _get_causal_params_bounds(cs_param_bounds) if cs_param_bounds is not None else None
+    bounds = (
+        _get_causal_params_bounds(cs_param_bounds)
+        if cs_param_bounds is not None
+        else None
+    )
     # To achieve Empirical distribution function with matplotlib's step plotting
     copied_metadata = selected_gms_metadata[metadata_key][:]
     copied_metadata.append(min(copied_metadata))
@@ -916,7 +921,8 @@ def plot_gms_causal_param(
 
 
 def plot_gms_spectra(
-    gms_result: gms.GMSResult, save_file: Path = None,
+    gms_result: gms.GMSResult,
+    save_file: Path = None,
 ):
     """Plot of the pSA values of the realisations and
      selected ground motions and the median, 16th,
@@ -927,7 +933,11 @@ def plot_gms_spectra(
     gms_result: gms.GMSResult
     save_file: Path, optional
     """
-    (gcim_df, realisations_df, selected_gms_df,) = _prepare_gms_spectra(gms_result)
+    (
+        gcim_df,
+        realisations_df,
+        selected_gms_df,
+    ) = _prepare_gms_spectra(gms_result)
 
     plt.figure(figsize=(20, 9))
 
@@ -1074,7 +1084,8 @@ def plot_gms_available_gm(
     save_file: Path, optional
     """
     n_gms_in_bounds = gms_result.gm_dataset.get_n_gms_in_bounds(
-        gms_result.gm_dataset.get_metadata_df(gms_result.site_info), cs_param_bounds,
+        gms_result.gm_dataset.get_metadata_df(gms_result.site_info),
+        cs_param_bounds,
     )
 
     plt.figure(figsize=(16, 9))
@@ -1160,37 +1171,23 @@ def _prepare_gms_spectra(
     pSA_IMs, periods = pSA_IMs[sort_ind], periods[sort_ind]
     pSA_IMs_str = to_string_list(pSA_IMs)
 
-    # Create the relevant dataframes
-    cdf_x = pd.DataFrame.from_dict(
-        {
-            str(cur_im): gms_result.IMi_gcims[cur_im].lnIMi_IMj.cdf.index.values.astype(
-                float
-            )
-            for cur_im in pSA_IMs
-        }
-    ).apply(np.exp)
-    cdf_y = pd.DataFrame.from_dict(
-        {
-            str(cur_im): gms_result.IMi_gcims[cur_im].lnIMi_IMj.cdf.values.astype(float)
-            for cur_im in pSA_IMs
-        }
-    )
-
     realisations_df = gms_result.realisations.loc[:, pSA_IMs_str]
     realisations_df.columns = periods
     selected_gms_df = gms_result.selected_gms_im_df.loc[:, pSA_IMs_str]
     selected_gms_df.columns = periods
 
-    upper_bound, median, lower_bound = sha_calc.query_non_parametric_multi_cdf_invs(
-        [0.84, 0.5, 0.16], cdf_x.T.values, cdf_y.T.values
-    )
-
-    gcim_df = pd.DataFrame(
-        index=cdf_x.columns,
-        columns=np.asarray(["84th", "median", "16th"]),
-        data=np.asarray([upper_bound, median, lower_bound]).T,
-    ).T
+    gcim_df = gms_result.gcim_16th_50th_84th_df.copy(True)[pSA_IMs_str]
     gcim_df.columns = periods
+
+    # Add the conditioning IM
+    if gms_result.IM_j.im_type is IMType.pSA:
+        gcim_df[gms_result.IM_j.period] = gms_result.im_j
+        gcim_df = gcim_df.T.sort_index().T
+
+        realisations_df[gms_result.IM_j.period] = gms_result.im_j
+        selected_gms_df[gms_result.IM_j.period] = gms_result.selected_gms_im_df[str(gms_result.IM_j)]
+        realisations_df = realisations_df.T.sort_index().T
+        selected_gms_df = selected_gms_df.T.sort_index().T
 
     return (
         gcim_df,
@@ -1201,8 +1198,14 @@ def _prepare_gms_spectra(
 
 def _get_causal_params_bounds(cs_param_bounds: gms.CausalParamBounds):
     return {
-        "mag": {"min": cs_param_bounds.mw_low, "max": cs_param_bounds.mw_high,},
-        "rrup": {"min": cs_param_bounds.rrup_low, "max": cs_param_bounds.rrup_high,},
+        "mag": {
+            "min": cs_param_bounds.mw_low,
+            "max": cs_param_bounds.mw_high,
+        },
+        "rrup": {
+            "min": cs_param_bounds.rrup_low,
+            "max": cs_param_bounds.rrup_high,
+        },
         "vs30": {
             "min": cs_param_bounds.vs30_low,
             "max": cs_param_bounds.vs30_high,

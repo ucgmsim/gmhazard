@@ -479,10 +479,16 @@ def write_gms_download_data(
     missing_waveforms = gms_result.gm_dataset.get_waveforms(
         gms_result.selected_gms_ids, gms_result.site_info, out_dir
     )
+    if len(missing_waveforms) > 0:
+        print(
+            f"Failed to find waveforms for the following records:\n{missing_waveforms}"
+        )
 
     # Save the relevant raw data
     gms_result.selected_gms_im_df.to_csv(Path(out_dir) / "selected_gms_im_df.csv")
-    gms_result.selected_gms_metdata_df.to_csv(Path(out_dir) / "selected_gms_metadata_df.csv")
+    gms_result.selected_gms_metdata_df.to_csv(
+        Path(out_dir) / "selected_gms_metadata_df.csv"
+    )
     gms_result.realisations.to_csv(Path(out_dir) / "realisations.csv")
 
     # IM distribution plots

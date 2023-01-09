@@ -111,12 +111,12 @@ def process_station_gms_config_comb(
         print(f"Failed to compute GMS for gms id {gms_id}, site {site_info.station_name}, "
               f"IMj {ex.IMj}, and exceedance {exceedance} as there are "
               f"not enough simulations available to compute IMi|IMj")
-    # except AssertionError as ex:
-    #     print(
-    #         f"\tFailed to compute GMS for gms id {gms_id}, site {site_info.station_name}, "
-    #         f"IM {IMj} and exceedance {exceedance} due an assert error:\n{ex}"
-    #     )
-    #     return
+    except AssertionError as ex:
+        print(
+            f"\tFailed to compute GMS for gms id {gms_id}, site {site_info.station_name}, "
+            f"IM {IMj} and exceedance {exceedance} due an assert error:\n{ex}"
+        )
+        return
 
 
 def _get_gms_ims(IMj: str, im_strings: List[str], ensemble: gc.gm_data.Ensemble):

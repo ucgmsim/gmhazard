@@ -54,11 +54,12 @@ class GMSResult:
 
     GCIM_CDF_X_FN = "cdf_x.csv"
     GCIM_CDF_Y_FN = "cdf_y.csv"
+    GCIM_16th_50th_84th_FN = "gcim_16th_50th_84th.csv"
 
     VARIABLES_FN = "variables.json"
 
     SELECTED_GMS_METDATA_FN = "selected_gms_metadata.csv"
-    SELECTED_GMS_IM_16_84_FN = "selected_gms_im_16_84_df.csv"
+    SELECTED_GMS_IM_16th_50th_84th_FN = "selected_gms_im_16th_50th_84th_df.csv"
 
     def __init__(
         self,
@@ -75,7 +76,7 @@ class GMSResult:
         exceedance: float = None,
         cs_param_bounds: CausalParamBounds = None,
         sf: pd.DataFrame = None,
-        metadata: Tuple[pd.DataFrame, Dict, pd.DataFrame] = (None, None, None),
+        metadata: Tuple[pd.DataFrame, Dict, pd.DataFrame, pd.DataFrame] = (None, None, None, None),
     ):
         self.ensemble = ensemble
         self.site_info = site_info
@@ -99,6 +100,7 @@ class GMSResult:
 
         self._metadata_dict, self._selected_gms_metadata_df = metadata[1], metadata[0]
         self._selected_gms_im_16th_50th_84th_df = metadata[2]
+        self._gcim_16th_50th_84th_df = metadata[3]
 
     @property
     def metadata_dict(self) -> Dict:
@@ -125,6 +127,13 @@ class GMSResult:
     def selected_gms_ids(self) -> np.ndarray:
         return self.selected_gms_im_df.index.values
 
+    @property
+    def gcim_16th_50th_84th_df(self):
+        if self._gcim_16th_50th_84th_df is None:
+            self._compute_metadata()
+
+        return self._gcim_16th_50th_84th_df
+
     def _compute_metadata(self) -> None:
         """Computes/Collects the metadata"""
         self._selected_gms_metadata_df = self.gm_dataset.get_metadata_df(
@@ -136,7 +145,36 @@ class GMSResult:
                 self._selected_gms_metadata_df.index
             ]
 
-        # Get 16/84th for each selected GM
+        # Get the GCIM 16th, median, 84th
+        # Create the relevant dataframes
+        cdf_x = pd.DataFrame.from_dict(
+            {
+                str(cur_im): self.IMi_gcims[
+                    cur_im].lnIMi_IMj.cdf.index.values.astype(
+                    float
+                )
+                for cur_im in self.IMs
+            }
+        ).apply(np.exp)
+        cdf_y = pd.DataFrame.from_dict(
+            {
+                str(cur_im): self.IMi_gcims[cur_im].lnIMi_IMj.cdf.values.astype(
+                    float)
+                for cur_im in self.IMs
+            }
+        )
+
+        upper_bound, median, lower_bound = sha_calc.query_non_parametric_multi_cdf_invs(
+            [0.84, 0.5, 0.16], cdf_x.T.values, cdf_y.T.values
+        )
+        self._gcim_16th_50th_84th_df = pd.DataFrame(
+            index=cdf_x.columns,
+            columns=np.asarray(["84th", "median", "16th"]),
+            data=np.asarray([upper_bound, median, lower_bound]).T,
+        ).T
+        self._gcim_16th_50th_84th_df.columns = [str(cur_im) for cur_im in self.IMs]
+
+        # Get 16th, median, 84th for each selected GM
         n_gms = self.selected_gms_im_df.shape[0]
         var_dict = {}
         for cur_im in self.selected_gms_im_df.columns:
@@ -195,7 +233,8 @@ class GMSResult:
         if self._metadata_dict is None:
             self._compute_metadata()
         self._selected_gms_metadata_df.to_csv(save_dir / self.SELECTED_GMS_METDATA_FN)
-        self._selected_gms_im_16th_50th_84th_df.to_csv(save_dir / self.SELECTED_GMS_IM_16_84_FN)
+        self._selected_gms_im_16th_50th_84th_df.to_csv(save_dir / self.SELECTED_GMS_IM_16th_50th_84th_FN)
+        self._gcim_16th_50th_84th_df.to_csv(save_dir / self.GCIM_16th_50th_84th_FN)
 
         with open(save_dir / self.VARIABLES_FN, "w") as f:
             json.dump(
@@ -275,6 +314,7 @@ class GMSResult:
             metadata=(
                 pd.read_csv(data_dir / cls.SELECTED_GMS_METDATA_FN, index_col=0),
                 variable_dict["metadata_dict"],
-                pd.read_csv(data_dir / cls.SELECTED_GMS_IM_16_84_FN, index_col=0),
+                pd.read_csv(data_dir / cls.SELECTED_GMS_IM_16th_50th_84th_FN, index_col=0),
+                pd.read_csv(data_dir / cls.GCIM_16th_50th_84th_FN, index_col=0)
             ),
         )
