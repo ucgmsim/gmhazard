@@ -121,7 +121,6 @@ def main(
     )
     within_residual_cov[0, 0] = gmm_params_df.loc[station, "sigma_within"] ** 2
 
-    print(f"wtf")
 
     # Define the conditional within-event distribution
     cond_within_residual_mu = np.einsum(
@@ -133,19 +132,13 @@ def main(
         "i, ij, j -> ", within_residual_cov[0, 1:], C_c_inv, within_residual_cov[1:, 0]
     )
 
-    # Compute between event residual
+    # Define the conditional lnIM distriubtion
+    cond_lnIM_mu = gmm_params_df.loc[station, "mu"] + between_residual + cond_within_residual_mu
+    cond_ln_sigma = cond_within_residual_sigma
 
-    # print("Generating realisation")
-    # random_IMs, between_event, within_event = sh.im_dist.generate_im_values(
-    #     N, R, emp_df
-    # )
-    #
-    # ln_im_values, between, within = (
-    #     pd.DataFrame(data=random_IMs.T, index=stations),
-    #     pd.DataFrame(data=between_event.T, index=stations),
-    #     pd.DataFrame(data=within_event.T, index=stations),
-    # )
 
+
+    print(cond_lnIM_mu, cond_ln_sigma)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
