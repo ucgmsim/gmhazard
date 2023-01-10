@@ -69,6 +69,10 @@ def get_corr_matrix(
         ), f"Correlation should be positive or 0. Error with {station} at index {i}"
         R[i, :] = R[:, i] = correlation
 
+    # Make the diagonal values exactly 1.0
+    assert np.all(np.isclose(np.diag(R), 1.0, rtol=1e-2))
+    np.fill_diagonal(R, 1.0)
+
     return pd.DataFrame(index=stations, columns=stations, data=R)
 
 

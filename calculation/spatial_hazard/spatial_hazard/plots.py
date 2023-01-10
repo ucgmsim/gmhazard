@@ -4,8 +4,6 @@ from typing import Dict, Sequence, Any
 import yaml
 import pandas as pd
 
-from visualization.plot_items_wrapper import plot_multiple
-
 TEMPLATE_OPTIONS_DICT = {"flags": [], "options": {}}
 
 DEFAULT_STANDARD_GMT_PLOT_OPTIONS = {
@@ -35,6 +33,8 @@ def plot_realisations(
     Plots realisations and stations on a map
     using a plot items wrapper from the visualisation package
     """
+    from visualization.plot_items_wrapper import plot_multiple
+
     data_df = pd.merge(rel_df, station_df, left_index=True, right_index=True)
 
     csv_files = []
