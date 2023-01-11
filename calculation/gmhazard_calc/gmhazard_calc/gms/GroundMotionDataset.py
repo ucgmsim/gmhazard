@@ -252,13 +252,14 @@ class HistoricalGMDataset(GMDataset):
 
         # Apply amplitude scaling, if a scaling factor is given
         if sf is not None:
-            if sf.shape[0] < self._im_df.shape[0]:
+            if sf.shape[0] < im_df.shape[0]:
                 print(
                     "WARNING: Scaling factors have only been provided for a subset "
                     "of available GMs, all GMs without a SF specified will be ignored!"
                 )
             im_df = self.apply_amp_scaling(IMs, sf)
 
+        # CS Param bounds filtering
         mask = (
             np.ones(im_df.shape[0], dtype=bool)
             if cs_param_bounds is None
@@ -270,7 +271,10 @@ class HistoricalGMDataset(GMDataset):
         return im_df.loc[mask, IMs]
 
     def compute_scaling_factor(
-        self, IMj: IM, im_j: float, gm_ids: np.ndarray = None,
+        self,
+        IMj: IM,
+        im_j: float,
+        gm_ids: np.ndarray = None,
     ) -> Tuple[pd.DataFrame, pd.Series]:
         """
         Scales the GM records such that IMj == imj
@@ -461,7 +465,9 @@ class SimulationGMDataset(GMDataset):
         site_vs30 = float(vs30_df.loc[site_info.station_name])
 
         # Site-source dataframe
-        site_source_df = _get_site_source_df(self.site_source_db_ffp, site_info.station_name)
+        site_source_df = _get_site_source_df(
+            self.site_source_db_ffp, site_info.station_name
+        )
 
         if selected_gms is not None:
             meta_data = []
@@ -544,9 +550,9 @@ class MixedGMDataset(GMDataset):
             cur_bb = None
             for cur_dir in self.simulation_dirs:
                 if os.path.exists(
-                        cur_bb_bin_path := ss.get_bb_bin_path(
-                            ss.get_sim_dir(str(cur_dir), sim_name)
-                        )
+                    cur_bb_bin_path := ss.get_bb_bin_path(
+                        ss.get_sim_dir(str(cur_dir), sim_name)
+                    )
                 ):
                     # Hack due to incorrect folder structure in 21p6 BBs......
                     if Path(cur_bb_bin_path).is_dir():
@@ -676,7 +682,9 @@ class MixedGMDataset(GMDataset):
 
             meta_data = []
             for cur_rel_id, cur_fault, cur_site_name in zip(rel_ids, faults, sites):
-                cur_site_source_df = _get_site_source_df(self.site_source_db_ffp, cur_site_name)
+                cur_site_source_df = _get_site_source_df(
+                    self.site_source_db_ffp, cur_site_name
+                )
 
                 meta_data.append(
                     (
