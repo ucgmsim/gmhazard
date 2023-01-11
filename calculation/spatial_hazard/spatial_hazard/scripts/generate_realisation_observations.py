@@ -13,13 +13,15 @@ def main(
     IM: gc.im.IM,
     fault: str,
     N: int,
-    station: str,
+    int_stations: Sequence[str],
     stations_ll_ffp: str,
     gmm_params_ffp: Path,
     observations_ffp: Path,
     output_dir: Path,
     n_procs: int,
 ):
+    int_stations = np.asarray(int_stations)
+
     # Load the station data
     stations_df = pd.read_csv(
         stations_ll_ffp, sep=" ", index_col=2, header=None, names=["lon", "lat"]
@@ -50,27 +52,40 @@ def main(
     del obs_df
 
     obs_stations = obs_series.index.values.astype(str)
-    assert station not in obs_stations
 
-    # Check that we have GMM data for all observed stations
+    # Check that GMM data exists for all observed stations
     # Otherwise drop those stations
     mask = np.isin(obs_stations, gmm_params_df.index.values)
-    if np.count_nonzero(mask) > 0:
+    if np.count_nonzero(~mask) > 0:
         print(
             f"Missing GMM parameters for (observation) stations:\n"
             f"{obs_stations[~mask]}\n\tDropping these stations"
         )
         obs_stations = obs_stations[mask]
 
-    # Stations of interest (with data)
-    stations = np.concatenate(([station], obs_stations))
-    gmm_params_df = gmm_params_df.loc[stations]
+    # Check that GMM data exists for all stations of interest
+    # Otherwise drop them
+    mask = np.isin(int_stations, gmm_params_df.index.values)
+    if np.count_nonzero(~mask) > 0:
+        print(f"Missing GMM parameters for sites of interest:\n"
+              f"{int_stations[~mask]}\n\tDropping these stations")
+        int_stations = int_stations[mask]
+
+    # Drop any sites of interest for which observations exists
+    mask = np.isin(int_stations, obs_stations)
+    if np.count_nonzero(mask) > 0:
+        print(f"Observations exist for the following sites of interest:\n"
+              f"{int_stations[mask]}\n\tDropping these stations")
+
+    # Relevant stations (Observation sites & Sites of interest)
+    rel_stations = np.concatenate((int_stations, obs_stations))
+    gmm_params_df = gmm_params_df.loc[rel_stations]
 
     print("Computing distance matrix")
-    dist_matrix = sh.im_dist.calculate_distance_matrix(stations, stations_df)
+    dist_matrix = sh.im_dist.calculate_distance_matrix(rel_stations, stations_df)
 
     print("Computing correlation matrix")
-    R = sh.im_dist.get_corr_matrix(stations, dist_matrix, IM)
+    R = sh.im_dist.get_corr_matrix(rel_stations, dist_matrix, IM)
 
     # C_c(i,j) = rho_{i,j} * \delta_{W_i} * \delta_{W_j}
     # Equation 4 in Bradley 2014
@@ -111,8 +126,8 @@ def main(
 
     # Define the within-event residual distribution
     # Equation 5 in Bradley 2014
-    within_residual_mu = np.zeros(stations.size)
-    within_residual_cov = np.full((stations.size, stations.size), fill_value=np.nan)
+    within_residual_mu = np.zeros(rel_stations.size)
+    within_residual_cov = np.full((rel_stations.size, rel_stations.size), fill_value=np.nan)
     within_residual_cov[1:, 1:] = C_c
     within_residual_cov[0, 1:] = within_residual_cov[1:, 0] = (
         R.loc[obs_stations, station]
@@ -136,8 +151,6 @@ def main(
     cond_lnIM_mu = gmm_params_df.loc[station, "mu"] + between_residual + cond_within_residual_mu
     cond_ln_sigma = cond_within_residual_sigma
 
-
-
     print(cond_lnIM_mu, cond_ln_sigma)
 
 if __name__ == "__main__":
@@ -148,7 +161,7 @@ if __name__ == "__main__":
         "fault", type=str, help="The fault for which to compute spatial hazard"
     )
     parser.add_argument("N", type=int, help="Number of realisations to generate")
-    parser.add_argument("station", type=str, help="Site of interest")
+    parser.add_argument("station", type=str, nargs="+", help="Site of interest")
     parser.add_argument(
         "stations_ll_ffp",
         type=str,
