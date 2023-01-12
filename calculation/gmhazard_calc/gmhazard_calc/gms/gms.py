@@ -709,6 +709,7 @@ def _run_parametric_ensemble_gms(
     gm_IMj_df = gm_dataset.get_im_df(
         site_info,
         str(IMj),
+        cs_param_bounds=cs_param_bounds
     )
     sf = sha.compute_scaling_factor(gm_IMj_df.squeeze(), str(IMj), im_j)
     gm_lnIM_df = gm_dataset.get_im_df(
