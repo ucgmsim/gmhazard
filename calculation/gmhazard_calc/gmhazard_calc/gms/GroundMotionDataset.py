@@ -248,7 +248,7 @@ class HistoricalGMDataset(GMDataset):
         sf: pd.Series = None,
     ) -> pd.DataFrame:
         """See GMDataset method for parameter specifications"""
-        im_df = self._im_df.copy()
+        im_df = self._im_df.copy().loc[:, IMs]
 
         # Apply amplitude scaling, if a scaling factor is given
         if sf is not None:
@@ -257,7 +257,7 @@ class HistoricalGMDataset(GMDataset):
                     "WARNING: Scaling factors have only been provided for a subset "
                     "of available GMs, all GMs without a SF specified will be ignored!"
                 )
-            im_df = self.apply_amp_scaling(IMs, sf)
+            im_df = sha.apply_amp_scaling(im_df, sf)
 
         # CS Param bounds filtering
         mask = (
@@ -298,14 +298,12 @@ class HistoricalGMDataset(GMDataset):
 
         return sha.compute_scaling_factor(str(IMj), im_j, self._im_df.loc[gm_ids, :])
 
-    def apply_amp_scaling(self, IMs: Sequence[str], sf: pd.Series):
+    def apply_amp_scaling(self, sf: pd.Series):
         """
         Applies amplitude to the specified GMs
 
         Parameters
         ----------
-        IMs: sequence of strings
-            The IM types to scale and return
         sf: series
             The scaling factor for each GM of interest
             index: GM ids, value: scaling factor
@@ -315,7 +313,7 @@ class HistoricalGMDataset(GMDataset):
         dataframe:
             The scaled IMs
         """
-        return sha.apply_amp_scaling(self._im_df, IMs, sf)
+        return
 
     def get_metadata_df(
         self, site_info: site.SiteInfo, selected_gms: List[Any] = None

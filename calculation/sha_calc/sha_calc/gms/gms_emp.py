@@ -169,6 +169,8 @@ def apply_amp_scaling(im_df: pd.DataFrame, sf: pd.Series):
     ----------
     im_df: dataframe
         The IM records to scale
+
+        Note: All columns are assumed to be IMs
     sf: series
         The scaling factor for each GM of interest
         index: GM ids, value: scaling factor
