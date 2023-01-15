@@ -268,7 +268,7 @@ class HistoricalGMDataset(GMDataset):
             )
         )
 
-        return im_df.loc[mask, IMs]
+        return im_df.loc[mask]
 
     def compute_scaling_factor(
         self,
