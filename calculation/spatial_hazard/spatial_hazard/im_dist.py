@@ -1,13 +1,166 @@
-from typing import Sequence
+from pathlib import Path
+from typing import Sequence, Callable, List
 
 import numpy as np
 import pandas as pd
 from scipy.linalg import cholesky
 
 import gmhazard_calc as gc
-import sha_calc
+import sha_calc as sha
 from IM_calculation.source_site_dist.src_site_dist import calc_rrup_rjb
 
+
+def compute_cond_lnIM(
+    IM: gc.im.IM,
+    rupture: str,
+    int_stations: Sequence[str],
+    stations_ll_ffp: str,
+    gmm_params_ffp: Path,
+    observations_ffp: Path,
+    obs_site_filter_fn: Callable[[pd.DataFrame], List[str]] = None,
+):
+    """
+    Computes the conditional lnIM distribution
+    for each station of interest
+
+    Parameters
+    ----------
+    IM: IM
+        IM for which to compute
+        the conditional IM distribution
+    rupture: string
+        The rupture of interest
+    int_stations: sequence of strings
+        The stations of interest
+    stations_ll_ffp: Path
+        Path to the stations .ll file
+    gmm_params_ffp: Path
+        Path to the empirical GMM parameters
+
+        Expects columns names
+        [{IM}_mean, {IM}_std_Total, {IM}_std_Inter, {IM}_std_Intra]
+    observations_ffp: Path
+        Path to the observations
+
+        Expected file format is that of the
+        NZ GMDB flatfile i.e. Columns ["evid", "sta" "{IM}"]
+    obs_site_filter_fn: callable
+        Function that performs filtering on the distance
+        between the site of interest and the available
+        observation sites
+
+        Use this to prevent global bias (wrt. to the empirical
+        GMM) affecting the between-event term calculation
+
+    Returns
+    -------
+    cond_df: dataframe
+        Conditional lnIM distribution
+        for each station of interest
+    obs_df: series
+        Observations data series
+    obs_stations: dictionary
+        A dictionary that constains
+        the relevant observations stations
+        for each site of interest as per the
+        obs_site_filter_fn
+    """
+    int_stations = np.asarray(int_stations)
+
+    # Load the station data
+    stations_df = pd.read_csv(
+        stations_ll_ffp, sep=" ", index_col=2, header=None, names=["lon", "lat"]
+    )
+
+    # Get GMM parameters
+    print("Retrieving GMM parameters")
+    gmm_params_df = pd.read_csv(gmm_params_ffp, index_col=0, dtype={"event": str})
+    gmm_params_df = gmm_params_df.loc[gmm_params_df.event == rupture]
+    gmm_params_df = gmm_params_df.set_index("site").sort_index()
+
+    im_columns = [
+        f"{str(IM)}_mean",
+        f"{str(IM)}_std_Total",
+        f"{str(IM)}_std_Inter",
+        f"{str(IM)}_std_Intra",
+    ]
+    gmm_params_df = gmm_params_df[im_columns]
+    gmm_params_df.columns = ["mu", "sigma_total", "sigma_between", "sigma_within"]
+
+    print(f"Loading Observations")
+    obs_df = pd.read_csv(observations_ffp, index_col=0, low_memory=False)
+    obs_df = obs_df.loc[obs_df.evid == rupture]
+    obs_df = obs_df.set_index("sta").sort_index()
+
+    # Only need IM of interest
+    obs_series = np.log(obs_df[str(IM)])
+    del obs_df
+
+    obs_stations = obs_series.index.values.astype(str)
+
+    # Check that GMM data exists for all observed stations
+    # Otherwise drop those stations
+    mask = np.isin(obs_stations, gmm_params_df.index.values)
+    if np.count_nonzero(~mask) > 0:
+        print(
+            f"Missing GMM parameters for (observation) stations:\n"
+            f"{obs_stations[~mask]}\n\tDropping these stations"
+        )
+        obs_stations = obs_stations[mask]
+
+    # Check that GMM data exists for all stations of interest
+    # Otherwise drop them
+    mask = np.isin(int_stations, gmm_params_df.index.values)
+    if np.count_nonzero(~mask) > 0:
+        print(
+            f"Missing GMM parameters for sites of interest:\n"
+            f"{int_stations[~mask]}\n\tDropping these stations"
+        )
+        int_stations = int_stations[mask]
+
+    # Drop any sites of interest for which observations exists
+    mask = np.isin(int_stations, obs_stations)
+    if np.count_nonzero(mask) > 0:
+        print(
+            f"Observations exist for the following sites of interest:\n"
+            f"{int_stations[mask]}\n\tDropping these stations"
+        )
+        int_stations = int_stations[~mask]
+
+    # Relevant stations (Observation sites & Sites of interest)
+    rel_stations = np.concatenate((int_stations, obs_stations))
+    gmm_params_df = gmm_params_df.loc[rel_stations]
+
+    print("Computing distance matrix")
+    dist_matrix = calculate_distance_matrix(rel_stations, stations_df)
+
+    print("Computing correlation matrix")
+    R = get_corr_matrix(rel_stations, dist_matrix, IM)
+
+    cond_df = pd.DataFrame(
+        data=np.full((int_stations.shape[0], 2), np.nan),
+        index=int_stations,
+        columns=["mu", "sigma"],
+    )
+    obs_stations_used = {}
+    for cur_station in int_stations:
+        # Todo: Filtering of observations sites, to prevent "global" bias issues
+        if obs_site_filter_fn is not None:
+            raise NotImplementedError()
+        else:
+            obs_stations_used[cur_station] = cur_obs_stations = obs_stations
+
+        cur_rel_sites = np.concatenate(([cur_station], cur_obs_stations))
+        cur_cond_mu, cur_cond_sigma = sha.compute_cond_lnIM_dist(
+            cur_station,
+            gmm_params_df.loc[cur_rel_sites],
+            obs_series.loc[cur_obs_stations],
+            R.loc[cur_rel_sites, cur_rel_sites],
+        )
+
+        cond_df.loc[cur_station, ["mu", "sigma"]] = cur_cond_mu, cur_cond_sigma
+
+    return cond_df, obs_series[obs_stations], obs_stations_used
 
 def calculate_distance_matrix(stations: Sequence[str], locations_df: pd.DataFrame):
     """
@@ -59,7 +212,7 @@ def get_corr_matrix(
     """
     R = np.eye(len(stations))
     for i, station in enumerate(stations):
-        correlation = sha_calc.spatial_hazard.loth_baker_model.get_correlations(
+        correlation = sha.loth_baker_corr_model.get_correlations(
             str(selected_im),
             str(selected_im),
             distance_matrix.loc[stations, station].values,
@@ -107,13 +260,14 @@ def generate_im_values(
     try:
         L = cholesky(R, lower=True)
     except np.linalg.LinAlgError:
-        pd_R = sha_calc.nearest_pd(R)
+        pd_R = sha.nearest_pd(R)
         L = cholesky(pd_R, lower=True)
 
     # Calculate random between event residual value
     #  per realisation and multiply by between event sigma
     between_event = (
-        np.random.normal(0.0, 1.0, size=N)[:, np.newaxis] * between_event_std.values[np.newaxis, :]
+        np.random.normal(0.0, 1.0, size=N)[:, np.newaxis]
+        * between_event_std.values[np.newaxis, :]
     )
 
     # Calculate random within event residual value

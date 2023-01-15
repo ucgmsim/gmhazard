@@ -20,145 +20,20 @@ def main(
     output_dir: Path,
     n_procs: int,
 ):
-    int_stations = np.asarray(int_stations)
-
-    # Load the station data
-    stations_df = pd.read_csv(
-        stations_ll_ffp, sep=" ", index_col=2, header=None, names=["lon", "lat"]
+    # Compute the conditional distribution for all sites of interest
+    cond_df, obs_series, obs_stations_used = sh.im_dist.compute_cond_lnIM(
+        IM, fault, int_stations, stations_ll_ffp, gmm_params_ffp, observations_ffp
     )
 
-    # Get GMM parameters
-    print("Retrieving GMM parameters")
-    gmm_params_df = pd.read_csv(gmm_params_ffp, index_col=0, dtype={"event": str})
-    gmm_params_df = gmm_params_df.loc[gmm_params_df.event == fault]
-    gmm_params_df = gmm_params_df.set_index("site").sort_index()
-
-    im_columns = [
-        f"{str(IM)}_mean",
-        f"{str(IM)}_std_Total",
-        f"{str(IM)}_std_Inter",
-        f"{str(IM)}_std_Intra",
-    ]
-    gmm_params_df = gmm_params_df[im_columns]
-    gmm_params_df.columns = ["mu", "sigma_total", "sigma_between", "sigma_within"]
-
-    print(f"Loading Observations")
-    obs_df = pd.read_csv(observations_ffp, index_col=0, low_memory=False)
-    obs_df = obs_df.loc[obs_df.evid == fault]
-    obs_df = obs_df.set_index("sta").sort_index()
-
-    # Only need IM of interest
-    obs_series = np.log(obs_df[str(IM)])
-    del obs_df
-
-    obs_stations = obs_series.index.values.astype(str)
-
-    # Check that GMM data exists for all observed stations
-    # Otherwise drop those stations
-    mask = np.isin(obs_stations, gmm_params_df.index.values)
-    if np.count_nonzero(~mask) > 0:
-        print(
-            f"Missing GMM parameters for (observation) stations:\n"
-            f"{obs_stations[~mask]}\n\tDropping these stations"
-        )
-        obs_stations = obs_stations[mask]
-
-    # Check that GMM data exists for all stations of interest
-    # Otherwise drop them
-    mask = np.isin(int_stations, gmm_params_df.index.values)
-    if np.count_nonzero(~mask) > 0:
-        print(f"Missing GMM parameters for sites of interest:\n"
-              f"{int_stations[~mask]}\n\tDropping these stations")
-        int_stations = int_stations[mask]
-
-    # Drop any sites of interest for which observations exists
-    mask = np.isin(int_stations, obs_stations)
-    if np.count_nonzero(mask) > 0:
-        print(f"Observations exist for the following sites of interest:\n"
-              f"{int_stations[mask]}\n\tDropping these stations")
-
-    # Relevant stations (Observation sites & Sites of interest)
-    rel_stations = np.concatenate((int_stations, obs_stations))
-    gmm_params_df = gmm_params_df.loc[rel_stations]
-
-    print("Computing distance matrix")
-    dist_matrix = sh.im_dist.calculate_distance_matrix(rel_stations, stations_df)
-
-    print("Computing correlation matrix")
-    R = sh.im_dist.get_corr_matrix(rel_stations, dist_matrix, IM)
-
-    # C_c(i,j) = rho_{i,j} * \delta_{W_i} * \delta_{W_j}
-    # Equation 4 in Bradley 2014
-    C_c = pd.DataFrame(
-        data=np.einsum(
-            "i, ij, j -> ij",
-            gmm_params_df.loc[obs_stations].sigma_within.values,
-            R.loc[obs_stations, obs_stations],
-            gmm_params_df.loc[obs_stations].sigma_within.values,
-        ),
-        index=obs_stations,
-        columns=obs_stations,
-    )
-    # Sanity check
-    assert np.all(
-        np.isclose(
-            np.diag(C_c.values),
-            gmm_params_df.loc[obs_stations, "sigma_within"].values ** 2,
-        )
-    )
-
-    total_residual = (
-        obs_series.loc[obs_stations] - gmm_params_df.loc[obs_stations, "mu"]
-    )
-
-    # Compute the between event-residual using the observation stations
-    # First part of Equation 3 numerator is just row-wise sum of inverse C_c
-    C_c_inv = np.linalg.inv(C_c)
-    numerator = np.einsum("ki, i -> ", C_c_inv, total_residual)
-    denom = np.sum(
-        (1 / gmm_params_df.loc[obs_stations].sigma_between.values ** 2)
-        + np.sum(C_c_inv, axis=1)
-    )
-    between_residual = numerator / denom
-
-    # Compute the within-event residual
-    within_residual = total_residual - between_residual
-
-    # Define the within-event residual distribution
-    # Equation 5 in Bradley 2014
-    within_residual_mu = np.zeros(rel_stations.size)
-    within_residual_cov = np.full((rel_stations.size, rel_stations.size), fill_value=np.nan)
-    within_residual_cov[1:, 1:] = C_c
-    within_residual_cov[0, 1:] = within_residual_cov[1:, 0] = (
-        R.loc[obs_stations, station]
-        * gmm_params_df.loc[station, "sigma_within"]
-        * gmm_params_df.loc[obs_stations, "sigma_within"]
-    )
-    within_residual_cov[0, 0] = gmm_params_df.loc[station, "sigma_within"] ** 2
-
-
-    # Define the conditional within-event distribution
-    cond_within_residual_mu = np.einsum(
-        "i, ij, j -> ", within_residual_cov[0, 1:], C_c_inv, within_residual.values
-    )
-    cond_within_residual_sigma = gmm_params_df.loc[
-        station, "sigma_within"
-    ] ** 2 - np.einsum(
-        "i, ij, j -> ", within_residual_cov[0, 1:], C_c_inv, within_residual_cov[1:, 0]
-    )
-
-    # Define the conditional lnIM distriubtion
-    cond_lnIM_mu = gmm_params_df.loc[station, "mu"] + between_residual + cond_within_residual_mu
-    cond_ln_sigma = cond_within_residual_sigma
-
-    print(cond_lnIM_mu, cond_ln_sigma)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("IM", type=str, help="IM of interest")
     parser.add_argument(
-        "fault", type=str, help="The fault for which to compute spatial hazard"
+        "fault",
+        type=str,
+        help="The fault for which to compute spatial_correlation hazard",
     )
     parser.add_argument("N", type=int, help="Number of realisations to generate")
     parser.add_argument("station", type=str, nargs="+", help="Site of interest")

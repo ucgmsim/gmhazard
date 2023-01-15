@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
     parser.add_argument("IM", type=str, help="IM of interest")
     parser.add_argument(
-        "fault", type=str, help="The fault for which to compute spatial hazard"
+        "fault", type=str, help="The fault for which to compute spatial_correlation hazard"
     )
     parser.add_argument("N", type=int, help="Number of realisations to generate")
     parser.add_argument(
