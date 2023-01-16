@@ -250,25 +250,40 @@ class HistoricalGMDataset(GMDataset):
         """See GMDataset method for parameter specifications"""
         im_df = self._im_df.copy().loc[:, IMs]
 
+        # CS Param bounds filtering
+        if cs_param_bounds is not None:
+            mask = (
+                np.ones(im_df.shape[0], dtype=bool)
+                if cs_param_bounds is None
+                else self._get_filter_mask(
+                    self.get_metadata_df(site_info).loc[im_df.index], cs_param_bounds
+                )
+            )
+            im_df = im_df.loc[mask]
+
         # Apply amplitude scaling, if a scaling factor is given
         if sf is not None:
+            # Perform filtering based on SF
+            mask = (
+                np.ones(im_df.shape[0], dtype=bool)
+                if cs_param_bounds is None
+                else self._get_filter_mask(
+                    self.get_metadata_df(site_info).loc[im_df.index], cs_param_bounds, sf=sf
+                )
+            )
+            im_df = im_df.loc[mask]
+
+            # Sanity check
             if sf.shape[0] < im_df.shape[0]:
                 print(
                     "WARNING: Scaling factors have only been provided for a subset "
                     "of available GMs, all GMs without a SF specified will be ignored!"
                 )
+
+            # Scale GMs
             im_df = sha.apply_amp_scaling(im_df, sf)
 
-        # CS Param bounds filtering
-        mask = (
-            np.ones(im_df.shape[0], dtype=bool)
-            if cs_param_bounds is None
-            else self._get_filter_mask(
-                self.get_metadata_df(site_info).loc[im_df.index], cs_param_bounds, sf=sf
-            )
-        )
-
-        return im_df.loc[mask]
+        return im_df
 
     def compute_scaling_factor(
         self,

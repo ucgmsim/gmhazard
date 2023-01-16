@@ -621,8 +621,7 @@ def plot_uhs_branches(
 
 
 def plot_gms_im_distribution(
-    gms_result: gms.GMSResult,
-    save_dir: Path = None,
+    gms_result: gms.GMSResult, save_dir: Path = None,
 ):
     """
     Plots the CDF of the GCIM and selected GMs
@@ -721,9 +720,7 @@ def plot_gms_im_distribution(
 
 
 def plot_gms_mw_rrup(
-    gms_result: gms.GMSResult,
-    disagg_mean_values: pd.Series,
-    save_file: Path = None,
+    gms_result: gms.GMSResult, disagg_mean_values: pd.Series, save_file: Path = None,
 ):
     """Magnitude - Distance (Rrup) plot of the selected GMs and the mean of the
     disaggregation distribution and selected ground motions with 16th and 84th
@@ -921,8 +918,7 @@ def plot_gms_causal_param(
 
 
 def plot_gms_spectra(
-    gms_result: gms.GMSResult,
-    save_file: Path = None,
+    gms_result: gms.GMSResult, save_file: Path = None,
 ):
     """Plot of the pSA values of the realisations and
      selected ground motions and the median, 16th,
@@ -933,11 +929,7 @@ def plot_gms_spectra(
     gms_result: gms.GMSResult
     save_file: Path, optional
     """
-    (
-        gcim_df,
-        realisations_df,
-        selected_gms_df,
-    ) = _prepare_gms_spectra(gms_result)
+    (gcim_df, realisations_df, selected_gms_df,) = _prepare_gms_spectra(gms_result)
 
     plt.figure(figsize=(20, 9))
 
@@ -1083,26 +1075,19 @@ def plot_gms_available_gm(
     cs_param_bounds: gms.CausalParamBounds
     save_file: Path, optional
     """
+    metadata_df = gms_result.gm_dataset.get_metadata_df(gms_result.site_info)
+
+    # Get number of GMs within causal param bounds
     n_gms_in_bounds = gms_result.gm_dataset.get_n_gms_in_bounds(
-        gms_result.gm_dataset.get_metadata_df(gms_result.site_info),
-        cs_param_bounds,
+        metadata_df, cs_param_bounds,
     )
 
     plt.figure(figsize=(16, 9))
 
     plt.scatter(
-        list(
-            gms_result.gm_dataset.get_metadata_df(gms_result.site_info)
-            .loc[:, "rrup"]
-            .values
-        ),
-        list(
-            gms_result.gm_dataset.get_metadata_df(gms_result.site_info)
-            .loc[:, "mag"]
-            .values
-        ),
-        label=f"Dataset GMs (for the datapoints), "
-        f"N={gms_result.gm_dataset.get_metadata_df(gms_result.site_info).index.size}",
+        list(metadata_df.loc[:, "rrup"].values),
+        list(metadata_df.loc[:, "mag"].values),
+        label=f"Dataset GMs (for the datapoints), " f"N={metadata_df.index.size}",
         marker="s",
         edgecolors="black",
         facecolors="none",
@@ -1185,7 +1170,9 @@ def _prepare_gms_spectra(
         gcim_df = gcim_df.T.sort_index().T
 
         realisations_df[gms_result.IM_j.period] = gms_result.im_j
-        selected_gms_df[gms_result.IM_j.period] = gms_result.selected_gms_im_df[str(gms_result.IM_j)]
+        selected_gms_df[gms_result.IM_j.period] = gms_result.selected_gms_im_df[
+            str(gms_result.IM_j)
+        ]
         realisations_df = realisations_df.T.sort_index().T
         selected_gms_df = selected_gms_df.T.sort_index().T
 
@@ -1198,14 +1185,8 @@ def _prepare_gms_spectra(
 
 def _get_causal_params_bounds(cs_param_bounds: gms.CausalParamBounds):
     return {
-        "mag": {
-            "min": cs_param_bounds.mw_low,
-            "max": cs_param_bounds.mw_high,
-        },
-        "rrup": {
-            "min": cs_param_bounds.rrup_low,
-            "max": cs_param_bounds.rrup_high,
-        },
+        "mag": {"min": cs_param_bounds.mw_low, "max": cs_param_bounds.mw_high,},
+        "rrup": {"min": cs_param_bounds.rrup_low, "max": cs_param_bounds.rrup_high,},
         "vs30": {
             "min": cs_param_bounds.vs30_low,
             "max": cs_param_bounds.vs30_high,
