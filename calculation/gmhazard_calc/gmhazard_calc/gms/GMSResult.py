@@ -140,7 +140,7 @@ class GMSResult:
             self.site_info, self.selected_gms_ids
         )
 
-        if "sf" in self._selected_gms_metadata_df.columns:
+        if "sf" not in self._selected_gms_metadata_df.columns:
             self._selected_gms_metadata_df["sf"] = self.sf.loc[
                 self._selected_gms_metadata_df.index
             ]

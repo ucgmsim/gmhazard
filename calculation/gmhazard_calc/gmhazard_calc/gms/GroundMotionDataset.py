@@ -249,6 +249,7 @@ class HistoricalGMDataset(GMDataset):
     ) -> pd.DataFrame:
         """See GMDataset method for parameter specifications"""
         im_df = self._im_df.copy().loc[:, IMs]
+        metadata_df = self.get_metadata_df(site_info)
 
         # CS Param bounds filtering
         if cs_param_bounds is not None:
@@ -256,7 +257,7 @@ class HistoricalGMDataset(GMDataset):
                 np.ones(im_df.shape[0], dtype=bool)
                 if cs_param_bounds is None
                 else self._get_filter_mask(
-                    self.get_metadata_df(site_info).loc[im_df.index], cs_param_bounds
+                    metadata_df.loc[im_df.index], cs_param_bounds
                 )
             )
             im_df = im_df.loc[mask]
@@ -268,7 +269,7 @@ class HistoricalGMDataset(GMDataset):
                 np.ones(im_df.shape[0], dtype=bool)
                 if cs_param_bounds is None
                 else self._get_filter_mask(
-                    self.get_metadata_df(site_info).loc[im_df.index], cs_param_bounds, sf=sf
+                    metadata_df.loc[im_df.index], cs_param_bounds, sf=sf
                 )
             )
             im_df = im_df.loc[mask]
@@ -281,7 +282,7 @@ class HistoricalGMDataset(GMDataset):
                 )
 
             # Scale GMs
-            im_df = sha.apply_amp_scaling(im_df, sf)
+            im_df = sha.apply_amp_scaling(im_df, sf.loc[mask])
 
         return im_df
 
@@ -352,8 +353,11 @@ class HistoricalGMDataset(GMDataset):
         ignore_vs30: bool = False,
         sf: pd.Series = None,
     ) -> np.ndarray:
+        if sf is not None:
+            assert sf.shape[0] == metadata_df.shape[0]
+
         mask = super()._get_filter_mask(
-            metadata_df.loc[self.gm_ids], cs_param_bounds, ignore_vs30=ignore_vs30
+            metadata_df, cs_param_bounds, ignore_vs30=ignore_vs30
         )
 
         if sf is not None and cs_param_bounds.sf_low is not None:

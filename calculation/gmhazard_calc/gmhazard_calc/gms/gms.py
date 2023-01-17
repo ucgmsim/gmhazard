@@ -810,7 +810,7 @@ def _run_parametric_ensemble_gms(
         gm_dataset,
         constants.GMSType.empirical,
         cs_param_bounds=cs_param_bounds,
-        sf=sf,
+        sf=sf[gm_ind],
         exceedance=exceedance,
     )
 
