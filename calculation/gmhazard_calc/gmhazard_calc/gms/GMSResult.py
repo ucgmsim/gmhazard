@@ -141,9 +141,8 @@ class GMSResult:
         )
 
         if "sf" not in self._selected_gms_metadata_df.columns:
-            self._selected_gms_metadata_df["sf"] = self.sf.loc[
-                self._selected_gms_metadata_df.index
-            ]
+            assert np.all(self.selected_gms_metdata_df.index == self.sf.index)
+            self._selected_gms_metadata_df["sf"] = self.sf.values
 
         # Get the GCIM 16th, median, 84th
         # Create the relevant dataframes
