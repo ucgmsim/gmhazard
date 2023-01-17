@@ -76,6 +76,12 @@ def main(
         gmm_params_df.index.values if int_stations is None else np.asarray(int_stations)
     )
 
+    # Add lat/lon for plotting later
+    gmm_params_df = gmm_params_df.merge(stations_df, left_index=True, right_index=True)
+
+    # Add median
+    gmm_params_df["median"] = np.exp(gmm_params_df["mu"].values)
+
     print(f"Loading Observations")
     obs_df = pd.read_csv(observations_ffp, index_col=0, low_memory=False)
     obs_df = obs_df.loc[obs_df.evid == rupture]
@@ -101,12 +107,13 @@ def main(
     # Compute median
     comb_df["median"] = np.exp(comb_df.mu)
 
-    # Generate conditional IM & sigma maps
+    # Generate plots
+    print(f"Generating plots")
     map_data = plotting.NZMapData.load(
         Path("/Users/claudy/dev/work/code/qcore/qcore/data")
     )
     results = []
-    with mp.Pool(4) as p:
+    with mp.Pool(6) as p:
         results.append(
             p.apply_async(
                 sh.plots.gen_spatial_plot,
@@ -121,6 +128,8 @@ def main(
                     "Conditional Median",
                     None,
                     map_data,
+                    True,
+                    1.2
                 ),
             )
         )
@@ -138,9 +147,50 @@ def main(
                     "Conditional Sigma",
                     None,
                     map_data,
+                    True,
+                    0.7
                 ),
             )
         )
+        results.append(
+            p.apply_async(
+                sh.plots.gen_spatial_plot,
+                (
+                    gmm_params_df,
+                    "median",
+                    (172.6909, -43.566),
+                    (50, 50),
+                    Path(
+                        "/Users/claudy/dev/work/data/sim_ranking/proto/test/gmm_mu.png"
+                    ),
+                    "Marginal Median",
+                    None,
+                    map_data,
+                    True,
+                    1.2
+                ),
+            )
+        )
+        results.append(
+            p.apply_async(
+                sh.plots.gen_spatial_plot,
+                (
+                    gmm_params_df,
+                    "sigma_total",
+                    (172.6909, -43.566),
+                    (50, 50),
+                    Path(
+                        "/Users/claudy/dev/work/data/sim_ranking/proto/test/gmm_sigma.png"
+                    ),
+                    "Marginal Sigma",
+                    None,
+                    map_data,
+                    True,
+                    0.7
+                ),
+            )
+        )
+
 
         # Wait for completion
         [cur_res.get() for cur_res in results]

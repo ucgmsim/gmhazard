@@ -48,13 +48,13 @@ def _get_region(
 def _plot_stations(fig: pygmt.Figure, data_df: pd.DataFrame):
     for cur_station, cur_row in data_df.iterrows():
         # Plot observation stations
-        if cur_row.observation:
+        if "observation" in cur_row.index and cur_row.observation:
             fig.plot(
                 x=cur_row.lon,
                 y=cur_row.lat,
-                style="a0.05c",
-                fill="black",
-                pen="black",
+                style="d0.05c",
+                fill="green",
+                pen="green",
             )
         # Plot sites of interest
         else:
@@ -75,11 +75,16 @@ def gen_spatial_plot(
     output_ffp: Path,
     title: str = None,
     map_data_ffp: Path = None,
-    map_data: plotting.NZMapData = None
+    map_data: plotting.NZMapData = None,
+    plot_stations: bool = True,
+    cb_max: float = None
 ):
     # Load the map data
     if map_data is None and map_data_ffp is not None:
         map_data = plotting.NZMapData.load(map_data_ffp, high_res_topo=False)
+
+    # Use max value from data if not specified
+    cb_max = cb_max if cb_max is not None else np.around(data_df[data_key].max(), 1)
 
     # Create the figure
     region = _get_region(hypocentre_loc, hypocentre_dist)
@@ -87,29 +92,36 @@ def gen_spatial_plot(
 
     # Create & Plot the grid
     grid = plotting.create_grid(
-        data_df, data_key=data_key, region=region,
-        grid_spacing="50e/50e"
+        data_df, data_key=data_key, region=region, grid_spacing="50e/50e"
     )
     plotting.plot_grid(
         fig,
         grid,
         "hot",
-        (0, cb_max := np.around(data_df[data_key].max(), 1), cb_max / 10),
+        (0, cb_max, cb_max / 20),
         ("white", "black"),
         reverse_cmap=True,
         transparency=35,
     )
 
     # Plot stations
-    _plot_stations(fig, data_df)
+    if plot_stations:
+        _plot_stations(fig, data_df)
+
+    # Plot the hypocentre
+    fig.plot(
+        x=hypocentre_loc[0],
+        y=hypocentre_loc[1],
+        style="a0.1c",
+        fill="pink",
+        pen="pink",
+    )
 
     fig.savefig(
         output_ffp,
         dpi=900,
         anti_alias=True,
     )
-
-
 
 
 def plot_realisations(
