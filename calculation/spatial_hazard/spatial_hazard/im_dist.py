@@ -12,11 +12,10 @@ from IM_calculation.source_site_dist.src_site_dist import calc_rrup_rjb
 
 def compute_cond_lnIM(
     IM: gc.im.IM,
-    rupture: str,
-    int_stations: Sequence[str],
-    stations_ll_ffp: str,
-    gmm_params_ffp: Path,
-    observations_ffp: Path,
+    int_stations: np.ndarray,
+    stations_df: pd.DataFrame,
+    gmm_params_df: pd.DataFrame,
+    obs_series: pd.Series,
     obs_site_filter_fn: Callable[[pd.DataFrame], List[str]] = None,
 ):
     """
@@ -28,22 +27,16 @@ def compute_cond_lnIM(
     IM: IM
         IM for which to compute
         the conditional IM distribution
-    rupture: string
-        The rupture of interest
     int_stations: sequence of strings
         The stations of interest
-    stations_ll_ffp: Path
-        Path to the stations .ll file
-    gmm_params_ffp: Path
-        Path to the empirical GMM parameters
+    stations_df: dataframe
+    gmm_params_df: dataframe
+        Dataframe with empirical GMMs parameters
 
         Expects columns names
         [{IM}_mean, {IM}_std_Total, {IM}_std_Inter, {IM}_std_Intra]
-    observations_ffp: Path
-        Path to the observations
-
-        Expected file format is that of the
-        NZ GMDB flatfile i.e. Columns ["evid", "sta" "{IM}"]
+    obs_series: series
+        Observations IM values for each station
     obs_site_filter_fn: callable
         Function that performs filtering on the distance
         between the site of interest and the available
@@ -59,43 +52,14 @@ def compute_cond_lnIM(
         for each station of interest
     obs_df: series
         Observations data series
-    obs_stations: dictionary
-        A dictionary that constains
-        the relevant observations stations
-        for each site of interest as per the
-        obs_site_filter_fn
+    obs_stations: array of strings
+        Array of the observation stations used
+    obs_station_mask: dictionary
+        A dictionary that contains
+        a mask for the relevant observations
+        stations for each site of interest
+        as per the obs_site_filter_fn
     """
-    int_stations = np.asarray(int_stations)
-
-    # Load the station data
-    stations_df = pd.read_csv(
-        stations_ll_ffp, sep=" ", index_col=2, header=None, names=["lon", "lat"]
-    )
-
-    # Get GMM parameters
-    print("Retrieving GMM parameters")
-    gmm_params_df = pd.read_csv(gmm_params_ffp, index_col=0, dtype={"event": str})
-    gmm_params_df = gmm_params_df.loc[gmm_params_df.event == rupture]
-    gmm_params_df = gmm_params_df.set_index("site").sort_index()
-
-    im_columns = [
-        f"{str(IM)}_mean",
-        f"{str(IM)}_std_Total",
-        f"{str(IM)}_std_Inter",
-        f"{str(IM)}_std_Intra",
-    ]
-    gmm_params_df = gmm_params_df[im_columns]
-    gmm_params_df.columns = ["mu", "sigma_total", "sigma_between", "sigma_within"]
-
-    print(f"Loading Observations")
-    obs_df = pd.read_csv(observations_ffp, index_col=0, low_memory=False)
-    obs_df = obs_df.loc[obs_df.evid == rupture]
-    obs_df = obs_df.set_index("sta").sort_index()
-
-    # Only need IM of interest
-    obs_series = np.log(obs_df[str(IM)])
-    del obs_df
-
     obs_stations = obs_series.index.values.astype(str)
 
     # Check that GMM data exists for all observed stations
@@ -127,6 +91,9 @@ def compute_cond_lnIM(
         )
         int_stations = int_stations[~mask]
 
+    print(f"Computing results for {int_stations.size} stations of interest, "
+          f"with {obs_stations.size} observation stations available")
+
     # Relevant stations (Observation sites & Sites of interest)
     rel_stations = np.concatenate((int_stations, obs_stations))
     gmm_params_df = gmm_params_df.loc[rel_stations]
@@ -142,25 +109,25 @@ def compute_cond_lnIM(
         index=int_stations,
         columns=["mu", "sigma"],
     )
-    obs_stations_used = {}
+    obs_station_mask = {}
     for cur_station in int_stations:
         # Todo: Filtering of observations sites, to prevent "global" bias issues
         if obs_site_filter_fn is not None:
             raise NotImplementedError()
         else:
-            obs_stations_used[cur_station] = cur_obs_stations = obs_stations
+            obs_station_mask[cur_station] = cur_mask = np.ones(obs_stations.shape, dtype=bool)
 
-        cur_rel_sites = np.concatenate(([cur_station], cur_obs_stations))
+        cur_rel_sites = np.concatenate(([cur_station], obs_stations[cur_mask]))
         cur_cond_mu, cur_cond_sigma = sha.compute_cond_lnIM_dist(
             cur_station,
             gmm_params_df.loc[cur_rel_sites],
-            obs_series.loc[cur_obs_stations],
+            obs_series.loc[obs_stations[cur_mask]],
             R.loc[cur_rel_sites, cur_rel_sites],
         )
 
         cond_df.loc[cur_station, ["mu", "sigma"]] = cur_cond_mu, cur_cond_sigma
 
-    return cond_df, obs_series[obs_stations], obs_stations_used
+    return cond_df, obs_series[obs_stations], obs_stations, obs_station_mask
 
 def calculate_distance_matrix(stations: Sequence[str], locations_df: pd.DataFrame):
     """
