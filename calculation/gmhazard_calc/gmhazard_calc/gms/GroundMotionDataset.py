@@ -56,9 +56,7 @@ class GMDataset:
     def ims(self):
         raise NotImplementedError()
 
-    def get_waveforms(
-        self, gms: Sequence[Any], output_dir: str
-    ) -> List:
+    def get_waveforms(self, gms: Sequence[Any], output_dir: str) -> List:
         """Retrieves and saves the waveforms as text
         files in the specified output directory
 
@@ -209,9 +207,7 @@ class HistoricalGMDataset(GMDataset):
     def gm_ids(self):
         return self._im_df.index.values
 
-    def get_waveforms(
-        self, gm_ids: List[Any], output_dir: str
-    ) -> List:
+    def get_waveforms(self, gm_ids: List[Any], output_dir: str) -> List:
         """See GMDataset method for parameter specifications"""
         no_waveforms = []
         file_name_template = "RSN{}_{}.AT2"
@@ -409,9 +405,7 @@ class SimulationGMDataset(GMDataset):
 
         return self._ims
 
-    def get_waveforms(
-        self, gm_ids: List[str], output_dir: str
-    ) -> List:
+    def get_waveforms(self, gm_ids: List[str], output_dir: str) -> List:
         """See GMDataset method for parameter specifications"""
         return _get_sim_waveforms(self.simulation_dirs, gm_ids, site_info, output_dir)
 
@@ -532,9 +526,7 @@ class MixedGMDataset(GMDataset):
 
         return self._ims
 
-    def get_waveforms(
-        self, gm_ids: Sequence[Any], output_dir: str
-    ) -> List:
+    def get_waveforms(self, gm_ids: Sequence[Any], output_dir: str) -> List:
         """
         See GMDataset method for parameter specifications
 
@@ -703,9 +695,20 @@ def _get_sim_waveforms(
         cur_bb = None
         for cur_dir in simulation_dirs:
             # Check that simulation directory exists
-            if (cur_sim_dir := Path(ss.get_sim_dir(str(cur_dir), cur_sim_name))).exists():
+            if (
+                cur_sim_dir := Path(ss.get_sim_dir(str(cur_dir), cur_sim_name))
+            ).exists():
                 # Find the BB file
-                if len(bb_ffps := list(cur_sim_dir.rglob("*BB.bin"))) == 1:
+                # Hack to handle incorrect folder structure
+                # in 21p6 backup (has folder called BB.bin...)
+                bb_ffps = [
+                    cur_ffp
+                    for cur_ffp in cur_sim_dir.rglob("*BB.bin")
+                    if cur_ffp.is_file()
+                ]
+
+                # Write it as text file
+                if len(bb_ffps) == 1:
                     # Convert to text files and store in the specified output directory
                     cur_bb = BBSeis(bb_ffps[0])
                     cur_bb.save_txt(
