@@ -415,30 +415,7 @@ class SimulationGMDataset(GMDataset):
         self, gms: List[str], site_info: site.SiteInfo, output_dir: str
     ) -> List:
         """See GMDataset method for parameter specifications"""
-        no_waveforms = []
-        for sim_name in gms:
-            # Find & Save the binary waveform
-            cur_bb = None
-            for cur_dir in self.simulation_dirs:
-                if os.path.exists(
-                    cur_bb_bin_path := ss.get_bb_bin_path(
-                        ss.get_sim_dir(str(cur_dir), sim_name)
-                    )
-                ):
-                    # Hack due to incorrect folder structure in 21p6 BBs......
-                    if Path(cur_bb_bin_path).is_dir():
-                        cur_bb_bin_path = os.path.join(cur_bb_bin_path, "BB.bin")
-
-                    # Convert to text files and store in the specified output directory
-                    cur_bb = BBSeis(cur_bb_bin_path)
-                    cur_bb.save_txt(
-                        site_info.station_name, prefix=f"{output_dir}/{sim_name}_"
-                    )
-
-            if cur_bb is None:
-                no_waveforms.append(sim_name)
-
-        return no_waveforms
+        return _get_sim_waveforms(self.simulation_dirs, gms, site_info, output_dir)
 
     def get_im_df(
         self,
@@ -561,30 +538,7 @@ class MixedGMDataset(GMDataset):
         self, gms: Sequence[Any], site_info: site.SiteInfo, output_dir: str
     ) -> List:
         """See GMDataset method for parameter specifications"""
-        no_waveforms = []
-        for sim_name in gms:
-            # Find & Save the binary waveform
-            cur_bb = None
-            for cur_dir in self.simulation_dirs:
-                if os.path.exists(
-                    cur_bb_bin_path := ss.get_bb_bin_path(
-                        ss.get_sim_dir(str(cur_dir), sim_name)
-                    )
-                ):
-                    # Hack due to incorrect folder structure in 21p6 BBs......
-                    if Path(cur_bb_bin_path).is_dir():
-                        cur_bb_bin_path = os.path.join(cur_bb_bin_path, "BB.bin")
-
-                    # Convert to text files and store in the specified output directory
-                    cur_bb = BBSeis(cur_bb_bin_path)
-                    cur_bb.save_txt(
-                        site_info.station_name, prefix=f"{output_dir}/{sim_name}_"
-                    )
-
-            if cur_bb is None:
-                no_waveforms.append(sim_name)
-
-        return no_waveforms
+        return _get_sim_waveforms(self.simulation_dirs, gms, site_info, output_dir)
 
     def get_im_df(
         self,
@@ -732,3 +686,30 @@ class MixedGMDataset(GMDataset):
 def _get_site_source_df(site_source_db_ffp: Path, site_name: str):
     with dbs.SiteSourceDB(str(site_source_db_ffp), constants.SourceType.fault) as ssdb:
         return ssdb.station_data(site_name)
+
+
+def _get_sim_waveforms(
+    simulation_dirs: Sequence[Path],
+    gms: Sequence[Any],
+    site_info: site.SiteInfo,
+    output_dir: str,
+) -> List:
+    no_waveforms = []
+    for sim_name in gms:
+        # Find & Save the binary waveform
+        cur_bb = None
+        for cur_dir in simulation_dirs:
+            # Check that simulation directory exists
+            if (cur_sim_dir := Path(ss.get_sim_dir(str(cur_dir), sim_name))).exists():
+                # Find the BB file
+                if len(bb_ffps := list(cur_sim_dir.rglob("*BB.bin"))) == 1:
+                    # Convert to text files and store in the specified output directory
+                    cur_bb = BBSeis(bb_ffps[0])
+                    cur_bb.save_txt(
+                        site_info.station_name, prefix=f"{output_dir}/{sim_name}_"
+                    )
+
+            if cur_bb is None:
+                no_waveforms.append(sim_name)
+
+    return no_waveforms
