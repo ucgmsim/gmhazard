@@ -707,7 +707,5 @@ def _get_sim_waveforms(
                     cur_bb.save_txt(
                         site_info.station_name, prefix=f"{output_dir}/{sim_name}_"
                     )
-                    continue
-
-            no_waveforms.append(sim_name)
+        no_waveforms.append(sim_name)
     return no_waveforms
