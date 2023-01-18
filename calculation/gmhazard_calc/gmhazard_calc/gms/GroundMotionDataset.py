@@ -697,6 +697,7 @@ def _get_sim_waveforms(
     no_waveforms = []
     for sim_name in gms:
         # Find & Save the binary waveform
+        cur_bb = None
         for cur_dir in simulation_dirs:
             # Check that simulation directory exists
             if (cur_sim_dir := Path(ss.get_sim_dir(str(cur_dir), sim_name))).exists():
@@ -707,5 +708,11 @@ def _get_sim_waveforms(
                     cur_bb.save_txt(
                         site_info.station_name, prefix=f"{output_dir}/{sim_name}_"
                     )
-        no_waveforms.append(sim_name)
+
+                    # No need to keep searching
+                    break
+
+        if cur_bb is None:
+            no_waveforms.append(sim_name)
+
     return no_waveforms
