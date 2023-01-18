@@ -20,6 +20,7 @@ def main(
     observations_ffp: Path,
     output_dir: Path,
     n_procs: int,
+    map_data_ffp: Path = None,
     int_stations: Sequence[str] = None,
 ):
     """
@@ -109,8 +110,8 @@ def main(
 
     # Generate plots
     print(f"Generating plots")
-    map_data = plotting.NZMapData.load(
-        Path("/Users/claudy/dev/work/code/qcore/qcore/data")
+    map_data = (
+        plotting.NZMapData.load(map_data_ffp) if map_data_ffp is not None else None
     )
     results = []
     with mp.Pool(6) as p:
@@ -122,14 +123,12 @@ def main(
                     "median",
                     (172.6909, -43.566),
                     (50, 50),
-                    Path(
-                        "/Users/claudy/dev/work/data/sim_ranking/proto/test/median.png"
-                    ),
+                    output_dir / "median.png",
                     "Conditional Median",
                     None,
                     map_data,
                     True,
-                    1.2
+                    1.2,
                 ),
             )
         )
@@ -141,14 +140,12 @@ def main(
                     "sigma",
                     (172.6909, -43.566),
                     (50, 50),
-                    Path(
-                        "/Users/claudy/dev/work/data/sim_ranking/proto/test/sigma.png"
-                    ),
+                    output_dir / "sigma.png",
                     "Conditional Sigma",
                     None,
                     map_data,
                     True,
-                    0.7
+                    0.7,
                 ),
             )
         )
@@ -160,14 +157,12 @@ def main(
                     "median",
                     (172.6909, -43.566),
                     (50, 50),
-                    Path(
-                        "/Users/claudy/dev/work/data/sim_ranking/proto/test/gmm_mu.png"
-                    ),
+                    output_dir / "gmm_mu.png",
                     "Marginal Median",
                     None,
                     map_data,
                     True,
-                    1.2
+                    1.2,
                 ),
             )
         )
@@ -179,18 +174,15 @@ def main(
                     "sigma_total",
                     (172.6909, -43.566),
                     (50, 50),
-                    Path(
-                        "/Users/claudy/dev/work/data/sim_ranking/proto/test/gmm_sigma.png"
-                    ),
+                    output_dir / "gmm_sigma.png",
                     "Marginal Sigma",
                     None,
                     map_data,
                     True,
-                    0.7
+                    0.7,
                 ),
             )
         )
-
 
         # Wait for completion
         [cur_res.get() for cur_res in results]
@@ -220,6 +212,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--n_procs", type=int, help="Number of processes to use", default=4
     )
+    parser.add_argument(
+        "--map_data_ffp", type=Path, help="Path to the qcore map data", default=None
+    )
 
     args = parser.parse_args()
 
@@ -233,4 +228,5 @@ if __name__ == "__main__":
         args.output_dir,
         n_procs=args.n_procs,
         int_stations=args.stations,
+        map_data_ffp=args.map_data_ffp,
     )

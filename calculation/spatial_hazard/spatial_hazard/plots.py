@@ -1,3 +1,4 @@
+from importlib import reload
 from pathlib import Path
 from typing import Dict, Sequence, Any, Tuple
 
@@ -79,6 +80,9 @@ def gen_spatial_plot(
     plot_stations: bool = True,
     cb_max: float = None
 ):
+    import pygmt
+    reload(pygmt)
+
     # Load the map data
     if map_data is None and map_data_ffp is not None:
         map_data = plotting.NZMapData.load(map_data_ffp, high_res_topo=False)

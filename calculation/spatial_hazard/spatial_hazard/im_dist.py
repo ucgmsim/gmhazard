@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Sequence, Callable, List
+from typing import Sequence, Callable, List, NamedTuple, Dict
 
 import numpy as np
 import pandas as pd
@@ -8,6 +8,16 @@ from scipy.linalg import cholesky
 import gmhazard_calc as gc
 import sha_calc as sha
 from IM_calculation.source_site_dist.src_site_dist import calc_rrup_rjb
+
+
+class CondLnIMDistributionResult(NamedTuple):
+    IM: gc.im.IM
+    cond_lnIM_df: pd.DataFrame
+    obs_stations: np.ndarray
+    obs_series: pd.Series
+    obs_stations_masks: Dict[str, np.ndarray]
+
+    R: pd.DataFrame
 
 
 def compute_cond_lnIM(
