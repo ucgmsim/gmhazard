@@ -476,7 +476,7 @@ def write_gms_download_data(
 
     # Get the waveforms
     missing_waveforms = gms_result.gm_dataset.get_waveforms(
-        gms_result.selected_gms_ids, gms_result.site_info, out_dir
+        gms_result.selected_gms_ids, out_dir
     )
     if len(missing_waveforms) > 0:
         print(

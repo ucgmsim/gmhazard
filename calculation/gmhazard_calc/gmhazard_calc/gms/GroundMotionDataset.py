@@ -57,17 +57,15 @@ class GMDataset:
         raise NotImplementedError()
 
     def get_waveforms(
-        self, gms: Sequence[Any], site_info: site.SiteInfo, output_dir: str
+        self, gms: Sequence[Any], output_dir: str
     ) -> List:
         """Retrieves and saves the waveforms as text
         files in the specified output directory
 
         Parameters
         ----------
-        gms: list of tuple of strings
-            The selected ground motions, tuple has to be
-            of format (rupture_name, simulation_name)
-        site_info: SiteInfo
+        gms: sequence of strings
+            The GM record ids to get waveforms for
         output_dir: str
         """
         raise NotImplementedError()
@@ -212,13 +210,13 @@ class HistoricalGMDataset(GMDataset):
         return self._im_df.index.values
 
     def get_waveforms(
-        self, gms: List[Any], site_info: site.SiteInfo, output_dir: str
+        self, gm_ids: List[Any], output_dir: str
     ) -> List:
         """See GMDataset method for parameter specifications"""
         no_waveforms = []
         file_name_template = "RSN{}_{}.AT2"
         output_dir = Path(output_dir)
-        for gm in gms:
+        for gm in gm_ids:
             if (self.empirical_GMS_dir / file_name_template.format(gm, 1)).is_file():
                 copyfile(
                     self.empirical_GMS_dir / file_name_template.format(gm, 1),
@@ -412,10 +410,10 @@ class SimulationGMDataset(GMDataset):
         return self._ims
 
     def get_waveforms(
-        self, gms: List[str], site_info: site.SiteInfo, output_dir: str
+        self, gm_ids: List[str], output_dir: str
     ) -> List:
         """See GMDataset method for parameter specifications"""
-        return _get_sim_waveforms(self.simulation_dirs, gms, site_info, output_dir)
+        return _get_sim_waveforms(self.simulation_dirs, gm_ids, site_info, output_dir)
 
     def get_im_df(
         self,
@@ -535,10 +533,14 @@ class MixedGMDataset(GMDataset):
         return self._ims
 
     def get_waveforms(
-        self, gms: Sequence[Any], site_info: site.SiteInfo, output_dir: str
+        self, gm_ids: Sequence[Any], output_dir: str
     ) -> List:
-        """See GMDataset method for parameter specifications"""
-        return _get_sim_waveforms(self.simulation_dirs, gms, site_info, output_dir)
+        """
+        See GMDataset method for parameter specifications
+
+        Note: GM ids have the format: {sim_name}_{station_name}
+        """
+        return _get_sim_waveforms(self.simulation_dirs, gm_ids, output_dir)
 
     def get_im_df(
         self,
@@ -690,29 +692,30 @@ def _get_site_source_df(site_source_db_ffp: Path, site_name: str):
 
 def _get_sim_waveforms(
     simulation_dirs: Sequence[Path],
-    gms: Sequence[Any],
-    site_info: site.SiteInfo,
+    gm_ids: Sequence[Any],
     output_dir: str,
 ) -> List:
     no_waveforms = []
-    for sim_name in gms:
+    for cur_gm_id in gm_ids:
+        cur_sim_name, cur_station_name = cur_gm_id.rsplit("_", maxsplit=1)
+
         # Find & Save the binary waveform
         cur_bb = None
         for cur_dir in simulation_dirs:
             # Check that simulation directory exists
-            if (cur_sim_dir := Path(ss.get_sim_dir(str(cur_dir), sim_name))).exists():
+            if (cur_sim_dir := Path(ss.get_sim_dir(str(cur_dir), cur_sim_name))).exists():
                 # Find the BB file
                 if len(bb_ffps := list(cur_sim_dir.rglob("*BB.bin"))) == 1:
                     # Convert to text files and store in the specified output directory
                     cur_bb = BBSeis(bb_ffps[0])
                     cur_bb.save_txt(
-                        site_info.station_name, prefix=f"{output_dir}/{sim_name}_"
+                        cur_station_name, prefix=f"{output_dir}/{cur_gm_id}_"
                     )
 
                     # No need to keep searching
                     break
 
         if cur_bb is None:
-            no_waveforms.append(sim_name)
+            no_waveforms.append(cur_gm_id)
 
     return no_waveforms
