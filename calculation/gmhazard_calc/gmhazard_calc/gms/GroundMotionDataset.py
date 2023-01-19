@@ -56,7 +56,7 @@ class GMDataset:
     def ims(self):
         raise NotImplementedError()
 
-    def get_waveforms(self, gms: Sequence[Any], output_dir: str) -> List:
+    def get_waveforms(self, gms: Sequence[Any], site_info: site.SiteInfo, output_dir: str) -> List:
         """Retrieves and saves the waveforms as text
         files in the specified output directory
 
@@ -207,7 +207,7 @@ class HistoricalGMDataset(GMDataset):
     def gm_ids(self):
         return self._im_df.index.values
 
-    def get_waveforms(self, gm_ids: List[Any], output_dir: str) -> List:
+    def get_waveforms(self, gm_ids: List[Any], site_info: site.SiteInfo, output_dir: str) -> List:
         """See GMDataset method for parameter specifications"""
         no_waveforms = []
         file_name_template = "RSN{}_{}.AT2"
@@ -405,9 +405,9 @@ class SimulationGMDataset(GMDataset):
 
         return self._ims
 
-    def get_waveforms(self, gm_ids: List[str], output_dir: str) -> List:
+    def get_waveforms(self, gm_ids: List[str], site_info: site.SiteInfo, output_dir: str) -> List:
         """See GMDataset method for parameter specifications"""
-        return _get_sim_waveforms(self.simulation_dirs, gm_ids, output_dir)
+        return _get_sim_waveforms(self.simulation_dirs, gm_ids, output_dir, site_info=site_info)
 
     def get_im_df(
         self,
@@ -526,7 +526,7 @@ class MixedGMDataset(GMDataset):
 
         return self._ims
 
-    def get_waveforms(self, gm_ids: Sequence[Any], output_dir: str) -> List:
+    def get_waveforms(self, gm_ids: Sequence[Any], site_info: site.SiteInfo, output_dir: str) -> List:
         """
         See GMDataset method for parameter specifications
 
@@ -686,10 +686,14 @@ def _get_sim_waveforms(
     simulation_dirs: Sequence[Path],
     gm_ids: Sequence[Any],
     output_dir: str,
+    site_info: site.SiteInfo = None
 ) -> List:
     no_waveforms = []
     for cur_gm_id in gm_ids:
-        cur_sim_name, cur_station_name = cur_gm_id.rsplit("_", maxsplit=1)
+        if site_info is None:
+            cur_sim_name, cur_station_name = cur_gm_id.rsplit("_", maxsplit=1)
+        else:
+            cur_sim_name, cur_station_name = cur_gm_id, site_info.station_name
 
         # Find & Save the binary waveform
         cur_bb = None
