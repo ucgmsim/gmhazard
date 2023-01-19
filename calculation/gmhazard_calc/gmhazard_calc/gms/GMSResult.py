@@ -140,7 +140,7 @@ class GMSResult:
             self.site_info, self.selected_gms_ids
         )
 
-        if "sf" not in self._selected_gms_metadata_df.columns:
+        if self.sf is not None and "sf" not in self._selected_gms_metadata_df.columns:
             assert np.all(self.selected_gms_metdata_df.index == self.sf.index)
             self._selected_gms_metadata_df["sf"] = self.sf.values
 
