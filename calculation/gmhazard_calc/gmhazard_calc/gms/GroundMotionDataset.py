@@ -407,7 +407,7 @@ class SimulationGMDataset(GMDataset):
 
     def get_waveforms(self, gm_ids: List[str], output_dir: str) -> List:
         """See GMDataset method for parameter specifications"""
-        return _get_sim_waveforms(self.simulation_dirs, gm_ids, site_info, output_dir)
+        return _get_sim_waveforms(self.simulation_dirs, gm_ids, output_dir)
 
     def get_im_df(
         self,
