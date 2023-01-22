@@ -111,13 +111,16 @@ def comb_lnIMi_IMj(lnIMi_IMj: Dict[str, dist.Uni_lnIMi_IMj], weights: pd.Series)
     )
 
     # Compute the IM values for +/- sigma
-    z = np.linspace(-3, 3, 1000)
+    z = np.linspace(-4, 4, 2000)
     cdf_x = pd.Series(
         data=mu_lnIMi_IMj + sigma_IMi_IMj * z,
         name="cdf_x",
     )
     cdf_y = pd.Series(data=np.zeros(cdf_x.shape[0]), name="cdf_y")
     for cur_name, cur_lnIMi_IMj in lnIMi_IMj.items():
+        # Otherwise the combined CDF will not add to 1.0
+        assert cdf_x.max() > cur_lnIMi_IMj.cdf.index.max()
+
         cdf_y += (
             np.interp(
                 cdf_x,
@@ -128,6 +131,9 @@ def comb_lnIMi_IMj(lnIMi_IMj: Dict[str, dist.Uni_lnIMi_IMj], weights: pd.Series)
             )
             * weights[cur_name]
         )
+
+    # Ensure combined CDF goes to 1.0
+    assert np.isclose(cdf_y.iloc[-1], 1.0, rtol=1e-4)
 
     return dist.Uni_lnIMi_IMj(
         pd.Series(index=cdf_x.values, data=cdf_y.values),

@@ -225,6 +225,7 @@ def _run_non_parametric_ensemble_gms(
         & (sim_lnIMj_df <= np.log(im_j) + n_trunc_sigmas * sigma_lnIMj)
     ]
     print(
+        f"{site_info} - IMj={IMj} - imj={im_j} - "
         f"Number of simulation available to compute lnIMi|IMj: {sim_lnIMj_df.shape[0]}"
     )
     if sim_lnIMj_df.shape[0] < 20:
