@@ -228,7 +228,7 @@ def _run_non_parametric_ensemble_gms(
         f"{site_info} - IMj={IMj} - imj={im_j} - "
         f"Number of simulation available to compute lnIMi|IMj: {sim_lnIMj_df.shape[0]}"
     )
-    if sim_lnIMj_df.shape[0] < 20:
+    if sim_lnIMj_df.shape[0] < 10:
         raise exceptions.InsufficientNumberOfSimulationsError(
             IMj,
             f"{site_info} - IMj={IMj} - imj={im_j} - "
