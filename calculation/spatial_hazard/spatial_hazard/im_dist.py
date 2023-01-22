@@ -1,5 +1,7 @@
+import pickle
 from pathlib import Path
-from typing import Sequence, Callable, List, NamedTuple, Dict
+from typing import Sequence, Callable, List, Dict
+from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
@@ -10,14 +12,49 @@ import sha_calc as sha
 from IM_calculation.source_site_dist.src_site_dist import calc_rrup_rjb
 
 
-class CondLnIMDistributionResult(NamedTuple):
+@dataclass
+class CondLnIMDistributionResult:
+    """
+    IM: gc.im.IM
+        The IM for which this distribution is
+    cond_lnIM_df: dataframe
+        Conditional lnIM distribution
+        for each station of interest
+    obs_df: series
+        Observations data series
+    obs_stations: array of strings
+        Array of the observation stations used
+    obs_station_mask: dictionary
+        A dictionary that contains
+        a mask for the relevant observations
+        stations for each site of interest
+        as per the obs_site_filter_fn
+    combined_df: dataframe
+        Contains data for both the
+        sites of interest and the
+        observation sites (only the
+        ones with gmm parameters)
+    R: dataframe
+        Correlation matrix
+    """
+
     IM: gc.im.IM
     cond_lnIM_df: pd.DataFrame
     obs_stations: np.ndarray
     obs_series: pd.Series
     obs_stations_masks: Dict[str, np.ndarray]
+    combined_df: pd.DataFrame
 
     R: pd.DataFrame
+
+    def save(self, output_ffp: Path):
+        with open(output_ffp, "wb") as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def load(self, data_ffp: Path):
+        with open(data_ffp, "rb") as f:
+            return pickle.load(f)
 
 
 def compute_cond_lnIM(
@@ -27,7 +64,7 @@ def compute_cond_lnIM(
     gmm_params_df: pd.DataFrame,
     obs_series: pd.Series,
     obs_site_filter_fn: Callable[[pd.DataFrame], List[str]] = None,
-):
+) -> CondLnIMDistributionResult:
     """
     Computes the conditional lnIM distribution
     for each station of interest
@@ -57,18 +94,7 @@ def compute_cond_lnIM(
 
     Returns
     -------
-    cond_df: dataframe
-        Conditional lnIM distribution
-        for each station of interest
-    obs_df: series
-        Observations data series
-    obs_stations: array of strings
-        Array of the observation stations used
-    obs_station_mask: dictionary
-        A dictionary that contains
-        a mask for the relevant observations
-        stations for each site of interest
-        as per the obs_site_filter_fn
+    CondLnIMDistributionResult
     """
     obs_stations = obs_series.index.values.astype(str)
 
@@ -81,6 +107,7 @@ def compute_cond_lnIM(
             f"{obs_stations[~mask]}\n\tDropping these stations"
         )
         obs_stations = obs_stations[mask]
+    obs_series = obs_series.loc[obs_stations]
 
     # Check that GMM data exists for all stations of interest
     # Otherwise drop them
@@ -101,8 +128,10 @@ def compute_cond_lnIM(
         )
         int_stations = int_stations[~mask]
 
-    print(f"Computing results for {int_stations.size} stations of interest, "
-          f"with {obs_stations.size} observation stations available")
+    print(
+        f"Computing results for {int_stations.size} stations of interest, "
+        f"with {obs_stations.size} observation stations available"
+    )
 
     # Relevant stations (Observation sites & Sites of interest)
     rel_stations = np.concatenate((int_stations, obs_stations))
@@ -125,7 +154,9 @@ def compute_cond_lnIM(
         if obs_site_filter_fn is not None:
             raise NotImplementedError()
         else:
-            obs_station_mask[cur_station] = cur_mask = np.ones(obs_stations.shape, dtype=bool)
+            obs_station_mask[cur_station] = cur_mask = np.ones(
+                obs_stations.shape, dtype=bool
+            )
 
         cur_rel_sites = np.concatenate(([cur_station], obs_stations[cur_mask]))
         cur_cond_mu, cur_cond_sigma = sha.compute_cond_lnIM_dist(
@@ -137,7 +168,19 @@ def compute_cond_lnIM(
 
         cond_df.loc[cur_station, ["mu", "sigma"]] = cur_cond_mu, cur_cond_sigma
 
-    return cond_df, obs_series[obs_stations], obs_stations, obs_station_mask
+    # Combine into single data frame
+    combined_df = pd.concat((cond_df, obs_series.to_frame("mu")), axis=0)
+    combined_df["observation"] = False
+    combined_df.loc[obs_stations, "observation"] = True
+    combined_df.loc[obs_stations, "sigma"] = 0.0
+
+    # Compute median
+    combined_df["median"] = np.exp(combined_df.mu)
+
+    return CondLnIMDistributionResult(
+        IM, cond_df, obs_stations, obs_series, obs_station_mask, combined_df, R
+    )
+
 
 def calculate_distance_matrix(stations: Sequence[str], locations_df: pd.DataFrame):
     """

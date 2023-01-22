@@ -78,9 +78,10 @@ def gen_spatial_plot(
     map_data_ffp: Path = None,
     map_data: plotting.NZMapData = None,
     plot_stations: bool = True,
-    cb_max: float = None
+    cb_max: float = None,
 ):
     import pygmt
+
     reload(pygmt)
 
     # Load the map data
@@ -96,7 +97,11 @@ def gen_spatial_plot(
 
     # Create & Plot the grid
     grid = plotting.create_grid(
-        data_df, data_key=data_key, region=region, grid_spacing="50e/50e"
+        data_df,
+        data_key=data_key,
+        region=region,
+        grid_spacing="50e/50e",
+        interp_method="linear",
     )
     plotting.plot_grid(
         fig,

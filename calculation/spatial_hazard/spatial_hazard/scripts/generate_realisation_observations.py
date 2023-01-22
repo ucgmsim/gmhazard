@@ -93,20 +93,16 @@ def main(
     del obs_df
 
     # Compute the conditional distribution for all sites of interest
-    cond_df, obs_series, obs_stations, obs_station_masks = sh.im_dist.compute_cond_lnIM(
+    cond_lnIM_result: sh.im_dist.CondLnIMDistributionResult = sh.im_dist.compute_cond_lnIM(
         IM, int_stations, stations_df, gmm_params_df, obs_series
     )
-    assert not np.any(np.isin(obs_series.index.values, cond_df.index.values))
+    assert not np.any(np.isin(obs_series.index.values, cond_lnIM_result.cond_lnIM_df.index.values))
 
-    # Combine into single dataframe
-    comb_df = pd.concat((cond_df, obs_series.to_frame("mu")), axis=0)
-    comb_df["observation"] = False
-    comb_df.loc[obs_stations, "observation"] = True
-    comb_df.loc[obs_stations, "sigma"] = 0.0
-    comb_df = comb_df.merge(stations_df, how="inner", left_index=True, right_index=True)
+    # Save the conditional lnIM result
+    cond_lnIM_result.save(output_dir / "cond_lnIM_result.pickle")
 
-    # Compute median
-    comb_df["median"] = np.exp(comb_df.mu)
+    # Add location information for plotting
+    result_df = cond_lnIM_result.combined_df.merge(stations_df, how="inner", left_index=True, right_index=True)
 
     # Generate plots
     print(f"Generating plots")
@@ -119,7 +115,7 @@ def main(
             p.apply_async(
                 sh.plots.gen_spatial_plot,
                 (
-                    comb_df,
+                    result_df,
                     "median",
                     (172.6909, -43.566),
                     (50, 50),
@@ -136,7 +132,7 @@ def main(
             p.apply_async(
                 sh.plots.gen_spatial_plot,
                 (
-                    comb_df,
+                    result_df,
                     "sigma",
                     (172.6909, -43.566),
                     (50, 50),
