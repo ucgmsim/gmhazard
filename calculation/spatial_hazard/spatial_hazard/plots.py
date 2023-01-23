@@ -54,8 +54,8 @@ def _plot_stations(fig: pygmt.Figure, data_df: pd.DataFrame):
                 x=cur_row.lon,
                 y=cur_row.lat,
                 style="d0.05c",
-                fill="green",
-                pen="green",
+                fill="darkgreen",
+                pen="darkgreen",
             )
         # Plot sites of interest
         else:
