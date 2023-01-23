@@ -317,7 +317,7 @@ def write_station_details(
     ll_ffp = dbs_dir / f"{project_id}.ll"
     if not ll_ffp.exists():
         lines = [
-            f"{cur_site.lon} {cur_site.lat} {cur_site.station_name}"
+            f"{cur_site.lon} {cur_site.lat} {cur_site.station_name}\n"
             for cur_site in site_infos
         ]
         with ll_ffp.open("w") as f:
@@ -326,7 +326,7 @@ def write_station_details(
     vs30_ffp = dbs_dir / f"{project_id}.vs30"
     if not vs30_ffp.exists():
         lines = [
-            f"{cur_site.station_name} {cur_site.db_vs30}" for cur_site in site_infos
+            f"{cur_site.station_name} {cur_site.db_vs30}\n" for cur_site in site_infos
         ]
         with vs30_ffp.open("w") as f:
             f.writelines(lines)
@@ -335,7 +335,7 @@ def write_station_details(
     if not z_ffp.exists():
         header = "Station_Name,Z_1.0(km),Z_2.5(km),sigma\n"
         lines = [
-            f"{cur_site.station_name},{cur_site.z1p0},{cur_site.z2p5},0"
+            f"{cur_site.station_name},{cur_site.z1p0},{cur_site.z2p5},0\n"
             for cur_site in site_infos
         ]
         with z_ffp.open("w") as f:
