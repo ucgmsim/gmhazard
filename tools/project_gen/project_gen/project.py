@@ -55,6 +55,7 @@ def create_project(
     model_config_ffp: Path = MODEL_CONFIG_PATH,
     empirical_weight_config_ffp: Path = EMPIRICAL_WEIGHT_CONFIG_PATH,
     ensemble_ffp: Path = None,
+    no_gms: bool = False,
 ):
     """
     Creates a new project, generates the required DBs,
@@ -211,9 +212,11 @@ def create_project(
 
         # Generate the PSHA project data and GMS
         psha.gen_psha_project_data(project_dir, n_procs=n_procs, use_mp=use_mp)
-        gms.gen_gms_project_data(project_dir, n_procs=n_procs)
+
+        if not no_gms:
+            gms.gen_gms_project_data(project_dir, n_procs=n_procs)
     # except Exception as ex:
-    except NotImplementedError:
+    except NotImplementedError as ex:
         print(f"Failed to create new project, due to an exception:\n{ex}")
         print(f"Traceback:\n{traceback.format_exc()}")
 
