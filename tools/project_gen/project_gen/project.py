@@ -279,7 +279,7 @@ def write_project_config(project_dir: Path, project_specs: Dict):
             project_config["project_parameters"] = {
                 "locations": {
                     cur_id: {
-                        "name": cur_config["name"],
+                        "names": cur_config["names"],
                         "lat": cur_config["lat"],
                         "lon": cur_config["lon"],
                         "vs30": cur_config["vs30"],
