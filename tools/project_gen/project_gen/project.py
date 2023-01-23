@@ -396,8 +396,7 @@ def generate_dbs(
         if AI_to_gen:
             ds_imdbs_cmd = [
                 "mpirun",
-                "-np",
-                str(n_procs),
+                "--use-hwthread-cpus"
                 "python",
                 str(empirical_db_scripts_dir / "calc_emp_ds.py"),
                 str(erf_dir / "NZBCK2015_Chch50yearsAftershock_OpenSHA_modType4.txt"),
