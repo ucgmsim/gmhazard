@@ -667,7 +667,8 @@ def _run_parametric_ensemble_gms(
 
                 # Ensure it goes to exactly 1.0, to prevent any issues
                 # (as rand_branch_float can go to 1.0)
-                assert np.isclose(cur_branch_cdf.iloc[-1], 1.0, rtol=1e-3)
+                assert np.isclose(cur_branch_cdf.iloc[-1], 1.0, rtol=1e-3), \
+                    "Current branch CDF does not go to 1.0"
                 cur_branch_cdf.iloc[-1] = 1.0
 
                 # Select n_gms random branches based on IMi adjusted branch weights
