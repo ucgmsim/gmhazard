@@ -1,15 +1,17 @@
 import pickle
 from pathlib import Path
-from typing import Sequence, Callable, List, Dict
+from typing import Sequence, Callable, List, Dict, Tuple
 from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
 from scipy.linalg import cholesky
+from scipy.spatial import KDTree
 
 import gmhazard_calc as gc
 import sha_calc as sha
 from IM_calculation.source_site_dist.src_site_dist import calc_rrup_rjb
+from qcore import geo
 
 
 @dataclass
@@ -57,13 +59,31 @@ class CondLnIMDistributionResult:
             return pickle.load(f)
 
 
+def obs_site_filter(hypo_loc: Tuple[float, float], station_df: pd.DataFrame, int_stations: np.ndarray, obs_stations: np.ndarray, distance_matrix: pd.DataFrame):
+    # Compute R_min for each site of interest
+    src_site_dist = pd.Series(data=geo.get_distances(station_df.loc[int_stations, ["lon", "lat"]].values, hypo_loc[0], hypo_loc[1]), index=int_stations)
+    r_min = src_site_dist * 1.5
+
+    # Sanity check
+    assert np.all(r_min.index == distance_matrix.loc[int_stations].index)
+
+    r_min_mask = distance_matrix.loc[int_stations, obs_stations].values < r_min.values[:, np.newaxis]
+
+
+
+
+
+    print(f"wtf")
+
+
 def compute_cond_lnIM(
     IM: gc.im.IM,
     int_stations: np.ndarray,
     stations_df: pd.DataFrame,
     gmm_params_df: pd.DataFrame,
     obs_series: pd.Series,
-    obs_site_filter_fn: Callable[[pd.DataFrame], List[str]] = None,
+    hypo_loc: Tuple[float, float],
+    obs_site_filter_fn: Callable[[pd.DataFrame], List[str]] = obs_site_filter,
 ) -> CondLnIMDistributionResult:
     """
     Computes the conditional lnIM distribution
@@ -84,6 +104,8 @@ def compute_cond_lnIM(
         [{IM}_mean, {IM}_std_Total, {IM}_std_Inter, {IM}_std_Intra]
     obs_series: series
         Observations IM values for each station
+    hypo_loc: pair of floats
+        The lon and lat value of the hypocentre
     obs_site_filter_fn: callable
         Function that performs filtering on the distance
         between the site of interest and the available
@@ -152,7 +174,7 @@ def compute_cond_lnIM(
     for cur_station in int_stations:
         # Todo: Filtering of observations sites, to prevent "global" bias issues
         if obs_site_filter_fn is not None:
-            raise NotImplementedError()
+            obs_site_filter_fn(hypo_loc, stations_df, int_stations, obs_stations, dist_matrix)
         else:
             obs_station_mask[cur_station] = cur_mask = np.ones(
                 obs_stations.shape, dtype=bool

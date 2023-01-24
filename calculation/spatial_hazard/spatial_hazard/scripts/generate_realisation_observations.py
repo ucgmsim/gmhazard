@@ -24,6 +24,8 @@ def main(
     int_stations: Sequence[str] = None,
 ):
     """
+    Note: This implementation is not complete,
+    does not generate any realisations
 
     Parameters
     ----------
@@ -90,11 +92,13 @@ def main(
 
     # Only need IM of interest
     obs_series = np.log(obs_df[str(IM)])
+
+    hypo_loc = tuple(obs_df[["ev_lon", "ev_lat"]].iloc[0].values)
     del obs_df
 
     # Compute the conditional distribution for all sites of interest
     cond_lnIM_result: sh.im_dist.CondLnIMDistributionResult = sh.im_dist.compute_cond_lnIM(
-        IM, int_stations, stations_df, gmm_params_df, obs_series
+        IM, int_stations, stations_df, gmm_params_df, obs_series, hypo_loc
     )
     assert not np.any(np.isin(obs_series.index.values, cond_lnIM_result.cond_lnIM_df.index.values))
 
@@ -117,7 +121,7 @@ def main(
                 (
                     result_df,
                     "median",
-                    (172.6909, -43.566),
+                    hypo_loc,
                     (50, 50),
                     output_dir / "median.png",
                     "Conditional Median",
@@ -134,7 +138,7 @@ def main(
                 (
                     result_df,
                     "sigma",
-                    (172.6909, -43.566),
+                    hypo_loc,
                     (50, 50),
                     output_dir / "sigma.png",
                     "Conditional Sigma",
@@ -151,7 +155,7 @@ def main(
                 (
                     gmm_params_df,
                     "median",
-                    (172.6909, -43.566),
+                    hypo_loc,
                     (50, 50),
                     output_dir / "gmm_mu.png",
                     "Marginal Median",
@@ -168,7 +172,7 @@ def main(
                 (
                     gmm_params_df,
                     "sigma_total",
-                    (172.6909, -43.566),
+                    hypo_loc,
                     (50, 50),
                     output_dir / "gmm_sigma.png",
                     "Marginal Sigma",
