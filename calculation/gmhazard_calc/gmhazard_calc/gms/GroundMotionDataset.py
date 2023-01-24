@@ -664,16 +664,6 @@ class MixedGMDataset(GMDataset):
             # This would be massive, as it would encompass all site-source combinations
             raise NotImplementedError()
 
-            # meta_df = pd.merge(
-            #     self.source_metadata_df,
-            #     site_source_df,
-            #     how="left",
-            #     left_on="fault",
-            #     right_index=True,
-            # )
-            # meta_df["vs30"] = site_vs30
-            # meta_df = meta_df[["fault", "mag", "rrup", "vs30"]]
-
         return meta_df
 
 
@@ -716,7 +706,7 @@ def _get_sim_waveforms(
                     # Convert to text files and store in the specified output directory
                     cur_bb = BBSeis(bb_ffps[0])
                     cur_bb.save_txt(
-                        cur_station_name, prefix=f"{output_dir}/{cur_gm_id}_"
+                        cur_station_name, prefix=f"{output_dir}/{cur_sim_name}_"
                     )
 
                     # No need to keep searching
