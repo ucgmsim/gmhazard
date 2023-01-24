@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 from scipy.linalg import cholesky
-from scipy.spatial import KDTree
+from sklearn.neighbors import NearestNeighbors
 
 import gmhazard_calc as gc
 import sha_calc as sha
@@ -26,11 +26,11 @@ class CondLnIMDistributionResult:
         Observations data series
     obs_stations: array of strings
         Array of the observation stations used
-    obs_station_mask: dictionary
-        A dictionary that contains
-        a mask for the relevant observations
-        stations for each site of interest
-        as per the obs_site_filter_fn
+    obs_station_mask_df: dataframe
+        dataframe that contains for each site
+        of interest (index) specifies the relevant
+        observation sites (columns) via a boolean
+        mask
     combined_df: dataframe
         Contains data for both the
         sites of interest and the
@@ -44,7 +44,7 @@ class CondLnIMDistributionResult:
     cond_lnIM_df: pd.DataFrame
     obs_stations: np.ndarray
     obs_series: pd.Series
-    obs_stations_masks: Dict[str, np.ndarray]
+    obs_stations_mask_df: pd.DataFrame
     combined_df: pd.DataFrame
 
     R: pd.DataFrame
@@ -59,21 +59,48 @@ class CondLnIMDistributionResult:
             return pickle.load(f)
 
 
-def obs_site_filter(hypo_loc: Tuple[float, float], station_df: pd.DataFrame, int_stations: np.ndarray, obs_stations: np.ndarray, distance_matrix: pd.DataFrame):
+def obs_site_filter(
+    hypo_loc: Tuple[float, float],
+    station_df: pd.DataFrame,
+    int_stations: np.ndarray,
+    obs_stations: np.ndarray,
+    distance_matrix: pd.DataFrame,
+):
     # Compute R_min for each site of interest
-    src_site_dist = pd.Series(data=geo.get_distances(station_df.loc[int_stations, ["lon", "lat"]].values, hypo_loc[0], hypo_loc[1]), index=int_stations)
+    src_site_dist = pd.Series(
+        data=geo.get_distances(
+            station_df.loc[int_stations, ["lon", "lat"]].values,
+            hypo_loc[0],
+            hypo_loc[1],
+        ),
+        index=int_stations,
+    )
     r_min = src_site_dist * 1.5
 
     # Sanity check
     assert np.all(r_min.index == distance_matrix.loc[int_stations].index)
 
-    r_min_mask = distance_matrix.loc[int_stations, obs_stations].values < r_min.values[:, np.newaxis]
+    # Get observation sites that are within r_min
+    r_min_mask = (
+        distance_matrix.loc[int_stations, obs_stations].values
+        < r_min.values[:, np.newaxis]
+    )
 
+    # Get obverstaion sites such that n_sites n_obs sites == 20
+    neigh = NearestNeighbors(n_neighbors=20, radius=150, metric="precomputed", n_jobs=1)
+    neigh.fit(distance_matrix.loc[obs_stations, obs_stations])
+    n_neigh_ind = neigh.kneighbors(
+        distance_matrix.loc[int_stations, obs_stations], return_distance=False
+    )
 
+    # Convert to a mask
+    n_neigh_mask = np.zeros_like(r_min_mask)
+    np.put_along_axis(n_neigh_mask, n_neigh_ind, True, axis=1)
 
-
-
-    print(f"wtf")
+    # Combine & Return
+    return pd.DataFrame(
+        index=int_stations, columns=obs_stations, data=r_min_mask | n_neigh_mask
+    )
 
 
 def compute_cond_lnIM(
@@ -113,6 +140,17 @@ def compute_cond_lnIM(
 
         Use this to prevent global bias (wrt. to the empirical
         GMM) affecting the between-event term calculation
+
+        Takes following arguments
+            hypo_loc: Tuple[float, float],
+            station_df: pd.DataFrame,
+            int_stations: np.ndarray,
+            obs_stations: np.ndarray,
+            distance_matrix: pd.DataFrame,
+        and returns a dataframe with
+            index=sites of interest
+            columns=observation sites
+            data=boolean mask
 
     Returns
     -------
@@ -165,21 +203,21 @@ def compute_cond_lnIM(
     print("Computing correlation matrix")
     R = get_corr_matrix(rel_stations, dist_matrix, IM)
 
+    # Get the observation sites to use for each site of interest
+    obs_station_mask_df = obs_site_filter_fn(
+        hypo_loc, stations_df, int_stations, obs_stations, dist_matrix
+    )
+    assert np.all(obs_station_mask_df.columns.values.astype(str) == obs_stations)
+    assert np.all(obs_station_mask_df.index.values.astype(str) == int_stations)
+
+    # Compute the conditional MVN for each site of interest
     cond_df = pd.DataFrame(
         data=np.full((int_stations.shape[0], 2), np.nan),
         index=int_stations,
         columns=["mu", "sigma"],
     )
-    obs_station_mask = {}
     for cur_station in int_stations:
-        # Todo: Filtering of observations sites, to prevent "global" bias issues
-        if obs_site_filter_fn is not None:
-            obs_site_filter_fn(hypo_loc, stations_df, int_stations, obs_stations, dist_matrix)
-        else:
-            obs_station_mask[cur_station] = cur_mask = np.ones(
-                obs_stations.shape, dtype=bool
-            )
-
+        cur_mask = obs_station_mask_df.loc[cur_station].values
         cur_rel_sites = np.concatenate(([cur_station], obs_stations[cur_mask]))
         cur_cond_mu, cur_cond_sigma = sha.compute_cond_lnIM_dist(
             cur_station,
@@ -200,7 +238,7 @@ def compute_cond_lnIM(
     combined_df["median"] = np.exp(combined_df.mu)
 
     return CondLnIMDistributionResult(
-        IM, cond_df, obs_stations, obs_series, obs_station_mask, combined_df, R
+        IM, cond_df, obs_stations, obs_series, obs_station_mask_df, combined_df, R
     )
 
 
@@ -272,9 +310,7 @@ def get_corr_matrix(
 
 
 def generate_im_values(
-    N: int,
-    R: pd.DataFrame,
-    emp_df: pd.DataFrame,
+    N: int, R: pd.DataFrame, emp_df: pd.DataFrame,
 ):
     """
     Given a number of stations with their empirical values,

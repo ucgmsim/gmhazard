@@ -111,7 +111,7 @@ def main(
     # Generate plots
     print(f"Generating plots")
     map_data = (
-        plotting.NZMapData.load(map_data_ffp) if map_data_ffp is not None else None
+        plotting.NZMapData.load(map_data_ffp, high_res_topo=False) if map_data_ffp is not None else None
     )
     results = []
     with mp.Pool(6) as p:

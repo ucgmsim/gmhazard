@@ -54,8 +54,8 @@ def _plot_stations(fig: pygmt.Figure, data_df: pd.DataFrame):
                 x=cur_row.lon,
                 y=cur_row.lat,
                 style="d0.05c",
-                fill="darkgreen",
-                pen="darkgreen",
+                fill="blue",
+                pen="blue",
             )
         # Plot sites of interest
         else:
@@ -122,8 +122,8 @@ def gen_spatial_plot(
         x=hypocentre_loc[0],
         y=hypocentre_loc[1],
         style="a0.1c",
-        fill="pink",
-        pen="pink",
+        fill="blue",
+        pen="blue",
     )
 
     fig.savefig(
