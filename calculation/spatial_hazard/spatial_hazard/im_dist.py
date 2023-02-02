@@ -97,10 +97,17 @@ def obs_site_filter(
     n_neigh_mask = np.zeros_like(r_min_mask)
     np.put_along_axis(n_neigh_mask, n_neigh_ind, True, axis=1)
 
-    # Combine & Return
-    return pd.DataFrame(
+    # Combine & Create dataframe
+    obs_station_mask_df = pd.DataFrame(
         index=int_stations, columns=obs_stations, data=r_min_mask | n_neigh_mask
     )
+
+    # Don't include stations of interest
+    int_obs_sites = int_stations[np.isin(int_stations, obs_stations)]
+    for cur_station in int_obs_sites:
+        obs_station_mask_df.loc[cur_station, cur_station] = False
+
+    return obs_station_mask_df
 
 
 def compute_cond_lnIM(
@@ -111,6 +118,7 @@ def compute_cond_lnIM(
     obs_series: pd.Series,
     hypo_loc: Tuple[float, float],
     obs_site_filter_fn: Callable[[pd.DataFrame], List[str]] = obs_site_filter,
+    allow_obs_sites: bool = False
 ) -> CondLnIMDistributionResult:
     """
     Computes the conditional lnIM distribution
@@ -151,6 +159,10 @@ def compute_cond_lnIM(
             index=sites of interest
             columns=observation sites
             data=boolean mask
+    allow_obs_sites: bool
+        If True then any observation sites in the
+        sites of interests will also be computed
+        as if that observation does not exist
 
     Returns
     -------
@@ -181,7 +193,7 @@ def compute_cond_lnIM(
 
     # Drop any sites of interest for which observations exists
     mask = np.isin(int_stations, obs_stations)
-    if np.count_nonzero(mask) > 0:
+    if np.count_nonzero(mask) > 0 and not allow_obs_sites:
         print(
             f"Observations exist for the following sites of interest:\n"
             f"{int_stations[mask]}\n\tDropping these stations"
@@ -194,7 +206,7 @@ def compute_cond_lnIM(
     )
 
     # Relevant stations (Observation sites & Sites of interest)
-    rel_stations = np.concatenate((int_stations, obs_stations))
+    rel_stations = np.union1d(int_stations, obs_stations)
     gmm_params_df = gmm_params_df.loc[rel_stations]
 
     print("Computing distance matrix")
