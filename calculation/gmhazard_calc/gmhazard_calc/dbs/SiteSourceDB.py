@@ -175,6 +175,29 @@ class SiteSourceDB(BaseDB):
         return pd.concat(site_dfs)
 
     @check_open
+    def get_all_rrup_data(self):
+        """
+        Gets the rrup data for all sites affected by the given fault
+
+        Returns
+        -------
+        pd.DataFrame
+            with the affected sites as index and fault_id, rjb, rrup, rx, ry, rtvz properties as columns
+        pd.DataFrame
+            the list of fualts and thie rindex as the fault_id for lookup
+        """
+        try:
+            dfs = []
+            for site in self._db["sites"].index:
+                df = self._db[self.station_distance_h5_key(site)]
+                df.index = [site] * len(df)
+                dfs.append(df)
+        except KeyError:
+            return None
+
+        return pd.concat(dfs), self.faults()
+
+    @check_open
     def station_directivity_data(self, station_name: str):
         """Retrieves directivity data for a specific station/site
 
