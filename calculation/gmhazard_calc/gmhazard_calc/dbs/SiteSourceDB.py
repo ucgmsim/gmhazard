@@ -145,14 +145,14 @@ class SiteSourceDB(BaseDB):
     @check_open
     def get_all_rrup_data(self):
         """
-        Gets the rrup data for all sites affected by the given fault
+        Gets the rrup data for all sites
 
         Returns
         -------
         pd.DataFrame
             with the affected sites as index and fault_id, rjb, rrup, rx, ry, rtvz properties as columns
         pd.DataFrame
-            the list of fualts and thie rindex as the fault_id for lookup
+            the list of faults and their index as the fault_id for lookup
         """
         try:
             dfs = []
