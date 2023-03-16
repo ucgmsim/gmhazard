@@ -143,38 +143,6 @@ class SiteSourceDB(BaseDB):
         raise NotImplementedError
 
     @check_open
-    def get_rrup_data(self, fault_name: str):
-        """
-        Gets the rrup data for all sites affected by the given fault
-
-        Parameters
-        ----------
-        fault_name: str
-            The fault name for which to retrieve the data
-
-        Returns
-        -------
-        pd.DataFrame
-            with the affected sites as index and rjb, rrup, rx, ry, rtvz properties as columns
-        """
-        try:
-            site_dfs = []
-            faults = self.faults()
-            fault_index = faults.loc[faults["fault_name"] == fault_name].index.values[0]
-            for site in self._db["sites"].index:
-
-                df = self._db[self.station_distance_h5_key(site)]
-                if fault_index in df["fault_id"].values:
-                    fault_row = df.loc[df["fault_id"] == fault_index]
-                    fault_row = fault_row.drop("fault_id", axis=1)
-                    fault_row.index = [site]
-                    site_dfs.append(fault_row)
-        except KeyError:
-            return None
-
-        return pd.concat(site_dfs)
-
-    @check_open
     def get_all_rrup_data(self):
         """
         Gets the rrup data for all sites affected by the given fault
