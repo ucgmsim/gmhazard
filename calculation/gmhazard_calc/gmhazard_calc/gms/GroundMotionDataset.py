@@ -56,7 +56,9 @@ class GMDataset:
     def ims(self):
         raise NotImplementedError()
 
-    def get_waveforms(self, gms: Sequence[Any], site_info: site.SiteInfo, output_dir: str) -> List:
+    def get_waveforms(
+        self, gms: Sequence[Any], site_info: site.SiteInfo, output_dir: str
+    ) -> List:
         """Retrieves and saves the waveforms as text
         files in the specified output directory
 
@@ -207,7 +209,9 @@ class HistoricalGMDataset(GMDataset):
     def gm_ids(self):
         return self._im_df.index.values
 
-    def get_waveforms(self, gm_ids: List[Any], site_info: site.SiteInfo, output_dir: str) -> List:
+    def get_waveforms(
+        self, gm_ids: List[Any], site_info: site.SiteInfo, output_dir: str
+    ) -> List:
         """See GMDataset method for parameter specifications"""
         no_waveforms = []
         file_name_template = "RSN{}_{}.AT2"
@@ -405,9 +409,13 @@ class SimulationGMDataset(GMDataset):
 
         return self._ims
 
-    def get_waveforms(self, gm_ids: List[str], site_info: site.SiteInfo, output_dir: str) -> List:
+    def get_waveforms(
+        self, gm_ids: List[str], site_info: site.SiteInfo, output_dir: str
+    ) -> List:
         """See GMDataset method for parameter specifications"""
-        return _get_sim_waveforms(self.simulation_dirs, gm_ids, output_dir, site_info=site_info)
+        return _get_sim_waveforms(
+            self.simulation_dirs, gm_ids, output_dir, site_info=site_info
+        )
 
     def get_im_df(
         self,
@@ -468,10 +476,16 @@ class SimulationGMDataset(GMDataset):
             meta_df = pd.DataFrame.from_records(meta_data, index=selected_gms)
             meta_df.columns = ["mag", "rrup", "vs30"]
         else:
+            # Need to filter based on actually available GM records
+            im_df = self.get_im_df(site_info, str(self.ims[0]))
+            source_df = self.source_metadata_df.loc[
+                np.isin(self.source_metadata_df.index.values, im_df.index.values)
+            ]
+
             meta_df = pd.merge(
-                self.source_metadata_df,
+                source_df,
                 site_source_df,
-                how="left",
+                how="inner",
                 left_on="fault",
                 right_index=True,
             )
@@ -526,7 +540,9 @@ class MixedGMDataset(GMDataset):
 
         return self._ims
 
-    def get_waveforms(self, gm_ids: Sequence[Any], site_info: site.SiteInfo, output_dir: str) -> List:
+    def get_waveforms(
+        self, gm_ids: Sequence[Any], site_info: site.SiteInfo, output_dir: str
+    ) -> List:
         """
         See GMDataset method for parameter specifications
 
@@ -676,7 +692,7 @@ def _get_sim_waveforms(
     simulation_dirs: Sequence[Path],
     gm_ids: Sequence[Any],
     output_dir: str,
-    site_info: site.SiteInfo = None
+    site_info: site.SiteInfo = None,
 ) -> List:
     no_waveforms = []
     for cur_gm_id in gm_ids:

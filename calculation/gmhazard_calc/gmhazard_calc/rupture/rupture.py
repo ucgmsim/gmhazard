@@ -113,7 +113,8 @@ def rupture_id_ix_to_rupture_id(
 
 def get_fault_header_points(fault: nhm.NHMFault):
     """
-    Calculates and produces fault information such as the entire trace and fault header info per plane
+    Calculates and produces fault information such as the
+    entire trace and fault header info per plane
 
     Parameters
     ----------
