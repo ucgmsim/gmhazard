@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from typing import Union, Dict
 
-from qcore import nhm, formats, geo
+from qcore import nhm, formats
 from IM_calculation.source_site_dist import src_site_dist
 
 import gmhazard_calc as gc
@@ -82,7 +82,7 @@ def compute_site_source_distances(
 
         srf_header = None
         if isinstance(cur_fault_data, nhm.NHMFault):
-            srf_header, srf_points = gc.rupture.get_fault_header_points(
+            srf_header, srf_points = nhm.get_fault_header_points(
                 faults[cur_fault_name]
             )
             srf_points = np.asarray(srf_points)
