@@ -3,7 +3,7 @@ import math
 
 import numpy as np
 
-from gmhazard_calc.rupture import get_fault_header_points
+from qcore.nhm import get_fault_header_points
 
 
 def get_hypo_lon_lat(planes: Sequence, lon_lat_depth: np.ndarray):

@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from gmhazard_calc import gm_data, directivity, rupture
+from gmhazard_calc import gm_data, directivity
 from gmhazard_calc.im import IM, IMType
 from gmhazard_calc.constants import HypoMethod
 from qcore import nhm
@@ -26,7 +26,7 @@ def create_benchmark_data():
 
     for fault_name in FAULTS:
         fault = nhm_dict[fault_name]
-        planes, lon_lat_depth = rupture.get_fault_header_points(fault)
+        planes, lon_lat_depth = nhm.get_fault_header_points(fault)
 
         lon_values = np.linspace(
             lon_lat_depth[:, 0].min() - 0.25, lon_lat_depth[:, 0].max() + 0.25, 3
