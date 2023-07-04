@@ -184,6 +184,10 @@ def _run_non_parametric_ensemble_gms(
     They can obviously be the same, however are treated separately
     in this implementation
     """
+    # Minimum number of simulations needed to compute the
+    # IMi|IMj distributions accurately
+    MIN_N_SIMULATIONS = 10
+
     if cs_param_bounds is not None:
         raise ValueError(
             "Causal Parameters Bounds are not supported "
@@ -228,7 +232,7 @@ def _run_non_parametric_ensemble_gms(
         f"{site_info} - IMj={IMj} - imj={im_j} - "
         f"Number of simulation available to compute lnIMi|IMj: {sim_lnIMj_df.shape[0]}"
     )
-    if sim_lnIMj_df.shape[0] < 10:
+    if sim_lnIMj_df.shape[0] < MIN_N_SIMULATIONS:
         raise exceptions.InsufficientNumberOfSimulationsError(
             IMj,
             f"{site_info} - IMj={IMj} - imj={im_j} - "

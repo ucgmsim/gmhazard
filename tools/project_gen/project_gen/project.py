@@ -215,7 +215,6 @@ def create_project(
 
         if not no_gms:
             gms.gen_gms_project_data(project_dir, n_procs=n_procs)
-    # except Exception as ex:
     except NotImplementedError as ex:
         print(f"Failed to create new project, due to an exception:\n{ex}")
         print(f"Traceback:\n{traceback.format_exc()}")

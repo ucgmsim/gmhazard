@@ -474,8 +474,8 @@ def write_gms_download_data(
 ):
     prefix = "" if prefix is None else f"{prefix}_"
 
-    # Get the waveforms
-    missing_waveforms = gms_result.gm_dataset.get_waveforms(
+    # Write the waveforms
+    missing_waveforms = gms_result.gm_dataset.write_waveforms(
         gms_result.selected_gms_ids, gms_result.site_info, out_dir
     )
     if len(missing_waveforms) > 0:
