@@ -24,7 +24,8 @@ def main(
     setup_only: bool = False,
     model_config_ffp: Path = pg.MODEL_CONFIG_PATH,
     empirical_weight_config_ffp: Path = pg.EMPIRICAL_WEIGHT_CONFIG_PATH,
-    ensemble_ffp: Path = None
+    ensemble_ffp: Path = None,
+    no_gms: bool = False,
 ):
     with open(project_params_ffp, "r") as f:
         project_params = yaml.safe_load(f)
@@ -41,7 +42,8 @@ def main(
         setup_only=setup_only,
         model_config_ffp=model_config_ffp,
         empirical_weight_config_ffp=empirical_weight_config_ffp,
-        ensemble_ffp=ensemble_ffp
+        ensemble_ffp=ensemble_ffp,
+        no_gms=no_gms
     )
 
 
@@ -96,6 +98,12 @@ if __name__ == "__main__":
         default=False,
     )
     parser.add_argument(
+        "--no_gms",
+        action="store_true",
+        help="If set, GMS is not computed",
+        default=False,
+    )
+    parser.add_argument(
         "--model_config_ffp",
         type=Path,
         help="Path to the empirical model config file to use.",
@@ -115,9 +123,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    if args.n_procs < 2:
-        parser.error("Minimum n_procs is 2.")
-
     main(
         args.project_parameters_config_ffp,
         args.projects_base_dir,
@@ -129,5 +134,6 @@ if __name__ == "__main__":
         setup_only=args.setup_only,
         model_config_ffp=args.model_config_ffp,
         empirical_weight_config_ffp=args.empirical_weight_config_ffp,
-        ensemble_ffp=args.ensemble_ffp
+        ensemble_ffp=args.ensemble_ffp,
+        no_gms=args.no_gms,
     )

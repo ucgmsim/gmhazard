@@ -54,11 +54,12 @@ class GMSResult:
 
     GCIM_CDF_X_FN = "cdf_x.csv"
     GCIM_CDF_Y_FN = "cdf_y.csv"
+    GCIM_16th_50th_84th_FN = "gcim_16th_50th_84th.csv"
 
     VARIABLES_FN = "variables.json"
 
     SELECTED_GMS_METDATA_FN = "selected_gms_metadata.csv"
-    SELECTED_GMS_IM_16_84_FN = "selected_gms_im_16_84_df.csv"
+    SELECTED_GMS_IM_16th_50th_84th_FN = "selected_gms_im_16th_50th_84th_df.csv"
 
     def __init__(
         self,
@@ -72,9 +73,10 @@ class GMSResult:
         realisations: pd.DataFrame,
         gm_dataset: GMDataset,
         gms_type: constants.GMSType,
+        exceedance: float = None,
         cs_param_bounds: CausalParamBounds = None,
         sf: pd.DataFrame = None,
-        metadata: Tuple[pd.DataFrame, Dict, pd.DataFrame] = (None, None, None),
+        metadata: Tuple[pd.DataFrame, Dict, pd.DataFrame, pd.DataFrame] = (None, None, None, None),
     ):
         self.ensemble = ensemble
         self.site_info = site_info
@@ -83,6 +85,8 @@ class GMSResult:
         self.IM_j = IMj
         self.im_j = im_j
         self.IMs = IMs
+
+        self.exceedance = exceedance
 
         self.cs_param_bounds = cs_param_bounds
 
@@ -95,7 +99,8 @@ class GMSResult:
         self.sf = sf
 
         self._metadata_dict, self._selected_gms_metadata_df = metadata[1], metadata[0]
-        self._selected_gms_im_16_84_df = metadata[2]
+        self._selected_gms_im_16th_50th_84th_df = metadata[2]
+        self._gcim_16th_50th_84th_df = metadata[3]
 
     @property
     def metadata_dict(self) -> Dict:
@@ -113,14 +118,21 @@ class GMSResult:
 
     @property
     def selected_gms_im_16_84_df(self):
-        if self._selected_gms_im_16_84_df is None:
+        if self._selected_gms_im_16th_50th_84th_df is None:
             self._compute_metadata()
 
-        return self._selected_gms_im_16_84_df
+        return self._selected_gms_im_16th_50th_84th_df
 
     @property
     def selected_gms_ids(self) -> np.ndarray:
         return self.selected_gms_im_df.index.values
+
+    @property
+    def gcim_16th_50th_84th_df(self):
+        if self._gcim_16th_50th_84th_df is None:
+            self._compute_metadata()
+
+        return self._gcim_16th_50th_84th_df
 
     def _compute_metadata(self) -> None:
         """Computes/Collects the metadata"""
@@ -128,22 +140,54 @@ class GMSResult:
             self.site_info, self.selected_gms_ids
         )
 
-        if "sf" in self._selected_gms_metadata_df.columns:
-            self._selected_gms_metadata_df["sf"] = self.sf.loc[
-                self._selected_gms_metadata_df.index
-            ]
+        if self.sf is not None and "sf" not in self._selected_gms_metadata_df.columns:
+            assert np.all(self.selected_gms_metdata_df.index == self.sf.index)
+            self._selected_gms_metadata_df["sf"] = self.sf.values
 
-        # Get 16/84th for each selected GM
+        # Get the GCIM 16th, median, 84th
+        # Create the relevant dataframes
+        cdf_x = pd.DataFrame.from_dict(
+            {
+                str(cur_im): self.IMi_gcims[
+                    cur_im].lnIMi_IMj.cdf.index.values.astype(
+                    float
+                )
+                for cur_im in self.IMs
+            }
+        ).apply(np.exp)
+        cdf_y = pd.DataFrame.from_dict(
+            {
+                str(cur_im): self.IMi_gcims[cur_im].lnIMi_IMj.cdf.values.astype(
+                    float)
+                for cur_im in self.IMs
+            }
+        )
+
+        upper_bound, median, lower_bound = sha_calc.query_non_parametric_multi_cdf_invs(
+            [0.84, 0.5, 0.16], cdf_x.T.values, cdf_y.T.values
+        )
+        self._gcim_16th_50th_84th_df = pd.DataFrame(
+            index=cdf_x.columns,
+            columns=np.asarray(["84th", "median", "16th"]),
+            data=np.asarray([upper_bound, median, lower_bound]).T,
+        ).T
+        self._gcim_16th_50th_84th_df.columns = [str(cur_im) for cur_im in self.IMs]
+
+        # Get 16th, median, 84th for each selected GM
         n_gms = self.selected_gms_im_df.shape[0]
         var_dict = {}
         for cur_im in self.selected_gms_im_df.columns:
             cur_result = sha_calc.query_non_parametric_cdf_invs(
-                np.asarray([0.16, 0.84]),
+                np.asarray([0.16, 0.5, 0.84]),
                 np.sort(self.selected_gms_im_df[cur_im].values),
                 np.linspace(1.0 / n_gms, 1.0, n_gms),
             )
-            var_dict[f"{cur_im}"] = {"16th": cur_result[0], "84th": cur_result[1]}
-        self._selected_gms_im_16_84_df = pd.DataFrame(var_dict)
+            var_dict[f"{cur_im}"] = {
+                "16th": cur_result[0],
+                "median": cur_result[1],
+                "84th": cur_result[2],
+            }
+        self._selected_gms_im_16th_50th_84th_df = pd.DataFrame(var_dict)
 
         # Get the 16th, mean and 84th values for magnitude/rrup of the selected GMs
         self._metadata_dict = dict(
@@ -188,7 +232,8 @@ class GMSResult:
         if self._metadata_dict is None:
             self._compute_metadata()
         self._selected_gms_metadata_df.to_csv(save_dir / self.SELECTED_GMS_METDATA_FN)
-        self._selected_gms_im_16_84_df.to_csv(save_dir / self.SELECTED_GMS_IM_16_84_FN)
+        self._selected_gms_im_16th_50th_84th_df.to_csv(save_dir / self.SELECTED_GMS_IM_16th_50th_84th_FN)
+        self._gcim_16th_50th_84th_df.to_csv(save_dir / self.GCIM_16th_50th_84th_FN)
 
         with open(save_dir / self.VARIABLES_FN, "w") as f:
             json.dump(
@@ -199,7 +244,8 @@ class GMSResult:
                     ensemble_params=self.ensemble.get_save_params(),
                     gm_dataset_id=self.gm_dataset.name,
                     metadata_dict=self._metadata_dict,
-                    gms_type=self.gms_type.value
+                    gms_type=self.gms_type.value,
+                    exceedance=self.exceedance,
                 ),
                 f,
             )
@@ -247,10 +293,7 @@ class GMSResult:
             }
         else:
             IMi_gcims = {
-                IMi: SimUniGCIM.load(
-                    data_dir / f"{IMi}", ensemble
-                )
-                for IMi in IMs
+                IMi: SimUniGCIM.load(data_dir / f"{IMi}", ensemble) for IMi in IMs
             }
 
         return cls(
@@ -263,11 +306,14 @@ class GMSResult:
             IMi_gcims,
             realisations,
             GMDataset.get_GMDataset(variable_dict["gm_dataset_id"]),
-            cs_param_bounds,
+            constants.GMSType(variable_dict["gms_type"]),
+            cs_param_bounds=cs_param_bounds,
             sf=sf,
+            exceedance=variable_dict.get("exceedance"),
             metadata=(
                 pd.read_csv(data_dir / cls.SELECTED_GMS_METDATA_FN, index_col=0),
                 variable_dict["metadata_dict"],
-                pd.read_csv(data_dir / cls.SELECTED_GMS_IM_16_84_FN, index_col=0),
+                pd.read_csv(data_dir / cls.SELECTED_GMS_IM_16th_50th_84th_FN, index_col=0),
+                pd.read_csv(data_dir / cls.GCIM_16th_50th_84th_FN, index_col=0)
             ),
         )

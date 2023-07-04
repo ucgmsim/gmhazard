@@ -6,4 +6,4 @@ from .project import (
     EMPIRICAL_WEIGHT_CONFIG_PATH,
 )
 from .gms import gen_gms_project_data
-from .utils import create_station_id, get_station_ids
+from .utils import get_site_infos

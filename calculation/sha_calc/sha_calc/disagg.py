@@ -142,7 +142,7 @@ def epsilon_non_para_single(im_values: np.ndarray, gm_prob: float) -> float:
     """
     # Get the cdf
     quantiles, counts = np.unique(im_values, return_counts=True)
-    ecdf = np.cumsum(counts).astype(np.float) / im_values.size
+    ecdf = np.cumsum(counts).astype(float) / im_values.size
 
     # Get the IM value using linear interpolation
     if ecdf.min() <= (1 - gm_prob) <= ecdf.max():

@@ -1,7 +1,7 @@
 import itertools
 import multiprocessing as mp
 from contextlib import contextmanager
-from typing import Optional, Dict, List, Union
+from typing import Optional, Dict, List, Union, Sequence
 
 import h5py
 import tables
@@ -495,7 +495,7 @@ class IMDBNonParametric(IMDB):
 
     @check_open
     def im_data(
-        self, station: str, im: Optional[Union[List[IM], IM]] = None
+        self, station: str, im: Optional[Union[Sequence[str], str]] = None
     ) -> Union[None, pd.DataFrame, pd.Series]:
         """Retrieves the IM dataframe for all
         simulations for the specified station

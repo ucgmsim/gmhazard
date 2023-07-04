@@ -88,7 +88,7 @@ def download_gms_results():
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         zip_ffp, missing_waveforms = au.api.create_gms_download_zip(
-            gms_result, tmp_dir, disagg_data, cs_param_bounds=cs_param_bounds,
+            gms_result, tmp_dir, disagg_data
         )
 
         if missing_waveforms > 0:

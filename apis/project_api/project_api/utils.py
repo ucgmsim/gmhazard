@@ -29,32 +29,8 @@ class Project:
 
         if "locations" in project_params.keys():
             self.locations = {}
-            for cur_loc_id, cur_data in project_params["locations"].items():
-                z1p0 = (
-                    cur_data["z1.0"]
-                    if "z1.0" in cur_data
-                    else [None] * len(cur_data["vs30"])
-                )
-                z2p5 = (
-                    cur_data["z2.5"]
-                    if "z2.5" in cur_data
-                    else [None] * len(cur_data["vs30"])
-                )
-                # Checks that we have the same lengths for
-                # Vs30 and Z1.0, Z2.5 values for correct mapping
-                assert len(z1p0) == len(cur_data["vs30"]) and len(z1p0) == len(z2p5)
-                self.locations[cur_loc_id] = Location(
-                    cur_data["name"],
-                    cur_data["vs30"],
-                    z1p0,
-                    z2p5,
-                )
             self.station_ids = [
-                pg.utils.create_station_id(cur_loc, cur_vs30, z1p0=cur_z1p0, z2p5=cur_z2p5)
-                for cur_loc, cur_data in self.locations.items()
-                for cur_vs30, cur_z1p0, cur_z2p5 in zip(
-                    cur_data.vs30_values, cur_data.z1p0_values, cur_data.z2p5_values
-                )
+                cur_site.station_name for cur_site in pg.get_site_infos(project_params)
             ]
         else:
             self.station_ids = project_params["location_ids"]
@@ -245,15 +221,19 @@ def load_gms_data(station_data_dir: Path, gms_id: str):
     data_dir = station_data_dir / f"gms_{gms_id}"
 
     gms_result = gc.gms.GMSResult.load(data_dir)
-    cs_param_bounds = gc.gms.CausalParamBounds.load(data_dir / "causal_param_bounds")
-    disagg_data = gc.disagg.EnsembleDisaggResult.load(
-        data_dir
-        / "disagg_data"
-        / f"disagg_{str(gms_result.cs_param_bounds.IM_j).replace('.', 'p')}"
-        f"_{int(1 / gms_result.cs_param_bounds.exceedance)}"
-    )
 
-    return gms_result, cs_param_bounds, disagg_data
+    disagg_data = None
+    if (
+        disagg_data_dir := data_dir
+        / "disagg_data"
+        / f"disagg_{str(gms_result.IM_j).replace('.', 'p')}"
+        f"_{int(1 / gms_result.exceedance)}"
+    ).exists():
+        disagg_data = gc.disagg.EnsembleDisaggResult.load(
+            disagg_data_dir,
+        )
+
+    return gms_result, disagg_data
 
 
 def create_project_zip(
@@ -344,16 +324,13 @@ def _write_station(
             )
             continue
 
-        cur_gms_result, cur_cs_bounds, cur_disagg_data = load_gms_data(
-            cur_data_dir, cur_gms_param.id
-        )
+        cur_gms_result, cur_disagg_data = load_gms_data(cur_data_dir, cur_gms_param.id)
 
         (out_dir := output_dir / cur_gms_param.id).mkdir(exist_ok=False)
         au.api.write_gms_download_data(
             cur_gms_result,
             str(out_dir),
             disagg_data=cur_disagg_data,
-            cs_param_bounds=cur_cs_bounds,
         )
 
     for component in project.components:

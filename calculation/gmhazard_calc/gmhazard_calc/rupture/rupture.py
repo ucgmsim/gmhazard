@@ -108,3 +108,4 @@ def rupture_id_ix_to_rupture_id(
 ):
     """Converts rupture id ix to rupture ids"""
     return ensemble.get_rupture_ids(rupture_id_ind)
+

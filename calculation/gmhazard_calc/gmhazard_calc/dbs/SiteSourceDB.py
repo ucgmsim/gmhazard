@@ -27,7 +27,8 @@ class SiteSourceDB(BaseDB):
                     )
                 else:
                     raise TypeError(
-                        "database does not have an source_type, must specify one in the command"
+                        "database does not have an source_type,"
+                        " must specify one in the command"
                     )
         else:
             self._source_type = const.SourceType(source_type)

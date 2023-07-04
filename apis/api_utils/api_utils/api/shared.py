@@ -9,16 +9,15 @@ import yaml
 import numpy as np
 import pandas as pd
 
-import gmhazard_calc as sc
+import gmhazard_calc as gc
 from . import utils
-from . import shared_responses as sr
 
 
 def write_hazard_download_data(
-    ensemble_hazard: sc.hazard.EnsembleHazardResult,
+    ensemble_hazard: gc.hazard.EnsembleHazardResult,
     out_dir: str,
-    nzs1170p5_hazard: sc.nz_code.nzs1170p5.NZS1170p5Result = None,
-    nzta_hazard: sc.nz_code.nzta_2018.NZTAResult = None,
+    nzs1170p5_hazard: gc.nz_code.nzs1170p5.NZS1170p5Result = None,
+    nzta_hazard: gc.nz_code.nzta_2018.NZTAResult = None,
     prefix: str = None,
 ):
     prefix = "" if prefix is None else f"{prefix}_"
@@ -131,7 +130,7 @@ def write_hazard_download_data(
     hazard_plot_ffp = (
         Path(out_dir) / f"{prefix}{ensemble_hazard.im.file_format()}_hazard.png"
     )
-    sc.plots.plt_hazard(
+    gc.plots.plt_hazard(
         ensemble_hazard.as_dataframe(),
         "Hazard",
         ensemble_hazard.im,
@@ -144,7 +143,7 @@ def write_hazard_download_data(
         Path(out_dir)
         / f"{prefix}{ensemble_hazard.im.file_format()}_hazard_branches.png"
     )
-    sc.plots.plt_hazard_totals(
+    gc.plots.plt_hazard_totals(
         ensemble_hazard.as_dataframe(),
         {
             key: cur_branch_hazard.as_dataframe()
@@ -170,10 +169,10 @@ def write_hazard_download_data(
 
 
 def create_hazard_download_zip(
-    ensemble_hazard: sc.hazard.EnsembleHazardResult,
+    ensemble_hazard: gc.hazard.EnsembleHazardResult,
     tmp_dir: str,
-    nzs1170p5_hazard: sc.nz_code.nzs1170p5.NZS1170p5Result = None,
-    nzta_hazard: sc.nz_code.nzta_2018.NZTAResult = None,
+    nzs1170p5_hazard: gc.nz_code.nzs1170p5.NZS1170p5Result = None,
+    nzta_hazard: gc.nz_code.nzta_2018.NZTAResult = None,
     prefix: str = None,
 ):
     ffps = write_hazard_download_data(
@@ -196,7 +195,7 @@ def create_hazard_download_zip(
 
 
 def write_disagg_download_data(
-    disagg_data: Sequence[sc.disagg.EnsembleDisaggResult],
+    disagg_data: Sequence[gc.disagg.EnsembleDisaggResult],
     metadata_df: Sequence[pd.DataFrame],
     out_dir: str,
     src_plot_data: Sequence[bytes] = None,
@@ -330,7 +329,7 @@ def write_disagg_download_data(
 
 
 def create_disagg_download_zip(
-    ensemble_disagg: sc.disagg.EnsembleDisaggResult,
+    ensemble_disagg: gc.disagg.EnsembleDisaggResult,
     metadata_df: pd.DataFrame,
     data_dir: str,
     src_plot_data: bytes = None,
@@ -357,8 +356,8 @@ def create_disagg_download_zip(
 
 
 def write_uhs_download_data(
-    uhs_results: Sequence[sc.uhs.EnsembleUHSResult],
-    nzs1170p5_results: Sequence[sc.nz_code.nzs1170p5.NZS1170p5Result],
+    uhs_results: Sequence[gc.uhs.EnsembleUHSResult],
+    nzs1170p5_results: Sequence[gc.nz_code.nzs1170p5.NZS1170p5Result],
     out_dir: str,
     prefix: str = None,
 ):
@@ -367,12 +366,12 @@ def write_uhs_download_data(
 
     # UHS
     uhs_ffp = Path(out_dir) / f"{prefix}uhs.csv"
-    uhs_df = sc.uhs.EnsembleUHSResult.combine_results(uhs_results)
+    uhs_df = gc.uhs.EnsembleUHSResult.combine_results(uhs_results)
     uhs_df.to_csv(uhs_ffp, index_label="pSA_periods")
 
     # NZS1170.5 - UHS
     nzs1170p5_uhs_ffp = Path(out_dir) / f"{prefix}nzs1170p5_uhs.csv"
-    nzs1170p5_df = sc.nz_code.nzs1170p5.NZS1170p5Result.combine_results(
+    nzs1170p5_df = gc.nz_code.nzs1170p5.NZS1170p5Result.combine_results(
         nzs1170p5_results
     )
     nzs1170p5_df.to_csv(nzs1170p5_uhs_ffp, index_label="pSA_periods")
@@ -390,11 +389,11 @@ def write_uhs_download_data(
                 Path(out_dir)
                 / f"branches_uhs_plot_rp_{int(1 / result.branch_uhs[0].exceedance)}.png"
             )
-            branches_uhs_df = sc.uhs.BranchUHSResult.combine_results(result.branch_uhs)
+            branches_uhs_df = gc.uhs.BranchUHSResult.combine_results(result.branch_uhs)
             branches_uhs_df.to_csv(branches_uhs_ffp, index_label="sa_periods", mode="a")
             branches_uhs_ffps.append(branches_uhs_ffp)
             # Creating UHS branches plots
-            sc.plots.plt_uhs_branches(
+            gc.plots.plt_uhs_branches(
                 uhs_df,
                 branches_uhs_df,
                 int(1 / result.branch_uhs[0].exceedance),
@@ -433,7 +432,7 @@ def write_uhs_download_data(
 
     # Create UHS plot
     uhs_plot_ffp = Path(out_dir) / f"{prefix}uhs.png"
-    sc.plots.plt_uhs(
+    gc.plots.plt_uhs(
         uhs_df,
         nzs1170p5_uhs=nzs1170p5_df,
         station_name=uhs_results[0].site_info.station_name,
@@ -451,8 +450,8 @@ def write_uhs_download_data(
 
 
 def create_uhs_download_zip(
-    uhs_results: Sequence[sc.uhs.EnsembleUHSResult],
-    nzs1170p5_results: Sequence[sc.nz_code.nzs1170p5.NZS1170p5Result],
+    uhs_results: Sequence[gc.uhs.EnsembleUHSResult],
+    nzs1170p5_results: Sequence[gc.nz_code.nzs1170p5.NZS1170p5Result],
     tmp_dir: str,
     prefix: str = None,
 ):
@@ -468,105 +467,110 @@ def create_uhs_download_zip(
 
 
 def write_gms_download_data(
-    gms_result: sc.gms.GMSResult,
+    gms_result: gc.gms.GMSResult,
     out_dir: str,
-    disagg_data: sc.disagg.EnsembleDisaggResult,
-    cs_param_bounds: sc.gms.CausalParamBounds = None,
+    disagg_data: gc.disagg.EnsembleDisaggResult,
     prefix: str = None,
 ):
     prefix = "" if prefix is None else f"{prefix}_"
 
-    missing_waveforms = gms_result.gm_dataset.get_waveforms(
+    # Write the waveforms
+    missing_waveforms = gms_result.gm_dataset.write_waveforms(
         gms_result.selected_gms_ids, gms_result.site_info, out_dir
     )
+    if len(missing_waveforms) > 0:
+        print(
+            f"Failed to find waveforms for the following records:\n{missing_waveforms}"
+        )
 
-    if cs_param_bounds is not None:
+    # Save the relevant raw data
+    gms_result.selected_gms_im_df.to_csv(Path(out_dir) / "selected_gms_im_df.csv")
+    gms_result.selected_gms_metdata_df.to_csv(
+        Path(out_dir) / "selected_gms_metadata_df.csv"
+    )
+    gms_result.realisations.to_csv(Path(out_dir) / "realisations.csv")
+
+    # IM distribution plots
+    gc.plots.plt_gms_im_distribution(gms_result, save_dir=Path(out_dir))
+
+    # Available Ground Motions plot
+    # Don't create it for MixedGroundMotionDataset due
+    # the large number of available GMs
+    # Todo: Fix this eventually
+    if not isinstance(gms_result.gm_dataset, gc.gms.MixedGMDataset):
+        gc.plots.plt_gms_available_gm(
+            gms_result,
+            cs_param_bounds=gms_result.cs_param_bounds,
+            save_file=Path(out_dir) / f"{prefix}gms_available_gm_plot.png",
+        )
+
+    # Pseudo acceleration response spectra plot
+    gc.plots.plt_gms_spectra(
+        gms_result, save_file=Path(out_dir) / f"{prefix}gms_spectra_plot.png",
+    )
+
+    if gms_result.cs_param_bounds is not None:
         # Mw and Rrup distribution plot
-        sc.plots.plt_gms_mw_rrup(
+        gc.plots.plt_gms_mw_rrup(
             gms_result,
             disagg_data.mean_values,
-            cs_param_bounds=cs_param_bounds,
             save_file=Path(out_dir) / f"{prefix}gms_mw_rrup_plot.png",
         )
 
-        # Pseudo acceleration response spectra plot
-        sc.plots.plt_gms_spectra(
-            gms_result, save_file=Path(out_dir) / f"{prefix}gms_spectra_plot.png",
+        # Disagg Distribution plots (Mw Distribution or Rrup distribution)
+        gc.plots.plt_gms_disagg_distribution(
+            gms_result.cs_param_bounds.contr_df.loc[
+                :, ["contribution", "magnitude"]
+            ].set_index("magnitude", drop=True),
+            gms_result,
+            "mag",
+            cs_param_bounds=gms_result.cs_param_bounds,
+            save_file=Path(out_dir) / f"{prefix}gms_mag_disagg_distribution_plot.png",
         )
 
-        # IM distribution plots
-        sc.plots.plt_gms_im_distribution(gms_result, save_dir=Path(out_dir))
+        gc.plots.plt_gms_disagg_distribution(
+            gms_result.cs_param_bounds.contr_df.loc[
+                :, ["contribution", "rrup"]
+            ].set_index("rrup", drop=True),
+            gms_result,
+            "rrup",
+            cs_param_bounds=gms_result.cs_param_bounds,
+            save_file=Path(out_dir) / f"{prefix}gms_rrup_disagg_distribution_plot.png",
+        )
 
-        # Disagg Distribution plots (Mw Distribution or Rrup distribution)
-        contribution_df_data = sr.get_default_causal_params(cs_param_bounds)[
-            "contribution_df"
-        ]
-        if contribution_df_data is not None:
-            sc.plots.plt_gms_disagg_distribution(
-                cs_param_bounds.contr_df.loc[
-                    :, ["contribution", "magnitude"]
-                ].set_index("magnitude", drop=True),
-                gms_result,
-                "mag",
-                cs_param_bounds=cs_param_bounds,
-                save_file=Path(out_dir)
-                / f"{prefix}gms_mag_disagg_distribution_plot.png",
-            )
-
-            sc.plots.plt_gms_disagg_distribution(
-                cs_param_bounds.contr_df.loc[:, ["contribution", "rrup"]].set_index(
-                    "rrup", drop=True
-                ),
-                gms_result,
-                "rrup",
-                cs_param_bounds=cs_param_bounds,
-                save_file=Path(out_dir)
-                / f"{prefix}gms_rrup_disagg_distribution_plot.png",
-            )
         # Causal Parameters plots
-        sc.plots.plt_gms_causal_param(
+        gc.plots.plt_gms_causal_param(
             gms_result,
             "vs30",
-            cs_param_bounds=cs_param_bounds,
+            cs_param_bounds=gms_result.cs_param_bounds,
             save_file=Path(out_dir) / f"{prefix}gms_vs30_causal_param_plot.png",
         )
 
-        sc.plots.plt_gms_causal_param(
+        gc.plots.plt_gms_causal_param(
             gms_result,
             "sf",
-            cs_param_bounds=cs_param_bounds,
+            cs_param_bounds=gms_result.cs_param_bounds,
             save_file=Path(out_dir) / f"{prefix}gms_sf_causal_param_plot.png",
-        )
-
-        # Available Ground Motions plot
-        sc.plots.plt_gms_available_gm(
-            gms_result,
-            cs_param_bounds,
-            save_file=Path(out_dir) / f"{prefix}gms_available_gm_plot.png",
         )
 
     return os.listdir(out_dir), len(missing_waveforms)
 
 
 def create_gms_download_zip(
-    gms_result: sc.gms.GMSResult,
+    gms_result: gc.gms.GMSResult,
     tmp_dir: str,
-    disagg_data: sc.disagg.EnsembleDisaggResult,
-    cs_param_bounds: sc.gms.CausalParamBounds = None,
+    disagg_data: gc.disagg.EnsembleDisaggResult,
     prefix: str = None,
 ):
 
     ffps, missing_waveforms = write_gms_download_data(
-        gms_result,
-        tmp_dir,
-        disagg_data,
-        cs_param_bounds=cs_param_bounds,
-        prefix=prefix,
+        gms_result, tmp_dir, disagg_data, prefix=prefix,
     )
 
     zip_ffp = os.path.join(
         tmp_dir,
-        f"{prefix}{gms_result.ensemble.name}_{gms_result.IM_j.file_format()}_{gms_result.gm_dataset.name}_waveforms.zip",
+        f"{prefix}{gms_result.ensemble.name}_{gms_result.IM_j.file_format()}"
+        f"_{gms_result.gm_dataset.name}_waveforms.zip",
     )
 
     with zipfile.ZipFile(zip_ffp, mode="w") as cur_zip:
@@ -579,16 +583,19 @@ def create_gms_download_zip(
 
 
 def write_scenario_download_data(
-    ensemble_scenario: sc.scenario.EnsembleScenarioResult,
+    ensemble_scenario: gc.scenario.EnsembleScenarioResult,
     rupture_metadata: pd.DataFrame,
     out_dir: str,
     prefix: str = None,
 ):
     """Writes the scenario data into 6 different files
-    1 for the main scenario data which stores the 16th, 50th and 84th percentiles as well as the mu data
-    4 for the different tectonic types which stores all the scenarios related to that tectonic type and holds
-    each models data for that given scenario
+    1 for the main scenario data which stores the
+        16th, 50th and 84th percentiles as well as the mu data
+    4 for the different tectonic types which stores all
+        the scenarios related to that tectonic type and holds
+        each models data for that given scenario
     1 for the scenario metadata
+
     All files are appended to an ffps list to be zipped together
 
     Parameters
@@ -714,7 +721,7 @@ def write_scenario_download_data(
         "lat": float(site_info.lat),
         "vs30": float(site_info.vs30),
         "user_vs30": float(site_info.user_vs30) if site_info.user_vs30 else None,
-        "ims": sc.im.to_string_list(ensemble_scenario.ims),
+        "ims": gc.im.to_string_list(ensemble_scenario.ims),
         "im_component": str(ensemble_scenario.ims[0].component),
         "git_version_hash": utils.get_repo_version(),
     }
@@ -734,7 +741,7 @@ def write_scenario_download_data(
 
 
 def create_scenario_download_zip(
-    ensemble_scenario: sc.scenario.EnsembleScenarioResult,
+    ensemble_scenario: gc.scenario.EnsembleScenarioResult,
     rupture_metadata: pd.DataFrame,
     tmp_dir: str,
     prefix: str = None,
@@ -755,7 +762,7 @@ def create_scenario_download_zip(
 
 
 def get_available_im_dict(
-    ims: Sequence[sc.im.IM], components: Sequence[sc.im.IMComponent] = None
+    ims: Sequence[gc.im.IM], components: Sequence[gc.im.IMComponent] = None
 ):
     im_dict = {}
     for im in ims:
@@ -769,7 +776,7 @@ def get_available_im_dict(
                 "periods": [im.period] if im.is_pSA() else None,
                 "components": [str(component) for component in components]
                 if components is not None
-                and (im.is_pSA() or im.im_type == sc.im.IMType.PGA)
+                and (im.is_pSA() or im.im_type == gc.im.IMType.PGA)
                 else [str(im.component)],
             }
     return im_dict

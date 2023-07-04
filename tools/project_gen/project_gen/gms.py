@@ -26,7 +26,7 @@ def process_station_gms_config_comb(
 ):
     """Processes to a single station and GMS-config"""
     # Get the site
-    if (gms_out_dir := output_dir / gc.gms.GMSResult.get_save_dir(gms_id)).exists():
+    if (output_dir / gc.gms.GMSResult.get_save_dir(gms_id)).exists():
         print(
             f"Skipping GMS computation for station {station_name} and "
             f"id {gms_id} as it already exists"
@@ -179,7 +179,10 @@ def gen_gms_project_data(project_dir: Path, n_procs: int = 1):
 
     # Generate the station -  combinations
     # Breaking calculations down into "smallest" chunks
-    station_ids = project_params.get("location_ids", utils.get_station_ids(project_params))
+    station_ids = project_params.get("location_ids")
+    if station_ids is None:
+        station_ids = [cur_site.station_name for cur_site in utils.get_site_infos(project_params)]
+
     station_id_comb = [
         (cur_station, cur_id) for cur_station in station_ids for cur_id in gms_ids
     ]

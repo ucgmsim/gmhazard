@@ -6,7 +6,7 @@ Soil Dynamics and Earthquake Engineering 40 (2012): 48-61.
 - Bradley, Brendon A., Lynne S. Burks, and Jack W. Baker. "Ground motion selection for simulation‐based seismic hazard and structural reliability assessment."
 Earthquake Engineering & Structural Dynamics 44.13 (2015): 2321-2340.
 """
-from typing import Iterable, Tuple
+from typing import Iterable, Tuple, Sequence
 
 import numpy as np
 import pandas as pd
@@ -133,4 +133,61 @@ def get_scale_alpha(IMs: Iterable[str]):
 
     return pd.Series(data=alphas, index=IMs)
 
+def compute_scaling_factor(gm_im_values: pd.Series, im_name: str, im_value: float):
+    """
+    Computes the amplitude scaling factor such that IM_j == im_j
+    for all of the specified GM ids.
+    See equations (13) and (14) of Bradley 2012
 
+    Parameters
+    ----------
+    im_name: str
+        Name of the IM to scale
+    im_value: float
+        The IM to scale and the target value
+    im_df: series
+        GM records (index) and the IM to scale on (values)
+
+    Returns
+    -------
+    series:
+        Scaling factor for each GM record
+    """
+    # Compute the scaling factor
+    IMj_alpha = get_scale_alpha([im_name]).loc[str(im_name)]
+    sf = np.power(im_value / gm_im_values, 1.0 / IMj_alpha)
+
+    return sf
+
+def apply_amp_scaling(im_df: pd.DataFrame, sf: pd.Series):
+    """
+    Applies amplitude to the specified GMs
+
+    Note: The indices of im_df and sf have to match
+
+    Parameters
+    ----------
+    im_df: dataframe
+        The IM records to scale
+
+        Note: All columns are assumed to be IMs
+    sf: series
+        The scaling factor for each GM of interest
+        index: GM ids, value: scaling factor
+
+    Returns
+    -------
+    dataframe:
+        The scaled IMs
+    """
+    assert np.all(im_df.index == sf.index)
+
+    im_names = im_df.columns.values.astype(str)
+    IMs_alpha = get_scale_alpha(im_names)
+
+    im_sf_df = pd.DataFrame(
+        index=sf.index, data=np.power(sf.values[:, np.newaxis], IMs_alpha.values[np.newaxis, :]), columns=im_names
+    )
+
+    scaled_im_df = im_df * im_sf_df
+    return scaled_im_df

@@ -10,7 +10,7 @@ import pandas as pd
 from gmhazard_calc import utils
 from gmhazard_calc import rupture
 from gmhazard_calc import constants as const
-from gmhazard_calc.im import IM, IMType
+from gmhazard_calc.im import IM, IMType, IMComponent
 from qcore.formats import load_station_file
 from .IMEnsemble import IMEnsemble
 
@@ -359,6 +359,9 @@ class Ensemble:
             ensemble_params["name"],
             use_im_data_cache=ensemble_params["use_im_data_cache"],
         )
+
+    def get_component_ims(self, component: IMComponent):
+        return [cur_im for cur_im in self.ims if cur_im.component is component]
 
     def __load_stations(self):
         station_ids = set(list(self.im_ensembles[0].stations.index.values.astype(str)))

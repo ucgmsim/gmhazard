@@ -86,7 +86,7 @@ def comb_lnIMi_IMj(lnIMi_IMj: Dict[str, dist.Uni_lnIMi_IMj], weights: pd.Series)
     # Sanity check
     ref_lnIMi_IMj = next(iter(lnIMi_IMj.values()))
     assert all([cur_dist.compatible(ref_lnIMi_IMj) for cur_dist in lnIMi_IMj.values()])
-    assert np.isclose(weights.sum(), 1.0, rtol=1e-3)
+    assert np.isclose(weights.sum(), 1.0, rtol=1e-3), "CDF weights don't sum to  1.0"
 
     branch_names = np.asarray(list(lnIMi_IMj.keys()))
     branch_mu_lnIMi_IMj = pd.Series(
@@ -105,19 +105,20 @@ def comb_lnIMi_IMj(lnIMi_IMj: Dict[str, dist.Uni_lnIMi_IMj], weights: pd.Series)
     sigma_IMi_IMj = np.sqrt(
         (
             (
-                (branch_sigma_lnIMi_IMj_df ** 2) + ((branch_mu_lnIMi_IMj - mu_lnIMi_IMj) ** 2)
+                (branch_sigma_lnIMi_IMj_df ** 2)
+                + ((branch_mu_lnIMi_IMj - mu_lnIMi_IMj) ** 2)
             ).multiply(weights, axis=0)
         ).sum(axis=0)
     )
 
     # Compute the IM values for +/- sigma
-    z = np.linspace(-3, 3, 1000)
-    cdf_x = pd.Series(
-        data=mu_lnIMi_IMj + sigma_IMi_IMj * z,
-        name="cdf_x",
-    )
+    z = np.linspace(-4, 4, 2000)
+    cdf_x = pd.Series(data=mu_lnIMi_IMj + sigma_IMi_IMj * z, name="cdf_x",)
     cdf_y = pd.Series(data=np.zeros(cdf_x.shape[0]), name="cdf_y")
     for cur_name, cur_lnIMi_IMj in lnIMi_IMj.items():
+        # Otherwise the combined CDF will not add to 1.0
+        assert cdf_x.max() > cur_lnIMi_IMj.cdf.index.max()
+
         cdf_y += (
             np.interp(
                 cdf_x,
@@ -128,6 +129,10 @@ def comb_lnIMi_IMj(lnIMi_IMj: Dict[str, dist.Uni_lnIMi_IMj], weights: pd.Series)
             )
             * weights[cur_name]
         )
+
+    # Ensure combined CDF goes to 1.0
+    assert np.isclose(cdf_y.iloc[-1], 1.0, rtol=1e-4), \
+        "Combined CDF does not go to 1.0"
 
     return dist.Uni_lnIMi_IMj(
         pd.Series(index=cdf_x.values, data=cdf_y.values),
@@ -187,7 +192,10 @@ def compute_lnIMi_IMj(
     # is not lognormal, hence it is computed as a non-parametric CDF
     z = np.linspace(-3, 3, 1000)
     # Compute the IM values for +/- sigma for each GCIM (i.e. f_IMi|IMj)
-    cdf_x = mu_IMi_IMj.loc[IMs].values + sigma_IMi_IMj.loc[IMs].values[np.newaxis, :] * z[:, np.newaxis]
+    cdf_x = (
+        mu_IMi_IMj.loc[IMs].values
+        + sigma_IMi_IMj.loc[IMs].values[np.newaxis, :] * z[:, np.newaxis]
+    )
     cdf_y = np.full((z.size, IMs.size), np.nan)
     for ix, cur_z in enumerate(z):
         # Compute the corresponding z-value for the
