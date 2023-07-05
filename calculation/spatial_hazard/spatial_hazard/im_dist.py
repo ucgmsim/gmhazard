@@ -66,6 +66,35 @@ def obs_site_filter(
     obs_stations: np.ndarray,
     distance_matrix: pd.DataFrame,
 ):
+    """
+    Computes the mask that specifies the relevant
+    observation sites for each site of interest
+
+    Parameters
+    ----------
+    hypo_loc: pair of floats
+        Hypocenter location
+    station_df: dataframe
+        Dataframe that contains the station
+        locations
+        Must have columns: [lon, lat]
+    int_stations: array of strings
+        Name of the stations of interest
+    obs_stations: array of strings
+        Name of the observation stations
+    distance_matrix: dataframe
+        Distance matrix between all sites
+
+    Returns
+    -------
+    dataframe
+        Dataframe that contains mask of
+        observation sites to use
+        for each site of interest
+
+        Index: sites of interest
+        Columns: observation sites
+    """
     # Compute R_min for each site of interest
     src_site_dist = pd.Series(
         data=geo.get_distances(
@@ -86,7 +115,7 @@ def obs_site_filter(
         < r_min.values[:, np.newaxis]
     )
 
-    # Get obverstaion sites such that n_sites n_obs sites == 20
+    # Get observation sites such that n_sites n_obs sites == 20
     neigh = NearestNeighbors(n_neighbors=20, radius=150, metric="precomputed", n_jobs=1)
     neigh.fit(distance_matrix.loc[obs_stations, obs_stations])
     n_neigh_ind = neigh.kneighbors(

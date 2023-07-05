@@ -76,7 +76,7 @@ def compute_cond_lnIM_dist(
 
     # Compute the total residual
     total_residual = (
-            obs_lnIM_series.loc[obs_stations] - gmm_params_df.loc[obs_stations, "mu"]
+        obs_lnIM_series.loc[obs_stations] - gmm_params_df.loc[obs_stations, "mu"]
     )
 
     # TODO: Replace this with MER between event calculation
@@ -95,15 +95,18 @@ def compute_cond_lnIM_dist(
 
     # Define the within-event residual distribution
     # Equation 5 in Bradley 2014
-    within_residual_cov = np.full((rel_stations.size, rel_stations.size), fill_value=np.nan)
+    within_residual_cov = np.full(
+        (rel_stations.size, rel_stations.size), fill_value=np.nan
+    )
     within_residual_cov[1:, 1:] = C_c
     within_residual_cov[0, 0:] = within_residual_cov[0:, 0] = (
-            R.loc[rel_stations, station].values
-            * gmm_params_df.loc[station, "sigma_within"]
-            * gmm_params_df.loc[rel_stations, "sigma_within"].values
+        R.loc[rel_stations, station].values
+        * gmm_params_df.loc[station, "sigma_within"]
+        * gmm_params_df.loc[rel_stations, "sigma_within"].values
     )
-    within_residual_cov = pd.DataFrame(data=within_residual_cov, index=rel_stations,
-                                       columns=rel_stations)
+    within_residual_cov = pd.DataFrame(
+        data=within_residual_cov, index=rel_stations, columns=rel_stations
+    )
     # Sanity check, diagonal terms are just sigma_within**2
     assert np.all(
         np.isclose(
@@ -114,16 +117,24 @@ def compute_cond_lnIM_dist(
 
     # Define the conditional within-event distribution
     cond_within_residual_mu = np.einsum(
-        "i, ij, j -> ", within_residual_cov.values[0, 1:], C_c_inv, within_residual.values
+        "i, ij, j -> ",
+        within_residual_cov.values[0, 1:],
+        C_c_inv,
+        within_residual.values,
     )
     cond_within_residual_sigma = gmm_params_df.loc[
         station, "sigma_within"
     ] ** 2 - np.einsum(
-        "i, ij, j -> ", within_residual_cov.values[0, 1:], C_c_inv, within_residual_cov.values[1:, 0]
+        "i, ij, j -> ",
+        within_residual_cov.values[0, 1:],
+        C_c_inv,
+        within_residual_cov.values[1:, 0],
     )
 
     # Define the conditional lnIM distriubtion
-    cond_lnIM_mu = gmm_params_df.loc[station, "mu"] + between_residual + cond_within_residual_mu
+    cond_lnIM_mu = (
+        gmm_params_df.loc[station, "mu"] + between_residual + cond_within_residual_mu
+    )
     cond_lnIM_sigma = cond_within_residual_sigma
 
     return cond_lnIM_mu, cond_lnIM_sigma
