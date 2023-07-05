@@ -1,7 +1,0 @@
-type: "correlate_ims"
-im: "pSA_3.0"
-fault: "3468575"
-stations_ll: "canterbury_stat_list.txt"
-imdbs:
-  - "Br_10_ACTIVE_SHALLOW_flt.db"
-seed: 0
