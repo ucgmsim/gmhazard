@@ -1,1 +1,0 @@
-from .im_component_ratio import get_component_ratio

@@ -1,10 +1,14 @@
+from importlib import reload
 from pathlib import Path
-from typing import Dict, Sequence, Any
+from typing import Dict, Sequence, Any, Tuple
 
+import pygmt
 import yaml
+import numpy as np
 import pandas as pd
 
-from visualization.plot_items_wrapper import plot_multiple
+from pygmt_helper import plotting
+from qcore import geo
 
 TEMPLATE_OPTIONS_DICT = {"flags": [], "options": {}}
 
@@ -22,6 +26,113 @@ DEFAULT_STANDARD_GMT_PLOT_OPTIONS = {
 }
 
 
+def _get_region(
+    hypocentre_loc: Tuple[float, float],
+    hypocentre_dist: Tuple[float, float],
+):
+    min_lon = geo.ll_shift(
+        hypocentre_loc[1], hypocentre_loc[0], hypocentre_dist[0], 270
+    )[1]
+    max_lon = geo.ll_shift(
+        hypocentre_loc[1], hypocentre_loc[0], hypocentre_dist[0], 90
+    )[1]
+    min_lat = geo.ll_shift(
+        hypocentre_loc[1], hypocentre_loc[0], hypocentre_dist[1], 180
+    )[0]
+    max_lat = geo.ll_shift(hypocentre_loc[1], hypocentre_loc[0], hypocentre_dist[1], 0)[
+        0
+    ]
+
+    return (min_lon, max_lon, min_lat, max_lat)
+
+
+def _plot_stations(fig: pygmt.Figure, data_df: pd.DataFrame):
+    for cur_station, cur_row in data_df.iterrows():
+        # Plot observation stations
+        if "observation" in cur_row.index and cur_row.observation:
+            fig.plot(
+                x=cur_row.lon,
+                y=cur_row.lat,
+                style="d0.05c",
+                fill="blue",
+                pen="blue",
+            )
+        # Plot sites of interest
+        else:
+            fig.plot(
+                x=cur_row.lon,
+                y=cur_row.lat,
+                style="x0.02c",
+                fill="black",
+                pen="black",
+            )
+
+
+def gen_spatial_plot(
+    data_df: pd.DataFrame,
+    data_key: str,
+    hypocentre_loc: Tuple[float, float],
+    hypocentre_dist: Tuple[float, float],
+    output_ffp: Path,
+    title: str = None,
+    map_data_ffp: Path = None,
+    map_data: plotting.NZMapData = None,
+    plot_stations: bool = True,
+    cb_max: float = None,
+):
+    import pygmt
+
+    reload(pygmt)
+
+    # Load the map data
+    if map_data is None and map_data_ffp is not None:
+        map_data = plotting.NZMapData.load(map_data_ffp, high_res_topo=False)
+
+    # Use max value from data if not specified
+    cb_max = cb_max if cb_max is not None else np.around(data_df[data_key].max(), 1)
+
+    # Create the figure
+    region = _get_region(hypocentre_loc, hypocentre_dist)
+    fig = plotting.gen_region_fig(title, region, map_data=map_data)
+
+    # Create & Plot the grid
+    grid = plotting.create_grid(
+        data_df,
+        data_key=data_key,
+        region=region,
+        grid_spacing="50e/50e",
+        interp_method="linear",
+    )
+    plotting.plot_grid(
+        fig,
+        grid,
+        "hot",
+        (0, cb_max, cb_max / 20),
+        ("white", "black"),
+        reverse_cmap=True,
+        transparency=35,
+    )
+
+    # Plot stations
+    if plot_stations:
+        _plot_stations(fig, data_df)
+
+    # Plot the hypocentre
+    fig.plot(
+        x=hypocentre_loc[0],
+        y=hypocentre_loc[1],
+        style="a0.1c",
+        fill="blue",
+        pen="blue",
+    )
+
+    fig.savefig(
+        output_ffp,
+        dpi=900,
+        anti_alias=True,
+    )
+
+
 def plot_realisations(
     rel_df: pd.DataFrame,
     station_df: pd.DataFrame,
@@ -35,6 +146,8 @@ def plot_realisations(
     Plots realisations and stations on a map
     using a plot items wrapper from the visualisation package
     """
+    from visualization.plot_items_wrapper import plot_multiple
+
     data_df = pd.merge(rel_df, station_df, left_index=True, right_index=True)
 
     csv_files = []

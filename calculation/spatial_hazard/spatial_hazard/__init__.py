@@ -1,2 +1,4 @@
-import spatial_hazard.correlate_ims as correlate_ims
-import spatial_hazard.plots as plots
+from . import im_dist
+from . import plots
+from . import utils
+

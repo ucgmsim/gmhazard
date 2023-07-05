@@ -6,8 +6,7 @@ import numpy as np
 import pandas as pd
 
 import gmhazard_calc as gc
-from spatial_hazard import correlate_ims
-from spatial_hazard import plots
+import spatial_hazard as sh
 
 
 def main(
@@ -20,25 +19,25 @@ def main(
     n_procs: int,
 ):
     # Load the station data
-    stations_df = pd.read_csv(stations_ll_ffp, " ", index_col=2)
+    stations_df = pd.read_csv(stations_ll_ffp, sep=" ", index_col=2)
     stations = stations_df.index.values
 
     # Get realisations
     print("Retrieving GMM parameters")
-    emp_df = correlate_ims.load_stations_fault_data(imdb_ffps, stations, IM, fault)
+    emp_df = sh.utils.load_stations_fault_data(imdb_ffps, stations, IM, fault)
 
     print("Computing distance matrix")
-    dist_matrix = correlate_ims.calculate_distance_matrix(stations, stations_df)
+    dist_matrix = sh.im_dist.calculate_distance_matrix(stations, stations_df)
 
     assert np.all(
         dist_matrix.index.values == emp_df.index.values
     ), "Order of the stations has to be the same"
 
     print("Computing correlation matrix")
-    R = correlate_ims.get_corr_matrix(stations, dist_matrix, IM)
+    R = sh.im_dist.get_corr_matrix(stations, dist_matrix, IM)
 
     print("Generating realisation")
-    random_IMs, between_event, within_event = correlate_ims.generate_im_values(
+    random_IMs, between_event, within_event = sh.im_dist.generate_im_values(
         N, R, emp_df
     )
 
@@ -59,11 +58,12 @@ def main(
     emp_df.to_csv(output_dir / "gmm_parameters.csv", index_label="station")
 
     # Generate the plots
+    print(f"Generating plots")
     plot_dir = output_dir / "plots"
     plot_dir.mkdir(exist_ok=True)
 
     im_values = ln_im_values.apply(np.exp)
-    plots.plot_realisations(
+    sh.plots.plot_realisations(
         im_values,
         stations_df,
         plot_dir,
@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
     parser.add_argument("IM", type=str, help="IM of interest")
     parser.add_argument(
-        "fault", type=str, help="The fault for which to compute spatial hazard"
+        "fault", type=str, help="The fault for which to compute spatial_correlation hazard"
     )
     parser.add_argument("N", type=int, help="Number of realisations to generate")
     parser.add_argument(

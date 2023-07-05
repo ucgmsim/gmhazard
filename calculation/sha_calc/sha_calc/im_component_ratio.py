@@ -76,7 +76,7 @@ def get_component_ratio(
         mmin, mmax = _get_min_max_mag(mag)
         file_name = f"{current_component}_min_{mmin}_max_{mmax}.csv"
         df = pd.read_csv(
-            Path(__file__).resolve().parent / "David_M_Boore_2017" / file_name
+            Path(__file__).resolve().parent / "models" / "im_component" / "David_M_Boore_2017" / file_name
         )
 
         # Get the ratios of interest
