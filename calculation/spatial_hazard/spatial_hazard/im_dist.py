@@ -1,6 +1,6 @@
 import pickle
 from pathlib import Path
-from typing import Sequence, Callable, List, Dict, Tuple
+from typing import Sequence, Callable, List, Dict, Tuple, Union
 from dataclasses import dataclass
 
 import numpy as np
@@ -59,84 +59,132 @@ class CondLnIMDistributionResult:
             return pickle.load(f)
 
 
-def obs_site_filter(
-    hypo_loc: Tuple[float, float],
-    station_df: pd.DataFrame,
-    int_stations: np.ndarray,
-    obs_stations: np.ndarray,
-    distance_matrix: pd.DataFrame,
+def get_nn_obs_site_filter_fn(
+        n_obs_sites: int,):
+
+    def obs_site_filter(
+            hypo_loc: Tuple[float, float],
+            station_df: pd.DataFrame,
+            int_stations: np.ndarray,
+            obs_stations: np.ndarray,
+            distance_matrix: pd.DataFrame,
+    ):
+        """
+        Returns the observation site filter for
+        each site of interest using nearest neighbor.
+        """
+        # Get observation sites such that minimum number of observations sites is satisfied
+        neigh = NearestNeighbors(
+            n_neighbors=n_obs_sites + 1, radius=150, metric="precomputed", n_jobs=1
+        )
+        neigh.fit(distance_matrix.loc[obs_stations, obs_stations])
+        n_neigh_ind = neigh.kneighbors(
+            distance_matrix.loc[int_stations, obs_stations], return_distance=False
+        )
+
+        # Convert to a mask
+        n_neigh_mask = np.zeros(distance_matrix.shape, dtype=bool)
+        np.put_along_axis(n_neigh_mask, n_neigh_ind, True, axis=1)
+
+        # Combine & Create dataframe
+        obs_station_mask_df = pd.DataFrame(
+            index=int_stations, columns=obs_stations, data=n_neigh_mask
+        )
+
+        # Don't include stations of interest
+        int_obs_sites = int_stations[np.isin(int_stations, obs_stations)]
+        for cur_station in int_obs_sites:
+            obs_station_mask_df.loc[cur_station, cur_station] = False
+
+        return obs_station_mask_df
+
+    return obs_site_filter
+
+def get_rmin_obs_site_filter_fn(
+    min_n_obs_sites: int = 20,
 ):
-    """
-    Computes the mask that specifies the relevant
-    observation sites for each site of interest
+    def obs_site_filter(
+        hypo_loc: Tuple[float, float],
+        station_df: pd.DataFrame,
+        int_stations: np.ndarray,
+        obs_stations: np.ndarray,
+        distance_matrix: pd.DataFrame,
+    ):
+        """
+        Computes the mask that specifies the relevant
+        observation sites for each site of interest
 
-    Parameters
-    ----------
-    hypo_loc: pair of floats
-        Hypocenter location
-    station_df: dataframe
-        Dataframe that contains the station
-        locations
-        Must have columns: [lon, lat]
-    int_stations: array of strings
-        Name of the stations of interest
-    obs_stations: array of strings
-        Name of the observation stations
-    distance_matrix: dataframe
-        Distance matrix between all sites
+        Parameters
+        ----------
+        hypo_loc: pair of floats
+            Hypocenter location
+        station_df: dataframe
+            Dataframe that contains the station
+            locations
+            Must have columns: [lon, lat]
+        int_stations: array of strings
+            Name of the stations of interest
+        obs_stations: array of strings
+            Name of the observation stations
+        distance_matrix: dataframe
+            Distance matrix between all sites
 
-    Returns
-    -------
-    dataframe
-        Dataframe that contains mask of
-        observation sites to use
-        for each site of interest
+        Returns
+        -------
+        dataframe
+            Dataframe that contains mask of
+            observation sites to use
+            for each site of interest
 
-        Index: sites of interest
-        Columns: observation sites
-    """
-    # Compute R_min for each site of interest
-    src_site_dist = pd.Series(
-        data=geo.get_distances(
-            station_df.loc[int_stations, ["lon", "lat"]].values,
-            hypo_loc[0],
-            hypo_loc[1],
-        ),
-        index=int_stations,
-    )
-    r_min = src_site_dist * 1.5
+            Index: sites of interest
+            Columns: observation sites
+        """
+        # Compute R_min for each site of interest
+        src_site_dist = pd.Series(
+            data=geo.get_distances(
+                station_df.loc[int_stations, ["lon", "lat"]].values,
+                hypo_loc[0],
+                hypo_loc[1],
+            ),
+            index=int_stations,
+        )
+        r_min = src_site_dist * 1.5
 
-    # Sanity check
-    assert np.all(r_min.index == distance_matrix.loc[int_stations].index)
+        # Sanity check
+        assert np.all(r_min.index == distance_matrix.loc[int_stations].index)
 
-    # Get observation sites that are within r_min
-    r_min_mask = (
-        distance_matrix.loc[int_stations, obs_stations].values
-        < r_min.values[:, np.newaxis]
-    )
+        # Get observation sites that are within r_min
+        r_min_mask = (
+            distance_matrix.loc[int_stations, obs_stations].values
+            < r_min.values[:, np.newaxis]
+        )
 
-    # Get observation sites such that n_sites n_obs sites == 20
-    neigh = NearestNeighbors(n_neighbors=20, radius=150, metric="precomputed", n_jobs=1)
-    neigh.fit(distance_matrix.loc[obs_stations, obs_stations])
-    n_neigh_ind = neigh.kneighbors(
-        distance_matrix.loc[int_stations, obs_stations], return_distance=False
-    )
+        # Get observation sites such that minimum number of observations sites is satisfied
+        neigh = NearestNeighbors(
+            n_neighbors=min_n_obs_sites, radius=150, metric="precomputed", n_jobs=1
+        )
+        neigh.fit(distance_matrix.loc[obs_stations, obs_stations])
+        n_neigh_ind = neigh.kneighbors(
+            distance_matrix.loc[int_stations, obs_stations], return_distance=False
+        )
 
-    # Convert to a mask
-    n_neigh_mask = np.zeros_like(r_min_mask)
-    np.put_along_axis(n_neigh_mask, n_neigh_ind, True, axis=1)
+        # Convert to a mask
+        n_neigh_mask = np.zeros_like(r_min_mask)
+        np.put_along_axis(n_neigh_mask, n_neigh_ind, True, axis=1)
 
-    # Combine & Create dataframe
-    obs_station_mask_df = pd.DataFrame(
-        index=int_stations, columns=obs_stations, data=r_min_mask | n_neigh_mask
-    )
+        # Combine & Create dataframe
+        obs_station_mask_df = pd.DataFrame(
+            index=int_stations, columns=obs_stations, data=r_min_mask | n_neigh_mask
+        )
 
-    # Don't include stations of interest
-    int_obs_sites = int_stations[np.isin(int_stations, obs_stations)]
-    for cur_station in int_obs_sites:
-        obs_station_mask_df.loc[cur_station, cur_station] = False
+        # Don't include stations of interest
+        int_obs_sites = int_stations[np.isin(int_stations, obs_stations)]
+        for cur_station in int_obs_sites:
+            obs_station_mask_df.loc[cur_station, cur_station] = False
 
-    return obs_station_mask_df
+        return obs_station_mask_df
+
+    return obs_site_filter
 
 
 def compute_cond_lnIM(
@@ -146,8 +194,9 @@ def compute_cond_lnIM(
     gmm_params_df: pd.DataFrame,
     obs_series: pd.Series,
     hypo_loc: Tuple[float, float],
-    obs_site_filter_fn: Callable[[pd.DataFrame], List[str]] = obs_site_filter,
-    allow_obs_sites: bool = False
+    R: pd.DataFrame = None,
+    obs_site_filter_fn: Callable[[pd.DataFrame], List[str]] = get_rmin_obs_site_filter_fn(),
+    allow_obs_sites: bool = False,
 ) -> CondLnIMDistributionResult:
     """
     Computes the conditional lnIM distribution
@@ -170,7 +219,12 @@ def compute_cond_lnIM(
         Observations IM values for each station
     hypo_loc: pair of floats
         The lon and lat value of the hypocentre
-    obs_site_filter_fn: callable
+    R: dataframe
+        Within-event site correlation matrix, optional
+
+        If not provided then this is computed using the
+        Loth & Baker model (2013)
+    obs_site_filter_fn: callable, optional
         Function that performs filtering on the distance
         between the site of interest and the available
         observation sites
@@ -241,8 +295,11 @@ def compute_cond_lnIM(
     print("Computing distance matrix")
     dist_matrix = calculate_distance_matrix(rel_stations, stations_df)
 
-    print("Computing correlation matrix")
-    R = get_corr_matrix(rel_stations, dist_matrix, IM)
+    if R is None:
+        print("Computing within-event site correlation matrix")
+        R = get_corr_matrix(rel_stations, dist_matrix, IM)
+    else:
+        print("Using provided within-event site correlation matrix")
 
     # Get the observation sites to use for each site of interest
     obs_station_mask_df = obs_site_filter_fn(
@@ -351,7 +408,9 @@ def get_corr_matrix(
 
 
 def generate_im_values(
-    N: int, R: pd.DataFrame, emp_df: pd.DataFrame,
+    N: int,
+    R: pd.DataFrame,
+    emp_df: pd.DataFrame,
 ):
     """
     Given a number of stations with their empirical values,

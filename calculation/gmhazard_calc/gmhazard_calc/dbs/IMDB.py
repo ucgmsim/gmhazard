@@ -307,6 +307,7 @@ class IMDB(BaseDB):
         return [
             stat.split("im_data/")[-1].replace("station_", "")
             for stat in self._db.keys()
+            if stat not in ["/simulations", "/sites"]
         ]
 
 
@@ -387,12 +388,10 @@ class IMDBParametric(IMDB):
             lookup_indices = fileh.root.ruptures.table.read_coordinates(
                 df.index.values
             )["values_block_0"].reshape(-1)
-            df.index = fileh.root.ruptures.meta.values_block_0.meta.table.read_coordinates(
-                lookup_indices
-            )[
-                "values"
-            ].astype(
-                str
+            df.index = (
+                fileh.root.ruptures.meta.values_block_0.meta.table.read_coordinates(
+                    lookup_indices
+                )["values"].astype(str)
             )
 
         if im is not None:
