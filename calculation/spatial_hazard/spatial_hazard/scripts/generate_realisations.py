@@ -1,3 +1,4 @@
+"""Script for computing realisations of spatially correlated IM values """
 import argparse
 from pathlib import Path
 from typing import Sequence
