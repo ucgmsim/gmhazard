@@ -1,6 +1,6 @@
 import pickle
 from pathlib import Path
-from typing import Sequence, Callable, List, Dict, Tuple, Union
+from typing import Sequence, Callable, List, Tuple
 from dataclasses import dataclass
 
 import numpy as np
