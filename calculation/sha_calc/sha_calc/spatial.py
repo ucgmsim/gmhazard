@@ -4,7 +4,7 @@ import pandas as pd
 
 def compute_cond_lnIM_dist(
     station: str,
-    gmm_params_df: pd.DataFrame,
+    gm_params_df: pd.DataFrame,
     obs_lnIM_series: pd.Series,
     R: pd.DataFrame,
 ):
@@ -46,12 +46,12 @@ def compute_cond_lnIM_dist(
     obs_stations = obs_lnIM_series.index.values.astype(str)
 
     # Sanity checks
-    assert np.all(np.isin(obs_stations, gmm_params_df.index))
-    assert station in gmm_params_df.index and station not in obs_stations
+    assert np.all(np.isin(obs_stations, gm_params_df.index))
+    assert station in gm_params_df.index and station not in obs_stations
 
     # Relevant stations (Observation sites & Sites of interest)
     rel_stations = np.concatenate(([station], obs_stations))
-    gmm_params_df = gmm_params_df.loc[rel_stations]
+    gm_params_df = gm_params_df.loc[rel_stations]
 
     # Compute covariance matrix of within-event residuals
     # C_c(i,j) = rho_{i,j} * \delta_{W_i} * \delta_{W_j}
@@ -59,36 +59,43 @@ def compute_cond_lnIM_dist(
     C_c = pd.DataFrame(
         data=np.einsum(
             "i, ij, j -> ij",
-            gmm_params_df.loc[obs_stations].sigma_within.values,
-            R.loc[obs_stations, obs_stations],
-            gmm_params_df.loc[obs_stations].sigma_within.values,
+            gm_params_df.loc[obs_stations].sigma_within.values,
+            R.loc[obs_stations, obs_stations].values,
+            gm_params_df.loc[obs_stations].sigma_within.values,
         ),
         index=obs_stations,
         columns=obs_stations,
     )
+    # Compute the inverse covariance matrix
+    C_c_inv = np.linalg.inv(C_c)
+
     # Sanity check
     assert np.all(
         np.isclose(
             np.diag(C_c.values),
-            gmm_params_df.loc[obs_stations, "sigma_within"].values ** 2,
+            gm_params_df.loc[obs_stations, "sigma_within"].values ** 2,
         )
     )
 
     # Compute the total residual
     total_residual = (
-        obs_lnIM_series.loc[obs_stations] - gmm_params_df.loc[obs_stations, "mu"]
+        obs_lnIM_series.loc[obs_stations] - gm_params_df.loc[obs_stations, "mu"]
     )
 
-    # TODO: Replace this with MER between event calculation
-    # Compute the between event-residual using the observation stations
-    # First part of Equation 3 numerator is just row-wise sum of inverse C_c
-    C_c_inv = np.linalg.inv(C_c)
-    numerator = np.einsum("ki, i -> ", C_c_inv, total_residual)
-    denom = np.sum(
-        (1 / gmm_params_df.loc[obs_stations].sigma_between.values ** 2)
-        + np.sum(C_c_inv, axis=1)
-    )
-    between_residual = numerator / denom
+    if np.all(gm_params_df.sigma_between == 0):
+        # Between-event residual is zero
+        # when the GM parameters are computed
+        # from simulation realisations
+        between_residual = 0.0
+    else:
+        # Compute the between event-residual using the observation stations
+        # First part of Equation 3 numerator is just row-wise sum of inverse C_c
+        numerator = np.einsum("ki, i -> ", C_c_inv, total_residual)
+        denom = np.sum(
+            (1 / gm_params_df.loc[obs_stations].sigma_between.values ** 2)
+            + np.sum(C_c_inv, axis=1)
+        )
+        between_residual = numerator / denom
 
     # Compute the within-event residual
     within_residual = total_residual - between_residual
@@ -101,8 +108,8 @@ def compute_cond_lnIM_dist(
     within_residual_cov[1:, 1:] = C_c
     within_residual_cov[0, 0:] = within_residual_cov[0:, 0] = (
         R.loc[rel_stations, station].values
-        * gmm_params_df.loc[station, "sigma_within"]
-        * gmm_params_df.loc[rel_stations, "sigma_within"].values
+        * gm_params_df.loc[station, "sigma_within"]
+        * gm_params_df.loc[rel_stations, "sigma_within"].values
     )
     within_residual_cov = pd.DataFrame(
         data=within_residual_cov, index=rel_stations, columns=rel_stations
@@ -111,7 +118,7 @@ def compute_cond_lnIM_dist(
     assert np.all(
         np.isclose(
             np.diag(within_residual_cov.values),
-            gmm_params_df.loc[rel_stations, "sigma_within"].values ** 2,
+            gm_params_df.loc[rel_stations, "sigma_within"].values ** 2,
         )
     )
 
@@ -122,18 +129,18 @@ def compute_cond_lnIM_dist(
         C_c_inv,
         within_residual.values,
     )
-    cond_within_residual_sigma = gmm_params_df.loc[
+    cond_within_residual_sigma = np.sqrt(gm_params_df.loc[
         station, "sigma_within"
     ] ** 2 - np.einsum(
         "i, ij, j -> ",
         within_residual_cov.values[0, 1:],
         C_c_inv,
         within_residual_cov.values[1:, 0],
-    )
+    ))
 
     # Define the conditional lnIM distriubtion
     cond_lnIM_mu = (
-        gmm_params_df.loc[station, "mu"] + between_residual + cond_within_residual_mu
+        gm_params_df.loc[station, "mu"] + between_residual + cond_within_residual_mu
     )
     cond_lnIM_sigma = cond_within_residual_sigma
 
