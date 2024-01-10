@@ -60,14 +60,14 @@ class CondLnIMDistributionResult:
 
 
 def get_nn_obs_site_filter_fn(
-        n_obs_sites: int,):
-
+    n_obs_sites: int,
+):
     def obs_site_filter(
-            hypo_loc: Tuple[float, float],
-            station_df: pd.DataFrame,
-            int_stations: np.ndarray,
-            obs_stations: np.ndarray,
-            distance_matrix: pd.DataFrame,
+        hypo_loc: Tuple[float, float],
+        station_df: pd.DataFrame,
+        int_stations: np.ndarray,
+        obs_stations: np.ndarray,
+        distance_matrix: pd.DataFrame,
     ):
         """
         Returns the observation site filter for
@@ -99,6 +99,7 @@ def get_nn_obs_site_filter_fn(
         return obs_station_mask_df
 
     return obs_site_filter
+
 
 def get_rmin_obs_site_filter_fn(
     min_n_obs_sites: int = 20,
@@ -195,7 +196,9 @@ def compute_cond_lnIM(
     obs_series: pd.Series,
     hypo_loc: Tuple[float, float],
     R: pd.DataFrame = None,
-    obs_site_filter_fn: Callable[[pd.DataFrame], List[str]] = get_rmin_obs_site_filter_fn(),
+    obs_site_filter_fn: Callable[
+        [pd.DataFrame], List[str]
+    ] = get_rmin_obs_site_filter_fn(),
     allow_obs_sites: bool = False,
 ) -> CondLnIMDistributionResult:
     """
@@ -407,7 +410,7 @@ def get_corr_matrix(
     return pd.DataFrame(index=stations, columns=stations, data=R)
 
 
-def generate_im_values(
+def gen_spatial_im_rels(
     N: int,
     R: pd.DataFrame,
     emp_df: pd.DataFrame,
@@ -418,14 +421,19 @@ def generate_im_values(
     correlate them using the Cholesky decomposition
      of the correlation matrix (R).
 
+    Note: The generated IM values are only correlated
+        spatially, inter-correlation between the IMs
+        is not considered in this implementation!
+
     Parameters
     ----------
     N: int
-        Number of realisations
+        Number of realisations to generate
     R: pd.Dataframe
-        Correlation matrix (with unit variance) from
+        Within-event correlation matrix
     emp_df: pd.Dataframe
-        Empirical results with mu, between_event_sigma and within_event_sigma
+        Empirical results with columns
+         mu, between_event_sigma and within_event_sigma
     """
     mean_lnIM, between_event_std, within_event_std = (
         emp_df["mu"],
@@ -458,6 +466,103 @@ def generate_im_values(
 
     # Combine the between and within event values with
     #  the mean IM values broadcast across realisations
-    im_values = mean_lnIM[None, :] + between_event + within_event
+    im_values = mean_lnIM.values[None, :] + between_event + within_event
 
     return im_values, between_event, within_event
+
+
+def gen_im_rels(
+    gm_params: pd.DataFrame,
+    dist_matrix: pd.DataFrame,
+    ims: Sequence[str],
+    n_rels: int,
+    corr_fn: Callable[
+        [str, str, np.ndarray], np.ndarray
+    ] = sha.models.loth_baker_corr_model.get_correlations,
+):
+    """
+    Generates cross-correlated IM realisations for the given
+    sites and ground motion parameters
+
+    Parameters
+    ----------
+    gm_params: dataframe
+        GM parameters, must have the following columns
+        for each IM {IM}_mean, {IM}_std_Inter, {IM}_std_Intra
+    dist_matrix: dataframe
+    ims: sequence of strings
+    n_rels: int
+    corr_fn: callable
+        The correlation function to use, must take the
+        following arguments:
+            IM_1: str
+            IM_2: str
+                The two IMs for which to compute the correlation
+            dist: array of floats
+                The distance values between the sites
+        and return the correlation values between the two IMs
+        for each distance value
+
+    Returns
+    -------
+    im_values: array of floats
+        The generated IM realisations, shape:
+        [n_sites, n_ims, n_rels]
+    """
+    n_ims, n_sites = len(ims), dist_matrix.shape[0]
+    sites  = dist_matrix.index.values
+
+    # Create the correlation matrix
+    # The correlation matrix is made up of smaller
+    # block matrices (n_sites x n_sites) representing the correlation
+    # between the different IMs
+    # I.e.
+    # [R^1,1, R^1,2, ..., R^1,m],
+    # [R^2,1, R^2,2, ..., R^2,m],
+    # [...                     ],
+    # [R^m,1, R^m,2, ..., R^m,m],
+    # where R^i,j is the correlation between IM_i and IM_j
+    # for all sites considered
+    R = np.full((n_sites * n_ims, n_sites * n_ims), fill_value=np.nan)
+    for i, im_i in enumerate(ims):
+        for j, im_j in enumerate(ims):
+            R[
+                i * n_sites : (i + 1) * n_sites, j * n_sites : (j + 1) * n_sites
+            ] = corr_fn(im_i, im_j, dist_matrix.values)
+
+    # Cholesky decomposition of the correlation matrix
+    # Make positive definite if it isn't
+    try:
+        L = cholesky(R, lower=True)
+    except np.linalg.LinAlgError:
+        pd_R = sha.nearest_pd(R)
+        L = cholesky(pd_R, lower=True)
+
+    # Generate the between event-values
+    mu = np.full((n_sites * n_ims, n_rels), fill_value=np.nan)
+    tau = np.full((n_sites * n_ims, n_rels), fill_value=np.nan)
+    u = np.full((n_sites * n_ims, n_rels), fill_value=np.nan)
+    for i, im in enumerate(ims):
+        tau[i * n_sites : (i + 1) * n_sites, :] = (
+                np.random.normal(0.0, 1.0, size=n_sites * n_rels).reshape((n_sites, n_rels))
+                * gm_params.loc[sites, f"{im}_std_Inter"].values[:, np.newaxis]
+        )
+
+        u[i * n_sites : (i + 1) * n_sites] = (
+                np.random.normal(0.0, 1.0, size=n_sites * n_rels).reshape((n_sites, n_rels))
+                * gm_params.loc[sites, f"{im}_std_Intra"].values[:, np.newaxis]
+        )
+
+        mu[i * n_sites : (i + 1) * n_sites, :] = np.tile(
+            gm_params.loc[sites, f"{im}_mean"].values[:, np.newaxis], (1, n_rels)
+        )
+
+    # Generate the within-event values
+    v = np.einsum("ij,jk->ik", L, u)
+
+    im_values = mu + tau + v
+
+    # Convert back to [n_sites, n_ims, n_rels]
+    im_values = im_values.reshape((n_sites, n_ims, n_rels), order="F")
+
+    return im_values
